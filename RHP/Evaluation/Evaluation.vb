@@ -208,7 +208,7 @@ Public Class Evaluation
     Private ReadOnly MarginRight As Integer = 40
     Private ReadOnly MarginTop As Integer = 50
     Private ReadOnly MarginBottom As Integer = 50
-    Private ReadOnly HeaderHeight As Integer = 100
+    Private HeaderHeight As Integer = 105
     Private ReadOnly FooterHeight As Integer = 40
     Private ReadOnly SectionSpacing As Integer = 20  ' Espacement entre sections
 
@@ -466,6 +466,29 @@ Public Class Evaluation
         e.Graphics.DrawString(Lib_Survey_lbl.Text, textFont, obr,
                           New Rectangle(MarginLeft + labelWidth + codeWidth + 3, startY + 2,
                                         nameWidth - 6, boxHeight - 4))
+        If afficherLesNotes Then
+            startY += boxHeight + 4
+            ' Affichage des notes en ligne
+
+            Dim accentPen As New SolidBrush(Color.White)
+            ' Rectangle pour la ligne de notes
+            Dim noteLineRect As New Rectangle(MarginLeft, startY, ContentWidth, boxHeight + 12)
+
+            Dim noteTotal As Double = If(IsNumeric(note_txt.Text), CDbl(note_txt.Text), 0)
+            Dim coef As Double = If(IsNumeric(coef_txt.Text), CDbl(coef_txt.Text), 0)
+            Dim noteFinale As Double = If(IsNumeric(note_totale_txt.Text), CDbl(note_totale_txt.Text), 0)
+            e.Graphics.FillRectangle(New SolidBrush(HeaderBackgroundColor), noteLineRect)
+            startY += 6
+            Dim noteStr = $"Note totale: {Math.Round(noteTotal, 2)}      Coefficient: {Math.Round(coef, 2)}      Note finale: {Math.Round(noteFinale, 2)}"
+            Using lblFont As New Font(oFontStr, 12, FontStyle.Bold)
+                Dim textSize As SizeF = e.Graphics.MeasureString(noteStr, lblFont)
+                Dim startX As Integer = MarginLeft + (oReport.DefaultPageSettings.PaperSize.Width - textSize.Width) / 2
+                e.Graphics.DrawString(noteStr, lblFont, accentPen, startX, startY)
+            End Using
+            HeaderHeight += SectionSpacing
+        End If
+
+
     End Sub
 
     ' Dessiner une boîte d'information
@@ -508,7 +531,7 @@ Public Class Evaluation
 
         Dim grid = ctrl
 
-        ' Rendu de la question avec les notes si disponibles
+        ' Récupérer les notes si disponibles
         Dim note As Double? = Nothing
         Dim coef As Double? = Nothing
         Dim noteTotale As Double? = Nothing
@@ -519,7 +542,8 @@ Public Class Evaluation
             noteTotale = CDbl(grid.noteDic("note_totale"))
         End If
 
-        RenderQuestionHeader(e, grid.numQuestion, grid.laquestion, Ht, obr, _frm, note, coef, noteTotale)
+        ' Rendu de la question
+        RenderQuestionHeader(e, grid.numQuestion, grid.laquestion, Ht, obr, _frm)
         Ht += 35
 
         ' Colonnes non vides (on garde toujours la première pour les libellés)
@@ -632,6 +656,11 @@ Public Class Evaluation
                 Ht += 22
             Next
         End Using
+
+        ' Afficher la ligne de notes en dessous si disponible
+        If afficherLesNotes AndAlso grid.avecNote AndAlso note.HasValue Then
+            RenderNoteLine(e, Ht, note, coef, noteTotale, obr)
+        End If
 
         Ht += SectionSpacing
         Return True
@@ -788,15 +817,15 @@ Public Class Evaluation
             noteTotale = CDbl(valeur.noteDic("note_totale"))
         End If
 
-        ' 1) Rendu de la question (bandeau plein) avec les notes
-        RenderQuestionHeader(e, valeur.numQuestion, valeur.laquestion, Ht, obr, _frm, note, coef, noteTotale)
+        ' 1) Rendu de la question (bandeau plein)
+        RenderQuestionHeader(e, valeur.numQuestion, valeur.laquestion, Ht, obr, _frm)
 
-        ' 2) Zone de réponse sur la même ligne que la question
-        Const ValueBoxWidth As Integer = 150
-        Dim headerHeight As Integer = 30
+        ' 2) Zone de réponse à droite sur la même ligne
+        Const ValueBoxWidth As Integer = 200
+        Const headerHeight As Integer = 30
         Dim totalRight As Integer = MarginLeft + ContentWidth
         Dim valueX As Integer = totalRight - ValueBoxWidth
-        Dim valueRect As New Rectangle(valueX, Ht, totalRight - valueX, headerHeight)
+        Dim valueRect As New Rectangle(valueX, Ht, ValueBoxWidth, headerHeight)
 
         ' Fond et bordure de la zone réponse
         e.Graphics.FillRectangle(New SolidBrush(Color.White), valueRect)
@@ -808,12 +837,17 @@ Public Class Evaluation
         _frm.Alignment = StringAlignment.Center
         _frm.LineAlignment = StringAlignment.Center
         Using valueFont As New Font(oFontStr, 8, FontStyle.Bold)
-            e.Graphics.DrawString(txt, valueFont, obr,
-                              New Rectangle(valueRect.X + 3, valueRect.Y,
-                                            valueRect.Width - 6, valueRect.Height), _frm)
+            e.Graphics.DrawString(txt, valueFont, obr, valueRect, _frm)
         End Using
 
-        Ht += headerHeight + SectionSpacing
+        Ht += headerHeight
+
+        ' 3) Afficher la ligne de notes en dessous si disponible
+        If afficherLesNotes AndAlso valeur.avecNote AndAlso note.HasValue Then
+            RenderNoteLine(e, Ht, note, coef, noteTotale, obr)
+        End If
+
+        Ht += SectionSpacing
         Return True
     End Function
 
@@ -839,8 +873,8 @@ Public Class Evaluation
             noteTotale = CDbl(para.noteDic("note_totale"))
         End If
 
-        ' Rendu de la question avec les notes
-        RenderQuestionHeader(e, para.numQuestion, para.LaQuestion_lbl.Text, Ht, obr, _frm, note, coef, noteTotale)
+        ' Rendu de la question
+        RenderQuestionHeader(e, para.numQuestion, para.LaQuestion_lbl.Text, Ht, obr, _frm)
         Ht += 35
 
         ' Calcul de la hauteur nécessaire pour le texte
@@ -869,7 +903,14 @@ Public Class Evaluation
                                              ContentWidth - 10, textHeight - 10), _frm)
         End Using
 
-        Ht += textHeight + SectionSpacing
+        Ht += textHeight
+
+        ' Afficher la ligne de notes en dessous si disponible
+        If afficherLesNotes AndAlso para.avecNote AndAlso note.HasValue Then
+            RenderNoteLine(e, Ht, note, coef, noteTotale, obr)
+        End If
+
+        Ht += SectionSpacing
         Return True
     End Function
 
@@ -878,7 +919,7 @@ Public Class Evaluation
         NumPage = 1
         H_pos = 0
     End Sub
-    '2 Rendu de l'en-tête de question + éventuellement Note / Coef / Note totale
+    '2 Rendu de l'en-tête de question (sans les notes)
     Private Sub RenderQuestionHeader(e As PrintPageEventArgs,
                                  numQuestion As String,
                                  questionText As String,
@@ -889,18 +930,10 @@ Public Class Evaluation
                                  Optional coef As Double? = Nothing,
                                  Optional noteTotale As Double? = Nothing)
 
-        Dim hasNotes As Boolean = afficherLesNotes AndAlso
-                              note.HasValue AndAlso coef.HasValue AndAlso noteTotale.HasValue
-
         Const QuestionHeight As Integer = 30
-        Const NoteBlockWidth As Integer = 80
 
-        Dim effectiveNoteWidth As Integer = If(hasNotes, NoteBlockWidth, 0)
-
-        ' Rectangle de la question (sans la zone note)
-        Dim questionRect As New Rectangle(MarginLeft, y,
-                                      ContentWidth - effectiveNoteWidth,
-                                      QuestionHeight)
+        ' Rectangle de la question (pleine largeur)
+        Dim questionRect As New Rectangle(MarginLeft, y, ContentWidth, QuestionHeight)
 
         e.Graphics.FillRectangle(New SolidBrush(QuestionBackgroundColor), questionRect)
 
@@ -920,156 +953,62 @@ Public Class Evaluation
         Using questionFont As New Font(oFontStr, 8, FontStyle.Bold)
             e.Graphics.DrawString(numQuestion & ". " & questionText, questionFont, obr,
                               New Rectangle(MarginLeft + 10, y,
-                                            questionRect.Width - 20,
+                                            ContentWidth - 20,
                                             QuestionHeight), _frm)
         End Using
-
-        ' Bloc Note / Coef / Note totale à droite
-        If hasNotes Then
-            Dim noteRect As New Rectangle(MarginLeft + ContentWidth - NoteBlockWidth,
-                                      y, NoteBlockWidth, QuestionHeight)
-
-            Using borderPen As New Pen(BorderColor, 0.5F)
-                e.Graphics.DrawRectangle(borderPen, noteRect)
-            End Using
-
-            Dim lx As Integer = noteRect.X + 3
-            Dim vy As Integer = noteRect.Y
-            Dim lineH As Integer = 9
-
-            Using lblFont As New Font(oFontStr, 6, FontStyle.Regular)
-                Using valFont As New Font(oFontStr, 7, FontStyle.Bold)
-
-                    e.Graphics.DrawString("Note", lblFont, obr, lx, vy)
-                    e.Graphics.DrawString(CStr(Math.Round(note.Value, 2)),
-                                      valFont, obr, lx + 30, vy)
-
-                    vy += lineH
-                    e.Graphics.DrawString("Coef.", lblFont, obr, lx, vy)
-                    e.Graphics.DrawString(CStr(Math.Round(coef.Value, 2)),
-                                      valFont, obr, lx + 30, vy)
-
-                    vy += lineH
-                    e.Graphics.DrawString("Tot.", lblFont, obr, lx, vy)
-                    e.Graphics.DrawString(CStr(Math.Round(noteTotale.Value, 2)),
-                                      valFont, obr, lx + 30, vy)
-                End Using
-            End Using
-        End If
     End Sub
-    '3 Rendu de l'en-tête de question + éventuellement les notes
-    Private Sub RenderQuestionHeader(e As PrintPageEventArgs, numQuestion As String,
-                                 questionText As String, y As Integer,
-                                 obr As SolidBrush, _frm As StringFormat,
-                                 Optional note As Double = Double.NaN,
-                                 Optional coef As Double = Double.NaN,
-                                 Optional noteTotale As Double = Double.NaN)
 
-        Dim questionRect As New Rectangle(MarginLeft, y, ContentWidth, 30)
-        e.Graphics.FillRectangle(New SolidBrush(QuestionBackgroundColor), questionRect)
+    ' Fonction pour afficher la ligne de notes en dessous d'une question
+    Private Sub RenderNoteLine(e As PrintPageEventArgs, ByRef y As Integer,
+                              note As Double?, coef As Double?, noteTotale As Double?,
+                              obr As SolidBrush)
+        If Not (note.HasValue AndAlso coef.HasValue AndAlso noteTotale.HasValue) Then Return
+        Dim accentPen As New SolidBrush(HeaderBackgroundColor)
+        Const NoteLineHeight As Integer = 20
 
-        ' Bordure gauche colorée
-        Using accentPen As New Pen(HeaderBackgroundColor, 3)
-            e.Graphics.DrawLine(accentPen, MarginLeft, y, MarginLeft, y + questionRect.Height)
+        ' Ligne de séparation horizontale
+        Using separatorPen As New Pen(BorderColor, 0.5F)
+            e.Graphics.DrawLine(separatorPen, MarginLeft, y, MarginLeft + ContentWidth, y)
         End Using
 
-        ' Bordure complète
+        ' Rectangle pour la ligne de notes
+        Dim noteLineRect As New Rectangle(MarginLeft, y, ContentWidth, NoteLineHeight)
+        e.Graphics.FillRectangle(New SolidBrush(Color.FromArgb(250, 252, 255)), noteLineRect)
+
+
         Using borderPen As New Pen(BorderColor, 0.5F)
-            e.Graphics.DrawRectangle(borderPen, questionRect)
+            ' Bordure du haut
+            e.Graphics.DrawLine(borderPen, MarginLeft, y, MarginLeft + ContentWidth, y)
+            ' Bordure gauche et droite
+            e.Graphics.DrawLine(borderPen, MarginLeft, y, MarginLeft, y + NoteLineHeight)
+            e.Graphics.DrawLine(borderPen, MarginLeft + ContentWidth, y, MarginLeft + ContentWidth, y + NoteLineHeight)
+            ' Bordure du bas
+            e.Graphics.DrawLine(borderPen, MarginLeft, y + NoteLineHeight, MarginLeft + ContentWidth, y + NoteLineHeight)
         End Using
 
-        ' Faut-il afficher les notes ?
-        Dim showNotes As Boolean =
-        Not Double.IsNaN(note) OrElse Not Double.IsNaN(coef) OrElse Not Double.IsNaN(noteTotale)
+        ' Affichage des notes en ligne
+        Dim startX As Integer = MarginLeft + 480
+        Dim textY As Integer = y + 5
 
-        Dim rightBlockWidth As Integer = If(showNotes, 90, 0)
+        Using lblFont As New Font(oFontStr, 7, FontStyle.Regular)
+            Using valFont As New Font(oFontStr, 7.5F, FontStyle.Bold)
+                ' Note
+                e.Graphics.DrawString("Note:", lblFont, accentPen, startX, textY)
+                e.Graphics.DrawString(Math.Round(note.Value, 2).ToString(), valFont, obr, startX + 35, textY)
 
-        ' Bloc de notes à droite
-        If showNotes Then
-            Dim notesRect As New Rectangle(questionRect.Right - rightBlockWidth,
-                                       questionRect.Y,
-                                       rightBlockWidth,
-                                       questionRect.Height)
+                ' Coef.
+                startX += 90
+                e.Graphics.DrawString("Coef.:", lblFont, accentPen, startX, textY)
+                e.Graphics.DrawString(Math.Round(coef.Value, 2).ToString(), valFont, obr, startX + 35, textY)
 
-            ' Séparateur vertical
-            Using sepPen As New Pen(BorderColor, 0.5F)
-                e.Graphics.DrawLine(sepPen, notesRect.X, notesRect.Y,
-                                notesRect.X, notesRect.Bottom)
+                ' Total
+                startX += 90
+                e.Graphics.DrawString("Total:", lblFont, accentPen, startX, textY)
+                e.Graphics.DrawString(Math.Round(noteTotale.Value, 2).ToString(), valFont, obr, startX + 35, textY)
             End Using
-
-            Dim lineHeight As Integer = notesRect.Height \ 3
-
-            Using labelFont As New Font(oFontStr, 7, FontStyle.Regular)
-                Using valueFont As New Font(oFontStr, 8, FontStyle.Bold)
-
-                    ' Libellés à gauche
-                    _frm.LineAlignment = StringAlignment.Center
-                    _frm.Alignment = StringAlignment.Near
-
-                    e.Graphics.DrawString("Note", labelFont, obr,
-                                      New Rectangle(notesRect.X + 4,
-                                                    notesRect.Y,
-                                                    notesRect.Width \ 2,
-                                                    lineHeight), _frm)
-
-                    e.Graphics.DrawString("Coef.", labelFont, obr,
-                                      New Rectangle(notesRect.X + 4,
-                                                    notesRect.Y + lineHeight,
-                                                    notesRect.Width \ 2,
-                                                    lineHeight), _frm)
-
-                    e.Graphics.DrawString("Total", labelFont, obr,
-                                      New Rectangle(notesRect.X + 4,
-                                                    notesRect.Y + 2 * lineHeight,
-                                                    notesRect.Width \ 2,
-                                                    lineHeight), _frm)
-
-                    ' Valeurs à droite
-                    _frm.Alignment = StringAlignment.Far
-
-                    Dim valueRect As New Rectangle(notesRect.X + notesRect.Width \ 2 - 4,
-                                               notesRect.Y,
-                                               notesRect.Width \ 2,
-                                               lineHeight)
-
-                    If Not Double.IsNaN(note) Then
-                        e.Graphics.DrawString(Math.Round(note, 2).ToString(), valueFont, obr,
-                                          valueRect, _frm)
-                    End If
-
-                    If Not Double.IsNaN(coef) Then
-                        Dim r2 As New Rectangle(valueRect.X,
-                                            valueRect.Y + lineHeight,
-                                            valueRect.Width,
-                                            valueRect.Height)
-                        e.Graphics.DrawString(Math.Round(coef, 2).ToString(), valueFont, obr,
-                                          r2, _frm)
-                    End If
-
-                    If Not Double.IsNaN(noteTotale) Then
-                        Dim r3 As New Rectangle(valueRect.X,
-                                            valueRect.Y + 2 * lineHeight,
-                                            valueRect.Width,
-                                            valueRect.Height)
-                        e.Graphics.DrawString(Math.Round(noteTotale, 2).ToString(), valueFont, obr,
-                                          r3, _frm)
-                    End If
-                End Using
-            End Using
-        End If
-
-        ' Texte de la question dans l'espace restant
-        Dim textWidth As Integer = ContentWidth - 20 - rightBlockWidth
-
-        _frm.Alignment = StringAlignment.Near
-        _frm.LineAlignment = StringAlignment.Center
-        Using questionFont As New Font(oFontStr, 8, FontStyle.Bold)
-            e.Graphics.DrawString(numQuestion & ". " & questionText,
-                              questionFont, obr,
-                              New Rectangle(MarginLeft + 10, y,
-                                            textWidth, questionRect.Height),
-                              _frm)
         End Using
+
+        y += NoteLineHeight
     End Sub
 
 
