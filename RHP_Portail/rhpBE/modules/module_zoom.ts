@@ -1,0 +1,33 @@
+import { Request, Response } from "express";
+import { controleInjection, lireSql } from "./module_sqlRW";
+import { Tbl_Controle_Def_Zoom } from "./module_initialisation";
+import { IsNull } from "./module_general";
+export const getZoomApi = async (req: Request, res: Response) => {
+  let { numZoom, condition, valeurs } = req.body;
+  if (controleInjection(condition)) {
+    res.send({ result: false, data: ["Expression interdite"] });
+    return;
+  }
+  if (controleInjection(numZoom)) {
+    res.send({ result: false, data: ["Expression interdite"] });
+    return;
+  }
+  if (controleInjection(valeurs)) {
+    res.send({ result: false, data: ["Expression interdite"] });
+    return;
+  }
+  const oRow = Tbl_Controle_Def_Zoom.filter((z) => z.numZoom === numZoom);
+  if (oRow.length === 0) return;
+  let sqlStr = oRow[0].sqlStr;
+  sqlStr = sqlStr.replace(
+    /@@@condition/gi,
+    IsNull(condition, "") != "" ? condition : ""
+  );
+  for (let i: number = 0; i < valeurs?.length || 0; i++) {
+    let rg = new RegExp(`\{${i}\}`, "gi");
+    sqlStr = sqlStr.replace(rg, valeurs[i]?.trim());
+  }
+  // if (numZoom === "MS067") console.log(sqlStr);
+  const rsl = await lireSql(sqlStr);
+  return res.send(rsl);
+};

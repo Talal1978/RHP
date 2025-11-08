@@ -1,0 +1,82 @@
+@use "../variables";
+$navbar-height: 3em;
+$sidebar-width: 25rem;
+$sidebar-collapsed-width: 4rem;
+$sidebar-breakpoint01: 1000px;
+.mainMenu {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100%;
+  .menuNavBar {
+    width: 100%;
+    height: $navbar-height;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 999;
+  }
+  .corps {
+    height: calc(100% - $navbar-height);
+    width: 100%;
+    background-color: variables.$bgColorBase01;
+    position: absolute;
+    top: $navbar-height;
+    left: 0;
+    .ecran {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      position: absolute;
+      top: 0;
+      left: $sidebar-collapsed-width;
+      padding: 1em;
+      width: calc(100% - $sidebar-collapsed-width);
+      @media (max-width: $sidebar-breakpoint01) {
+        left: 0;
+        width: 100%;
+      }
+    }
+    .Separateur {
+      height: calc(variables.$positionFloating + 1em);
+      width: 100%;
+    }
+    .sideMenuBarContainer {
+      left: 0;
+      top: $navbar-height;
+      bottom: 0;
+      height: 100%;
+      position: fixed !important;
+      background-color: rgba(0, 0, 0, 0.35);
+      z-index: 9991;
+      .sidebar {
+        width: $sidebar-width;
+        height: 100%;
+        background-color: variables.$colorBase04;
+        overflow-x: hidden;
+        transition: width 0.3s ease;
+        z-index: 9991;
+      }
+      .sidebar-collapsed {
+        width: $sidebar-collapsed-width;
+        @media (max-width: $sidebar-breakpoint01) {
+          width: 0;
+        }
+      }
+    }
+  }
+
+  .css-hip9hq-MuiPaper-root-MuiAppBar-root {
+    background-color: variables.$colorBase01 !important;
+  }
+
+  .css-1nxmd3h-MuiListItem-root {
+    height: 3em;
+    &.selected {
+      background-color: variables.$colorBase02;
+    }
+  }
+}

@@ -1,0 +1,107 @@
+﻿Imports System.ComponentModel
+Imports System.Runtime.CompilerServices
+
+<Global.Microsoft.VisualBasic.CompilerServices.DesignerGenerated()>
+Partial Class IR_Occasionnel
+    inherits Ecran
+
+    'Form remplace la méthode Dispose pour nettoyer la liste des composants.
+    <System.Diagnostics.DebuggerNonUserCode()>
+    Protected Overrides Sub Dispose(ByVal disposing As Boolean)
+        Try
+            If disposing AndAlso components IsNot Nothing Then
+                components.Dispose()
+            End If
+        Finally
+            MyBase.Dispose(disposing)
+        End Try
+    End Sub
+    'Requise par le Concepteur Windows Form
+    Private components As System.ComponentModel.IContainer
+
+
+    'REMARQUE : la procédure suivante est requise par le Concepteur Windows Form
+    'Elle peut être modifiée à l'aide du Concepteur Windows Form.  
+    'Ne la modifiez pas à l'aide de l'éditeur de code.
+    <System.Diagnostics.DebuggerStepThrough()>
+    Private Sub InitializeComponent()
+        Dim DataGridViewCellStyle1 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
+        Dim DataGridViewCellStyle2 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
+        Dim DataGridViewCellStyle3 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
+        Dim DataGridViewCellStyle4 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
+        Me.Grd = New RHP.ud_Grd()
+        Me.Contenu_Grp = New System.Windows.Forms.GroupBox()
+        CType(Me.Grd, System.ComponentModel.ISupportInitialize).BeginInit()
+        Me.Contenu_Grp.SuspendLayout()
+        Me.SuspendLayout()
+        '
+        'Grd
+        '
+        Me.Grd.AllowUserToAddRows = False
+        DataGridViewCellStyle1.BackColor = System.Drawing.Color.FromArgb(CType(CType(219, Byte), Integer), CType(CType(235, Byte), Integer), CType(CType(240, Byte), Integer))
+        Me.Grd.AlternatingRowsDefaultCellStyle = DataGridViewCellStyle1
+        Me.Grd.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.AllCells
+        Me.Grd.BackgroundColor = System.Drawing.Color.FromArgb(CType(CType(250, Byte), Integer), CType(CType(250, Byte), Integer), CType(CType(250, Byte), Integer))
+        Me.Grd.BorderStyle = System.Windows.Forms.BorderStyle.None
+        Me.Grd.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.[Single]
+        DataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter
+        DataGridViewCellStyle2.BackColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
+        DataGridViewCellStyle2.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        DataGridViewCellStyle2.ForeColor = System.Drawing.Color.White
+        DataGridViewCellStyle2.Padding = New System.Windows.Forms.Padding(5)
+        DataGridViewCellStyle2.SelectionBackColor = System.Drawing.Color.White
+        DataGridViewCellStyle2.SelectionForeColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
+        DataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.[True]
+        Me.Grd.ColumnHeadersDefaultCellStyle = DataGridViewCellStyle2
+        Me.Grd.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize
+        DataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft
+        DataGridViewCellStyle3.BackColor = System.Drawing.SystemColors.Window
+        DataGridViewCellStyle3.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        DataGridViewCellStyle3.ForeColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(36, Byte), Integer), CType(CType(36, Byte), Integer))
+        DataGridViewCellStyle3.SelectionBackColor = System.Drawing.Color.FromArgb(CType(CType(94, Byte), Integer), CType(CType(185, Byte), Integer), CType(CType(117, Byte), Integer))
+        DataGridViewCellStyle3.SelectionForeColor = System.Drawing.SystemColors.HighlightText
+        DataGridViewCellStyle3.WrapMode = System.Windows.Forms.DataGridViewTriState.[False]
+        Me.Grd.DefaultCellStyle = DataGridViewCellStyle3
+        Me.Grd.Dock = System.Windows.Forms.DockStyle.Fill
+        Me.Grd.EnableHeadersVisualStyles = False
+        Me.Grd.GridColor = System.Drawing.Color.FromArgb(CType(CType(208, Byte), Integer), CType(CType(215, Byte), Integer), CType(CType(229, Byte), Integer))
+        Me.Grd.Location = New System.Drawing.Point(3, 16)
+        Me.Grd.Name = "Grd"
+        Me.Grd.RowHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.[Single]
+        DataGridViewCellStyle4.BackColor = System.Drawing.Color.FromArgb(CType(CType(169, Byte), Integer), CType(CType(210, Byte), Integer), CType(CType(224, Byte), Integer))
+        Me.Grd.RowHeadersDefaultCellStyle = DataGridViewCellStyle4
+        Me.Grd.Size = New System.Drawing.Size(1006, 643)
+        Me.Grd.TabIndex = 176
+        '
+        'Contenu_Grp
+        '
+        Me.Contenu_Grp.BackColor = System.Drawing.Color.FromArgb(CType(CType(250, Byte), Integer), CType(CType(250, Byte), Integer), CType(CType(250, Byte), Integer))
+        Me.Contenu_Grp.Controls.Add(Me.Grd)
+        Me.Contenu_Grp.Dock = System.Windows.Forms.DockStyle.Fill
+        Me.Contenu_Grp.Location = New System.Drawing.Point(0, 0)
+        Me.Contenu_Grp.Name = "Contenu_Grp"
+        Me.Contenu_Grp.Size = New System.Drawing.Size(1012, 662)
+        Me.Contenu_Grp.TabIndex = 177
+        Me.Contenu_Grp.TabStop = False
+        Me.Contenu_Grp.Text = "Année de la déclaration : "
+        '
+        'IR_Occasionnel
+        '
+        Me.ClientSize = New System.Drawing.Size(1012, 662)
+        Me.Controls.Add(Me.Contenu_Grp)
+        Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None
+        Me.MaximizeBox = False
+        Me.MinimizeBox = False
+        Me.Name = "IR_Occasionnel"
+        Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen
+        Me.Tag = "ECR"
+        Me.Text = "Personnes occasionnels"
+        CType(Me.Grd, System.ComponentModel.ISupportInitialize).EndInit()
+        Me.Contenu_Grp.ResumeLayout(False)
+        Me.ResumeLayout(False)
+
+    End Sub
+
+    Friend WithEvents Grd As ud_Grd
+    Friend WithEvents Contenu_Grp As GroupBox
+End Class

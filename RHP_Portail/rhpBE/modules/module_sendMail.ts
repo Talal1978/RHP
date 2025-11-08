@@ -1,0 +1,32 @@
+import * as nodemailer from "nodemailer";
+import { Response, Request } from "express";
+import { VGLOBALES } from "./module_initialisation";
+
+export interface mailOptionsFormat {
+  from: string;
+  to: string;
+  subject: string;
+  text: string;
+  html: string;
+  headers: {};
+}
+export const envoiMail = async (mailOptions: mailOptionsFormat) => {
+  const username = VGLOBALES.SMTP_USERNAME;
+  const password = VGLOBALES.SMTP_PASSWORD;
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: username,
+      pass: password,
+    },
+  });
+  let info = await transporter.sendMail(mailOptions);
+  return info;
+};
+
+export const sendMail_api = async (req: Request, res: Response) => {
+  const mailOptions = <mailOptionsFormat>req.body.mailOptions;
+  mailOptions.headers = { "x-cloudmta-class": "standard" };
+  let info = await envoiMail(mailOptions);
+  return res.send({ Result: info.accepted });
+};

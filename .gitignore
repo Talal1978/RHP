@@ -1,0 +1,11 @@
+*.bak
+*.tmp
+*.log
+*.suo
+*.user
+bin/
+obj/
+.vs/
+Debug/
+Release/
+packages/

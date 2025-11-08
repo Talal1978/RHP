@@ -1,0 +1,162 @@
+{"menus":[
+  {
+    "name_ecran": "orga",
+    "text_ecran": "Données organisation",
+    "typ_ecran": "MNU",
+    "parent": "",
+    "rang": 1,
+    "img": "AccountTree"
+  },
+  {
+    "name_ecran": "RH_Agent",
+    "text_ecran": "Fiche agent",
+    "typ_ecran": "ECR",
+    "parent": "orga",
+    "rang": 1,
+    "img": "PersonOutline"
+  },
+  {
+    "name_ecran": "Org_FichePoste",
+    "text_ecran": "Fiche de poste",
+    "typ_ecran": "ECR",
+    "parent": "orga",
+    "rang": 2,
+    "img": "NoteAlt"
+  },
+  {
+    "name_ecran": "Org_Organigramme",
+    "text_ecran": "Organigramme",
+    "typ_ecran": "ECR",
+    "parent": "orga",
+    "rang": 3,
+    "img": "Schema"
+  },
+  {
+    "name_ecran": "MesDemandes",
+    "text_ecran": "Demandes et documents",
+    "typ_ecran": "MNU",
+    "parent": "",
+    "rang": 2,
+    "img": "FolderShared"
+  },
+  {
+    "name_ecran": "RH_Demande_Conge_Liste",
+    "text_ecran": "Demandes de congé",
+    "typ_ecran": "ECR",
+    "parent": "MesDemandes",
+    "rang": 1,
+    "img": "DownhillSkiing"
+  },
+  {
+    "name_ecran": "RH_Demande_Avance_Liste",
+    "text_ecran": "Demandes d'avances",
+    "typ_ecran": "ECR",
+    "parent": "MesDemandes",
+    "rang": 2,
+    "img": "CurrencyExchange"
+  },
+  {
+    "name_ecran": "RH_Demande_Pret_Liste",
+    "text_ecran": "Demandes de prêts",
+    "typ_ecran": "ECR",
+    "parent": "MesDemandes",
+    "rang": 3,
+    "img": "Savings"
+  },
+  {
+    "name_ecran": "RH_Dossier_Maladie_Liste",
+    "text_ecran": "Dossiers de maladie",
+    "typ_ecran": "ECR",
+    "parent": "MesDemandes",
+    "rang": 4,
+    "img": "MedicalInformation"
+  },
+  {
+    "name_ecran": "Note_Frais_Liste",
+    "text_ecran": "Notes de frais",
+    "typ_ecran": "ECR",
+    "parent": "MesDemandes",
+    "rang": 5,
+    "img": "Commute"
+  },
+  {
+    "name_ecran": "mesConsultations",
+    "text_ecran": "Consultations",
+    "typ_ecran": "MNU",
+    "parent": "",
+    "rang": 3,
+    "img": "AccountBalanceWallet"
+  },
+  {
+    "name_ecran": "RH_Bulletin_Liste",
+    "text_ecran": "Edition de bulletins de paie",
+    "typ_ecran": "ECR",
+    "parent": "mesConsultations",
+    "rang": 1,
+    "img": "Money"
+  },
+  {
+    "name_ecran": "mesEvaluations",
+    "text_ecran": "Evaluations",
+    "typ_ecran": "MNU",
+    "parent": "",
+    "rang": 4,
+    "img": "FolderSpecial"
+  },
+  {
+    "name_ecran": "Evaluation_Liste",
+    "text_ecran": "Consultation des évaluations",
+    "typ_ecran": "ECR",
+    "parent": "mesEvaluations",
+    "rang": 1,
+    "img": "StarHalf"
+  },
+  {
+    "name_ecran": "Evaluation",
+    "text_ecran": "Evaluation",
+    "typ_ecran": "ECR",
+    "parent": "mesEvaluations",
+    "rang": 2,
+    "img": "ThumbUp"
+  },
+  {
+    "name_ecran": "Recrutement_fdr",
+    "text_ecran": "Recrutements",
+    "typ_ecran": "MNU",
+    "parent": "",
+    "rang": 5,
+    "img": "ContactEmergency"
+  },
+  {
+    "name_ecran": "Recrutement_Demande_Liste",
+    "text_ecran": "Demandes de recrutement",
+    "typ_ecran": "ECR",
+    "parent": "Recrutement_fdr",
+    "rang": 1,
+    "img": "Portrait"
+  },
+  {
+    "name_ecran": "Entretien",
+    "text_ecran": "Entretiens",
+    "typ_ecran": "ECR",
+    "parent": "Recrutement_fdr",
+    "rang": 2,
+    "img": "PersonPin"
+  },
+  {
+    "name_ecran": "Agenda",
+    "text_ecran": "Agenda",
+    "typ_ecran": "ECR",
+    "parent": "",
+    "rang": 6,
+    "img": "EventAvailable"
+  },
+  {
+    "name_ecran": "DiverseEditions",
+    "text_ecran": "Diverses éditions",
+    "typ_ecran": "ECR",
+    "parent": "",
+    "rang": 7,
+    "img": "Topic"
+  }
+] }

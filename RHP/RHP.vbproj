@@ -1,0 +1,3085 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.21022</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{113AE72C-E212-41F8-9342-4E58E125CED0}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <StartupObject>RHP.Module_DPI</StartupObject>
+    <RootNamespace>RHP</RootNamespace>
+    <AssemblyName>RHP</AssemblyName>
+    <FileAlignment>512</FileAlignment>
+    <MyType>WindowsFormsWithCustomSubMain</MyType>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <OptionExplicit>On</OptionExplicit>
+    <OptionCompare>Binary</OptionCompare>
+    <OptionStrict>Off</OptionStrict>
+    <OptionInfer>On</OptionInfer>
+    <ApplicationIcon>rhp.ico</ApplicationIcon>
+    <TargetZone>LocalIntranet</TargetZone>
+    <GenerateManifests>false</GenerateManifests>
+    <ApplicationManifest>My Project\app.manifest</ApplicationManifest>
+    <ExcludedPermissions>
+    </ExcludedPermissions>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <UpgradeBackupLocation>
+    </UpgradeBackupLocation>
+    <OldToolsVersion>3.5</OldToolsVersion>
+    <TargetFrameworkProfile />
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DefineDebug>true</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DocumentationFile>RHP.xml</DocumentationFile>
+    <NoWarn>41999,42016,42017,42018,42019,42020,42021,42022,42032,42036</NoWarn>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <WarningLevel>1</WarningLevel>
+    <WarningsAsErrors>
+    </WarningsAsErrors>
+    <Prefer32Bit>false</Prefer32Bit>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <UseVSHostingProcess>true</UseVSHostingProcess>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
+    <DefineTrace>true</DefineTrace>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DocumentationFile>RHP.xml</DocumentationFile>
+    <Optimize>true</Optimize>
+    <NoWarn>41999,42016,42017,42018,42019,42020,42021,42022,42032,42036</NoWarn>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <WarningLevel>1</WarningLevel>
+    <WarningsAsErrors>
+    </WarningsAsErrors>
+    <Prefer32Bit>false</Prefer32Bit>
+    <CodeAnalysisRuleSet>RHP.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Any CPU|x86'">
+    <OutputPath>bin\Debug\</OutputPath>
+    <NoWarn>41999,42016,42017,42018,42019,42020,42021,42022,42032,42036</NoWarn>
+    <WarningLevel>1</WarningLevel>
+    <WarningsAsErrors>
+    </WarningsAsErrors>
+    <DocumentationFile>RHP.xml</DocumentationFile>
+    <Prefer32Bit>false</Prefer32Bit>
+    <CodeAnalysisRuleSet>RHP.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <OutputPath>bin\Debug\</OutputPath>
+    <NoWarn>41999,42016,42017,42018,42019,42020,42021,42022,42032,42036</NoWarn>
+    <WarningLevel>1</WarningLevel>
+    <WarningsAsErrors>
+    </WarningsAsErrors>
+    <DocumentationFile>RHP.xml</DocumentationFile>
+    <Prefer32Bit>false</Prefer32Bit>
+    <CodeAnalysisRuleSet>RHP.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <OutputPath>bin\Release\</OutputPath>
+    <NoWarn>41999,42016,42017,42018,42019,42020,42021,42022,42032,42036</NoWarn>
+    <WarningLevel>1</WarningLevel>
+    <WarningsAsErrors>
+    </WarningsAsErrors>
+    <DocumentationFile>RHP.xml</DocumentationFile>
+    <Prefer32Bit>false</Prefer32Bit>
+    <CodeAnalysisRuleSet>RHP.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Any CPU|AnyCPU'">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <OutputPath>bin\Debug\</OutputPath>
+    <NoWarn>41999,42016,42017,42018,42019,42020,42021,42022,42032,42036</NoWarn>
+    <WarningLevel>1</WarningLevel>
+    <WarningsAsErrors>
+    </WarningsAsErrors>
+    <DocumentationFile>RHP.xml</DocumentationFile>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>Full</DebugType>
+    <DefineDebug>true</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <Prefer32Bit>false</Prefer32Bit>
+    <CodeAnalysisRuleSet>RHP.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignManifests>false</SignManifests>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DocumentationFile>RHP.xml</DocumentationFile>
+    <WarningLevel>1</WarningLevel>
+    <NoWarn>41999,42016,42017,42018,42019,42020,42021,42022,42032,42036</NoWarn>
+    <PlatformTarget>x64</PlatformTarget>
+    <CodeAnalysisRuleSet>RHP.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <OutputPath>bin\x64\Release\</OutputPath>
+    <DocumentationFile>RHP.xml</DocumentationFile>
+    <WarningLevel>1</WarningLevel>
+    <NoWarn>41999,42016,42017,42018,42019,42020,42021,42022,42032,42036</NoWarn>
+    <PlatformTarget>x64</PlatformTarget>
+    <CodeAnalysisRuleSet>RHP.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Any CPU|x64'">
+    <DebugSymbols>true</DebugSymbols>
+    <DefineDebug>true</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <OutputPath>bin\x64\Any CPU\</OutputPath>
+    <DocumentationFile>RHP.xml</DocumentationFile>
+    <WarningLevel>1</WarningLevel>
+    <NoWarn>41999,42016,42017,42018,42019,42020,42021,42022,42032,42036</NoWarn>
+    <DebugType>Full</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <CodeAnalysisRuleSet>RHP.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="CrystalDecisions.CrystalReports.Engine, Version=10.5.3700.0, Culture=neutral, PublicKeyToken=692fbea5521e1304, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\CrystalDecisions.CrystalReports.Engine.dll</HintPath>
+    </Reference>
+    <Reference Include="CrystalDecisions.Enterprise.Framework, Version=10.5.3700.0, Culture=neutral, PublicKeyToken=692fbea5521e1304">
+      <SpecificVersion>False</SpecificVersion>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+      <HintPath>bin\Debug\CrystalDecisions.Enterprise.Framework.dll</HintPath>
+    </Reference>
+    <Reference Include="CrystalDecisions.Enterprise.InfoStore, Version=10.5.3700.0, Culture=neutral, PublicKeyToken=692fbea5521e1304">
+      <SpecificVersion>False</SpecificVersion>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+      <HintPath>bin\Debug\CrystalDecisions.Enterprise.InfoStore.dll</HintPath>
+    </Reference>
+    <Reference Include="CrystalDecisions.ReportSource, Version=10.5.3700.0, Culture=neutral, PublicKeyToken=692fbea5521e1304, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\CrystalDecisions.ReportSource.dll</HintPath>
+    </Reference>
+    <Reference Include="CrystalDecisions.Shared, Version=10.5.3700.0, Culture=neutral, PublicKeyToken=692fbea5521e1304, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\CrystalDecisions.Shared.dll</HintPath>
+    </Reference>
+    <Reference Include="CrystalDecisions.Windows.Forms, Version=10.5.3700.0, Culture=neutral, PublicKeyToken=692fbea5521e1304, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\CrystalDecisions.Windows.Forms.dll</HintPath>
+    </Reference>
+    <Reference Include="DevComponents.DotNetBar2, Version=10.0.0.3, Culture=neutral, PublicKeyToken=c39c3242a43eee2b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\DevComponents.DotNetBar2.dll</HintPath>
+    </Reference>
+    <Reference Include="DevComponents.Instrumentation, Version=10.0.0.3, Culture=neutral, PublicKeyToken=bc4a9d761ea44ef0, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\DevComponents.Instrumentation.dll</HintPath>
+    </Reference>
+    <Reference Include="DevComponents.TreeGX, Version=10.0.0.3, Culture=neutral, PublicKeyToken=cfcbd7476b2389d1, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\DevComponents.TreeGX.dll</HintPath>
+    </Reference>
+    <Reference Include="DevExpress.BonusSkins.v19.2, Version=19.2.3.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\DevExpress.BonusSkins.v19.2.dll</HintPath>
+    </Reference>
+    <Reference Include="DevExpress.Charts.v19.2.Core, Version=19.2.3.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\DevExpress.Charts.v19.2.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="DevExpress.Data.v19.2, Version=19.2.3.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\DevExpress.Data.v19.2.dll</HintPath>
+    </Reference>
+    <Reference Include="DevExpress.Images.v19.2, Version=19.2.3.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\DevExpress.Images.v19.2.dll</HintPath>
+    </Reference>
+    <Reference Include="DevExpress.Office.v19.2.Core, Version=19.2.3.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\DevExpress.Office.v19.2.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="DevExpress.Pdf.v19.2.Core, Version=19.2.3.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\DevExpress.Pdf.v19.2.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="DevExpress.PivotGrid.v19.2.Core, Version=19.2.3.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\DevExpress.PivotGrid.v19.2.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="DevExpress.Printing.v19.2.Core, Version=19.2.3.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\DevExpress.Printing.v19.2.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="DevExpress.RichEdit.v19.2.Core, Version=19.2.3.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\DevExpress.RichEdit.v19.2.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="DevExpress.Sparkline.v19.2.Core, Version=19.2.3.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\DevExpress.Sparkline.v19.2.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="DevExpress.Utils.v19.2, Version=19.2.3.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\DevExpress.Utils.v19.2.dll</HintPath>
+    </Reference>
+    <Reference Include="DevExpress.Utils.v19.2.UI, Version=19.2.3.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\DevExpress.Utils.v19.2.UI.dll</HintPath>
+    </Reference>
+    <Reference Include="DevExpress.XtraBars.v19.2, Version=19.2.3.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\DevExpress.XtraBars.v19.2.dll</HintPath>
+    </Reference>
+    <Reference Include="DevExpress.XtraCharts.v19.2, Version=19.2.3.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\DevExpress.XtraCharts.v19.2.dll</HintPath>
+    </Reference>
+    <Reference Include="DevExpress.XtraCharts.v19.2.UI, Version=19.2.3.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\DevExpress.XtraCharts.v19.2.UI.dll</HintPath>
+    </Reference>
+    <Reference Include="DevExpress.XtraCharts.v19.2.Wizard, Version=19.2.3.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\DevExpress.XtraCharts.v19.2.Wizard.dll</HintPath>
+    </Reference>
+    <Reference Include="DevExpress.XtraEditors.v19.2, Version=19.2.3.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\DevExpress.XtraEditors.v19.2.dll</HintPath>
+    </Reference>
+    <Reference Include="DevExpress.XtraGrid.v19.2, Version=19.2.3.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\DevExpress.XtraGrid.v19.2.dll</HintPath>
+    </Reference>
+    <Reference Include="DevExpress.XtraLayout.v19.2, Version=19.2.3.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\DevExpress.XtraLayout.v19.2.dll</HintPath>
+    </Reference>
+    <Reference Include="DevExpress.XtraNavBar.v19.2, Version=19.2.3.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\DevExpress.XtraNavBar.v19.2.dll</HintPath>
+    </Reference>
+    <Reference Include="DevExpress.XtraPivotGrid.v19.2, Version=19.2.3.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\DevExpress.XtraPivotGrid.v19.2.dll</HintPath>
+    </Reference>
+    <Reference Include="DevExpress.XtraPrinting.v19.2, Version=19.2.3.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\DevExpress.XtraPrinting.v19.2.dll</HintPath>
+    </Reference>
+    <Reference Include="DevExpress.XtraRichEdit.v19.2, Version=19.2.3.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\DevExpress.XtraRichEdit.v19.2.dll</HintPath>
+    </Reference>
+    <Reference Include="DevExpress.XtraTreeList.v19.2, Version=19.2.3.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\DevExpress.XtraTreeList.v19.2.dll</HintPath>
+    </Reference>
+    <Reference Include="DevExpress.XtraVerticalGrid.v19.2, Version=19.2.3.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\DevExpress.XtraVerticalGrid.v19.2.dll</HintPath>
+    </Reference>
+    <Reference Include="EPPlus, Version=3.1.3.0, Culture=neutral, PublicKeyToken=ea159fdaa78159a1, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\EPPlus.dll</HintPath>
+    </Reference>
+    <Reference Include="ExcelLibrary, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\ExcelLibrary.dll</HintPath>
+    </Reference>
+    <Reference Include="ExpandableGridView, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\ExpandableGridView.dll</HintPath>
+    </Reference>
+    <Reference Include="Interop.ADODB, Version=2.8.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+      <HintPath>bin\Debug\Interop.ADODB.dll</HintPath>
+    </Reference>
+    <Reference Include="Interop.Excel, Version=1.5.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+      <HintPath>bin\Debug\Interop.Excel.dll</HintPath>
+    </Reference>
+    <Reference Include="Interop.MSScriptControl, Version=1.0.0.0, Culture=neutral, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+      <HintPath>bin\Debug\Interop.MSScriptControl.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Bcl.AsyncInterfaces, Version=9.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Bcl.AsyncInterfaces.9.0.0\lib\net462\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Build.Utilities.v3.5, Version=3.5.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\Microsoft.Build.Utilities.v3.5.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.DependencyInjection, Version=9.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.DependencyInjection.9.0.0\lib\net462\Microsoft.Extensions.DependencyInjection.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions, Version=9.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.DependencyInjection.Abstractions.9.0.0\lib\net462\Microsoft.Extensions.DependencyInjection.Abstractions.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Logging, Version=9.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.Logging.9.0.0\lib\net462\Microsoft.Extensions.Logging.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Logging.Abstractions, Version=9.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.Logging.Abstractions.9.0.0\lib\net462\Microsoft.Extensions.Logging.Abstractions.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Options, Version=9.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.Options.9.0.0\lib\net462\Microsoft.Extensions.Options.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Primitives, Version=9.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.Primitives.9.0.0\lib\net462\Microsoft.Extensions.Primitives.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.ReportViewer.Common, Version=9.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\Microsoft.ReportViewer.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.ReportViewer.WinForms, Version=9.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\Microsoft.ReportViewer.WinForms.dll</HintPath>
+    </Reference>
+    <Reference Include="MSDATASRC, Version=7.0.3300.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      <SpecificVersion>False</SpecificVersion>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+      <HintPath>bin\Debug\MSDATASRC.dll</HintPath>
+    </Reference>
+    <Reference Include="NetSpell.SpellChecker, Version=2.1.7.41329, Culture=neutral, PublicKeyToken=318b389f0db66e46">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\NetSpell.SpellChecker.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="PdfSharp, Version=6.1.1.0, Culture=neutral, PublicKeyToken=f94615aa0424f9eb, processorArchitecture=MSIL">
+      <HintPath>..\packages\PDFsharp.6.1.1\lib\netstandard2.0\PdfSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="PdfSharp.Charting, Version=6.1.1.0, Culture=neutral, PublicKeyToken=f94615aa0424f9eb, processorArchitecture=MSIL">
+      <HintPath>..\packages\PDFsharp.6.1.1\lib\netstandard2.0\PdfSharp.Charting.dll</HintPath>
+    </Reference>
+    <Reference Include="PdfSharp.Quality, Version=6.1.1.0, Culture=neutral, PublicKeyToken=f94615aa0424f9eb, processorArchitecture=MSIL">
+      <HintPath>..\packages\PDFsharp.6.1.1\lib\netstandard2.0\PdfSharp.Quality.dll</HintPath>
+    </Reference>
+    <Reference Include="PdfSharp.Snippets, Version=6.1.1.0, Culture=neutral, PublicKeyToken=f94615aa0424f9eb, processorArchitecture=MSIL">
+      <HintPath>..\packages\PDFsharp.6.1.1\lib\netstandard2.0\PdfSharp.Snippets.dll</HintPath>
+    </Reference>
+    <Reference Include="PdfSharp.System, Version=6.1.1.0, Culture=neutral, PublicKeyToken=f94615aa0424f9eb, processorArchitecture=MSIL">
+      <HintPath>..\packages\PDFsharp.6.1.1\lib\netstandard2.0\PdfSharp.System.dll</HintPath>
+    </Reference>
+    <Reference Include="PdfSharp.WPFonts, Version=6.1.1.0, Culture=neutral, PublicKeyToken=f94615aa0424f9eb, processorArchitecture=MSIL">
+      <HintPath>..\packages\PDFsharp.6.1.1\lib\netstandard2.0\PdfSharp.WPFonts.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Buffers, Version=4.0.4.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Buffers.4.6.0\lib\net462\System.Buffers.dll</HintPath>
+    </Reference>
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Data.Linq" />
+    <Reference Include="System.Deployment" />
+    <Reference Include="System.Design" />
+    <Reference Include="System.Diagnostics.DiagnosticSource, Version=9.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Diagnostics.DiagnosticSource.9.0.0\lib\net462\System.Diagnostics.DiagnosticSource.dll</HintPath>
+    </Reference>
+    <Reference Include="System.DirectoryServices" />
+    <Reference Include="System.DirectoryServices.AccountManagement" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Drawing.Design" />
+    <Reference Include="System.Management" />
+    <Reference Include="System.Memory, Version=4.0.2.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Memory.4.6.0\lib\net462\System.Memory.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Numerics.Vectors, Version=4.1.5.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Numerics.Vectors.4.6.0\lib\net462\System.Numerics.Vectors.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=6.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.6.1.0\lib\net462\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Runtime.Remoting" />
+    <Reference Include="System.Text.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL" />
+    <Reference Include="System.Threading.Tasks.Extensions, Version=4.2.1.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Threading.Tasks.Extensions.4.6.0\lib\net462\System.Threading.Tasks.Extensions.dll</HintPath>
+    </Reference>
+    <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.ValueTuple.4.5.0\lib\net461\System.ValueTuple.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web" />
+    <Reference Include="System.Web.Services" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Windows.Forms.DataVisualization" />
+    <Reference Include="System.Xaml" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Xml.Linq">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Import Include="Microsoft.VisualBasic" />
+    <Import Include="System" />
+    <Import Include="System.Collections" />
+    <Import Include="System.Collections.Generic" />
+    <Import Include="System.Data" />
+    <Import Include="System.Drawing" />
+    <Import Include="System.Diagnostics" />
+    <Import Include="System.Web" />
+    <Import Include="System.Windows.Forms" />
+    <Import Include="System.Linq" />
+    <Import Include="System.Xml.Linq" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Audit\Consultation_Audit_Espion.designer.vb">
+      <DependentUpon>Consultation_Audit_Espion.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Audit\Consultation_Audit_Espion.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Audit\Param_Audit.designer.vb">
+      <DependentUpon>Param_Audit.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Audit\Param_Audit.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Auth\Admin_ChangePwd_Agent.designer.vb">
+      <DependentUpon>Admin_ChangePwd_Agent.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Auth\Admin_ChangePwd_Agent.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Auth\Login_Connection.Designer.vb">
+      <DependentUpon>Login_Connection.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Auth\Login_Connection.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Auth\Login_Demarrage.Designer.vb">
+      <DependentUpon>Login_Demarrage.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Auth\Login_Demarrage.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Auth\Login.Designer.vb">
+      <DependentUpon>Login.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Auth\Login.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Auth\Module_ActiveDirectory.vb" />
+    <Compile Include="Auth\Module_SeSouvenirDeMoi.vb" />
+    <Compile Include="customUI\MessageBox\ModuleMsg.vb" />
+    <Compile Include="customUI\MessageBox\ud_InputBox.designer.vb">
+      <DependentUpon>ud_InputBox.vb</DependentUpon>
+    </Compile>
+    <Compile Include="customUI\MessageBox\ud_InputBox.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="customUI\MessageBox\ud_MessageBox.designer.vb">
+      <DependentUpon>ud_MessageBox.vb</DependentUpon>
+    </Compile>
+    <Compile Include="customUI\MessageBox\ud_MessageBox.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="customUI\ud_9421.Designer.vb">
+      <DependentUpon>ud_9421.vb</DependentUpon>
+    </Compile>
+    <Compile Include="customUI\ud_9421.vb">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="customUI\ud_9421_old.Designer.vb">
+      <DependentUpon>ud_9421_old.vb</DependentUpon>
+    </Compile>
+    <Compile Include="customUI\ud_9421_old.vb">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="customUI\ud_button.Designer.vb">
+      <DependentUpon>ud_button.vb</DependentUpon>
+    </Compile>
+    <Compile Include="customUI\ud_button.vb">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="customUI\ud_btn.Designer.vb">
+      <DependentUpon>ud_btn.vb</DependentUpon>
+    </Compile>
+    <Compile Include="customUI\ud_btn.vb">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="customUI\ud_CardItem.Designer.vb">
+      <DependentUpon>ud_CardItem.vb</DependentUpon>
+    </Compile>
+    <Compile Include="customUI\ud_CardItem.vb">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="customUI\ud_CardSoc _Small.Designer.vb">
+      <DependentUpon>ud_CardSoc _Small.vb</DependentUpon>
+    </Compile>
+    <Compile Include="customUI\ud_CardSoc _Small.vb">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="customUI\ud_CardSoc.Designer.vb">
+      <DependentUpon>ud_CardSoc.vb</DependentUpon>
+    </Compile>
+    <Compile Include="customUI\ud_CardSoc.vb">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="customUI\ud_CheckBox.Designer.vb">
+      <DependentUpon>ud_CheckBox.vb</DependentUpon>
+    </Compile>
+    <Compile Include="customUI\ud_CheckBox.vb">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="customUI\ud_CheckListBox.vb">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="customUI\ud_ComboBox.Designer.vb">
+      <DependentUpon>ud_ComboBox.vb</DependentUpon>
+    </Compile>
+    <Compile Include="customUI\ud_ComboBox.vb">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="customUI\ud_Disabling_pnl.Designer.vb">
+      <DependentUpon>ud_Disabling_pnl.vb</DependentUpon>
+    </Compile>
+    <Compile Include="customUI\ud_Disabling_pnl.vb">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="customUI\ud_Domaine_Competence.Designer.vb">
+      <DependentUpon>ud_Domaine_Competence.vb</DependentUpon>
+    </Compile>
+    <Compile Include="customUI\ud_Domaine_Competence.vb">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="customUI\ud_Grd.vb">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="customUI\ud_MenuContainer.vb">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="customUI\ud_Panel.vb">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="customUI\ud_pathBar.Designer.vb">
+      <DependentUpon>ud_pathBar.vb</DependentUpon>
+    </Compile>
+    <Compile Include="customUI\ud_pathBar.vb">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="customUI\ud_RadioBox.Designer.vb">
+      <DependentUpon>ud_RadioBox.vb</DependentUpon>
+    </Compile>
+    <Compile Include="customUI\ud_RadioBox.vb">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="customUI\ud_rubriqueLbl.Designer.vb">
+      <DependentUpon>ud_rubriqueLbl.vb</DependentUpon>
+    </Compile>
+    <Compile Include="customUI\ud_rubriqueLbl.vb">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="customUI\ud_TagChip.vb">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="customUI\ud_TextBox.Designer.vb">
+      <DependentUpon>ud_TextBox.vb</DependentUpon>
+    </Compile>
+    <Compile Include="customUI\ud_TextBox.vb">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="customUI\Wait.Designer.vb">
+      <DependentUpon>Wait.vb</DependentUpon>
+    </Compile>
+    <Compile Include="customUI\Wait.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Documents\Demande de remboursement Assurances\RH_Dossier_Maladie_Liste.designer.vb">
+      <DependentUpon>RH_Dossier_Maladie_Liste.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Documents\Demande de remboursement Assurances\RH_Dossier_Maladie_Liste.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Documents\Demande_Avance\RH_Demande_Avance_Liste.designer.vb">
+      <DependentUpon>RH_Demande_Avance_Liste.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Documents\Demande_Avance\RH_Demande_Avance_Liste.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Compta\Ctb_Compta_Caisse_Banque.designer.vb">
+      <DependentUpon>Ctb_Compta_Caisse_Banque.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Compta\Ctb_Compta_Caisse_Banque.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Documents\Demande_Congés\CongeDemande.vb" />
+    <Compile Include="Documents\Demande_Pret\RH_Demande_Pret_Liste.designer.vb">
+      <DependentUpon>RH_Demande_Pret_Liste.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Documents\Demande_Pret\RH_Demande_Pret_Liste.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Documents\Note de frais\Note_Frais.Designer.vb">
+      <DependentUpon>Note_Frais.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Documents\Note de frais\Note_Frais.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Documents\Note de frais\Note_Frais_Liste.designer.vb">
+      <DependentUpon>Note_Frais_Liste.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Documents\Note de frais\Note_Frais_Liste.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Documents\Ordre_Mission\Ordre_Mission.Designer.vb">
+      <DependentUpon>Ordre_Mission.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Documents\Ordre_Mission\Ordre_Mission.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Données de base\Module_Societe.vb" />
+    <Compile Include="Déclarations fiscales et sociales\RH_Parametrage_Declarations_Fiscales_Sociales.designer.vb">
+      <DependentUpon>RH_Parametrage_Declarations_Fiscales_Sociales.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Déclarations fiscales et sociales\RH_Parametrage_Declarations_Fiscales_Sociales.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Déclarations fiscales et sociales\Zoom_Annee.designer.vb">
+      <DependentUpon>Zoom_Annee.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Déclarations fiscales et sociales\Zoom_Annee.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Evaluation\Action_Evaluation.designer.vb">
+      <DependentUpon>Action_Evaluation.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Evaluation\Action_Evaluation.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Evaluation\Evaluation_Liste.designer.vb">
+      <DependentUpon>Evaluation_Liste.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Evaluation\Evaluation_Liste.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Evaluation\Evaluation.Designer.vb">
+      <DependentUpon>Evaluation.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Evaluation\Evaluation.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Evaluation\Module_Print_Evalutaion.vb" />
+    <Compile Include="Evaluation\Zoom_Evaluation_Reporter.designer.vb">
+      <DependentUpon>Zoom_Evaluation_Reporter.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Evaluation\Zoom_Evaluation_Reporter.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Formation\Formation_Action.designer.vb">
+      <DependentUpon>Formation_Action.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Formation\Formation_Action.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Formation\Formation_Types.designer.vb">
+      <DependentUpon>Formation_Types.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Formation\Formation_Types.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Formation\Formation_Cabinet.designer.vb">
+      <DependentUpon>Formation_Cabinet.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Formation\Formation_Cabinet.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Formation\Formation.Designer.vb">
+      <DependentUpon>Formation.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Formation\Formation.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Agenda\Agenda.designer.vb">
+      <DependentUpon>Agenda.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Agenda\Agenda.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Formation\Zoom_Add_Participant.designer.vb">
+      <DependentUpon>Zoom_Add_Participant.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Formation\Zoom_Add_Participant.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Formation\Zoom_Formation_Reporter.designer.vb">
+      <DependentUpon>Zoom_Formation_Reporter.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Formation\Zoom_Formation_Reporter.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Gestion des menus et écrans\Accueil_LicenceNC.designer.vb">
+      <DependentUpon>Accueil_LicenceNC.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Gestion des menus et écrans\Accueil_LicenceNC.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Auth\Zoom_Apropos_Lic.designer.vb">
+      <DependentUpon>Zoom_Apropos_Lic.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Auth\Zoom_Apropos_Lic.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Auth\Zoom_Licencing.designer.vb">
+      <DependentUpon>Zoom_Licencing.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Auth\Zoom_Licencing.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Compta\Ctb_Plan_Ana.Designer.vb">
+      <DependentUpon>Ctb_Plan_Ana.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Compta\Ctb_Plan_Ana.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Documents\Demande_Congés\RH_Conge_Provision_Import_EV.designer.vb">
+      <DependentUpon>RH_Conge_Provision_Import_EV.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Documents\Demande_Congés\RH_Conge_Provision_Import_EV.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Données de base\RH_Agent_Donnees_Diverses_Parametrage.designer.vb">
+      <DependentUpon>RH_Agent_Donnees_Diverses_Parametrage.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Données de base\RH_Agent_Donnees_Diverses_Parametrage.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Auth\Admin_ChangePwd.designer.vb">
+      <DependentUpon>Admin_ChangePwd.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Auth\Admin_ChangePwd.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Gestion des menus et écrans\Admin_Definition_Ecran.designer.vb">
+      <DependentUpon>Admin_Definition_Ecran.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Gestion des menus et écrans\Admin_Definition_Ecran.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="customUI\Ecran.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="customUI\Ecran_Container.Designer.vb">
+      <DependentUpon>Ecran_Container.vb</DependentUpon>
+    </Compile>
+    <Compile Include="customUI\Ecran_Container.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Gestion des menus et écrans\leMenu.Designer.vb">
+      <DependentUpon>leMenu.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Gestion des menus et écrans\leMenu.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Gestion des menus et écrans\Menu_System.Designer.vb">
+      <DependentUpon>Menu_System.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Gestion des menus et écrans\Menu_System.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Gestion des menus et écrans\Menu_Operationnel.Designer.vb">
+      <DependentUpon>Menu_Operationnel.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Gestion des menus et écrans\Menu_Operationnel.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Gestion des menus et écrans\Menu_Societes.Designer.vb">
+      <DependentUpon>Menu_Societes.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Gestion des menus et écrans\Menu_Societes.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Gestion des menus et écrans\Module_Show.vb" />
+    <Compile Include="Gestion des menus et écrans\Zoom_Editions.designer.vb">
+      <DependentUpon>Zoom_Editions.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Gestion des menus et écrans\Zoom_Editions.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Gestion des menus et écrans\Zoom_TraitementsSpecifiques.designer.vb">
+      <DependentUpon>Zoom_TraitementsSpecifiques.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Gestion des menus et écrans\Zoom_TraitementsSpecifiques.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GPEC\GPEC_Adequation_Poste_Profil.Designer.vb">
+      <DependentUpon>GPEC_Adequation_Poste_Profil.vb</DependentUpon>
+    </Compile>
+    <Compile Include="GPEC\GPEC_Adequation_Poste_Profil.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GPEC\GPEC_Domaines_Competence.Designer.vb">
+      <DependentUpon>GPEC_Domaines_Competence.vb</DependentUpon>
+    </Compile>
+    <Compile Include="GPEC\GPEC_Domaines_Competence.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GPEC\Module_GPEC.vb" />
+    <Compile Include="GPEC\Zoom_GPEC_Domaines_Competence.designer.vb">
+      <DependentUpon>Zoom_GPEC_Domaines_Competence.vb</DependentUpon>
+    </Compile>
+    <Compile Include="GPEC\Zoom_GPEC_Domaines_Competence.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="My Project\Resources.Designer.vb">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Notification\Notifications.designer.vb">
+      <DependentUpon>Notifications.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Notification\Notifications.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Notification\Notifications_Consultation.designer.vb">
+      <DependentUpon>Notifications_Consultation.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Notification\Notifications_Consultation.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Notification\Zoom_Notifications_Champs_TableRef.designer.vb">
+      <DependentUpon>Zoom_Notifications_Champs_TableRef.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Notification\Zoom_Notifications_Champs_TableRef.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Notification\Zoom_Notifications_Champs.designer.vb">
+      <DependentUpon>Zoom_Notifications_Champs.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Notification\Zoom_Notifications_Champs.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Organisation\Org_Poste.Designer.vb">
+      <DependentUpon>Org_Poste.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Organisation\Org_Poste.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Paie\Paramétrage paie\RH_Param_Abaques.designer.vb">
+      <DependentUpon>RH_Param_Abaques.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Paie\Paramétrage paie\RH_Param_Abaques.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Paie\Paramétrage paie\Zoom_RubriquesPredefinies.Designer.vb">
+      <DependentUpon>Zoom_RubriquesPredefinies.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Paie\Paramétrage paie\Zoom_RubriquesPredefinies.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Admin_Superviseur.designer.vb">
+      <DependentUpon>Admin_Superviseur.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Admin_Superviseur.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Admin_TreeView.designer.vb">
+      <DependentUpon>Admin_TreeView.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Admin_TreeView.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Auth\Admin_Users.designer.vb">
+      <DependentUpon>Admin_Users.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Auth\Admin_Users.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Auth\Admin_Profile.designer.vb">
+      <DependentUpon>Admin_Profile.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Auth\Admin_Profile.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Admin_Variable_Globale.designer.vb">
+      <DependentUpon>Admin_Variable_Globale.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Admin_Variable_Globale.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ApplicationEvents.vb" />
+    <Compile Include="Gestion des menus et écrans\Menu_Agent.Designer.vb">
+      <DependentUpon>Menu_Agent.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Gestion des menus et écrans\Menu_Agent.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Gestion des menus et écrans\Module_Profile_User.vb" />
+    <Compile Include="Organisation\Org_FichePoste.Designer.vb">
+      <DependentUpon>Org_FichePoste.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Organisation\Org_FichePoste.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Paie\Bulletin de paie\RH_Bulletin_Liste.designer.vb">
+      <DependentUpon>RH_Bulletin_Liste.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Paie\Bulletin de paie\RH_Bulletin_Liste.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Paie\Preparation Paie\RH_Preparation_Paie_Saisie_Import.designer.vb">
+      <DependentUpon>RH_Preparation_Paie_Saisie_Import.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Paie\Preparation Paie\RH_Preparation_Paie_Saisie_Import.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Paie\Preparation Paie\RH_Preparation_Paie_Saisie.Designer.vb">
+      <DependentUpon>RH_Preparation_Paie_Saisie.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Paie\Preparation Paie\RH_Preparation_Paie_Saisie.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Paie\Preparation Paie\Zoom_Preparation_Paie_Saisie_Add_Agent.designer.vb">
+      <DependentUpon>Zoom_Preparation_Paie_Saisie_Add_Agent.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Paie\Preparation Paie\Zoom_Preparation_Paie_Saisie_Add_Agent.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Paie\Preparation Paie\Zoom_RH_Preparation_Paie_Saisie.Designer.vb">
+      <DependentUpon>Zoom_RH_Preparation_Paie_Saisie.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Paie\Preparation Paie\Zoom_RH_Preparation_Paie_Saisie.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SimulationSalaire\GrdFilter_Simulation.Designer.vb">
+      <DependentUpon>GrdFilter_Simulation.vb</DependentUpon>
+    </Compile>
+    <Compile Include="SimulationSalaire\GrdFilter_Simulation.vb">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Paie\Paramétrage paie\Module_FonctionRubrique.vb" />
+    <Compile Include="Paie\Paramétrage paie\Zoom_Compilateur.Designer.vb">
+      <DependentUpon>Zoom_Compilateur.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Paie\Paramétrage paie\Zoom_Compilateur.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Paie\Paramétrage paie\Zoom_FsRb.Designer.vb">
+      <DependentUpon>Zoom_FsRb.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Paie\Paramétrage paie\Zoom_FsRb.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Paie\Paramétrage paie\RH_Parametrage_JournalPaie.designer.vb">
+      <DependentUpon>RH_Parametrage_JournalPaie.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Paie\Paramétrage paie\RH_Parametrage_JournalPaie.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Paie\Preparation Paie\PayRollEngine.vb" />
+    <Compile Include="Paie\Prêts\RH_Pret.Designer.vb">
+      <DependentUpon>RH_Pret.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Paie\Prêts\RH_Pret.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Recrutement\CVTheque.designer.vb">
+      <DependentUpon>CVTheque.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Recrutement\CVTheque.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GPEC\GPEC_RegistreCompetences.designer.vb">
+      <DependentUpon>GPEC_RegistreCompetences.vb</DependentUpon>
+    </Compile>
+    <Compile Include="GPEC\GPEC_RegistreCompetences.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Recrutement\Entretien.Designer.vb">
+      <DependentUpon>Entretien.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Recrutement\Entretien.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Recrutement\Recrutement.Designer.vb">
+      <DependentUpon>Recrutement.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Recrutement\Recrutement.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Recrutement\Recrutement_Demande.Designer.vb">
+      <DependentUpon>Recrutement_Demande.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Recrutement\Recrutement_Demande.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Recrutement\Recrutement_Demande_Liste.designer.vb">
+      <DependentUpon>Recrutement_Demande_Liste.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Recrutement\Recrutement_Demande_Liste.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Recrutement\Zoom_Planning_Entretien.Designer.vb">
+      <DependentUpon>Zoom_Planning_Entretien.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Recrutement\Zoom_Planning_Entretien.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Survey\Print\Module_Print_Survey.vb" />
+    <Compile Include="Survey\survey_components\ud_grille_libre.Designer.vb">
+      <DependentUpon>ud_grille_libre.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Survey\survey_components\ud_grille_libre.vb">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Survey\survey_components\ud_pattern.vb">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Survey\Zoom_Survey_Editeur_Formule.Designer.vb">
+      <DependentUpon>Zoom_Survey_Editeur_Formule.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Survey\Zoom_Survey_Editeur_Formule.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="VSEngine\UiPerf.vb" />
+    <Compile Include="Workflow\Agent_Parapheur.Designer.vb">
+      <DependentUpon>Agent_Parapheur.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Workflow\Agent_Parapheur.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Workflow\Agent_Suppleant.designer.vb">
+      <DependentUpon>Agent_Suppleant.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Workflow\Agent_Suppleant.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Workflow\Module_Workflow.vb">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Workflow\Workflow_Signatures.designer.vb">
+      <DependentUpon>Workflow_Signatures.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Workflow\Workflow_Signatures.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Workflow\Zoom_Signataires.designer.vb">
+      <DependentUpon>Zoom_Signataires.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Workflow\Zoom_Signataires.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Workflow\Zoom_Signataire_Tables.Designer.vb">
+      <DependentUpon>Zoom_Signataire_Tables.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Workflow\Zoom_Signataire_Tables.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Workflow\Zoom_Signataire_Condition.Designer.vb">
+      <DependentUpon>Zoom_Signataire_Condition.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Workflow\Zoom_Signataire_Condition.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Workflow\Zoom_Signataire_Relation.Designer.vb">
+      <DependentUpon>Zoom_Signataire_Relation.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Workflow\Zoom_Signataire_Relation.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Zoom\Admin_Def_Zoom.designer.vb">
+      <DependentUpon>Admin_Def_Zoom.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Zoom\Admin_Def_Zoom.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Compta\Ctb_Plan_Ctb.designer.vb">
+      <DependentUpon>Ctb_Plan_Ctb.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Compta\Ctb_Plan_Ctb.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Déclarations fiscales et sociales\Cnss_DamanCom.designer.vb">
+      <DependentUpon>Cnss_DamanCom.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Déclarations fiscales et sociales\Cnss_DamanCom.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Déclarations fiscales et sociales\Cnss_DamanCom_Import.designer.vb">
+      <DependentUpon>Cnss_DamanCom_Import.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Déclarations fiscales et sociales\Cnss_DamanCom_Import.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Déclarations fiscales et sociales\DamanComEDI.vb" />
+    <Compile Include="Données de base\Param_Periode_Paie.designer.vb">
+      <DependentUpon>Param_Periode_Paie.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Données de base\Param_Periode_Paie.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Déclarations fiscales et sociales\IR_Benefeciaires.designer.vb">
+      <DependentUpon>IR_Benefeciaires.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Déclarations fiscales et sociales\IR_Benefeciaires.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Déclarations fiscales et sociales\IR_Doctorants.designer.vb">
+      <DependentUpon>IR_Doctorants.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Déclarations fiscales et sociales\IR_Doctorants.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Déclarations fiscales et sociales\IR_Exoneres.designer.vb">
+      <DependentUpon>IR_Exoneres.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Déclarations fiscales et sociales\IR_Exoneres.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Déclarations fiscales et sociales\IR_Occasionnel.designer.vb">
+      <DependentUpon>IR_Occasionnel.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Déclarations fiscales et sociales\IR_Occasionnel.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Déclarations fiscales et sociales\IR_Permanents_Exonore.designer.vb">
+      <DependentUpon>IR_Permanents_Exonore.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Déclarations fiscales et sociales\IR_Permanents_Exonore.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Déclarations fiscales et sociales\IR_Stagiaires.designer.vb">
+      <DependentUpon>IR_Stagiaires.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Déclarations fiscales et sociales\IR_Stagiaires.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Déclarations fiscales et sociales\IR_XML.Designer.vb">
+      <DependentUpon>IR_XML.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Déclarations fiscales et sociales\IR_XML.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GED\Zoom_GED_Properties.Designer.vb">
+      <DependentUpon>Zoom_GED_Properties.vb</DependentUpon>
+    </Compile>
+    <Compile Include="GED\Zoom_GED_Properties.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="InfinityTU\Module_infinity.vb" />
+    <Compile Include="InfinityTU\Thinfinity.VirtualUI.vb" />
+    <Compile Include="Paie\Preparation Paie\GrdFilter.Designer.vb">
+      <DependentUpon>GrdFilter.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Paie\Preparation Paie\GrdFilter.vb">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Documents\Demande_Congés\RH_Conge_Provision.Designer.vb">
+      <DependentUpon>RH_Conge_Provision.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Documents\Demande_Congés\RH_Conge_Provision.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Documents\Demande_Avance\Saisie_Massive_Avances.Designer.vb">
+      <DependentUpon>Saisie_Massive_Avances.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Documents\Demande_Avance\Saisie_Massive_Avances.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Documents\Demande_Avance\Saisie_Massive_Avances_Import.designer.vb">
+      <DependentUpon>Saisie_Massive_Avances_Import.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Documents\Demande_Avance\Saisie_Massive_Avances_Import.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Paie\Preparation Paie\RH_Preparation_Paie_Import_EV.designer.vb">
+      <DependentUpon>RH_Preparation_Paie_Import_EV.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Paie\Preparation Paie\RH_Preparation_Paie_Import_EV.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Documents\Demande de remboursement Assurances\RH_Dossier_Maladie.Designer.vb">
+      <DependentUpon>RH_Dossier_Maladie.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Documents\Demande de remboursement Assurances\RH_Dossier_Maladie.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Documents\Demande_Pret\RH_Demande_Pret.Designer.vb">
+      <DependentUpon>RH_Demande_Pret.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Documents\Demande_Pret\RH_Demande_Pret.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Documents\Demande_Avance\RH_Demande_Avance.Designer.vb">
+      <DependentUpon>RH_Demande_Avance.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Documents\Demande_Avance\RH_Demande_Avance.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SimulationSalaire\RH_Simulation.Designer.vb">
+      <DependentUpon>RH_Simulation.vb</DependentUpon>
+    </Compile>
+    <Compile Include="SimulationSalaire\RH_Simulation.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Paie\Preparation Paie\RH_Preparation_Paie_SelectionFiltree.Designer.vb">
+      <DependentUpon>RH_Preparation_Paie_SelectionFiltree.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Paie\Preparation Paie\RH_Preparation_Paie_SelectionFiltree.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Paie\Preparation Paie\Zoom_Generation_NetToBrut.designer.vb">
+      <DependentUpon>Zoom_Generation_NetToBrut.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Paie\Preparation Paie\Zoom_Generation_NetToBrut.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Paie\Preparation Paie\Zoom_RH_Preparation_Paie_RegenrationEV.Designer.vb">
+      <DependentUpon>Zoom_RH_Preparation_Paie_RegenrationEV.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Paie\Preparation Paie\Zoom_RH_Preparation_Paie_RegenrationEV.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SimulationSalaire\Zoom_Simulation_Calculinverse.Designer.vb">
+      <DependentUpon>Zoom_Simulation_Calculinverse.vb</DependentUpon>
+    </Compile>
+    <Compile Include="SimulationSalaire\Zoom_Simulation_Calculinverse.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Paie\Preparation Paie\Zoom_Preparation_Paie_Add_Agent.designer.vb">
+      <DependentUpon>Zoom_Preparation_Paie_Add_Agent.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Paie\Preparation Paie\Zoom_Preparation_Paie_Add_Agent.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Modules\Module_Conversion.vb" />
+    <Compile Include="Modules\Module_Xml_Dictionnary.vb" />
+    <Compile Include="Gestion des menus et écrans\Module_DPI.vb" />
+    <Compile Include="Organisation\Org_Evolution_Carriere.Designer.vb">
+      <DependentUpon>Org_Evolution_Carriere.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Organisation\Org_Evolution_Carriere.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Données de base\DB_Societe.designer.vb">
+      <DependentUpon>DB_Societe.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Données de base\DB_Societe.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Déclarations fiscales et sociales\IR_Permanents.designer.vb">
+      <DependentUpon>IR_Permanents.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Déclarations fiscales et sociales\IR_Permanents.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Déclarations fiscales et sociales\IR_Import.designer.vb">
+      <DependentUpon>IR_Import.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Déclarations fiscales et sociales\IR_Import.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Organisation\Org_Affectation_RH.Designer.vb">
+      <DependentUpon>Org_Affectation_RH.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Organisation\Org_Affectation_RH.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Organisation\Org_Grade.Designer.vb">
+      <DependentUpon>Org_Grade.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Organisation\Org_Grade.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Organisation\Org_Organigramme.designer.vb">
+      <DependentUpon>Org_Organigramme.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Organisation\Org_Organigramme.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Organisation\Org_Organigram_Element.designer.vb">
+      <DependentUpon>Org_Organigram_Element.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Organisation\Org_Organigram_Element.vb">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Organisation\Org_Poste_Old.Designer.vb">
+      <DependentUpon>Org_Poste_Old.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Organisation\Org_Poste_Old.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Param_Jours_Feries.Designer.vb">
+      <DependentUpon>Param_Jours_Feries.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Param_Jours_Feries.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Documents\Demande_Congés\RH_Demande_Conge_Liste.designer.vb">
+      <DependentUpon>RH_Demande_Conge_Liste.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Documents\Demande_Congés\RH_Demande_Conge_Liste.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Documents\Demande_Congés\RH_Demande_Conge.Designer.vb">
+      <DependentUpon>RH_Demande_Conge.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Documents\Demande_Congés\RH_Demande_Conge.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Déclarations fiscales et sociales\RH_Parametrage_Declarations_Fiscales_Sociales_Old.designer.vb">
+      <DependentUpon>RH_Parametrage_Declarations_Fiscales_Sociales_Old.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Déclarations fiscales et sociales\RH_Parametrage_Declarations_Fiscales_Sociales_Old.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Paie\Paramétrage paie\RH_Parametrage_Bulletin_Paie.designer.vb">
+      <DependentUpon>RH_Parametrage_Bulletin_Paie.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Paie\Paramétrage paie\RH_Parametrage_Bulletin_Paie.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Données de base\RH_Agent_Liste.designer.vb">
+      <DependentUpon>RH_Agent_Liste.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Données de base\RH_Agent_Liste.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Modules\ListViewColumnSorter.vb" />
+    <Compile Include="SendMail\Mailing_Destinataires.Designer.vb">
+      <DependentUpon>Mailing_Destinataires.vb</DependentUpon>
+    </Compile>
+    <Compile Include="SendMail\Mailing_Destinataires.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Modules\Module_Comptabilite_Import.vb" />
+    <Compile Include="Modules\Module_SimilitudeString.vb" />
+    <Compile Include="Zoom\Module_Zoom.vb" />
+    <Compile Include="SendMail\Mailing_Dest_Import.designer.vb">
+      <DependentUpon>Mailing_Dest_Import.vb</DependentUpon>
+    </Compile>
+    <Compile Include="SendMail\Mailing_Dest_Import.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SendMail\Mailing_List.designer.vb">
+      <DependentUpon>Mailing_List.vb</DependentUpon>
+    </Compile>
+    <Compile Include="SendMail\Mailing_List.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="customUI\ud_PanelWait.designer.vb">
+      <DependentUpon>ud_PanelWait.vb</DependentUpon>
+    </Compile>
+    <Compile Include="customUI\ud_PanelWait.vb">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Paie\Paramétrage paie\RH_Functions.designer.vb">
+      <DependentUpon>RH_Functions.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Paie\Paramétrage paie\RH_Functions.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Données de base\RH_Agent_Import.designer.vb">
+      <DependentUpon>RH_Agent_Import.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Données de base\RH_Agent_Import.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Paie\Paramétrage paie\RH_Rubrique_Copie.designer.vb">
+      <DependentUpon>RH_Rubrique_Copie.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Paie\Paramétrage paie\RH_Rubrique_Copie.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Paiement\RH_Paiement.Designer.vb">
+      <DependentUpon>RH_Paiement.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Paiement\RH_Paiement.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Survey\Module_Generateur_Survey.vb" />
+    <Compile Include="Survey\Survey.designer.vb">
+      <DependentUpon>Survey.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Survey\Survey.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Survey\survey_components\ud_valeur_unique.Designer.vb">
+      <DependentUpon>ud_valeur_unique.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Survey\survey_components\ud_valeur_unique.vb">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Survey\survey_components\ud_paragraph.Designer.vb">
+      <DependentUpon>ud_paragraph.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Survey\survey_components\ud_paragraph.vb">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Survey\survey_components\ud_grille_choix.Designer.vb">
+      <DependentUpon>ud_grille_choix.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Survey\survey_components\ud_grille_choix.vb">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Survey\survey_components\ud_grille_cases.Designer.vb">
+      <DependentUpon>ud_grille_cases.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Survey\survey_components\ud_grille_cases.vb">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Formation\Formation_Evaluation.Designer.vb">
+      <DependentUpon>Formation_Evaluation.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Formation\Formation_Evaluation.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Survey\Survey_render.Designer.vb">
+      <DependentUpon>Survey_render.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Survey\Survey_render.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Survey\Zoom_Survey_Typ_Reponse_Help.Designer.vb">
+      <DependentUpon>Zoom_Survey_Typ_Reponse_Help.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Survey\Zoom_Survey_Typ_Reponse_Help.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="customUI\ud_RichTextBox.designer.vb">
+      <DependentUpon>ud_RichTextBox.vb</DependentUpon>
+    </Compile>
+    <Compile Include="customUI\ud_RichTextBox.vb">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Modules\Module_DragDrop.vb" />
+    <Compile Include="Modules\Module_Favoris.vb" />
+    <Compile Include="VSEngine\vsEngine.vb" />
+    <Compile Include="SuperGrd_Detail.vb">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="SuperGrd_Master.vb">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="SuperGrd_Module.vb" />
+    <Compile Include="ud_RT.Designer.vb">
+      <DependentUpon>ud_RT.vb</DependentUpon>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Compile>
+    <Compile Include="ud_RT.vb">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Zoom_Chercher.designer.vb">
+      <DependentUpon>Zoom_Chercher.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Zoom_Chercher.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Déclarations fiscales et sociales\Zoom_Cnss_Damancom_Agence.designer.vb">
+      <DependentUpon>Zoom_Cnss_Damancom_Agence.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Déclarations fiscales et sociales\Zoom_Cnss_Damancom_Agence.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Déclarations fiscales et sociales\Zoom_Cnss_Damancom_Preetabli.designer.vb">
+      <DependentUpon>Zoom_Cnss_Damancom_Preetabli.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Déclarations fiscales et sociales\Zoom_Cnss_Damancom_Preetabli.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Organisation\Zoom_Org_Organigramme_Affectation.designer.vb">
+      <DependentUpon>Zoom_Org_Organigramme_Affectation.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Organisation\Zoom_Org_Organigramme_Affectation.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Organisation\Zoom_Org_Organigramme.designer.vb">
+      <DependentUpon>Zoom_Org_Organigramme.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Organisation\Zoom_Org_Organigramme.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Organisation\Zoom_Org_Organigramme_ListeAgent.Designer.vb">
+      <DependentUpon>Zoom_Org_Organigramme_ListeAgent.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Organisation\Zoom_Org_Organigramme_ListeAgent.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Données de base\Zoom_PPeriodeAjouter.designer.vb">
+      <DependentUpon>Zoom_PPeriodeAjouter.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Données de base\Zoom_PPeriodeAjouter.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Paie\Paramétrage paie\Zoom_RH_Editeur_Formule.Designer.vb">
+      <DependentUpon>Zoom_RH_Editeur_Formule.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Paie\Paramétrage paie\Zoom_RH_Editeur_Formule.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Paie\Preparation Paie\Zoom_RH_Preparation_Paie.Designer.vb">
+      <DependentUpon>Zoom_RH_Preparation_Paie.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Paie\Preparation Paie\Zoom_RH_Preparation_Paie.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Paie\Paramétrage paie\Zoom_Rubrique_Relation.Designer.vb">
+      <DependentUpon>Zoom_Rubrique_Relation.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Paie\Paramétrage paie\Zoom_Rubrique_Relation.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Zoom_Import_Affectation_Champs.designer.vb">
+      <DependentUpon>Zoom_Import_Affectation_Champs.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Zoom_Import_Affectation_Champs.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Editions\Zoom_Edition_Odbc.designer.vb">
+      <DependentUpon>Zoom_Edition_Odbc.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Editions\Zoom_Edition_Odbc.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Requeteur\Zoom_NombreFormat.designer.vb">
+      <DependentUpon>Zoom_NombreFormat.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Requeteur\Zoom_NombreFormat.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Requeteur\Zoom_PivotAjouterChamps.designer.vb">
+      <DependentUpon>Zoom_PivotAjouterChamps.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Requeteur\Zoom_PivotAjouterChamps.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Requeteur\Zoom_PivotGridTopValue.designer.vb">
+      <DependentUpon>Zoom_PivotGridTopValue.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Requeteur\Zoom_PivotGridTopValue.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Zoom_Profile_Scripts.designer.vb">
+      <DependentUpon>Zoom_Profile_Scripts.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Zoom_Profile_Scripts.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Zoom_FiltreAvance.Designer.vb">
+      <DependentUpon>Zoom_FiltreAvance.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Zoom_FiltreAvance.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Zoom_Hibilitation.designer.vb">
+      <DependentUpon>Zoom_Hibilitation.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Zoom_Hibilitation.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Modules\Module_Formules_Conditions.vb" />
+    <Compile Include="GED\TC_GED.designer.vb">
+      <DependentUpon>TC_GED.vb</DependentUpon>
+    </Compile>
+    <Compile Include="GED\TC_GED.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Zoom_Alerte.Designer.vb">
+      <DependentUpon>Zoom_Alerte.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Zoom_Alerte.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Modules\Module_Timer_Alertes.vb" />
+    <Compile Include="TimeTxt.vb">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Zoom_PBar.designer.vb">
+      <DependentUpon>Zoom_PBar.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Zoom_PBar.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Modules\Module_Msg.vb" />
+    <Compile Include="Zoom_Alerte_Msg.Designer.vb">
+      <DependentUpon>Zoom_Alerte_Msg.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Zoom_Alerte_Msg.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Documents\Demande_Congés\RH_Cloture_Paie.designer.vb">
+      <DependentUpon>RH_Cloture_Paie.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Documents\Demande_Congés\RH_Cloture_Paie.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Modules\Module_RH.vb" />
+    <Compile Include="Paie\Paramétrage paie\Zoom_RH_Saisie_EV.designer.vb">
+      <DependentUpon>Zoom_RH_Saisie_EV.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Paie\Paramétrage paie\Zoom_RH_Saisie_EV.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Paie\Preparation Paie\RH_Preparation_Paie.designer.vb">
+      <DependentUpon>RH_Preparation_Paie.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Paie\Preparation Paie\RH_Preparation_Paie.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Paie\Paramétrage paie\RH_Parametrage_Plan_Paie.designer.vb">
+      <DependentUpon>RH_Parametrage_Plan_Paie.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Paie\Paramétrage paie\RH_Parametrage_Plan_Paie.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Paie\Paramétrage paie\RH_Parametrage_Rubrique_Paie.designer.vb">
+      <DependentUpon>RH_Parametrage_Rubrique_Paie.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Paie\Paramétrage paie\RH_Parametrage_Rubrique_Paie.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SendMail\Admin_Messagerie.designer.vb">
+      <DependentUpon>Admin_Messagerie.vb</DependentUpon>
+    </Compile>
+    <Compile Include="SendMail\Admin_Messagerie.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Param_Abonnement.designer.vb">
+      <DependentUpon>Param_Abonnement.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Param_Abonnement.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SendMail\Module_Mailing.vb" />
+    <Compile Include="SendMail\Mailing.designer.vb">
+      <DependentUpon>Mailing.vb</DependentUpon>
+    </Compile>
+    <Compile Include="SendMail\Mailing.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Modules\Module_Internet.vb" />
+    <Compile Include="Données de base\RH_Agent.designer.vb">
+      <DependentUpon>RH_Agent.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Données de base\RH_Agent.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Modules\Module_Initialisation.vb" />
+    <Compile Include="Sys_GenerationGlobale.designer.vb">
+      <DependentUpon>Sys_GenerationGlobale.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Sys_GenerationGlobale.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Modules\Module_Timer_Abonnement.vb" />
+    <Compile Include="Modules\Module_Acces_Security.vb" />
+    <Compile Include="Modules\Module_AutoCompeleTextBox.vb" />
+    <Compile Include="Modules\Module_CheckMouvemente.vb" />
+    <Compile Include="Modules\Module_ContextMenuStrip.vb" />
+    <Compile Include="Modules\Module_Datetime.vb" />
+    <Compile Include="Modules\Module_Declaration_Var.vb" />
+    <Compile Include="Modules\Module_Diviseurs.vb" />
+    <Compile Include="Modules\Module_DragAndDrop.vb" />
+    <Compile Include="Modules\Module_ElementFacturation.vb" />
+    <Compile Include="Modules\Module_EncryptoGraphie.vb" />
+    <Compile Include="Modules\Module_EstAxeAna.vb" />
+    <Compile Include="Modules\Module_ExportToExcel.vb" />
+    <Compile Include="Modules\Module_General.vb" />
+    <Compile Include="Modules\Module_GestionReliquat.vb" />
+    <Compile Include="Modules\Module_Import_Donnees.vb" />
+    <Compile Include="Modules\Module_LecteurDisques.vb" />
+    <Compile Include="Auth\Module_Licence.vb" />
+    <Compile Include="Modules\Module_PhotoGestionnaire.vb" />
+    <Compile Include="Zoom\Module_PositionToScreen.vb" />
+    <Compile Include="Modules\Module_PrintingQuery.vb" />
+    <Compile Include="Modules\Module_Query.vb" />
+    <Compile Include="Modules\Module_Repertoires.vb" />
+    <Compile Include="My Project\AssemblyInfo.vb" />
+    <Compile Include="My Project\Application.Designer.vb">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Application.myapp</DependentUpon>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="My Project\Settings.Designer.vb">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+    <Compile Include="Param_General.designer.vb">
+      <DependentUpon>Param_General.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Param_General.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Editions\Param_Modele_Edition.designer.vb">
+      <DependentUpon>Param_Modele_Edition.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Editions\Param_Modele_Edition.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Editions\Param_Modele_Edition_Saisi.designer.vb">
+      <DependentUpon>Param_Modele_Edition_Saisi.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Editions\Param_Modele_Edition_Saisi.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Requeteur\Param_Query.designer.vb">
+      <DependentUpon>Param_Query.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Requeteur\Param_Query.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Requeteur\Param_Query_Saisi.designer.vb">
+      <DependentUpon>Param_Query_Saisi.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Requeteur\Param_Query_Saisi.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Param_Rubriques.designer.vb">
+      <DependentUpon>Param_Rubriques.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Param_Rubriques.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Param_Ville.designer.vb">
+      <DependentUpon>Param_Ville.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Param_Ville.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Zoom\Zoom.designer.vb">
+      <DependentUpon>Zoom.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Zoom\Zoom.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Compta\Zoom_Ana.designer.vb">
+      <DependentUpon>Zoom_Ana.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Compta\Zoom_Ana.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GED\Zoom_GED.designer.vb">
+      <DependentUpon>Zoom_GED.vb</DependentUpon>
+    </Compile>
+    <Compile Include="GED\Zoom_GED.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Zoom\Zoom_Combo.designer.vb">
+      <DependentUpon>Zoom_Combo.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Zoom\Zoom_Combo.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Zoom\Zoom_Calender.designer.vb">
+      <DependentUpon>Zoom_Calender.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Zoom\Zoom_Calender.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Zoom\Zoom_Calender_Blocage.designer.vb">
+      <DependentUpon>Zoom_Calender_Blocage.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Zoom\Zoom_Calender_Blocage.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Zoom_Libre.designer.vb">
+      <DependentUpon>Zoom_Libre.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Zoom_Libre.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Zoom_Mail.designer.vb">
+      <DependentUpon>Zoom_Mail.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Zoom_Mail.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Zoom_Progress.designer.vb">
+      <DependentUpon>Zoom_Progress.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Zoom_Progress.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Requeteur\Zoom_QueryPrinter.designer.vb">
+      <DependentUpon>Zoom_QueryPrinter.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Requeteur\Zoom_QueryPrinter.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Données de base\Zoom_Societe_Duplication.Designer.vb">
+      <DependentUpon>Zoom_Societe_Duplication.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Données de base\Zoom_Societe_Duplication.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Requeteur\Zoom_SqlText.designer.vb">
+      <DependentUpon>Zoom_SqlText.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Requeteur\Zoom_SqlText.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Requeteur\Zoom_Typ_Graph.Designer.vb">
+      <DependentUpon>Zoom_Typ_Graph.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Requeteur\Zoom_Typ_Graph.vb">
+      <SubType>Form</SubType>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Audit\Consultation_Audit_Espion.resx">
+      <DependentUpon>Consultation_Audit_Espion.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Audit\Param_Audit.resx">
+      <DependentUpon>Param_Audit.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Auth\Admin_ChangePwd_Agent.resx">
+      <DependentUpon>Admin_ChangePwd_Agent.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Auth\Login_Connection.resx">
+      <DependentUpon>Login_Connection.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Auth\Login_Demarrage.resx">
+      <DependentUpon>Login_Demarrage.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Auth\Login.resx">
+      <DependentUpon>Login.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="customUI\MessageBox\ud_InputBox.resx">
+      <DependentUpon>ud_InputBox.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="customUI\MessageBox\ud_MessageBox.resx">
+      <DependentUpon>ud_MessageBox.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="customUI\ud_9421.resx">
+      <DependentUpon>ud_9421.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="customUI\ud_9421_old.resx">
+      <DependentUpon>ud_9421_old.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="customUI\ud_button.resx">
+      <DependentUpon>ud_button.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="customUI\ud_btn.resx">
+      <DependentUpon>ud_btn.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="customUI\ud_CardItem.resx">
+      <DependentUpon>ud_CardItem.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="customUI\ud_CardSoc _Small.resx">
+      <DependentUpon>ud_CardSoc _Small.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="customUI\ud_CardSoc.resx">
+      <DependentUpon>ud_CardSoc.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="customUI\ud_CheckBox.resx">
+      <DependentUpon>ud_CheckBox.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="customUI\ud_ComboBox.resx">
+      <DependentUpon>ud_ComboBox.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="customUI\ud_Domaine_Competence.resx">
+      <DependentUpon>ud_Domaine_Competence.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="customUI\ud_pathBar.resx">
+      <DependentUpon>ud_pathBar.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="customUI\ud_RadioBox.resx">
+      <DependentUpon>ud_RadioBox.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="customUI\ud_rubriqueLbl.resx">
+      <DependentUpon>ud_rubriqueLbl.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="customUI\ud_TextBox.resx">
+      <DependentUpon>ud_TextBox.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="customUI\Wait.resx">
+      <DependentUpon>Wait.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Documents\Demande de remboursement Assurances\RH_Dossier_Maladie_Liste.resx">
+      <DependentUpon>RH_Dossier_Maladie_Liste.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Documents\Demande_Avance\RH_Demande_Avance_Liste.resx">
+      <DependentUpon>RH_Demande_Avance_Liste.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Compta\Ctb_Compta_Caisse_Banque.resx">
+      <DependentUpon>Ctb_Compta_Caisse_Banque.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Documents\Demande_Pret\RH_Demande_Pret_Liste.resx">
+      <DependentUpon>RH_Demande_Pret_Liste.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Documents\Note de frais\Note_Frais.resx">
+      <DependentUpon>Note_Frais.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Documents\Note de frais\Note_Frais_Liste.resx">
+      <DependentUpon>Note_Frais_Liste.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Documents\Ordre_Mission\Ordre_Mission.resx">
+      <DependentUpon>Ordre_Mission.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Déclarations fiscales et sociales\RH_Parametrage_Declarations_Fiscales_Sociales.resx">
+      <DependentUpon>RH_Parametrage_Declarations_Fiscales_Sociales.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Déclarations fiscales et sociales\Zoom_Annee.resx">
+      <DependentUpon>Zoom_Annee.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Evaluation\Action_Evaluation.resx">
+      <DependentUpon>Action_Evaluation.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Evaluation\Evaluation_Liste.resx">
+      <DependentUpon>Evaluation_Liste.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Evaluation\Evaluation.resx">
+      <DependentUpon>Evaluation.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Evaluation\Zoom_Evaluation_Reporter.resx">
+      <DependentUpon>Zoom_Evaluation_Reporter.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Formation\Formation_Action.resx">
+      <DependentUpon>Formation_Action.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Formation\Formation_Types.resx">
+      <DependentUpon>Formation_Types.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Formation\Formation_Cabinet.resx">
+      <DependentUpon>Formation_Cabinet.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Formation\Formation.resx">
+      <DependentUpon>Formation.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Agenda\Agenda.resx">
+      <DependentUpon>Agenda.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Formation\Zoom_Add_Participant.resx">
+      <DependentUpon>Zoom_Add_Participant.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Formation\Zoom_Formation_Reporter.resx">
+      <DependentUpon>Zoom_Formation_Reporter.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Gestion des menus et écrans\Accueil_LicenceNC.resx">
+      <DependentUpon>Accueil_LicenceNC.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Auth\Zoom_Apropos_Lic.resx">
+      <DependentUpon>Zoom_Apropos_Lic.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Auth\Zoom_Licencing.resx">
+      <DependentUpon>Zoom_Licencing.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Compta\Ctb_Plan_Ana.resx">
+      <DependentUpon>Ctb_Plan_Ana.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Documents\Demande_Congés\RH_Conge_Provision_Import_EV.resx">
+      <DependentUpon>RH_Conge_Provision_Import_EV.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Données de base\RH_Agent_Donnees_Diverses_Parametrage.resx">
+      <DependentUpon>RH_Agent_Donnees_Diverses_Parametrage.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Auth\Admin_ChangePwd.resx">
+      <DependentUpon>Admin_ChangePwd.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Gestion des menus et écrans\Admin_Definition_Ecran.resx">
+      <DependentUpon>Admin_Definition_Ecran.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="customUI\Ecran.resx">
+      <DependentUpon>Ecran.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="customUI\Ecran_Container.resx">
+      <DependentUpon>Ecran_Container.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Gestion des menus et écrans\leMenu.resx">
+      <DependentUpon>leMenu.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Gestion des menus et écrans\Menu_System.resx">
+      <DependentUpon>Menu_System.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Gestion des menus et écrans\Menu_Operationnel.resx">
+      <DependentUpon>Menu_Operationnel.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Gestion des menus et écrans\Menu_Societes.resx">
+      <DependentUpon>Menu_Societes.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Gestion des menus et écrans\Zoom_Editions.resx">
+      <DependentUpon>Zoom_Editions.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Gestion des menus et écrans\Zoom_TraitementsSpecifiques.resx">
+      <DependentUpon>Zoom_TraitementsSpecifiques.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GPEC\GPEC_Adequation_Poste_Profil.resx">
+      <DependentUpon>GPEC_Adequation_Poste_Profil.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GPEC\GPEC_Domaines_Competence.resx">
+      <DependentUpon>GPEC_Domaines_Competence.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GPEC\Zoom_GPEC_Domaines_Competence.resx">
+      <DependentUpon>Zoom_GPEC_Domaines_Competence.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Notification\Notifications.resx">
+      <DependentUpon>Notifications.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Notification\Notifications_Consultation.resx">
+      <DependentUpon>Notifications_Consultation.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Notification\Zoom_Notifications_Champs_TableRef.resx">
+      <DependentUpon>Zoom_Notifications_Champs_TableRef.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Notification\Zoom_Notifications_Champs.resx">
+      <DependentUpon>Zoom_Notifications_Champs.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Organisation\Org_Poste.resx">
+      <DependentUpon>Org_Poste.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Paie\Paramétrage paie\RH_Param_Abaques.resx">
+      <DependentUpon>RH_Param_Abaques.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Paie\Paramétrage paie\Zoom_RubriquesPredefinies.resx">
+      <DependentUpon>Zoom_RubriquesPredefinies.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Admin_Superviseur.resx">
+      <DependentUpon>Admin_Superviseur.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Admin_TreeView.resx">
+      <DependentUpon>Admin_TreeView.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Auth\Admin_Users.resx">
+      <DependentUpon>Admin_Users.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Auth\Admin_Profile.resx">
+      <DependentUpon>Admin_Profile.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Admin_Variable_Globale.resx">
+      <DependentUpon>Admin_Variable_Globale.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Gestion des menus et écrans\Menu_Agent.resx">
+      <DependentUpon>Menu_Agent.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Organisation\Org_FichePoste.resx">
+      <DependentUpon>Org_FichePoste.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Paie\Bulletin de paie\RH_Bulletin_Liste.resx">
+      <DependentUpon>RH_Bulletin_Liste.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Paie\Preparation Paie\RH_Preparation_Paie_Saisie_Import.resx">
+      <DependentUpon>RH_Preparation_Paie_Saisie_Import.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Paie\Preparation Paie\RH_Preparation_Paie_Saisie.resx">
+      <DependentUpon>RH_Preparation_Paie_Saisie.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Paie\Preparation Paie\Zoom_Preparation_Paie_Saisie_Add_Agent.resx">
+      <DependentUpon>Zoom_Preparation_Paie_Saisie_Add_Agent.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Paie\Preparation Paie\Zoom_RH_Preparation_Paie_Saisie.resx">
+      <DependentUpon>Zoom_RH_Preparation_Paie_Saisie.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SimulationSalaire\GrdFilter_Simulation.resx">
+      <DependentUpon>GrdFilter_Simulation.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="My Project\licenses.licx" />
+    <EmbeddedResource Include="Paie\Paramétrage paie\Zoom_Compilateur.resx">
+      <DependentUpon>Zoom_Compilateur.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Paie\Paramétrage paie\Zoom_FsRb.resx">
+      <DependentUpon>Zoom_FsRb.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Paie\Paramétrage paie\RH_Parametrage_JournalPaie.resx">
+      <DependentUpon>RH_Parametrage_JournalPaie.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Paie\Prêts\RH_Pret.resx">
+      <DependentUpon>RH_Pret.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Recrutement\CVTheque.resx">
+      <DependentUpon>CVTheque.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GPEC\GPEC_RegistreCompetences.resx">
+      <DependentUpon>GPEC_RegistreCompetences.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Recrutement\Entretien.resx">
+      <DependentUpon>Entretien.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Recrutement\Recrutement.resx">
+      <DependentUpon>Recrutement.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Recrutement\Recrutement_Demande.resx">
+      <DependentUpon>Recrutement_Demande.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Recrutement\Recrutement_Demande_Liste.resx">
+      <DependentUpon>Recrutement_Demande_Liste.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Recrutement\Zoom_Planning_Entretien.resx">
+      <DependentUpon>Zoom_Planning_Entretien.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Survey\survey_components\ud_grille_libre.resx">
+      <DependentUpon>ud_grille_libre.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Survey\Zoom_Survey_Editeur_Formule.resx">
+      <DependentUpon>Zoom_Survey_Editeur_Formule.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Workflow\Agent_Parapheur.resx">
+      <DependentUpon>Agent_Parapheur.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Workflow\Agent_Suppleant.resx">
+      <DependentUpon>Agent_Suppleant.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Workflow\Workflow_Signatures.resx">
+      <DependentUpon>Workflow_Signatures.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Workflow\Zoom_Signataires.resx">
+      <DependentUpon>Zoom_Signataires.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Workflow\Zoom_Signataire_Tables.resx">
+      <DependentUpon>Zoom_Signataire_Tables.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Workflow\Zoom_Signataire_Condition.resx">
+      <DependentUpon>Zoom_Signataire_Condition.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Workflow\Zoom_Signataire_Relation.resx">
+      <DependentUpon>Zoom_Signataire_Relation.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Zoom\Admin_Def_Zoom.resx">
+      <DependentUpon>Admin_Def_Zoom.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Compta\Ctb_Plan_Ctb.resx">
+      <DependentUpon>Ctb_Plan_Ctb.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Déclarations fiscales et sociales\Cnss_DamanCom.resx">
+      <DependentUpon>Cnss_DamanCom.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Déclarations fiscales et sociales\Cnss_DamanCom_Import.resx">
+      <DependentUpon>Cnss_DamanCom_Import.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Données de base\DB_Societe.resx">
+      <DependentUpon>DB_Societe.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Données de base\Param_Periode_Paie.resx">
+      <DependentUpon>Param_Periode_Paie.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Déclarations fiscales et sociales\IR_Benefeciaires.resx">
+      <DependentUpon>IR_Benefeciaires.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Déclarations fiscales et sociales\IR_Doctorants.resx">
+      <DependentUpon>IR_Doctorants.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Déclarations fiscales et sociales\IR_Exoneres.resx">
+      <DependentUpon>IR_Exoneres.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Déclarations fiscales et sociales\IR_Occasionnel.resx">
+      <DependentUpon>IR_Occasionnel.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Déclarations fiscales et sociales\IR_Permanents_Exonore.resx">
+      <DependentUpon>IR_Permanents_Exonore.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Déclarations fiscales et sociales\IR_Stagiaires.resx">
+      <DependentUpon>IR_Stagiaires.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Déclarations fiscales et sociales\IR_XML.resx">
+      <DependentUpon>IR_XML.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GED\Zoom_GED_Properties.resx">
+      <DependentUpon>Zoom_GED_Properties.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Paie\Preparation Paie\GrdFilter.resx">
+      <DependentUpon>GrdFilter.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Documents\Demande_Congés\RH_Conge_Provision.resx">
+      <DependentUpon>RH_Conge_Provision.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Documents\Demande_Avance\Saisie_Massive_Avances.resx">
+      <DependentUpon>Saisie_Massive_Avances.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Documents\Demande_Avance\Saisie_Massive_Avances_Import.resx">
+      <DependentUpon>Saisie_Massive_Avances_Import.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Paie\Preparation Paie\RH_Preparation_Paie_Import_EV.resx">
+      <DependentUpon>RH_Preparation_Paie_Import_EV.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Documents\Demande de remboursement Assurances\RH_Dossier_Maladie.resx">
+      <DependentUpon>RH_Dossier_Maladie.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Documents\Demande_Pret\RH_Demande_Pret.resx">
+      <DependentUpon>RH_Demande_Pret.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Documents\Demande_Avance\RH_Demande_Avance.resx">
+      <DependentUpon>RH_Demande_Avance.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SimulationSalaire\RH_Simulation.resx">
+      <DependentUpon>RH_Simulation.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Paie\Preparation Paie\RH_Preparation_Paie_SelectionFiltree.resx">
+      <DependentUpon>RH_Preparation_Paie_SelectionFiltree.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Paie\Preparation Paie\Zoom_Generation_NetToBrut.resx">
+      <DependentUpon>Zoom_Generation_NetToBrut.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Paie\Preparation Paie\Zoom_RH_Preparation_Paie_RegenrationEV.resx">
+      <DependentUpon>Zoom_RH_Preparation_Paie_RegenrationEV.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SimulationSalaire\Zoom_Simulation_Calculinverse.resx">
+      <DependentUpon>Zoom_Simulation_Calculinverse.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Paie\Preparation Paie\Zoom_Preparation_Paie_Add_Agent.resx">
+      <DependentUpon>Zoom_Preparation_Paie_Add_Agent.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Organisation\Org_Evolution_Carriere.resx">
+      <DependentUpon>Org_Evolution_Carriere.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Déclarations fiscales et sociales\IR_Permanents.resx">
+      <DependentUpon>IR_Permanents.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Déclarations fiscales et sociales\IR_Import.resx">
+      <DependentUpon>IR_Import.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Organisation\Org_Affectation_RH.resx">
+      <DependentUpon>Org_Affectation_RH.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Organisation\Org_Grade.resx">
+      <DependentUpon>Org_Grade.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Organisation\Org_Organigramme.resx">
+      <DependentUpon>Org_Organigramme.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Organisation\Org_Organigram_Element.resx">
+      <DependentUpon>Org_Organigram_Element.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Organisation\Org_Poste_Old.resx">
+      <DependentUpon>Org_Poste_Old.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Param_Jours_Feries.resx">
+      <DependentUpon>Param_Jours_Feries.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Documents\Demande_Congés\RH_Demande_Conge_Liste.resx">
+      <DependentUpon>RH_Demande_Conge_Liste.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Documents\Demande_Congés\RH_Demande_Conge.resx">
+      <DependentUpon>RH_Demande_Conge.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Déclarations fiscales et sociales\RH_Parametrage_Declarations_Fiscales_Sociales_Old.resx">
+      <DependentUpon>RH_Parametrage_Declarations_Fiscales_Sociales_Old.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Paie\Paramétrage paie\RH_Parametrage_Bulletin_Paie.resx">
+      <DependentUpon>RH_Parametrage_Bulletin_Paie.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Données de base\RH_Agent_Liste.resx">
+      <DependentUpon>RH_Agent_Liste.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SendMail\Mailing_Destinataires.resx">
+      <DependentUpon>Mailing_Destinataires.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SendMail\Mailing_Dest_Import.resx">
+      <DependentUpon>Mailing_Dest_Import.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SendMail\Mailing_List.resx">
+      <DependentUpon>Mailing_List.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="customUI\ud_PanelWait.resx">
+      <DependentUpon>ud_PanelWait.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Paie\Paramétrage paie\RH_Functions.resx">
+      <DependentUpon>RH_Functions.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Données de base\RH_Agent_Import.resx">
+      <DependentUpon>RH_Agent_Import.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Paie\Paramétrage paie\RH_Rubrique_Copie.resx">
+      <DependentUpon>RH_Rubrique_Copie.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Paiement\RH_Paiement.resx">
+      <DependentUpon>RH_Paiement.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Survey\Survey.resx">
+      <DependentUpon>Survey.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Survey\survey_components\ud_valeur_unique.resx">
+      <DependentUpon>ud_valeur_unique.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Survey\survey_components\ud_paragraph.resx">
+      <DependentUpon>ud_paragraph.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Survey\survey_components\ud_grille_choix.resx">
+      <DependentUpon>ud_grille_choix.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Survey\survey_components\ud_grille_cases.resx">
+      <DependentUpon>ud_grille_cases.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Formation\Formation_Evaluation.resx">
+      <DependentUpon>Formation_Evaluation.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Survey\Survey_render.resx">
+      <DependentUpon>Survey_render.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Survey\Zoom_Survey_Typ_Reponse_Help.resx">
+      <DependentUpon>Zoom_Survey_Typ_Reponse_Help.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="customUI\ud_RichTextBox.resx">
+      <DependentUpon>ud_RichTextBox.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SuperGrd_Master.resx">
+      <DependentUpon>SuperGrd_Master.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ud_RT.resx">
+      <DependentUpon>ud_RT.vb</DependentUpon>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Zoom_Chercher.resx">
+      <DependentUpon>Zoom_Chercher.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Déclarations fiscales et sociales\Zoom_Cnss_Damancom_Agence.resx">
+      <DependentUpon>Zoom_Cnss_Damancom_Agence.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Déclarations fiscales et sociales\Zoom_Cnss_Damancom_Preetabli.resx">
+      <DependentUpon>Zoom_Cnss_Damancom_Preetabli.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Organisation\Zoom_Org_Organigramme_Affectation.resx">
+      <DependentUpon>Zoom_Org_Organigramme_Affectation.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Organisation\Zoom_Org_Organigramme.resx">
+      <DependentUpon>Zoom_Org_Organigramme.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Organisation\Zoom_Org_Organigramme_ListeAgent.resx">
+      <DependentUpon>Zoom_Org_Organigramme_ListeAgent.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Données de base\Zoom_PPeriodeAjouter.resx">
+      <DependentUpon>Zoom_PPeriodeAjouter.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Paie\Paramétrage paie\Zoom_RH_Editeur_Formule.resx">
+      <DependentUpon>Zoom_RH_Editeur_Formule.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Paie\Preparation Paie\Zoom_RH_Preparation_Paie.resx">
+      <DependentUpon>Zoom_RH_Preparation_Paie.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Paie\Paramétrage paie\Zoom_Rubrique_Relation.resx">
+      <DependentUpon>Zoom_Rubrique_Relation.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Zoom_Import_Affectation_Champs.resx">
+      <DependentUpon>Zoom_Import_Affectation_Champs.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Editions\Zoom_Edition_Odbc.resx">
+      <DependentUpon>Zoom_Edition_Odbc.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Requeteur\Zoom_NombreFormat.resx">
+      <DependentUpon>Zoom_NombreFormat.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Requeteur\Zoom_PivotAjouterChamps.resx">
+      <DependentUpon>Zoom_PivotAjouterChamps.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Requeteur\Zoom_PivotGridTopValue.resx">
+      <DependentUpon>Zoom_PivotGridTopValue.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Zoom_Profile_Scripts.resx">
+      <DependentUpon>Zoom_Profile_Scripts.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Zoom_FiltreAvance.resx">
+      <DependentUpon>Zoom_FiltreAvance.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Zoom_Hibilitation.resx">
+      <DependentUpon>Zoom_Hibilitation.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GED\TC_GED.resx">
+      <DependentUpon>TC_GED.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Zoom_Alerte.resx">
+      <DependentUpon>Zoom_Alerte.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Zoom_PBar.resx">
+      <DependentUpon>Zoom_PBar.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Documents\Demande_Congés\RH_Cloture_Paie.resx">
+      <DependentUpon>RH_Cloture_Paie.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Zoom_Alerte_Msg.resx">
+      <DependentUpon>Zoom_Alerte_Msg.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Paie\Paramétrage paie\Zoom_RH_Saisie_EV.resx">
+      <DependentUpon>Zoom_RH_Saisie_EV.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Paie\Preparation Paie\RH_Preparation_Paie.resx">
+      <DependentUpon>RH_Preparation_Paie.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Paie\Paramétrage paie\RH_Parametrage_Plan_Paie.resx">
+      <DependentUpon>RH_Parametrage_Plan_Paie.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Paie\Paramétrage paie\RH_Parametrage_Rubrique_Paie.resx">
+      <DependentUpon>RH_Parametrage_Rubrique_Paie.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SendMail\Admin_Messagerie.resx">
+      <DependentUpon>Admin_Messagerie.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Param_Abonnement.resx">
+      <DependentUpon>Param_Abonnement.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SendMail\Mailing.resx">
+      <DependentUpon>Mailing.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Données de base\RH_Agent.resx">
+      <DependentUpon>RH_Agent.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Sys_GenerationGlobale.resx">
+      <DependentUpon>Sys_GenerationGlobale.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="My Project\Resources.resx">
+      <Generator>VbMyResourcesResXFileCodeGenerator</Generator>
+      <CustomToolNamespace>My.Resources</CustomToolNamespace>
+      <SubType>Designer</SubType>
+      <LastGenOutput>Resources.Designer.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Param_General.resx">
+      <DependentUpon>Param_General.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Editions\Param_Modele_Edition.resx">
+      <DependentUpon>Param_Modele_Edition.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Editions\Param_Modele_Edition_Saisi.resx">
+      <DependentUpon>Param_Modele_Edition_Saisi.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Requeteur\Param_Query.resx">
+      <DependentUpon>Param_Query.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Requeteur\Param_Query_Saisi.resx">
+      <DependentUpon>Param_Query_Saisi.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Param_Rubriques.resx">
+      <DependentUpon>Param_Rubriques.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Param_Ville.resx">
+      <DependentUpon>Param_Ville.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Zoom\Zoom.resx">
+      <DependentUpon>Zoom.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Compta\Zoom_Ana.resx">
+      <DependentUpon>Zoom_Ana.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GED\Zoom_GED.resx">
+      <DependentUpon>Zoom_GED.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Zoom\Zoom_Combo.resx">
+      <DependentUpon>Zoom_Combo.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Zoom\Zoom_Calender.resx">
+      <DependentUpon>Zoom_Calender.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Zoom\Zoom_Calender_Blocage.resx">
+      <DependentUpon>Zoom_Calender_Blocage.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Zoom_Libre.resx">
+      <DependentUpon>Zoom_Libre.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Zoom_Mail.resx">
+      <DependentUpon>Zoom_Mail.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Zoom_Progress.resx">
+      <DependentUpon>Zoom_Progress.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Requeteur\Zoom_QueryPrinter.resx">
+      <DependentUpon>Zoom_QueryPrinter.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Données de base\Zoom_Societe_Duplication.resx">
+      <DependentUpon>Zoom_Societe_Duplication.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Requeteur\Zoom_SqlText.resx">
+      <DependentUpon>Zoom_SqlText.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Requeteur\Zoom_Typ_Graph.resx">
+      <DependentUpon>Zoom_Typ_Graph.vb</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="My Project\Application.myapp">
+      <Generator>MyApplicationCodeGenerator</Generator>
+      <LastGenOutput>Application.Designer.vb</LastGenOutput>
+    </None>
+    <None Include="My Project\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <CustomToolNamespace>My</CustomToolNamespace>
+      <LastGenOutput>Settings.Designer.vb</LastGenOutput>
+    </None>
+    <None Include="packages.config" />
+    <None Include="RHP.ruleset" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\CRM.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\rhp.ico" />
+    <None Include="Resources\ef_b.png" />
+    <None Include="Resources\ef_e.png" />
+    <None Include="Resources\em_b.png" />
+    <None Include="Resources\em_e.png" />
+    <None Include="Resources\RadioButtonSel.png" />
+    <None Include="Resources\RadioButtonUnsel.png" />
+    <None Include="Resources\help-xxl.png" />
+    <None Include="Resources\option_uncheck.png" />
+    <None Include="Resources\option_checked.png" />
+    <None Include="Resources\option_unchecked.png" />
+    <None Include="Resources\check_on.png" />
+    <None Include="Resources\check_off.png" />
+    <None Include="Resources\Signer_D.png" />
+    <None Include="Resources\chk_off.png" />
+    <None Include="Resources\chk_on.png" />
+    <None Include="Resources\search-active.png" />
+    <None Include="Resources\search-unactive.png" />
+    <None Include="Resources\btn_add.png" />
+    <None Include="Resources\btn_add_doc.png" />
+    <None Include="Resources\btn_add_doc_g.png" />
+    <None Include="Resources\btn_add_doc_on.png" />
+    <None Include="Resources\btn_add_g.png" />
+    <None Include="Resources\btn_add_on.png" />
+    <None Include="Resources\btn_attach.png" />
+    <None Include="Resources\btn_delete.png" />
+    <None Include="Resources\btn_delete_g.png" />
+    <None Include="Resources\btn_delete_on.png" />
+    <None Include="Resources\btn_duplicate.png" />
+    <None Include="Resources\btn_duplicate_on.png" />
+    <None Include="Resources\btn_edit_doc.png" />
+    <None Include="Resources\btn_edit_doc_g.png" />
+    <None Include="Resources\btn_edit_doc_on.png" />
+    <None Include="Resources\btn_request.png" />
+    <None Include="Resources\btn_save.png" />
+    <None Include="Resources\btn_save_doc.png" />
+    <None Include="Resources\btn_save_g.png" />
+    <None Include="Resources\btn_save_on.png" />
+    <None Include="Resources\btn_search.png" />
+    <None Include="Resources\btn_search_g.png" />
+    <None Include="Resources\btn_search_on.png" />
+    <None Include="Resources\btn_tri_asc.png" />
+    <None Include="Resources\btn_tri_desc.png" />
+    <None Include="Resources\btn_back.png" />
+    <None Include="Resources\btn_back_on.png" />
+    <None Include="Resources\btn_search_w.png" />
+    <None Include="Resources\btn_soc.png" />
+    <None Include="Resources\ud_banknotes.png" />
+    <None Include="Resources\ud_building.png" />
+    <None Include="Resources\ud_clipboard.png" />
+    <None Include="Resources\ud_conference.png" />
+    <None Include="Resources\ud_contacts.png" />
+    <None Include="Resources\ud_settings.png" />
+    <None Include="Resources\ud_time.png" />
+    <None Include="Resources\btn_soc_selected.png" />
+    <None Include="Resources\btn_switch_on.png" />
+    <None Include="Resources\btn_switch_off.png" />
+    <None Include="Resources\btn_folder_small.png" />
+    <None Include="Resources\btn_check_off.png" />
+    <None Include="Resources\btn_check_on.png" />
+    <None Include="Resources\btn_div_back.png" />
+    <None Include="Resources\btn_div_first.png" />
+    <None Include="Resources\btn_div_last.png" />
+    <None Include="Resources\btn_div_next.png" />
+    <None Include="Resources\btn_import.png" />
+    <None Include="Resources\btn_calcul.png" />
+    <None Include="Resources\btn_close.png" />
+    <None Include="Resources\btn_erase.png" />
+    <None Include="Resources\btn_maximize.png" />
+    <None Include="Resources\btn_close_w.png" />
+    <None Include="Resources\btn_erase_w.png" />
+    <None Include="Resources\btn_filter.png" />
+    <None Include="Resources\btn_filter_w.png" />
+    <None Include="Resources\btn_unlock.png" />
+    <None Include="Resources\btn_modules.png" />
+    <None Include="Resources\btn_netToBrut.png" />
+    <None Include="Resources\btn_adduser.png" />
+    <None Include="Resources\btn_sign.png" />
+    <None Include="Resources\btn_clip.png" />
+    <None Include="Resources\btn_validate.png" />
+    <None Include="Resources\btn_specifique.png" />
+    <None Include="Resources\btn_printer.png" />
+    <None Include="Resources\btn_eye.png" />
+    <None Include="Resources\btn_sign_00.png" />
+    <None Include="Resources\btn_sign_01.png" />
+    <None Include="Resources\btn_sign_02.png" />
+    <None Include="Resources\btn_sign_03.png" />
+    <None Include="Resources\btn_sign_04.png" />
+    <None Include="Resources\btn_lock.png" />
+    <None Include="Resources\btn_information.png" />
+    <None Include="Resources\ud_system.png" />
+    <None Include="Resources\btn_selectAll.png" />
+    <None Include="Resources\btn_preetabli.png" />
+    <None Include="Resources\btn_BDS.png" />
+    <None Include="Resources\btn_matches.png" />
+    <None Include="Resources\btn_excel.png" />
+    <None Include="Resources\btn_periode.png" />
+    <None Include="Resources\btn_refresh.png" />
+    <None Include="Resources\waiting.gif" />
+    <None Include="Resources\btn_exonerepng.png" />
+    <None Include="Resources\btn_money.png" />
+    <None Include="Resources\btn_maximize_w.png" />
+    <None Include="Resources\btn_netToBrut_w.png" />
+    <None Include="Resources\btn_request_w.png" />
+    <None Include="Resources\btn_save_w.png" />
+    <None Include="Resources\btn_div_back_w.png" />
+    <None Include="Resources\btn_div_next_w.png" />
+    <None Include="Resources\btn_edit_w.png" />
+    <None Include="Resources\btn_function_w.png" />
+    <None Include="Resources\btn_add_w.png" />
+    <None Include="Resources\btn_affect_w.png" />
+    <None Include="Resources\btn_model_excel_w.png" />
+    <None Include="Resources\btn_import_w.png" />
+    <None Include="Resources\btn_printer_w.png" />
+    <None Include="Resources\btn_delay.png" />
+    <None Include="Resources\btn_pause.png" />
+    <None Include="Resources\btn_lock_w.png" />
+    <None Include="Resources\btn_unlock_w.png" />
+    <None Include="Resources\btn_add_w1.png" />
+    <None Include="Resources\btn_selectAll_w.png" />
+    <None Include="Resources\btn_personnel_w.png" />
+    <None Include="Resources\btn_image.png" />
+    <None Include="Resources\btn_image_w.png" />
+    <None Include="Resources\btn_affect.png" />
+    <None Include="Resources\btn_insert.png" />
+    <None Include="Resources\btn_execute.png" />
+    <None Include="Resources\btn_delete_w.png" />
+    <None Include="Resources\btn_detail.png" />
+    <None Include="Resources\btn_function.png" />
+    <None Include="Resources\btn_excel_w.png" />
+    <None Include="Resources\btn_pdf_w.png" />
+    <None Include="Resources\btn_sum_col_r.png" />
+    <None Include="Resources\btn_sum_col_w.png" />
+    <None Include="Resources\btn_champsCalcule_w.png" />
+    <None Include="Resources\btn_reverse_w.png" />
+    <None Include="Resources\btn_load_w.png" />
+    <None Include="Resources\btn_testCon_w.png" />
+    <None Include="Resources\btn_charger_w.png" />
+    <None Include="Resources\btn_help.png" />
+    <None Include="Resources\btn_view.png" />
+    <None Include="Resources\mail.png" />
+    <None Include="Resources\btn_mail.png" />
+    <None Include="Resources\btn_mail_w.png" />
+    <None Include="Resources\btn_clip_w.png" />
+    <None Include="Resources\btn_menu_grid.png" />
+    <None Include="Resources\btn_menu_list.png" />
+    <None Include="Resources\btn_circle.png" />
+    <None Include="Resources\btn_circle_on.png" />
+    <None Include="Resources\ud_star.png" />
+    <None Include="Resources\ud_Organisation.png" />
+    <None Include="Resources\ud_setting.png" />
+    <None Include="Resources\ud_recents.png" />
+    <None Include="Resources\btn_model_excel.png" />
+    <None Include="Resources\printer_2.png" />
+    <None Include="Resources\selectAll1.png" />
+    <None Include="Resources\settings1.png" />
+    <None Include="Resources\shopping1.png" />
+    <None Include="Resources\side-right-view-xl1.png" />
+    <None Include="Resources\Signer_D1.png" />
+    <None Include="Resources\sortAsc1.png" />
+    <None Include="Resources\sortDesc1.png" />
+    <None Include="Resources\tool1.png" />
+    <None Include="Resources\Tunel1.png" />
+    <None Include="Resources\unlike1.png" />
+    <None Include="Resources\unlock1.png" />
+    <None Include="Resources\unlocked1.png" />
+    <None Include="Resources\unlocked_011.png" />
+    <None Include="Resources\Valider_D1.png" />
+    <None Include="Resources\Ventes1.png" />
+    <None Include="Resources\verrou1.png" />
+    <None Include="Resources\vpn-xxl1.png" />
+    <None Include="Resources\word-xxl1.png" />
+    <None Include="Resources\zoom1.png" />
+    <None Include="Resources\check_0.png" />
+    <None Include="Resources\check_1.png" />
+    <None Include="Resources\Modifier.png" />
+    <None Include="Resources\Clip.png" />
+    <None Include="Resources\supprimerligne.png" />
+    <None Include="Resources\supprimerttligne.png" />
+    <None Include="Resources\Copier.png" />
+    <None Include="Resources\Couper.png" />
+    <None Include="Resources\Client.png" />
+    <None Include="Resources\Menu_Operationnel.png" />
+    <None Include="Resources\MenuLocal.png" />
+    <None Include="Resources\Dollar.png" />
+    <None Include="Resources\Filtrer.png" />
+    <None Include="Resources\Calculator213122.png" />
+    <None Include="Resources\lock.png" />
+    <None Include="Resources\FDR.png" />
+    <None Include="Resources\FILE.png" />
+    <None Include="Resources\folder_home.png" />
+    <None Include="Resources\camera.png" />
+    <None Include="Resources\Erase.png" />
+    <None Include="Resources\function.png" />
+    <None Include="Resources\login.png" />
+    <None Include="Resources\zoom.png" />
+    <None Include="Resources\devis.png" />
+    <None Include="Resources\calendar.png" />
+    <None Include="Resources\trv_agent.png" />
+    <None Include="Resources\trv_entite.png" />
+    <None Include="Resources\trv_leader.png" />
+    <None Include="Resources\trv_societe.png" />
+    <None Include="Resources\btn_div_down.png" />
+    <None Include="Resources\btn_div_up.png" />
+    <None Include="Resources\btn_menu.png" />
+    <None Include="Resources\btn_survey.png" />
+    <None Include="Resources\msgbox_info.png" />
+    <None Include="Resources\msgbox_question.png" />
+    <None Include="Resources\msgbox_warning.png" />
+    <None Include="Resources\msgboxLogo.png" />
+    <None Include="Resources\btn_ok.png" />
+    <None Include="Resources\btn_no.png" />
+    <None Include="Resources\btn_yes.png" />
+    <None Include="Resources\msgbox_stop.png" />
+    <None Include="Resources\btn_testCon.png" />
+    <None Include="Resources\btn_analyse.png" />
+    <None Include="Resources\msgbox_error.png" />
+    <None Include="Resources\btn_design.png" />
+    <None Include="Resources\btn_cloture.png" />
+    <None Include="Resources\btn_vue.png" />
+    <None Include="Resources\btn_planning.png" />
+    <None Include="Resources\star_0.png" />
+    <None Include="Resources\star_1.png" />
+    <None Include="Resources\star_2.png" />
+    <None Include="Resources\hired.png" />
+    <None Include="Resources\btn_execute_w.png" />
+    <None Include="Resources\coller_presspapier.png" />
+    <Content Include="ILLink\ILLink.Descriptors.LibraryBuild.xml" />
+    <None Include="Resources\btn_copy.png" />
+    <None Include="Resources\btn_mode_agent_w.png" />
+    <Content Include="rhp.ico" />
+    <None Include="app.config" />
+    <None Include="My Project\app.manifest">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Resources\CG.png" />
+    <None Include="Resources\redbutton.png" />
+    <None Include="Resources\Achats.png" />
+    <None Include="Resources\Actualiser.png" />
+    <None Include="Resources\Alert_Alert.png" />
+    <None Include="Resources\Alert_Critical.png" />
+    <None Include="Resources\Alert_info.png" />
+    <None Include="Resources\Alert_Ok.png" />
+    <None Include="Resources\APropos.png" />
+    <None Include="Resources\Blank.JPG" />
+    <None Include="Resources\calendrier.gif" />
+    <None Include="Resources\charts.png" />
+    <None Include="Resources\charts01.png" />
+    <None Include="Resources\charts02.png" />
+    <None Include="Resources\charts03.png" />
+    <None Include="Resources\charts04.png" />
+    <None Include="Resources\charts05.png" />
+    <None Include="Resources\charts06.png" />
+    <None Include="Resources\chat.png" />
+    <None Include="Resources\chat_01.png" />
+    <None Include="Resources\clock.png" />
+    <None Include="Resources\clock_01.png" />
+    <None Include="Resources\close.png" />
+    <None Include="Resources\comptaa3.jpg" />
+    <None Include="Resources\Cycle.png" />
+    <None Include="Resources\DB.png" />
+    <None Include="Resources\del.png" />
+    <None Include="Resources\delete.png" />
+    <None Include="Resources\door.png" />
+    <None Include="Resources\DossierPermanent.png" />
+    <None Include="Resources\down.png" />
+    <None Include="Resources\download.png" />
+    <None Include="Resources\earth.png" />
+    <None Include="Resources\ECR.png" />
+    <None Include="Resources\email.png" />
+    <None Include="Resources\erreur.png" />
+    <None Include="Resources\excel.png" />
+    <None Include="Resources\Favoris.png" />
+    <None Include="Resources\Favorite.png" />
+    <None Include="Resources\feed.png" />
+    <None Include="Resources\Finances.png" />
+    <None Include="Resources\flag.png" />
+    <None Include="Resources\fleche.png" />
+    <None Include="Resources\Folder.png" />
+    <None Include="Resources\Forward.png" />
+    <None Include="Resources\Forward_01.png" />
+    <None Include="Resources\Functionality.png" />
+    <None Include="Resources\Functionality_small.png" />
+    <None Include="Resources\GED.png" />
+    <None Include="Resources\Ges_Ach.gif" />
+    <None Include="Resources\Ges_Ctb.gif" />
+    <None Include="Resources\Ges_Param.gif" />
+    <None Include="Resources\Ges_Prod.gif" />
+    <None Include="Resources\Ges_Stk.gif" />
+    <None Include="Resources\Ges_Ven.gif" />
+    <None Include="Resources\Grd_Filtree.png" />
+    <None Include="Resources\Grd_NonFilteree.png" />
+    <None Include="Resources\greenbutton.png" />
+    <None Include="Resources\group.png" />
+    <None Include="Resources\heart.png" />
+    <None Include="Resources\historique.png" />
+    <None Include="Resources\home.png" />
+    <None Include="Resources\icone_excel.png" />
+    <None Include="Resources\info.png" />
+    <None Include="Resources\insert.png" />
+    <None Include="Resources\key.png" />
+    <None Include="Resources\left.png" />
+    <None Include="Resources\Licence.png" />
+    <None Include="Resources\Link.png" />
+    <None Include="Resources\locked.png" />
+    <None Include="Resources\locked_01.png" />
+    <None Include="Resources\Maintenance.png" />
+    <None Include="Resources\Menu_Personnel.png" />
+    <None Include="Resources\Menu_Systeme.png" />
+    <None Include="Resources\MenuLocal.gif" />
+    <None Include="Resources\Messagerie.png" />
+    <None Include="Resources\money_01.png" />
+    <None Include="Resources\money_02.png" />
+    <None Include="Resources\money_03.png" />
+    <None Include="Resources\Mot_Passe.png" />
+    <None Include="Resources\msg0.jpg" />
+    <None Include="Resources\msg0.png" />
+    <None Include="Resources\msg0_.jpg" />
+    <None Include="Resources\msg1.jpg" />
+    <None Include="Resources\msg1.png" />
+    <None Include="Resources\msg1_.jpg" />
+    <None Include="Resources\music.png" />
+    <None Include="Resources\music_01.png" />
+    <None Include="Resources\newGroupPostIconStrip.PNG" />
+    <None Include="Resources\object_03.png" />
+    <None Include="Resources\object_04.png" />
+    <None Include="Resources\object_05.png" />
+    <None Include="Resources\object_06.png" />
+    <None Include="Resources\object_07.png" />
+    <None Include="Resources\object_08.png" />
+    <None Include="Resources\object_09.png" />
+    <None Include="Resources\object_10.png" />
+    <None Include="Resources\object_11.png" />
+    <None Include="Resources\object_12.png" />
+    <None Include="Resources\object_13.png" />
+    <None Include="Resources\object_14.png" />
+    <None Include="Resources\object_15.png" />
+    <None Include="Resources\OFGantt.png" />
+    <None Include="Resources\OFGantt1.png" />
+    <None Include="Resources\OFGantt22.png" />
+    <None Include="Resources\ok.png" />
+    <None Include="Resources\open.png" />
+    <None Include="Resources\orangebutton.png" />
+    <None Include="Resources\OTH.png" />
+    <None Include="Resources\Parametrage.png" />
+    <None Include="Resources\Partenaires.png" />
+    <None Include="Resources\paste.png" />
+    <None Include="Resources\pause.png" />
+    <None Include="Resources\Percentage.png" />
+    <None Include="Resources\Phone.png" />
+    <None Include="Resources\pj.jpg" />
+    <None Include="Resources\pj.png" />
+    <None Include="Resources\power.png" />
+    <None Include="Resources\Printer.png" />
+    <None Include="Resources\Production.png" />
+    <None Include="Resources\Produits.png" />
+    <None Include="Resources\Prodution.png" />
+    <None Include="Resources\Proprietes.png" />
+    <None Include="Resources\QRY.png" />
+    <None Include="Resources\Query.png" />
+    <None Include="Resources\question.png" />
+    <None Include="Resources\recherche.png" />
+    <None Include="Resources\Recycle.png" />
+    <None Include="Resources\refresh.png" />
+    <None Include="Resources\Repeat.png" />
+    <None Include="Resources\Repeat_01.png" />
+    <None Include="Resources\Report.png" />
+    <None Include="Resources\RH.png" />
+    <None Include="Resources\right.png" />
+    <None Include="Resources\RPT.png" />
+    <None Include="Resources\script_small.png" />
+    <None Include="Resources\selectAll.png" />
+    <None Include="Resources\Serveur.png" />
+    <None Include="Resources\settings.png" />
+    <None Include="Resources\shopping.png" />
+    <None Include="Resources\SNOW E AQUA SHERLOCK.png" />
+    <None Include="Resources\spinner3-greenie.gif" />
+    <None Include="Resources\star.png" />
+    <None Include="Resources\Stocks.png" />
+    <None Include="Resources\stop.png" />
+    <None Include="Resources\success.gif" />
+    <None Include="Resources\Summary.png" />
+    <None Include="Resources\support3.png" />
+    <None Include="Resources\tool.png" />
+    <None Include="Resources\Tunel.png" />
+    <None Include="Resources\unlocked.png" />
+    <None Include="Resources\unlocked_01.png" />
+    <None Include="Resources\up.png" />
+    <None Include="Resources\up_01.png" />
+    <None Include="Resources\user.png" />
+    <None Include="Resources\Ventes.png" />
+    <None Include="Resources\Wait.gif" />
+    <None Include="Resources\windows.png" />
+    <None Include="Resources\zoomin.png" />
+    <None Include="Resources\zoomin_1.gif" />
+    <None Include="Resources\zoomout.png" />
+    <None Include="Resources\gomme.png" />
+    <None Include="Resources\Reporting.png" />
+    <None Include="Resources\CHR.png" />
+    <None Include="Resources\retour.png" />
+    <None Include="Resources\clip_D.png" />
+    <None Include="Resources\info_D.png" />
+    <None Include="Resources\reclamation.png" />
+    <None Include="Resources\ordreService.png" />
+    <None Include="Resources\rdv.png" />
+    <None Include="Resources\verrou.png" />
+    <None Include="Resources\eye.png" />
+    <None Include="Resources\Gantt.png" />
+    <None Include="Resources\tache.png" />
+    <None Include="Resources\realisation.png" />
+    <None Include="Resources\devise.png" />
+    <None Include="Resources\Roll-forward.png" />
+    <None Include="Resources\Selector.gif" />
+    <None Include="Resources\vpn-xxl.png" />
+    <None Include="Resources\OF_Cloture.png" />
+    <None Include="Resources\OF_Encours.png" />
+    <None Include="Resources\OF_Planifie.png" />
+    <None Include="Resources\OF_Replanifie.png" />
+    <None Include="Resources\OF_Solde.png" />
+    <None Include="Resources\Replanifier.png" />
+    <None Include="Resources\P_DB.png" />
+    <None Include="Resources\feed_out.png" />
+    <None Include="Resources\maximize.png" />
+    <None Include="Resources\minimize.png" />
+    <None Include="Resources\closing.png" />
+    <None Include="Resources\normalize.png" />
+    <None Include="Resources\RHP Logo.ico" />
+    <None Include="Resources\sortAsc.png" />
+    <None Include="Resources\sortDesc.png" />
+    <None Include="Resources\fdr_1.png" />
+    <None Include="Resources\unlock.png" />
+    <None Include="Resources\valide01.png" />
+    <None Include="Resources\Preetabli.png" />
+    <None Include="Resources\eye1.png" />
+    <None Include="Resources\%24this.Icon.ico" />
+    <None Include="Resources\PasDePhoto.png" />
+    <None Include="Resources\image_D.png" />
+    <None Include="Resources\Valider_D.png" />
+    <None Include="Resources\unlike.png" />
+    <None Include="Resources\refuse.png" />
+    <None Include="Resources\EXP.png" />
+    <None Include="Resources\fdr_0.png" />
+    <None Include="Resources\account-login-xxl.png" />
+    <None Include="Resources\edit-6-xxl.png" />
+    <None Include="Resources\pdf-xxl.png" />
+    <None Include="Resources\plus-2-xl.png" />
+    <None Include="Resources\side-right-view-xl.png" />
+    <None Include="Resources\word-xxl.png" />
+    <None Include="Resources\charger.png" />
+    <None Include="Resources\home_societes.png" />
+    <None Include="Resources\RH_Agent_S.png" />
+    <None Include="Resources\RH_Agent_X.png" />
+    <None Include="Resources\RH_Periode_S.png" />
+    <None Include="Resources\RH_Periode_X.png" />
+    <None Include="Resources\RH_Societe_S.png" />
+    <None Include="Resources\RH_Societe_X.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.2.0">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 2.0 %28x86%29</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.0">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.0 %28x86%29</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Windows.Installer.3.1">
+      <Visible>False</Visible>
+      <ProductName>Windows Installer 3.1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

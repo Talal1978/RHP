@@ -1,0 +1,19 @@
+@use "../../variables";
+.msgbox {
+  z-index: 99999999999;
+  user-select: none;
+  .css-1t1j96h-MuiPaper-root-MuiDialog-paper {
+    min-width: clamp(400px, 500px, 75vw) !important;
+  }
+  .msgboxMessage {
+    display: flex;
+    justify-content: space-between;
+    div {
+      user-select: text;
+    }
+  }
+  .autoFocus {
+    background-color: variables.$colorBase01 !important;
+    color: #ffffff;
+  }
+}

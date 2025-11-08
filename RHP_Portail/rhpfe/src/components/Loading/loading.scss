@@ -1,0 +1,18 @@
+@use "../../variables";
+.loading {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9999000;
+  background-color: rgba(202, 202, 202, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2em;
+  .animation {
+    width: 15vw;
+    height: 15vw;
+  }
+}

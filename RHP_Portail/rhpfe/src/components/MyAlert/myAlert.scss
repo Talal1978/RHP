@@ -1,0 +1,85 @@
+@use "../../variables";
+
+@keyframes shrink {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0;
+  }
+}
+$infoBg: #b2e0f6;
+$infoColor: #0288d1;
+$successBg: #b0fab2;
+$successColor: #2e7d32;
+$errorBg: #fac1c0;
+$errorColor: #d32f2f;
+$warningBg: #f8e1bf;
+$warningColor: #e65100;
+
+.myAlert {
+  top: 1em;
+  left: 50%;
+  min-width: 50%;
+  width: auto;
+  position: absolute;
+  z-index: 999999999;
+  padding: 1em;
+  transition: opacity 0.5s;
+  border-radius: 5px;
+  transform: translateX(-50%);
+  &.show {
+    // opacity: 1;
+    display: inline;
+    &::after {
+      content: "";
+      height: 3px;
+      width: calc(100% - 10px);
+      position: absolute;
+      left: 5px;
+      bottom: 0;
+      z-index: 9999999999;
+      animation: shrink 3s linear;
+    }
+  }
+  &.hide {
+    // opacity: 0;
+    display: none;
+  }
+
+  &.warning {
+    background-color: $warningBg;
+    color: $warningColor;
+
+    &::after {
+      background-color: $warningColor;
+    }
+  }
+
+  &.error {
+    background-color: $errorBg;
+    color: $errorColor;
+
+    &::after {
+      background-color: $errorColor;
+    }
+  }
+
+  &.info {
+    background-color: $infoBg;
+    color: $infoColor;
+
+    &::after {
+      background-color: $infoColor;
+    }
+  }
+
+  &.success {
+    background-color: $successBg;
+    color: $successColor;
+
+    &::after {
+      background-color: $successColor;
+    }
+  }
+}

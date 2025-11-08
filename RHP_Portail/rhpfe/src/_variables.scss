@@ -1,0 +1,59 @@
+// _variables.scss
+$colorBase01: #3899b9;
+$colorBase02: #5eb975;
+$colorBase03: #dae7ec; //$colorBase03
+$colorBase04: #e6f4f1;
+$foreColorBase01: #382424;
+$bgColorBase01: #fafafa;
+$positionFloating: clamp(1em, 3em, 5vh);
+body {
+  background-color: $bgColorBase01;
+}
+.unselectable {
+  -webkit-user-select: none; /* Safari */
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* Internet Explorer/Edge */
+  user-select: none; /* Non-prefixed version, currently supported by Chrome, Edge, Opera, and Firefox */
+  //cursor: pointer;
+}
+/* The entire scrollbar */
+::-webkit-scrollbar {
+  width: 12px; /* Adjust the width of the vertical scrollbar */
+  height: 12px; /* Adjust the height of the horizontal scrollbar */
+}
+
+/* The track (progress bar) of the scrollbar */
+::-webkit-scrollbar-track {
+  background: $bgColorBase01; /* The track color */
+  border-radius: 3px; /* Optional: add rounded corners to the track */
+}
+
+/* The handle (thumb) of the scrollbar */
+::-webkit-scrollbar-thumb {
+  background: #d0e7ef; /* The handle color */
+  border-radius: 2px; /* Rounded corners on the handle */
+  cursor: pointer;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #d0e7ef; /* Darker handle color on hover */
+}
+
+@keyframes vibrate {
+  0% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-5px);
+  }
+  75% {
+    transform: translateX(5px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+.vibrateIfError {
+  animation: vibrate 0.2s linear;
+}

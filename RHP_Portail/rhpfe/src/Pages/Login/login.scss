@@ -1,0 +1,70 @@
+@use "../../_variables.scss";
+.container {
+  position: absolute; /* or position: fixed; */
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+
+  background-image: linear-gradient(
+    #ffffff,
+    variables.$colorBase01,
+    variables.$colorBase02,
+    variables.$colorBase01,
+    #ffffff
+  );
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  .login {
+    padding: 1em;
+    width: clamp(22rem, 24rem, 24rem);
+    height: 36rem;
+    background-color: #fff;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    .titre {
+      width: 80%;
+      text-align: center;
+      font-family: "Dancing Script", cursive;
+      font-optical-sizing: auto;
+      font-weight: 700;
+      font-style: normal;
+      font-size: 2em;
+      color: variables.$colorBase01;
+      span {
+        color: variables.$colorBase02;
+      }
+    }
+    .version {
+      color: variables.$foreColorBase01;
+      font-size: small;
+    }
+    .btn {
+      flex-grow: 2;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 0.5em;
+    }
+    .txt {
+      flex-grow: 3;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1em;
+    }
+    .bouton,
+    .textBox {
+      width: 90%;
+    }
+  }
+}
