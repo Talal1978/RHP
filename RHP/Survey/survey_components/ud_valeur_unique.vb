@@ -151,9 +151,10 @@ Public Class ud_valeur_unique
         With Grd
             Dim laNote As Double = If(modeScoring = "manuel" And IsNumeric(note_txt.Text), note_txt.Text, 0)
             Dim note_totale As Double = 0
+            Dim valeurParDefaut = If("entier;numerique".Split(";").Contains(Typ_Reponse), 0, "''")
             If funcScoring <> "" Then
-                Dim noteFunc = Module_Generateur_Survey.myVBS.Eval($"Func_Survey_{codQuestion}({Grd.Item(1, 0).Value})")
-                If IsNumeric(noteFunc) Then laNote = Math.Round(CDbl(noteFunc), 2)
+                Dim noteFunc = Module_Generateur_Survey.myVBS.Eval($"Func_Survey_{codQuestion}({IsNull(Grd.Item(1, 0).Value, valeurParDefaut)})")
+            If IsNumeric(noteFunc) Then laNote = Math.Round(CDbl(noteFunc), 2)
             End If
             note_txt.Text = laNote
             note_totale = Math.Round(If(IsNumeric(coef), coef * laNote, laNote), 2)

@@ -2,6 +2,8 @@
 
 Module Module_Generateur_Survey
     Friend myVBS As New vsEngine
+    Friend Paie_Calcule As Boolean = False
+    Friend Statut_Survey As String = ""
     Public rx_survey As New Regex("(?i)\bQ\s*\[\s*(?<N>\d+)\s*\](?:\s*\[\s*(?:(?<L>\d+)\s*(?:,|:)\s*)?(?<C>\d+)\s*\])?")
     Dim dicType As New Dictionary(Of String, Type) From {
         {"grille_cases", GetType(ud_grille_cases)},
@@ -43,17 +45,18 @@ from Survey_Detail d
 outer apply (select top 1 AvecNote from Survey s where s.Cod_Survey=d.Cod_Survey)q
 where Cod_Survey='" & CodSurvey & "' and id_Societe=" & Societe.id_Societe & "
 order by isnull(Rang,0) desc")
-                                     Pnl_Content.Controls.Clear()
-                                     Dim rw_function() = Tbl_Question.Select("Func_Scoring<>''")
-                                     For i = 0 To rw_function.Length - 1
-                                         Dim strFunc = $"Function Func_Survey_{rw_function(i)("Cod_Question")}(CurrentAnswer)
+        Pnl_Content.Controls.Clear()
+        Dim rw_function() = Tbl_Question.Select("Func_Scoring<>''")
+        For i = 0 To rw_function.Length - 1
+            Dim strFunc = $"Function Func_Survey_{rw_function(i)("Cod_Question")}(CurrentAnswer)
                 Func_Survey_{rw_function(i)("Cod_Question")}={TraitementCaractere(rw_function(i)("Func_Scoring"))}
                 End Function"
-                                         myVBS.ExecuteStatement(strFunc)
-                                     Next
-        Dim Tbl_Reponse As DataTable = DATA_READER_GRD("SELECT Cod_Reply, Cod_Question, isnull(Num_Sous_Question,'0') as Num_Sous_Question, 
-isnull(Reponses,'') as Reponses, isnull(Note,0) as Note, isnull(Coef,1) as Coef, isnull(Note_Totale,0) as Note_Totale
-FROM Survey_Reply_Detail
+            myVBS.ExecuteStatement(strFunc)
+        Next
+        Dim Tbl_Reponse As DataTable = DATA_READER_GRD($"SELECT Cod_Reply, Cod_Question, isnull(Num_Sous_Question,'0') as Num_Sous_Question, 
+isnull(Reponses,'') as Reponses, isnull(Note,0) as Note, isnull(Coef,1) as Coef, isnull(Note_Totale,0) as Note_Totale, isnull(Statut,'') as Statut, isnull(Paie_Calculee,'false') as Paie_Calculee
+FROM Survey_Reply_Detail d
+outer apply (select Statut, Paie_Calculee from Survey_Reply where Cod_Reply=d.Cod_Reply and id_Societe={Societe.id_Societe})e
 where Cod_Reply=" & CodReply)
         With Tbl_Question
             For i = 0 To .Rows.Count - 1
@@ -64,6 +67,10 @@ where Cod_Reply=" & CodReply)
                     Dim lignes As String = .Rows(i)("Sous_Question")
                     Dim typReponseStr = .Rows(i)("Typ_Reponse")
                     For j = 0 To nrw.Length - 1
+                        If j = 0 Then
+                            Paie_Calcule = nrw(0)("Paie_Calculee")
+                            Statut_Survey = nrw(0)("Statut")
+                        End If
                         repDic.Add(CStr(nrw(j)("Num_Sous_Question")), nrw(j)("Reponses"))
                     Next
                     If Not dicType.ContainsKey(typReponseStr) Then
@@ -71,7 +78,6 @@ where Cod_Reply=" & CodReply)
                         Continue For ' Passer à la question suivante
                     End If
                     Dim typeReponse As Type = CType(dicType(typReponseStr), Type)
-
                     Dim ud As Object = typeReponse.Assembly.CreateInstance(typeReponse.FullName)
                     If "RHP.ud_valeur_unique;RHP.ud_paragraph".Split(";").Contains(typeReponse.FullName) Or
            (lignes.Split({";"}, StringSplitOptions.RemoveEmptyEntries).Length > 0 AndAlso
@@ -124,7 +130,6 @@ where Cod_Reply=" & CodReply)
             If .Controls.Count > 0 Then .Controls(.Controls.Count - 1).Select()
             .ResumeLayout(True)
         End With
-
         Return Tbl_Question
     End Function
 
@@ -175,11 +180,67 @@ where Cod_Reply=" & CodReply)
             If currentQuestion IsNot Nothing Then
                 If estVide(currentQuestion) Then
                     Dim output As String = TraitementCaractere(rx_survey.Replace(strFunction, obgFunct))
+                    'If obgRw(i)("NumQuestion") = 5 Then MsgBox($"numQuestion : {currentQuestion.numQuestion}, output : {output}, myVBS.Eval(output): {myVBS.Eval(output)}")
                     If myVBS.Eval(output) Then Return currentQuestion
                 End If
             End If
         Next
         Return Nothing
+    End Function
+    Public Structure erreurSi
+        Public ud As ud_pattern
+        Public err As String
+    End Structure
+    Function survey_ErreurSi(Tbl_Question As DataTable, reponses As Dictionary(Of ud_pattern, Dictionary(Of String, String))) As erreurSi
+        Dim obgRw() = Tbl_Question.Select("Erreur_Si<>''")
+        Dim obgFunct As MatchEvaluator = Function(m)
+                                             Dim N As String = m.Groups("N").Value
+                                             If IsNumeric(N) Then
+
+                                                 Dim qst() = Tbl_Question.Select($"NumQuestion={N}")
+                                                 If qst.Length = 0 Then Return m.Value
+                                                 Dim maQst As String = qst(0)("Cod_Question")
+                                                 Dim typRep As String = IsNull(qst(0)("Typ_Reponse"), "alpha")
+                                                 Dim vari As String = ""
+                                                 Dim dim_vari As String = ""
+
+                                                 Dim reponse = reponses.Keys.FirstOrDefault(Function(c) c.Name = maQst)
+                                                 If reponse Is Nothing Then Return m.Value
+                                                 If m.Groups("C").Success Then
+                                                     Dim C As String = m.Groups("C").Value
+                                                     If IsNumeric(C) Then
+                                                         If m.Groups("L").Success Then
+                                                             Dim L As String = m.Groups("L").Value
+                                                             If IsNumeric(L) Then
+                                                                 vari = $"Qst6yrbi_{N}_{L}_{C}"
+                                                                 dim_vari = $"Qst6yrbi_{N}_{L}_{C} = " & getValeur(reponse, C, L)
+                                                             End If
+                                                         Else
+                                                             vari = $"Qst6yrbi_{N}_{C}"
+                                                             dim_vari = $"Qst6yrbi_{N}_{C}= " & getValeur(reponse, C)
+                                                         End If
+                                                     End If
+                                                 Else
+                                                     vari = $"Qst6yrbi_{N}"
+                                                     dim_vari = $"Qst6yrbi_{N}= " & getValeur(reponse)
+                                                 End If
+                                                 dim_vari = TraitementCaractere(dim_vari)
+                                                 myVBS.ExecuteStatement(dim_vari)
+                                                 Return vari
+                                             Else
+                                                 Return m.Value
+                                             End If
+                                         End Function
+        For i = 0 To obgRw.Length - 1
+            Dim codQuestion As String = obgRw(i)("Cod_Question")
+            Dim strFunction As String = obgRw(i)("Erreur_Si")
+            Dim currentQuestion = reponses.Keys.FirstOrDefault(Function(c) c.Name = codQuestion)
+            If currentQuestion IsNot Nothing Then
+                Dim output As String = TraitementCaractere(rx_survey.Replace(strFunction, obgFunct))
+                If myVBS.Eval(output) Then Return New erreurSi With {.ud = currentQuestion, .err = IsNull(obgRw(i)("Erreur_Msg").trim, "Erreur de données")}
+            End If
+        Next
+        Return New erreurSi With {.ud = Nothing, .err = ""}
     End Function
     Function estVide(rep As ud_pattern) As Boolean
         If TypeOf rep Is ud_paragraph Then

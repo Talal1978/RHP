@@ -1,9 +1,70 @@
 ﻿Imports System.Drawing.Printing
 Public Class Evaluation
     Friend CodSurvey As String = ""
-    Friend CodRepose As Integer = -1
+    Friend CodReponse As Integer = -1
     Dim Tbl_Question As New DataTable
     Dim afficherLesNotes As Boolean = False
+    Dim btn_Signature As New mybtn_Signature(Me, "Signer_D", "", "btn_sign")
+    Dim Paie_Calculee As Boolean = False
+#Region "Signature"
+    Function SoumettreEnSignature() As savingResult
+        '    If ShowMessageBox("Etes-vous sûr de vouloir soumettre en signature?", "Signature", MessageBoxButtons.OKCancel, msgIcon.Question) = MsgBoxResult.Cancel Then Return New savingResult With {.result = True, .message = ""}
+        Return Saving("SS")
+    End Function
+    Function requestAfterSignature() As Boolean
+        Request()
+        Return True
+    End Function
+    Sub miseAjourBtnValidationSignature(statut As String)
+        Dim gereWrkf As Boolean = estGereEnSignature("EV")
+        Dim controlToRemove As Control = ent_pnl.GetControlFromPosition(1, 0)
+
+        If gereWrkf Then
+            If TypeOf controlToRemove IsNot mybtn_Signature Then
+                Dim Dv As DataView = Tbl_Workflow_ParamDocuments.DefaultView
+                Dv.RowFilter = "Typ_Document='EV' and isnull(Gere_Signature,'false')='true'"
+                Dim Dt = Dv.ToTable
+                If Dt.Rows.Count = 0 Then Return
+                With btn_Signature
+                    .Image = My.Resources.Resources.btn_sign
+                    .Name = "Signer_D"
+                    .tbl = Dt
+                    .frm = Me
+                    .Statut = statut
+                    .valeurIndex = CodReponse
+                    .Visible = (estGereEnSignature("EV") And (.valeurIndex <> ""))
+                    .ToolTip = "Signatures"
+                    .Size = New Size(.Width * 1.2, .Height * 1.2)
+                    AddHandler .Click, AddressOf SubSignatures
+                End With
+                If controlToRemove IsNot Nothing Then
+                    ent_pnl.Controls.Remove(controlToRemove)
+                    controlToRemove.Dispose() ' Libérer les ressources
+                End If
+                ent_pnl.Controls.Add(btn_Signature, 1, 0)
+            Else
+                With CType(controlToRemove, mybtn_Signature)
+                    .Statut = statut
+                    .valeurIndex = CodReponse
+                    .Visible = (estGereEnSignature("EV") And (.valeurIndex <> ""))
+                    .Size = New Size(.Width * 1.2, .Height * 1.2)
+                End With
+            End If
+        Else
+            Valide_pb.Enabled = statut = ""
+            Valide_pb.Image = If(statut = "", My.Resources.btn_unlock, My.Resources.btn_lock_w)
+            If TypeOf controlToRemove IsNot PictureBox Then
+                If controlToRemove IsNot Nothing Then
+                    ent_pnl.Controls.Remove(controlToRemove)
+                    controlToRemove.Dispose() ' Libérer les ressources
+                End If
+                ent_pnl.Controls.Add(Valide_pb, 1, 0)
+            End If
+        End If
+
+    End Sub
+
+#End Region
     Private Sub Close_pb_Click(sender As Object, e As EventArgs) Handles Close_pb.Click
         Me.Close()
     End Sub
@@ -11,26 +72,26 @@ Public Class Evaluation
 
     End Sub
     Sub Request()
+        Dim statut As String = ""
         Save_pb.Enabled = True
-        Cloture_pb.Enabled = True
-        Cloture_pb.Image = My.Resources.btn_unlock
+        Paie_Calculee = False
         CodSurvey = FindLibelle("Cod_Survey", "Cod_Evaluation", Cod_Evaluation_txt.Text, "Evaluation")
         Lib_Survey_lbl.Text = CodSurvey & " : " & FindLibelle("Lib_Survey", "Cod_Survey", CodSurvey, "Survey").ToString.ToUpper
-        CodRepose = CnExecuting("select isnull((select Top 1 Cod_Reply from Survey_Reply where Cod_Survey='" & CodSurvey & "' and Evaluateur='" & Evaluateur_txt.Text & "' and Evalue='" & Evalue_txt.Text & "' and id_Societe=" & Societe.id_Societe & "),-1)").Fields(0).Value
+        CodReponse = CnExecuting("select isnull((select Top 1 Cod_Reply from Survey_Reply where Cod_Survey='" & CodSurvey & "' and Evaluateur='" & Evaluateur_txt.Text & "' and Evalue='" & Evalue_txt.Text & "' and id_Societe=" & Societe.id_Societe & "),-1)").Fields(0).Value
         Preambule_rtb.Rtf = FindLibelle("Preambule", "Cod_Survey", CodSurvey, "Survey")
         Preambule_rtb.Visible = (Preambule_rtb.Text.Trim <> "")
         If CodSurvey <> "" Then
-            Tbl_Question = Generate_QuestionnaireNew(CodSurvey, pnl_Content, CodRepose, Evalue_txt.Text, Evaluateur_txt.Text, "E")
+            Tbl_Question = Generate_QuestionnaireNew(CodSurvey, pnl_Content, CodReponse, Evalue_txt.Text, Evaluateur_txt.Text, "E")
         Else
             pnl_Content.Controls.Clear()
         End If
         afficherLesNotes = Tbl_Question.Select("AvecNote='true'").Length > 0
-        If CodRepose > -1 Then
-            Dim estValide As Boolean = CnExecuting("select isnull((select isnull(Valide,'false') from Survey_Reply where Cod_Reply='" & CodRepose & "' and id_Societe=" & Societe.id_Societe & "),'false')").Fields(0).Value
-            Save_pb.Enabled = Not estValide
-            Cloture_pb.Enabled = Not estValide
-            Cloture_pb.Image = If(estValide, My.Resources.btn_lock_w, My.Resources.btn_unlock_w)
+        If CodReponse > -1 Then
+            statut = Module_Generateur_Survey.Statut_Survey
+            Paie_Calcule = Module_Generateur_Survey.Paie_Calcule
+            Save_pb.Visible = (statut = "")
         End If
+        miseAjourBtnValidationSignature(statut)
         Recalcul()
         eval_tblpnl.Visible = afficherLesNotes
         With pnl_Content
@@ -39,18 +100,16 @@ Public Class Evaluation
         End With
 
     End Sub
-    Private Sub Cloture_pb_Click(sender As Object, e As EventArgs) Handles Cloture_pb.Click
-        Dim resp() As Integer = Saving(CodRepose, True)
-        If resp(1) = 1 Then
-            CodRepose = resp(0)
+    Private Sub Cloture_pb_Click(sender As Object, e As EventArgs) Handles Valide_pb.Click
+        Dim resp As savingResult = Saving("VA")
+        If resp.result Then
             Request()
         End If
     End Sub
 
     Private Sub Save_pb_Click(sender As Object, e As EventArgs) Handles Save_pb.Click
-        Dim resp() As Integer = Saving(CodRepose)
-        If resp(1) = 1 Then
-            CodRepose = resp(0)
+        Dim resp As savingResult = Saving("")
+        If resp.result Then
             Request()
         End If
     End Sub
@@ -76,11 +135,13 @@ Public Class Evaluation
         coef_txt.Text = Math.Round(coef, 2)
         note_totale_txt.Text = Math.Round(CDbl(note / coef), 2)
     End Sub
-    Function Saving(CodReply As Integer, Optional avecValidation As Boolean = False) As Integer()
-        If Cod_Evaluation_txt.Text = "" Then Return {CodReply, 0}
-        If Evalue_txt.Text = "" Then Return {CodReply, 0}
-        If CodSurvey = "" Then Return {CodReply, 0}
-        If pnl_Content.Tag Is Nothing Then Return {CodReply, 0}
+    Function Saving(statut As String) As savingResult
+        If Paie_Calculee Then Return New savingResult With {.result = False, .message = "Cette évaluation concerne une paie déjà calculée."}
+        If Cod_Evaluation_txt.Text = "" Then Return New savingResult With {.result = False, .message = "Code évaluation vide."}
+        If Evalue_txt.Text = "" Then Return New savingResult With {.result = False, .message = "Evalué vide."}
+        If CodSurvey = "" Then Return New savingResult With {.result = False, .message = "Code évaluation vide."}
+        If pnl_Content.Tag Is Nothing Then Return New savingResult With {.result = False, .message = "Formulaire ne contenant pas de questions."}
+        Dim Flg_Maj As Integer = (New Random).Next(1562, 86459)
         Dim dictQ As New Dictionary(Of ud_pattern, Dictionary(Of String, String))
         dictQ = pnl_Content.Tag
         Dim Arr As New ArrayList
@@ -97,7 +158,7 @@ Public Class Evaluation
             If nrw.Length > 0 Then
                 If estVide(Arr(i).key) Then
                     estErreur(Arr(i).key)
-                    Return {CodReply, 0}
+                    Return New savingResult With {.result = False, .message = "Des champs obligatoires ne sont pas renseignés."}
                 End If
             End If
         Next
@@ -105,10 +166,16 @@ Public Class Evaluation
         Dim QuestionObligatoireNonRenseignee = survey_CheckObligatoire(Tbl_Question, dictQ)
         If QuestionObligatoireNonRenseignee IsNot Nothing Then
             estErreur(QuestionObligatoireNonRenseignee)
-            Return {CodReply, 0}
+            Return New savingResult With {.result = False, .message = "Des champs obligatoires ne sont pas renseignés."}
+        End If
+        '3- Vérification Erreur Si
+        Dim checkErr As Module_Generateur_Survey.erreurSi = survey_ErreurSi(Tbl_Question, dictQ)
+        If checkErr.err <> "" Then
+            estErreur(checkErr.ud)
+            Return New savingResult With {.result = False, .message = checkErr.err}
         End If
         Dim rs As New ADODB.Recordset
-        rs.Open("select * from Survey_Reply where Cod_Reply=" & CodReply, cn, 1, 3)
+        rs.Open("select * from Survey_Reply where Cod_Reply=" & CodReponse, cn, 1, 3)
         If rs.EOF Then
             rs.AddNew()
             rs("id_Societe").Value = Societe.id_Societe
@@ -123,28 +190,24 @@ Public Class Evaluation
         rs("Typ_Evalue").Value = "E"
         rs("Evalue").Value = Evalue_txt.Text
         rs("Ref_Evaluation").Value = Cod_Evaluation_txt.Text
-        If avecValidation Then
-            rs("Valide").Value = True
-            rs("Valide_Par").Value = theUser.Login
-            rs("Dat_Valide").Value = Now
-        End If
+        rs("Statut").Value = statut
         rs("Dat_Modif").Value = Now
         rs("Modified_By").Value = theUser.Login
+        rs("Flg_Maj").Value = Flg_Maj
         rs.Update()
-        If CodReply <= 0 Then CodReply = rs("Cod_Reply").Value
+        If CodReponse <= 0 Then CodReponse = rs("Cod_Reply").Value
         rs.Close()
         Dim nb As Integer = 0
         Dim Reponse As String = ""
         Dim rsp() As String = Nothing
-
-        CnExecuting("delete from Survey_Reply_Detail where Cod_Reply=" & CodReply)
+        CnExecuting($"delete from Survey_Reply_Detail where Cod_Reply={CodReponse} and isnull(Flg_Maj,0)!={Flg_Maj}")
         For Each c In dictQ
             nrw = Tbl_Question.Select("Cod_Question=" & c.Key.Name)
             If nrw.Length > 0 Then
                 For Each v In c.Value
-                    rs.Open("select * from Survey_Reply_Detail where Cod_Reply=" & CodReply, cn, 2, 2)
+                    rs.Open($"select * from Survey_Reply_Detail where Cod_Reply={CodReponse}", cn, 2, 2)
                     rs.AddNew()
-                    rs("Cod_Reply").Value = CodReply
+                    rs("Cod_Reply").Value = CodReponse
                     rs("Cod_Question").Value = c.Key.Name
                     rs("Question").Value = nrw(0)("Question")
                     rs("Obligatoire").Value = c.Key.Obligatoire
@@ -175,13 +238,14 @@ Public Class Evaluation
                         rs("Note_Totale").Value = noteDic("note_totale")
                     End If
                     rs("Rang").Value = nb
+                    rs("Flg_Maj").Value = Flg_Maj
                     nb += 1
                     rs.Update()
                     rs.Close()
                 Next
             End If
         Next
-        Return {CodReply, 1}
+        Return New savingResult With {.result = True, .message = "Evaluation enregistrée avec succès."}
     End Function
     Sub estErreur(ud As ud_pattern)
         ud.Select()

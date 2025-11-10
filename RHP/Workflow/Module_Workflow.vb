@@ -63,6 +63,7 @@ where  isnull(nullif(s.id_Societe,-1)," & Societe.id_Societe & ")=" & Societe.id
                 Return
             End If
             CnExecuting("exec Sys_Workflow_Signature '" & sender.tbl.Rows(0)("Typ_Document") & "','" & Societe.id_Societe & "', '" & sender.valeurIndex & "','" & theUser.Matricule & "'")
+            '   MsgBox("exec Sys_Workflow_Signature '" & sender.tbl.Rows(0)("Typ_Document") & "','" & Societe.id_Societe & "', '" & sender.valeurIndex & "','" & theUser.Matricule & "'")
             sender.Statut = "SS"
             sender.Text = " " & FindRubriques("Statut_Signature", sender.Statut)
             sender.Refresh()

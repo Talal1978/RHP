@@ -53,7 +53,7 @@ Partial Class Evaluation
         Me.ent_pnl = New System.Windows.Forms.TableLayoutPanel()
         Me.Close_pb = New System.Windows.Forms.PictureBox()
         Me.Save_pb = New System.Windows.Forms.PictureBox()
-        Me.Cloture_pb = New System.Windows.Forms.PictureBox()
+        Me.Valide_pb = New System.Windows.Forms.PictureBox()
         Me.Print_pb = New System.Windows.Forms.PictureBox()
         Me.lbl_lbl = New System.Windows.Forms.Label()
         Me.pnl_Top.SuspendLayout()
@@ -66,7 +66,7 @@ Partial Class Evaluation
         Me.ent_pnl.SuspendLayout()
         CType(Me.Close_pb, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.Save_pb, System.ComponentModel.ISupportInitialize).BeginInit()
-        CType(Me.Cloture_pb, System.ComponentModel.ISupportInitialize).BeginInit()
+        CType(Me.Valide_pb, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.Print_pb, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SuspendLayout()
         '
@@ -513,7 +513,7 @@ Partial Class Evaluation
         Me.ent_pnl.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 40.0!))
         Me.ent_pnl.Controls.Add(Me.Close_pb, 4, 0)
         Me.ent_pnl.Controls.Add(Me.Save_pb, 0, 0)
-        Me.ent_pnl.Controls.Add(Me.Cloture_pb, 1, 0)
+        Me.ent_pnl.Controls.Add(Me.Valide_pb, 1, 0)
         Me.ent_pnl.Controls.Add(Me.Print_pb, 2, 0)
         Me.ent_pnl.Controls.Add(Me.lbl_lbl, 3, 0)
         Me.ent_pnl.Dock = System.Windows.Forms.DockStyle.Top
@@ -553,19 +553,19 @@ Partial Class Evaluation
         Me.Save_pb.TabIndex = 11
         Me.Save_pb.TabStop = False
         '
-        'Cloture_pb
+        'Valide_pb
         '
-        Me.Cloture_pb.Cursor = System.Windows.Forms.Cursors.Hand
-        Me.Cloture_pb.Dock = System.Windows.Forms.DockStyle.Fill
-        Me.Cloture_pb.Image = Global.RHP.My.Resources.Resources.btn_unlock
-        Me.Cloture_pb.InitialImage = Nothing
-        Me.Cloture_pb.Location = New System.Drawing.Point(44, 4)
-        Me.Cloture_pb.Margin = New System.Windows.Forms.Padding(4)
-        Me.Cloture_pb.Name = "Cloture_pb"
-        Me.Cloture_pb.Size = New System.Drawing.Size(32, 30)
-        Me.Cloture_pb.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom
-        Me.Cloture_pb.TabIndex = 11
-        Me.Cloture_pb.TabStop = False
+        Me.Valide_pb.Cursor = System.Windows.Forms.Cursors.Hand
+        Me.Valide_pb.Dock = System.Windows.Forms.DockStyle.Fill
+        Me.Valide_pb.Image = Global.RHP.My.Resources.Resources.btn_unlock
+        Me.Valide_pb.InitialImage = Nothing
+        Me.Valide_pb.Location = New System.Drawing.Point(44, 4)
+        Me.Valide_pb.Margin = New System.Windows.Forms.Padding(4)
+        Me.Valide_pb.Name = "Valide_pb"
+        Me.Valide_pb.Size = New System.Drawing.Size(32, 30)
+        Me.Valide_pb.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom
+        Me.Valide_pb.TabIndex = 11
+        Me.Valide_pb.TabStop = False
         '
         'Print_pb
         '
@@ -632,7 +632,7 @@ Partial Class Evaluation
         Me.ent_pnl.ResumeLayout(False)
         CType(Me.Close_pb, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.Save_pb, System.ComponentModel.ISupportInitialize).EndInit()
-        CType(Me.Cloture_pb, System.ComponentModel.ISupportInitialize).EndInit()
+        CType(Me.Valide_pb, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.Print_pb, System.ComponentModel.ISupportInitialize).EndInit()
         Me.ResumeLayout(False)
 
@@ -656,7 +656,7 @@ Partial Class Evaluation
     Friend WithEvents ent_pnl As TableLayoutPanel
     Friend WithEvents Close_pb As PictureBox
     Friend WithEvents Save_pb As PictureBox
-    Friend WithEvents Cloture_pb As PictureBox
+    Friend WithEvents Valide_pb As PictureBox
     Friend WithEvents Print_pb As PictureBox
     Friend WithEvents lbl_lbl As Label
     Friend WithEvents eval_tblpnl As TableLayoutPanel
