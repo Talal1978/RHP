@@ -5,6 +5,15 @@ Public Class Note_Frais
     Dim Save_D As ud_btn
     Dim Del_D As ud_btn
     Dim Valide_D As ud_btn
+#Region "Signature"
+    Function SoumettreEnSignature() As savingResult
+        Return Saving("SS")
+    End Function
+    Function requestAfterSignature() As Boolean
+        Request()
+        Return True
+    End Function
+#End Region
     Sub Chargement()
         If New_D Is Nothing Then
             New_D = dictButtons("New_D")
@@ -13,6 +22,10 @@ Public Class Note_Frais
             Valide_D = dictButtons("Valide_D")
         End If
         If Typ_Frais.Items.Count = 0 Then Combo_GRD(Typ_Frais)
+        If Typ_Mission_cbo.Items.Count = 0 Then Typ_Mission_cbo.fromRubrique("Typ_Mission")
+        If Typ_Deplacement_cbo.Items.Count = 0 Then
+            Typ_Deplacement_cbo.fromRubrique("Typ_Deplacement")
+        End If
     End Sub
     Private Sub RH_Demande_Conge_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         Chargement()
@@ -41,6 +54,7 @@ Public Class Note_Frais
                 requestMatricule()
                 Dat_NF_txt.Text = IsNull(.Rows(0)("Dat_NF"), "")
                 Commentaire_txt.Text = IsNull(.Rows(0)("Commentaire"), "")
+                Num_OM_txt.Text = IsNull(.Rows(0)("Num_OM"), "")
                 With pb_Valide
                     .Tag = ""
                     Select Case IsNull(Tbl.Rows(0)("Statut"), "")
@@ -107,14 +121,10 @@ where a.Matricule='" & Matricule_txt.Text & "' and a.id_Societe=" & Societe.id_S
         Dim CltTbl As DataTable = DATA_READER_GRD(SqlStr)
         If CltTbl.Rows.Count > 0 Then
             Nom_Agent_Text.Text = IsNull(CltTbl.Rows(0)("Nom_Agent"), "") & " " & IsNull(CltTbl.Rows(0)("Prenom_Agent"), "")
-            Cod_Plan_Paie_Text.Text = IsNull(CltTbl.Rows(0)("Plan_Paie"), "")
-            Poste_Text.Text = IsNull(CltTbl.Rows(0)("Cod_Poste"), "")
             Grade_Text.Text = IsNull(CltTbl.Rows(0)("Cod_Grade"), "")
             Cod_Entite_txt.Text = IsNull(CltTbl.Rows(0)("Cod_Entite"), "")
         ElseIf Matricule_txt.Text.Trim = "" Then
             Nom_Agent_Text.Text = ""
-            Cod_Plan_Paie_Text.Text = ""
-            Poste_Text.Text = ""
             Grade_Text.Text = ""
             Cod_Entite_txt.Text = ""
         End If
@@ -141,29 +151,6 @@ where a.Matricule='" & Matricule_txt.Text & "' and a.id_Societe=" & Societe.id_S
             Code = Num_NF_txt.Text
         End If
     End Sub
-    Private Sub Cod_Plan_Paie_Text_TextChanged(sender As Object, e As EventArgs) Handles Cod_Plan_Paie_Text.TextChanged
-        Dim SqlStr As String = "select isnull(Lib_Plan_Paie,'') as Lib_Plan_Paie,JourPaie ,Dat_Fin_Periode,isnull(SalNet,'') as SalNet, isnull(Dernier_Salaire_Net,0) as Dernier_Salaire_Net
-from RH_Param_Plan_Paie p
-outer apply (select Top 1  Dat_Fin_Periode from RH_Preparation_Paie 
-where Cod_Plan_Paie=p.Cod_Plan_Paie and id_Societe=p.id_Societe 
-order by Dat_Fin_Periode desc) pp
-outer apply (select Top 1  Valeur as Dernier_Salaire_Net from RH_Preparation_Paie_Detail 
-where Cod_Rubrique=isnull(SalNet,'') and id_Societe=" & Societe.id_Societe & " and Matricule='" & Matricule_txt.Text & "' order by Annee_Paie Desc, Mois_Paie Desc) p2
-where Cod_Plan_Paie='" & Cod_Plan_Paie_Text.Text & "' and id_Societe=" & Societe.id_Societe
-        Dim Tbl As DataTable = DATA_READER_GRD(SqlStr)
-        With Tbl
-            If .Rows.Count > 0 Then
-                If Not IsNumeric(Mnt_NF_txt.Text) Then Mnt_NF_txt.Text = 0
-                Lib_Plan_Paie_Text.Text = .Rows(0)("Lib_Plan_Paie")
-                LastDatePaie_txt.Text = IsNull(.Rows(0)("Dat_Fin_Periode"), "")
-                JourPaie_txt.Text = IsNull(.Rows(0)("JourPaie"), 1)
-            Else
-                Lib_Plan_Paie_Text.Text = ""
-                LastDatePaie_txt.Text = ""
-                JourPaie_txt.Text = 1
-            End If
-        End With
-    End Sub
     Function Valider()
         If ShowMessageBox("Etes-vous sûr de vouloir valider cette demande?", "Validation", MessageBoxButtons.OKCancel, msgIcon.Question) = DialogResult.Cancel Then Return False
         Dim rs = Saving("VA")
@@ -183,10 +170,6 @@ where Cod_Plan_Paie='" & Cod_Plan_Paie_Text.Text & "' and id_Societe=" & Societe
         If Matricule_txt.Text = "" Then
             Return New savingResult With {.result = False, .message = "Matricule non renseigné"}
         End If
-        If Cod_Plan_Paie_Text.Text = "" Then
-            Return New savingResult With {.result = False, .message = "Plan non renseigné"}
-        End If
-
         If ConvertNombre(Mnt_NF_txt.Text) = 0 Then
             Return New savingResult With {.result = False, .message = "Aucun montant pour cette note de frais"}
         End If
@@ -218,6 +201,7 @@ where id_Societe=" & Societe.id_Societe & " and year(Dat_NF)=" & CDate(Dat_NF_tx
         rs("Mnt_NF").Value = Mnt_NF_txt.Text
         rs("Commentaire").Value = Commentaire_txt.Text
         rs("Statut").Value = statut
+        rs("Num_OM").Value = Num_OM_txt.Text
         rs("Dat_Modif").Value = oDat
         rs("Modified_By").Value = theUser.Login
         rs.Update()
@@ -260,9 +244,6 @@ where id_Societe=" & Societe.id_Societe & " and year(Dat_NF)=" & CDate(Dat_NF_tx
         End If
         Return New savingResult With {.result = True, .message = "Enregistré avec succès"}
     End Function
-    Private Sub Poste_Text_TextChanged(sender As Object, e As EventArgs) Handles Poste_Text.TextChanged
-        Lib_Poste_Text.Text = FindLibelle("Lib_Poste", "Cod_Poste", Poste_Text.Text, "Org_Poste")
-    End Sub
     Private Sub Grade_Text_TextChanged(sender As Object, e As EventArgs) Handles Grade_Text.TextChanged
         Lib_Grade_Text.Text = FindLibelle("Lib_Grade", "Cod_Grade", Grade_Text.Text, "Org_Grade")
     End Sub
@@ -351,13 +332,49 @@ values ('Rh_Note_Frais','Num_NF','" & Num_NF_txt.Text & "','" & theUser.id_User 
         End If
 
     End Sub
-#Region "Signature"
-    Function SoumettreEnSignature() As savingResult
-        Return Saving("SS")
-    End Function
-    Function requestAfterSignature() As Boolean
-        Request()
-        Return True
-    End Function
-#End Region
+
+    Private Sub LinkLabel1_LinkClicked(sender As Object, e As LinkLabelLinkClickedEventArgs) Handles LinkLabel1.LinkClicked
+        Appel_Zoom1("MS095", Num_OM_txt, Me, $"isnull(Statut,'') in ('VA','SG') and exists(select 1 from RH_Ordre_Mission_Detail where id_Societe={Societe.id_Societe} and Matricule='{Matricule_txt.Text }')")
+    End Sub
+
+    Private Sub Num_OM_txt_TextChanged(sender As Object, e As EventArgs) Handles Num_OM_txt.TextChanged
+        Dim SqlStr As String = "SELECT * FROM RH_Ordre_Mission WHERE Num_OM='" & Num_OM_txt.Text & "' AND id_Societe=" & Societe.id_Societe
+        Dim Tbl As DataTable = DATA_READER_GRD(SqlStr)
+
+        With Tbl
+            If .Rows.Count > 0 Then
+                Dat_OM_txt.Text = IsNull(.Rows(0)("Dat_OM"), "")
+                Typ_Deplacement_cbo.SelectedValue = IsNull(.Rows(0)("Typ_Deplacement"), "")
+                Objet_Mission_txt.Text = IsNull(.Rows(0)("Objet_Mission"), "")
+                Ville_Depart_txt.Text = IsNull(.Rows(0)("Ville_Depart"), "")
+                Ville_Destination_txt.Text = IsNull(.Rows(0)("Ville_Destination"), "")
+                Pays_Destination_txt.Text = IsNull(.Rows(0)("Pays_Destination"), "")
+                Dat_Du_txt.Text = IsNull(.Rows(0)("Dat_Du"), "")
+                Dat_Au_txt.Text = IsNull(.Rows(0)("Dat_Au"), "")
+                Distance_txt.Text = IsNull(.Rows(0)("Distance"), "0,00")
+                AllerRetour_chk.Checked = IsNull(.Rows(0)("AllerRetour"), False)
+                Commentaire_txt.Text = IsNull(.Rows(0)("Commentaire"), "")
+                Typ_Mission_cbo.SelectedValue = IsNull(.Rows(0)("Typ_Mission"), "1")
+            Else
+                ' Vider les champs si pas de données
+                Typ_Deplacement_cbo.SelectedIndex = -1
+                Objet_Mission_txt.Text = ""
+                Ville_Depart_txt.Text = ""
+                Ville_Destination_txt.Text = ""
+                Distance_txt.Text = "0"
+                Dat_Du_txt.Text = ""
+                Dat_Au_txt.Text = ""
+                Commentaire_txt.Text = ""
+                Pays_Destination_txt.ResetText()
+                AllerRetour_chk.Checked = False
+                Typ_Mission_cbo.SelectedIndex = -1
+            End If
+        End With
+    End Sub
+    Private Sub Ville_Depart_txt_TextChanged(sender As Object, e As EventArgs) Handles Ville_Depart_txt.TextChanged
+        Lib_Ville_Depart_txt.Text = FindLibelle("Ville", "Cod_Ville", Ville_Depart_txt.Text & "' and Cod_Pays='" & Societe.Cod_Pays, "Param_Ville")
+    End Sub
+    Private Sub Ville_Destination_txt_TextChanged(sender As Object, e As EventArgs) Handles Ville_Destination_txt.TextChanged
+        Lib_Ville_Destination_txt.Text = FindLibelle("Ville", "Cod_Ville", Ville_Destination_txt.Text & "' and Cod_Pays='" & Societe.Cod_Pays, "Param_Ville")
+    End Sub
 End Class

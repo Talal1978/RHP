@@ -54,7 +54,7 @@ Partial Class Zoom_Calender
         Me.entete_pnl.Name = "entete_pnl"
         Me.entete_pnl.RowCount = 1
         Me.entete_pnl.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100.0!))
-        Me.entete_pnl.Size = New System.Drawing.Size(227, 26)
+        Me.entete_pnl.Size = New System.Drawing.Size(261, 26)
         Me.entete_pnl.TabIndex = 11
         '
         'Close_pb
@@ -62,7 +62,7 @@ Partial Class Zoom_Calender
         Me.Close_pb.Cursor = System.Windows.Forms.Cursors.Hand
         Me.Close_pb.Image = Global.RHP.My.Resources.Resources.btn_close_w
         Me.Close_pb.InitialImage = Nothing
-        Me.Close_pb.Location = New System.Drawing.Point(200, 3)
+        Me.Close_pb.Location = New System.Drawing.Point(234, 3)
         Me.Close_pb.Name = "Close_pb"
         Me.Close_pb.Size = New System.Drawing.Size(24, 20)
         Me.Close_pb.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom
@@ -85,7 +85,7 @@ Partial Class Zoom_Calender
         '
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None
         Me.BackColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
-        Me.ClientSize = New System.Drawing.Size(229, 190)
+        Me.ClientSize = New System.Drawing.Size(263, 232)
         Me.Controls.Add(Me.MonthCalendar1)
         Me.Controls.Add(Me.entete_pnl)
         Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None

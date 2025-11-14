@@ -64,15 +64,15 @@
                 Ville_Depart_txt.Text = IsNull(.Rows(0)("Ville_Depart"), "")
                 Ville_Destination_txt.Text = IsNull(.Rows(0)("Ville_Destination"), "")
                 Pays_Destination_txt.Text = IsNull(.Rows(0)("Pays_Destination"), "")
-                Distance_txt.Text = IsNull(.Rows(0)("Distance"), "0")
                 Dat_Du_txt.Text = IsNull(.Rows(0)("Dat_Du"), "")
                 Dat_Au_txt.Text = IsNull(.Rows(0)("Dat_Au"), "")
                 Distance_txt.Text = IsNull(.Rows(0)("Distance"), "0,00")
+                AllerRetour_chk.Checked = IsNull(.Rows(0)("AllerRetour"), False)
                 Commentaire_txt.Text = IsNull(.Rows(0)("Commentaire"), "")
-                Dim Nature_Deplacement = IsNull(.Rows(0)("Nature_Deplacement"), 1)
-                rd_nationale.Checked = (Nature_Deplacement = 1)
-                rd_local.Checked = (Nature_Deplacement = 0)
-                rd_internationale.Checked = (Nature_Deplacement = 2)
+                Dim TypMission = IsNull(.Rows(0)("Typ_Mission"), "1")
+                rd_nationale.Checked = (TypMission = "1")
+                rd_local.Checked = (TypMission = "0")
+                rd_internationale.Checked = (TypMission = "2")
                 With pb_Valide
                     .Tag = ""
                     Select Case IsNull(Tbl.Rows(0)("Statut"), "")
@@ -108,6 +108,7 @@
                 rd_nationale.Checked = True
                 rd_local.Checked = False
                 rd_internationale.Checked = False
+                AllerRetour_chk.Checked = True
             End If
 
             ' Charger les intéressés
@@ -314,9 +315,10 @@ outer apply (select Lib_Entite from Org_Entite where  id_Societe=d.id_Societe an
         rs("Ville_Destination").Value = Ville_Destination_txt.Text
         rs("Pays_Destination").Value = Pays_Destination_txt.Text
         rs("Distance").Value = If(IsNumeric(Distance_txt.Text), CDbl(Distance_txt.Text), 0)
-        rs("Nature_Deplacement").Value = If(rd_internationale.Checked, 2, If(rd_local.Checked, 0, 1))
+        rs("Typ_Mission").Value = If(rd_internationale.Checked, 2, If(rd_local.Checked, 0, 1))
         rs("Dat_Du").Value = Dat_Du_txt.Text
         rs("Dat_Au").Value = Dat_Au_txt.Text
+        rs("AllerRetour").Value = AllerRetour_chk.Checked
         rs("Commentaire").Value = Commentaire_txt.Text
         rs("Statut").Value = statut
         rs("Dat_Modif").Value = oDat

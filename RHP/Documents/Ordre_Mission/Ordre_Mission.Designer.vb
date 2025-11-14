@@ -23,12 +23,21 @@ Partial Class Ordre_Mission
     <System.Diagnostics.DebuggerStepThrough()>
     Private Sub InitializeComponent()
         Me.components = New System.ComponentModel.Container()
-        Dim DataGridViewCellStyle1 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
-        Dim DataGridViewCellStyle2 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
-        Dim DataGridViewCellStyle3 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
+        Dim DataGridViewCellStyle4 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
+        Dim DataGridViewCellStyle5 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
+        Dim DataGridViewCellStyle6 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
         Me.Panel1 = New System.Windows.Forms.Panel()
         Me.Grd_Interesses = New RHP.ud_Grd()
+        Me.Matricule = New System.Windows.Forms.DataGridViewTextBoxColumn()
+        Me.Nom = New System.Windows.Forms.DataGridViewTextBoxColumn()
+        Me.Cod_Poste = New System.Windows.Forms.DataGridViewTextBoxColumn()
+        Me.Lib_Poste = New System.Windows.Forms.DataGridViewTextBoxColumn()
+        Me.Cod_Grade = New System.Windows.Forms.DataGridViewTextBoxColumn()
+        Me.Lib_Grade = New System.Windows.Forms.DataGridViewTextBoxColumn()
+        Me.Cod_Entite = New System.Windows.Forms.DataGridViewTextBoxColumn()
+        Me.Lib_Entite = New System.Windows.Forms.DataGridViewTextBoxColumn()
         Me.GroupBox1 = New System.Windows.Forms.GroupBox()
+        Me.AllerRetour_chk = New RHP.ud_CheckBox()
         Me.pnl_internationale = New System.Windows.Forms.Panel()
         Me.Pays_Destination_txt = New RHP.ud_TextBox()
         Me.Lib_Pays_Destination_txt = New RHP.ud_TextBox()
@@ -64,14 +73,6 @@ Partial Class Ordre_Mission
         Me.LinkLabel2 = New System.Windows.Forms.LinkLabel()
         Me.Num_OM_txt = New RHP.ud_TextBox()
         Me.LinkLabel1 = New System.Windows.Forms.LinkLabel()
-        Me.Matricule = New System.Windows.Forms.DataGridViewTextBoxColumn()
-        Me.Nom = New System.Windows.Forms.DataGridViewTextBoxColumn()
-        Me.Cod_Poste = New System.Windows.Forms.DataGridViewTextBoxColumn()
-        Me.Lib_Poste = New System.Windows.Forms.DataGridViewTextBoxColumn()
-        Me.Cod_Grade = New System.Windows.Forms.DataGridViewTextBoxColumn()
-        Me.Lib_Grade = New System.Windows.Forms.DataGridViewTextBoxColumn()
-        Me.Cod_Entite = New System.Windows.Forms.DataGridViewTextBoxColumn()
-        Me.Lib_Entite = New System.Windows.Forms.DataGridViewTextBoxColumn()
         Me.Panel1.SuspendLayout()
         CType(Me.Grd_Interesses, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.GroupBox1.SuspendLayout()
@@ -99,25 +100,25 @@ Partial Class Ordre_Mission
         Me.Grd_Interesses.BackgroundColor = System.Drawing.Color.White
         Me.Grd_Interesses.BorderStyle = System.Windows.Forms.BorderStyle.None
         Me.Grd_Interesses.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.[Single]
-        DataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter
-        DataGridViewCellStyle1.BackColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
-        DataGridViewCellStyle1.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        DataGridViewCellStyle1.ForeColor = System.Drawing.Color.White
-        DataGridViewCellStyle1.Padding = New System.Windows.Forms.Padding(5)
-        DataGridViewCellStyle1.SelectionBackColor = System.Drawing.Color.White
-        DataGridViewCellStyle1.SelectionForeColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
-        DataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.[True]
-        Me.Grd_Interesses.ColumnHeadersDefaultCellStyle = DataGridViewCellStyle1
+        DataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter
+        DataGridViewCellStyle4.BackColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
+        DataGridViewCellStyle4.Font = New System.Drawing.Font("Century Gothic", 8.25!)
+        DataGridViewCellStyle4.ForeColor = System.Drawing.Color.White
+        DataGridViewCellStyle4.Padding = New System.Windows.Forms.Padding(5)
+        DataGridViewCellStyle4.SelectionBackColor = System.Drawing.Color.White
+        DataGridViewCellStyle4.SelectionForeColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
+        DataGridViewCellStyle4.WrapMode = System.Windows.Forms.DataGridViewTriState.[True]
+        Me.Grd_Interesses.ColumnHeadersDefaultCellStyle = DataGridViewCellStyle4
         Me.Grd_Interesses.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize
         Me.Grd_Interesses.Columns.AddRange(New System.Windows.Forms.DataGridViewColumn() {Me.Matricule, Me.Nom, Me.Cod_Poste, Me.Lib_Poste, Me.Cod_Grade, Me.Lib_Grade, Me.Cod_Entite, Me.Lib_Entite})
-        DataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft
-        DataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window
-        DataGridViewCellStyle2.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        DataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.ControlText
-        DataGridViewCellStyle2.SelectionBackColor = System.Drawing.Color.FromArgb(CType(CType(94, Byte), Integer), CType(CType(185, Byte), Integer), CType(CType(117, Byte), Integer))
-        DataGridViewCellStyle2.SelectionForeColor = System.Drawing.Color.Black
-        DataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.[False]
-        Me.Grd_Interesses.DefaultCellStyle = DataGridViewCellStyle2
+        DataGridViewCellStyle5.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft
+        DataGridViewCellStyle5.BackColor = System.Drawing.SystemColors.Window
+        DataGridViewCellStyle5.Font = New System.Drawing.Font("Century Gothic", 8.25!)
+        DataGridViewCellStyle5.ForeColor = System.Drawing.SystemColors.ControlText
+        DataGridViewCellStyle5.SelectionBackColor = System.Drawing.Color.FromArgb(CType(CType(94, Byte), Integer), CType(CType(185, Byte), Integer), CType(CType(117, Byte), Integer))
+        DataGridViewCellStyle5.SelectionForeColor = System.Drawing.Color.Black
+        DataGridViewCellStyle5.WrapMode = System.Windows.Forms.DataGridViewTriState.[False]
+        Me.Grd_Interesses.DefaultCellStyle = DataGridViewCellStyle5
         Me.Grd_Interesses.Dock = System.Windows.Forms.DockStyle.Fill
         Me.Grd_Interesses.EnableHeadersVisualStyles = False
         Me.Grd_Interesses.GridColor = System.Drawing.Color.FromArgb(CType(CType(179, Byte), Integer), CType(CType(216, Byte), Integer), CType(CType(228, Byte), Integer))
@@ -125,15 +126,83 @@ Partial Class Ordre_Mission
         Me.Grd_Interesses.Margin = New System.Windows.Forms.Padding(4)
         Me.Grd_Interesses.Name = "Grd_Interesses"
         Me.Grd_Interesses.RowHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.[Single]
-        DataGridViewCellStyle3.BackColor = System.Drawing.Color.FromArgb(CType(CType(169, Byte), Integer), CType(CType(210, Byte), Integer), CType(CType(224, Byte), Integer))
-        DataGridViewCellStyle3.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        Me.Grd_Interesses.RowHeadersDefaultCellStyle = DataGridViewCellStyle3
+        DataGridViewCellStyle6.BackColor = System.Drawing.Color.FromArgb(CType(CType(169, Byte), Integer), CType(CType(210, Byte), Integer), CType(CType(224, Byte), Integer))
+        DataGridViewCellStyle6.Font = New System.Drawing.Font("Century Gothic", 8.25!)
+        Me.Grd_Interesses.RowHeadersDefaultCellStyle = DataGridViewCellStyle6
         Me.Grd_Interesses.RowHeadersWidth = 51
         Me.Grd_Interesses.Size = New System.Drawing.Size(1062, 330)
         Me.Grd_Interesses.TabIndex = 100
         '
+        'Matricule
+        '
+        Me.Matricule.HeaderText = "Matricule"
+        Me.Matricule.MinimumWidth = 6
+        Me.Matricule.Name = "Matricule"
+        Me.Matricule.ReadOnly = True
+        Me.Matricule.Width = 112
+        '
+        'Nom
+        '
+        Me.Nom.HeaderText = "Nom complet"
+        Me.Nom.MinimumWidth = 200
+        Me.Nom.Name = "Nom"
+        Me.Nom.ReadOnly = True
+        Me.Nom.Width = 200
+        '
+        'Cod_Poste
+        '
+        Me.Cod_Poste.HeaderText = "Cod_Poste"
+        Me.Cod_Poste.MinimumWidth = 6
+        Me.Cod_Poste.Name = "Cod_Poste"
+        Me.Cod_Poste.ReadOnly = True
+        Me.Cod_Poste.Visible = False
+        Me.Cod_Poste.Width = 120
+        '
+        'Lib_Poste
+        '
+        Me.Lib_Poste.HeaderText = "Poste"
+        Me.Lib_Poste.MinimumWidth = 250
+        Me.Lib_Poste.Name = "Lib_Poste"
+        Me.Lib_Poste.ReadOnly = True
+        Me.Lib_Poste.Width = 250
+        '
+        'Cod_Grade
+        '
+        Me.Cod_Grade.HeaderText = "Cod_Grade"
+        Me.Cod_Grade.MinimumWidth = 6
+        Me.Cod_Grade.Name = "Cod_Grade"
+        Me.Cod_Grade.ReadOnly = True
+        Me.Cod_Grade.Visible = False
+        Me.Cod_Grade.Width = 129
+        '
+        'Lib_Grade
+        '
+        Me.Lib_Grade.HeaderText = "Grade"
+        Me.Lib_Grade.MinimumWidth = 200
+        Me.Lib_Grade.Name = "Lib_Grade"
+        Me.Lib_Grade.ReadOnly = True
+        Me.Lib_Grade.Width = 200
+        '
+        'Cod_Entite
+        '
+        Me.Cod_Entite.HeaderText = "Cod_Entite"
+        Me.Cod_Entite.MinimumWidth = 6
+        Me.Cod_Entite.Name = "Cod_Entite"
+        Me.Cod_Entite.ReadOnly = True
+        Me.Cod_Entite.Visible = False
+        Me.Cod_Entite.Width = 123
+        '
+        'Lib_Entite
+        '
+        Me.Lib_Entite.HeaderText = "Entité"
+        Me.Lib_Entite.MinimumWidth = 250
+        Me.Lib_Entite.Name = "Lib_Entite"
+        Me.Lib_Entite.ReadOnly = True
+        Me.Lib_Entite.Width = 250
+        '
         'GroupBox1
         '
+        Me.GroupBox1.Controls.Add(Me.AllerRetour_chk)
         Me.GroupBox1.Controls.Add(Me.pnl_internationale)
         Me.GroupBox1.Controls.Add(Me.pnl_nationale)
         Me.GroupBox1.Controls.Add(Me.rd_internationale)
@@ -168,14 +237,27 @@ Partial Class Ordre_Mission
         Me.GroupBox1.TabStop = False
         Me.GroupBox1.Text = "Ordre de Mission"
         '
+        'AllerRetour_chk
+        '
+        Me.AllerRetour_chk.AutoSize = True
+        Me.AllerRetour_chk.Checked = True
+        Me.AllerRetour_chk.Location = New System.Drawing.Point(478, 308)
+        Me.AllerRetour_chk.Margin = New System.Windows.Forms.Padding(4, 5, 4, 5)
+        Me.AllerRetour_chk.MaximumSize = New System.Drawing.Size(0, 30)
+        Me.AllerRetour_chk.MinimumSize = New System.Drawing.Size(133, 30)
+        Me.AllerRetour_chk.Name = "AllerRetour_chk"
+        Me.AllerRetour_chk.Size = New System.Drawing.Size(133, 30)
+        Me.AllerRetour_chk.TabIndex = 98
+        Me.AllerRetour_chk.Text = "Aller-retour"
+        '
         'pnl_internationale
         '
         Me.pnl_internationale.Controls.Add(Me.Pays_Destination_txt)
         Me.pnl_internationale.Controls.Add(Me.Lib_Pays_Destination_txt)
         Me.pnl_internationale.Controls.Add(Me.LinkLabel6)
-        Me.pnl_internationale.Location = New System.Drawing.Point(478, 152)
+        Me.pnl_internationale.Location = New System.Drawing.Point(21, 165)
         Me.pnl_internationale.Name = "pnl_internationale"
-        Me.pnl_internationale.Size = New System.Drawing.Size(489, 41)
+        Me.pnl_internationale.Size = New System.Drawing.Size(891, 41)
         Me.pnl_internationale.TabIndex = 97
         '
         'Pays_Destination_txt
@@ -184,7 +266,7 @@ Partial Class Ordre_Mission
         Me.Pays_Destination_txt.CharacterCasing = System.Windows.Forms.CharacterCasing.Normal
         Me.Pays_Destination_txt.ContextMenuStrip = Nothing
         Me.Pays_Destination_txt.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        Me.Pays_Destination_txt.Location = New System.Drawing.Point(74, 5)
+        Me.Pays_Destination_txt.Location = New System.Drawing.Point(102, 11)
         Me.Pays_Destination_txt.Margin = New System.Windows.Forms.Padding(6, 5, 6, 5)
         Me.Pays_Destination_txt.MaxLength = 100
         Me.Pays_Destination_txt.Multiline = False
@@ -194,7 +276,7 @@ Partial Class Ordre_Mission
         Me.Pays_Destination_txt.ReadOnly = True
         Me.Pays_Destination_txt.ScrollBars = System.Windows.Forms.ScrollBars.None
         Me.Pays_Destination_txt.SelectionStart = 0
-        Me.Pays_Destination_txt.Size = New System.Drawing.Size(80, 26)
+        Me.Pays_Destination_txt.Size = New System.Drawing.Size(257, 26)
         Me.Pays_Destination_txt.TabIndex = 96
         Me.Pays_Destination_txt.TextAlign = System.Windows.Forms.HorizontalAlignment.Left
         Me.Pays_Destination_txt.UseSystemPasswordChar = False
@@ -205,7 +287,7 @@ Partial Class Ordre_Mission
         Me.Lib_Pays_Destination_txt.CharacterCasing = System.Windows.Forms.CharacterCasing.Normal
         Me.Lib_Pays_Destination_txt.ContextMenuStrip = Nothing
         Me.Lib_Pays_Destination_txt.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        Me.Lib_Pays_Destination_txt.Location = New System.Drawing.Point(156, 5)
+        Me.Lib_Pays_Destination_txt.Location = New System.Drawing.Point(365, 11)
         Me.Lib_Pays_Destination_txt.Margin = New System.Windows.Forms.Padding(6, 5, 6, 5)
         Me.Lib_Pays_Destination_txt.MaxLength = 32767
         Me.Lib_Pays_Destination_txt.Multiline = False
@@ -215,7 +297,7 @@ Partial Class Ordre_Mission
         Me.Lib_Pays_Destination_txt.ReadOnly = True
         Me.Lib_Pays_Destination_txt.ScrollBars = System.Windows.Forms.ScrollBars.None
         Me.Lib_Pays_Destination_txt.SelectionStart = 0
-        Me.Lib_Pays_Destination_txt.Size = New System.Drawing.Size(250, 26)
+        Me.Lib_Pays_Destination_txt.Size = New System.Drawing.Size(491, 26)
         Me.Lib_Pays_Destination_txt.TabIndex = 97
         Me.Lib_Pays_Destination_txt.TabStop = False
         Me.Lib_Pays_Destination_txt.TextAlign = System.Windows.Forms.HorizontalAlignment.Left
@@ -229,7 +311,7 @@ Partial Class Ordre_Mission
         Me.LinkLabel6.Font = New System.Drawing.Font("Century Gothic", 8.25!)
         Me.LinkLabel6.ForeColor = System.Drawing.Color.FromArgb(CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer))
         Me.LinkLabel6.LinkColor = System.Drawing.Color.FromArgb(CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer))
-        Me.LinkLabel6.Location = New System.Drawing.Point(29, 9)
+        Me.LinkLabel6.Location = New System.Drawing.Point(58, 14)
         Me.LinkLabel6.Margin = New System.Windows.Forms.Padding(6, 0, 6, 0)
         Me.LinkLabel6.Name = "LinkLabel6"
         Me.LinkLabel6.Size = New System.Drawing.Size(40, 19)
@@ -250,9 +332,9 @@ Partial Class Ordre_Mission
         Me.pnl_nationale.Controls.Add(Me.LinkLabel5)
         Me.pnl_nationale.Controls.Add(Me.Distance_txt)
         Me.pnl_nationale.Controls.Add(Me.Label5)
-        Me.pnl_nationale.Location = New System.Drawing.Point(9, 150)
+        Me.pnl_nationale.Location = New System.Drawing.Point(21, 203)
         Me.pnl_nationale.Name = "pnl_nationale"
-        Me.pnl_nationale.Size = New System.Drawing.Size(447, 98)
+        Me.pnl_nationale.Size = New System.Drawing.Size(891, 98)
         Me.pnl_nationale.TabIndex = 96
         '
         'modifyDistance_btn
@@ -265,7 +347,7 @@ Partial Class Ordre_Mission
         Me.modifyDistance_btn.Cursor = System.Windows.Forms.Cursors.Hand
         Me.modifyDistance_btn.Image = Global.RHP.My.Resources.Resources.btn_edit_doc
         Me.modifyDistance_btn.isDefault = False
-        Me.modifyDistance_btn.Location = New System.Drawing.Point(185, 65)
+        Me.modifyDistance_btn.Location = New System.Drawing.Point(365, 66)
         Me.modifyDistance_btn.Margin = New System.Windows.Forms.Padding(4, 5, 4, 5)
         Me.modifyDistance_btn.MinimumSize = New System.Drawing.Size(27, 30)
         Me.modifyDistance_btn.Name = "modifyDistance_btn"
@@ -289,7 +371,7 @@ Partial Class Ordre_Mission
         Me.Ville_Depart_txt.ReadOnly = True
         Me.Ville_Depart_txt.ScrollBars = System.Windows.Forms.ScrollBars.None
         Me.Ville_Depart_txt.SelectionStart = 0
-        Me.Ville_Depart_txt.Size = New System.Drawing.Size(80, 26)
+        Me.Ville_Depart_txt.Size = New System.Drawing.Size(256, 26)
         Me.Ville_Depart_txt.TabIndex = 13
         Me.Ville_Depart_txt.TextAlign = System.Windows.Forms.HorizontalAlignment.Left
         Me.Ville_Depart_txt.UseSystemPasswordChar = False
@@ -310,7 +392,7 @@ Partial Class Ordre_Mission
         Me.Ville_Destination_txt.ReadOnly = True
         Me.Ville_Destination_txt.ScrollBars = System.Windows.Forms.ScrollBars.None
         Me.Ville_Destination_txt.SelectionStart = 0
-        Me.Ville_Destination_txt.Size = New System.Drawing.Size(80, 26)
+        Me.Ville_Destination_txt.Size = New System.Drawing.Size(256, 26)
         Me.Ville_Destination_txt.TabIndex = 15
         Me.Ville_Destination_txt.TextAlign = System.Windows.Forms.HorizontalAlignment.Left
         Me.Ville_Destination_txt.UseSystemPasswordChar = False
@@ -321,7 +403,7 @@ Partial Class Ordre_Mission
         Me.Lib_Ville_Destination_txt.CharacterCasing = System.Windows.Forms.CharacterCasing.Normal
         Me.Lib_Ville_Destination_txt.ContextMenuStrip = Nothing
         Me.Lib_Ville_Destination_txt.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        Me.Lib_Ville_Destination_txt.Location = New System.Drawing.Point(185, 35)
+        Me.Lib_Ville_Destination_txt.Location = New System.Drawing.Point(365, 36)
         Me.Lib_Ville_Destination_txt.Margin = New System.Windows.Forms.Padding(6, 5, 6, 5)
         Me.Lib_Ville_Destination_txt.MaxLength = 32767
         Me.Lib_Ville_Destination_txt.Multiline = False
@@ -331,7 +413,7 @@ Partial Class Ordre_Mission
         Me.Lib_Ville_Destination_txt.ReadOnly = True
         Me.Lib_Ville_Destination_txt.ScrollBars = System.Windows.Forms.ScrollBars.None
         Me.Lib_Ville_Destination_txt.SelectionStart = 0
-        Me.Lib_Ville_Destination_txt.Size = New System.Drawing.Size(250, 26)
+        Me.Lib_Ville_Destination_txt.Size = New System.Drawing.Size(491, 26)
         Me.Lib_Ville_Destination_txt.TabIndex = 94
         Me.Lib_Ville_Destination_txt.TabStop = False
         Me.Lib_Ville_Destination_txt.TextAlign = System.Windows.Forms.HorizontalAlignment.Left
@@ -361,7 +443,7 @@ Partial Class Ordre_Mission
         Me.Lib_Ville_Depart_txt.CharacterCasing = System.Windows.Forms.CharacterCasing.Normal
         Me.Lib_Ville_Depart_txt.ContextMenuStrip = Nothing
         Me.Lib_Ville_Depart_txt.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        Me.Lib_Ville_Depart_txt.Location = New System.Drawing.Point(185, 5)
+        Me.Lib_Ville_Depart_txt.Location = New System.Drawing.Point(365, 6)
         Me.Lib_Ville_Depart_txt.Margin = New System.Windows.Forms.Padding(6, 5, 6, 5)
         Me.Lib_Ville_Depart_txt.MaxLength = 32767
         Me.Lib_Ville_Depart_txt.Multiline = False
@@ -371,7 +453,7 @@ Partial Class Ordre_Mission
         Me.Lib_Ville_Depart_txt.ReadOnly = True
         Me.Lib_Ville_Depart_txt.ScrollBars = System.Windows.Forms.ScrollBars.None
         Me.Lib_Ville_Depart_txt.SelectionStart = 0
-        Me.Lib_Ville_Depart_txt.Size = New System.Drawing.Size(250, 26)
+        Me.Lib_Ville_Depart_txt.Size = New System.Drawing.Size(491, 26)
         Me.Lib_Ville_Depart_txt.TabIndex = 94
         Me.Lib_Ville_Depart_txt.TabStop = False
         Me.Lib_Ville_Depart_txt.TextAlign = System.Windows.Forms.HorizontalAlignment.Left
@@ -410,7 +492,7 @@ Partial Class Ordre_Mission
         Me.Distance_txt.ReadOnly = True
         Me.Distance_txt.ScrollBars = System.Windows.Forms.ScrollBars.None
         Me.Distance_txt.SelectionStart = 0
-        Me.Distance_txt.Size = New System.Drawing.Size(80, 26)
+        Me.Distance_txt.Size = New System.Drawing.Size(257, 26)
         Me.Distance_txt.TabIndex = 17
         Me.Distance_txt.Text = "0,00"
         Me.Distance_txt.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
@@ -472,7 +554,7 @@ Partial Class Ordre_Mission
         Me.Commentaire_txt.CharacterCasing = System.Windows.Forms.CharacterCasing.Normal
         Me.Commentaire_txt.ContextMenuStrip = Nothing
         Me.Commentaire_txt.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        Me.Commentaire_txt.Location = New System.Drawing.Point(114, 418)
+        Me.Commentaire_txt.Location = New System.Drawing.Point(114, 461)
         Me.Commentaire_txt.Margin = New System.Windows.Forms.Padding(6, 5, 6, 5)
         Me.Commentaire_txt.MaxLength = 500
         Me.Commentaire_txt.Multiline = True
@@ -482,7 +564,7 @@ Partial Class Ordre_Mission
         Me.Commentaire_txt.ReadOnly = False
         Me.Commentaire_txt.ScrollBars = System.Windows.Forms.ScrollBars.Vertical
         Me.Commentaire_txt.SelectionStart = 0
-        Me.Commentaire_txt.Size = New System.Drawing.Size(588, 79)
+        Me.Commentaire_txt.Size = New System.Drawing.Size(763, 79)
         Me.Commentaire_txt.TabIndex = 24
         Me.Commentaire_txt.TextAlign = System.Windows.Forms.HorizontalAlignment.Left
         Me.Commentaire_txt.UseSystemPasswordChar = False
@@ -491,7 +573,7 @@ Partial Class Ordre_Mission
         '
         Me.Label8.AutoSize = True
         Me.Label8.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        Me.Label8.Location = New System.Drawing.Point(7, 418)
+        Me.Label8.Location = New System.Drawing.Point(7, 461)
         Me.Label8.Margin = New System.Windows.Forms.Padding(6, 0, 6, 0)
         Me.Label8.Name = "Label8"
         Me.Label8.Size = New System.Drawing.Size(104, 19)
@@ -503,7 +585,7 @@ Partial Class Ordre_Mission
         Me.Dat_Au_txt.CharacterCasing = System.Windows.Forms.CharacterCasing.Normal
         Me.Dat_Au_txt.ContextMenuStrip = Nothing
         Me.Dat_Au_txt.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        Me.Dat_Au_txt.Location = New System.Drawing.Point(307, 382)
+        Me.Dat_Au_txt.Location = New System.Drawing.Point(486, 425)
         Me.Dat_Au_txt.Margin = New System.Windows.Forms.Padding(6, 5, 6, 5)
         Me.Dat_Au_txt.MaxLength = 10
         Me.Dat_Au_txt.Multiline = False
@@ -513,7 +595,7 @@ Partial Class Ordre_Mission
         Me.Dat_Au_txt.ReadOnly = True
         Me.Dat_Au_txt.ScrollBars = System.Windows.Forms.ScrollBars.None
         Me.Dat_Au_txt.SelectionStart = 0
-        Me.Dat_Au_txt.Size = New System.Drawing.Size(125, 26)
+        Me.Dat_Au_txt.Size = New System.Drawing.Size(213, 26)
         Me.Dat_Au_txt.TabIndex = 22
         Me.Dat_Au_txt.TextAlign = System.Windows.Forms.HorizontalAlignment.Center
         Me.Dat_Au_txt.UseSystemPasswordChar = False
@@ -523,7 +605,7 @@ Partial Class Ordre_Mission
         Me.Label7.AutoSize = True
         Me.Label7.Cursor = System.Windows.Forms.Cursors.Hand
         Me.Label7.Font = New System.Drawing.Font("Century Gothic", 7.8!, System.Drawing.FontStyle.Underline, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Label7.Location = New System.Drawing.Point(276, 385)
+        Me.Label7.Location = New System.Drawing.Point(455, 428)
         Me.Label7.Margin = New System.Windows.Forms.Padding(6, 0, 6, 0)
         Me.Label7.Name = "Label7"
         Me.Label7.Size = New System.Drawing.Size(25, 17)
@@ -535,7 +617,7 @@ Partial Class Ordre_Mission
         Me.Dat_Du_txt.CharacterCasing = System.Windows.Forms.CharacterCasing.Normal
         Me.Dat_Du_txt.ContextMenuStrip = Nothing
         Me.Dat_Du_txt.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        Me.Dat_Du_txt.Location = New System.Drawing.Point(114, 382)
+        Me.Dat_Du_txt.Location = New System.Drawing.Point(114, 425)
         Me.Dat_Du_txt.Margin = New System.Windows.Forms.Padding(6, 5, 6, 5)
         Me.Dat_Du_txt.MaxLength = 10
         Me.Dat_Du_txt.Multiline = False
@@ -545,7 +627,7 @@ Partial Class Ordre_Mission
         Me.Dat_Du_txt.ReadOnly = True
         Me.Dat_Du_txt.ScrollBars = System.Windows.Forms.ScrollBars.None
         Me.Dat_Du_txt.SelectionStart = 0
-        Me.Dat_Du_txt.Size = New System.Drawing.Size(125, 26)
+        Me.Dat_Du_txt.Size = New System.Drawing.Size(213, 26)
         Me.Dat_Du_txt.TabIndex = 20
         Me.Dat_Du_txt.TextAlign = System.Windows.Forms.HorizontalAlignment.Center
         Me.Dat_Du_txt.UseSystemPasswordChar = False
@@ -555,7 +637,7 @@ Partial Class Ordre_Mission
         Me.Label6.AutoSize = True
         Me.Label6.Cursor = System.Windows.Forms.Cursors.Hand
         Me.Label6.Font = New System.Drawing.Font("Century Gothic", 7.8!, System.Drawing.FontStyle.Underline, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Label6.Location = New System.Drawing.Point(83, 385)
+        Me.Label6.Location = New System.Drawing.Point(83, 428)
         Me.Label6.Margin = New System.Windows.Forms.Padding(6, 0, 6, 0)
         Me.Label6.Name = "Label6"
         Me.Label6.Size = New System.Drawing.Size(26, 17)
@@ -568,7 +650,7 @@ Partial Class Ordre_Mission
         Me.Objet_Mission_txt.CharacterCasing = System.Windows.Forms.CharacterCasing.Normal
         Me.Objet_Mission_txt.ContextMenuStrip = Nothing
         Me.Objet_Mission_txt.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        Me.Objet_Mission_txt.Location = New System.Drawing.Point(111, 301)
+        Me.Objet_Mission_txt.Location = New System.Drawing.Point(111, 344)
         Me.Objet_Mission_txt.Margin = New System.Windows.Forms.Padding(6, 5, 6, 5)
         Me.Objet_Mission_txt.MaxLength = 500
         Me.Objet_Mission_txt.Multiline = True
@@ -578,7 +660,7 @@ Partial Class Ordre_Mission
         Me.Objet_Mission_txt.ReadOnly = False
         Me.Objet_Mission_txt.ScrollBars = System.Windows.Forms.ScrollBars.Vertical
         Me.Objet_Mission_txt.SelectionStart = 0
-        Me.Objet_Mission_txt.Size = New System.Drawing.Size(588, 75)
+        Me.Objet_Mission_txt.Size = New System.Drawing.Size(766, 75)
         Me.Objet_Mission_txt.TabIndex = 11
         Me.Objet_Mission_txt.TextAlign = System.Windows.Forms.HorizontalAlignment.Left
         Me.Objet_Mission_txt.UseSystemPasswordChar = False
@@ -587,7 +669,7 @@ Partial Class Ordre_Mission
         '
         Me.Label2.AutoSize = True
         Me.Label2.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        Me.Label2.Location = New System.Drawing.Point(5, 301)
+        Me.Label2.Location = New System.Drawing.Point(5, 344)
         Me.Label2.Margin = New System.Windows.Forms.Padding(6, 0, 6, 0)
         Me.Label2.Name = "Label2"
         Me.Label2.Size = New System.Drawing.Size(99, 19)
@@ -600,7 +682,7 @@ Partial Class Ordre_Mission
         Me.Typ_Deplacement_cbo.DisplayMember = ""
         Me.Typ_Deplacement_cbo.DroppedDown = False
         Me.Typ_Deplacement_cbo.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        Me.Typ_Deplacement_cbo.Location = New System.Drawing.Point(111, 260)
+        Me.Typ_Deplacement_cbo.Location = New System.Drawing.Point(111, 308)
         Me.Typ_Deplacement_cbo.Margin = New System.Windows.Forms.Padding(4)
         Me.Typ_Deplacement_cbo.Name = "Typ_Deplacement_cbo"
         Me.Typ_Deplacement_cbo.SelectedIndex = -1
@@ -614,7 +696,7 @@ Partial Class Ordre_Mission
         '
         Me.Label1.AutoSize = True
         Me.Label1.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        Me.Label1.Location = New System.Drawing.Point(8, 264)
+        Me.Label1.Location = New System.Drawing.Point(8, 312)
         Me.Label1.Margin = New System.Windows.Forms.Padding(6, 0, 6, 0)
         Me.Label1.Name = "Label1"
         Me.Label1.Size = New System.Drawing.Size(100, 19)
@@ -762,7 +844,7 @@ Partial Class Ordre_Mission
         Me.LinkLabel1.Font = New System.Drawing.Font("Century Gothic", 8.25!)
         Me.LinkLabel1.ForeColor = System.Drawing.Color.FromArgb(CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer))
         Me.LinkLabel1.LinkColor = System.Drawing.Color.FromArgb(CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer))
-        Me.LinkLabel1.Location = New System.Drawing.Point(35, 31)
+        Me.LinkLabel1.Location = New System.Drawing.Point(49, 31)
         Me.LinkLabel1.Margin = New System.Windows.Forms.Padding(6, 0, 6, 0)
         Me.LinkLabel1.Name = "LinkLabel1"
         Me.LinkLabel1.Size = New System.Drawing.Size(78, 19)
@@ -771,73 +853,6 @@ Partial Class Ordre_Mission
         Me.LinkLabel1.Tag = "SC"
         Me.LinkLabel1.Text = "N° d'ordre"
         Me.LinkLabel1.VisitedLinkColor = System.Drawing.Color.FromArgb(CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer))
-        '
-        'Matricule
-        '
-        Me.Matricule.HeaderText = "Matricule"
-        Me.Matricule.MinimumWidth = 6
-        Me.Matricule.Name = "Matricule"
-        Me.Matricule.ReadOnly = True
-        Me.Matricule.Width = 112
-        '
-        'Nom
-        '
-        Me.Nom.HeaderText = "Nom complet"
-        Me.Nom.MinimumWidth = 200
-        Me.Nom.Name = "Nom"
-        Me.Nom.ReadOnly = True
-        Me.Nom.Width = 200
-        '
-        'Cod_Poste
-        '
-        Me.Cod_Poste.HeaderText = "Cod_Poste"
-        Me.Cod_Poste.MinimumWidth = 6
-        Me.Cod_Poste.Name = "Cod_Poste"
-        Me.Cod_Poste.ReadOnly = True
-        Me.Cod_Poste.Visible = False
-        Me.Cod_Poste.Width = 120
-        '
-        'Lib_Poste
-        '
-        Me.Lib_Poste.HeaderText = "Poste"
-        Me.Lib_Poste.MinimumWidth = 250
-        Me.Lib_Poste.Name = "Lib_Poste"
-        Me.Lib_Poste.ReadOnly = True
-        Me.Lib_Poste.Width = 250
-        '
-        'Cod_Grade
-        '
-        Me.Cod_Grade.HeaderText = "Cod_Grade"
-        Me.Cod_Grade.MinimumWidth = 6
-        Me.Cod_Grade.Name = "Cod_Grade"
-        Me.Cod_Grade.ReadOnly = True
-        Me.Cod_Grade.Visible = False
-        Me.Cod_Grade.Width = 129
-        '
-        'Lib_Grade
-        '
-        Me.Lib_Grade.HeaderText = "Grade"
-        Me.Lib_Grade.MinimumWidth = 200
-        Me.Lib_Grade.Name = "Lib_Grade"
-        Me.Lib_Grade.ReadOnly = True
-        Me.Lib_Grade.Width = 200
-        '
-        'Cod_Entite
-        '
-        Me.Cod_Entite.HeaderText = "Cod_Entite"
-        Me.Cod_Entite.MinimumWidth = 6
-        Me.Cod_Entite.Name = "Cod_Entite"
-        Me.Cod_Entite.ReadOnly = True
-        Me.Cod_Entite.Visible = False
-        Me.Cod_Entite.Width = 123
-        '
-        'Lib_Entite
-        '
-        Me.Lib_Entite.HeaderText = "Entité"
-        Me.Lib_Entite.MinimumWidth = 250
-        Me.Lib_Entite.Name = "Lib_Entite"
-        Me.Lib_Entite.ReadOnly = True
-        Me.Lib_Entite.Width = 250
         '
         'Ordre_Mission
         '
@@ -912,4 +927,5 @@ Partial Class Ordre_Mission
     Friend WithEvents Lib_Grade As DataGridViewTextBoxColumn
     Friend WithEvents Cod_Entite As DataGridViewTextBoxColumn
     Friend WithEvents Lib_Entite As DataGridViewTextBoxColumn
+    Friend WithEvents AllerRetour_chk As ud_CheckBox
 End Class
