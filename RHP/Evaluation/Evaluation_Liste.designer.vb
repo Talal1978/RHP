@@ -101,6 +101,7 @@ Partial Class Evaluation_Liste
         DataGridViewCellStyle3.Font = New System.Drawing.Font("Century Gothic", 8.25!)
         Me.Grille.RowHeadersDefaultCellStyle = DataGridViewCellStyle3
         Me.Grille.RowHeadersWidth = 51
+        Me.Grille.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect
         Me.Grille.Size = New System.Drawing.Size(1225, 529)
         Me.Grille.TabIndex = 2
         '

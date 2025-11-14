@@ -65,11 +65,15 @@ Public Class Evaluation
     End Sub
 
 #End Region
+    Private Sub LinkLabel2_LinkClicked(sender As Object, e As LinkLabelLinkClickedEventArgs) Handles Dat_Survey_lbl.LinkClicked
+        Appel_Calender(Dat_Survey_txt, Me)
+    End Sub
+
     Private Sub Close_pb_Click(sender As Object, e As EventArgs) Handles Close_pb.Click
         Me.Close()
     End Sub
     Private Sub Evaluation_Load(sender As Object, e As EventArgs) Handles Me.Load
-
+        If Not EstDate(Dat_Survey_txt.Text) Then Dat_Survey_txt.Text = Now.ToShortDateString
     End Sub
     Sub Request()
         Dim statut As String = ""
@@ -79,6 +83,7 @@ Public Class Evaluation
         Lib_Survey_lbl.Text = CodSurvey & " : " & FindLibelle("Lib_Survey", "Cod_Survey", CodSurvey, "Survey").ToString.ToUpper
         CodReponse = CnExecuting("select isnull((select Top 1 Cod_Reply from Survey_Reply where Cod_Survey='" & CodSurvey & "' and Evaluateur='" & Evaluateur_txt.Text & "' and Evalue='" & Evalue_txt.Text & "' and id_Societe=" & Societe.id_Societe & "),-1)").Fields(0).Value
         Preambule_rtb.Rtf = FindLibelle("Preambule", "Cod_Survey", CodSurvey, "Survey")
+        Dat_Survey_txt.Text = FindLibelle("Dat_Survey", "Cod_Reply", CodReponse, "Survey_Reply")
         Preambule_rtb.Visible = (Preambule_rtb.Text.Trim <> "")
         If CodSurvey <> "" Then
             Tbl_Question = Generate_QuestionnaireNew(CodSurvey, pnl_Content, CodReponse, Evalue_txt.Text, Evaluateur_txt.Text, "E")
@@ -93,7 +98,7 @@ Public Class Evaluation
         End If
         miseAjourBtnValidationSignature(statut)
         Recalcul()
-        eval_tblpnl.Visible = afficherLesNotes
+        pnl_note.Visible = afficherLesNotes
         With pnl_Content
             Dim fisrtCtr = If(.Controls.Count > 0, .Controls(.Controls.Count - 1), Nothing)
             If fisrtCtr IsNot Nothing Then pnl_Content.ScrollControlIntoView(fisrtCtr)
@@ -174,6 +179,9 @@ Public Class Evaluation
             estErreur(checkErr.ud)
             Return New savingResult With {.result = False, .message = checkErr.err}
         End If
+
+        Recalcul()
+
         Dim rs As New ADODB.Recordset
         rs.Open("select * from Survey_Reply where Cod_Reply=" & CodReponse, cn, 1, 3)
         If rs.EOF Then
@@ -191,6 +199,10 @@ Public Class Evaluation
         rs("Evalue").Value = Evalue_txt.Text
         rs("Ref_Evaluation").Value = Cod_Evaluation_txt.Text
         rs("Statut").Value = statut
+        rs("Note").Value = If(IsNumeric(note_txt.Text), CDbl(note_txt.Text), 0)
+        rs("Coef").Value = If(IsNumeric(coef_txt.Text), CDbl(coef_txt.Text), 1)
+        rs("Note_Totale").Value = If(IsNumeric(note_totale_txt.Text), CDbl(note_totale_txt.Text), 0)
+        rs("Dat_Survey").Value = If(EstDate(Dat_Survey_txt.Text), Dat_Survey_txt.Text, Now.ToShortDateString)
         rs("Dat_Modif").Value = Now
         rs("Modified_By").Value = theUser.Login
         rs("Flg_Maj").Value = Flg_Maj
@@ -454,7 +466,7 @@ Public Class Evaluation
         _frm.Alignment = StringAlignment.Center
         _frm.LineAlignment = StringAlignment.Center
         Using titleFont As New Font(oFontStr, 14, FontStyle.Bold)
-            e.Graphics.DrawString(Lib_Survey_lbl.Text.ToUpper(), titleFont,
+            e.Graphics.DrawString(Lib_Survey_lbl.Text.ToUpper() & vbCrLf & Dat_Survey_txt.Text, titleFont,
                               New SolidBrush(HeaderTextColor),
                               New Rectangle(0, 0, MaxW, 60), _frm)
         End Using
@@ -983,44 +995,44 @@ Public Class Evaluation
         NumPage = 1
         H_pos = 0
     End Sub
-    '2 Rendu de l'en-tête de question (sans les notes)
-    Private Sub RenderQuestionHeader(e As PrintPageEventArgs,
-                                 numQuestion As String,
-                                 questionText As String,
-                                 y As Integer,
-                                 obr As SolidBrush,
-                                 _frm As StringFormat,
-                                 Optional note As Double? = Nothing,
-                                 Optional coef As Double? = Nothing,
-                                 Optional noteTotale As Double? = Nothing)
+    ''2 Rendu de l'en-tête de question (sans les notes)
+    'Private Sub RenderQuestionHeader(e As PrintPageEventArgs,
+    '                             numQuestion As String,
+    '                             questionText As String,
+    '                             y As Integer,
+    '                             obr As SolidBrush,
+    '                             _frm As StringFormat,
+    '                             Optional note As Double? = Nothing,
+    '                             Optional coef As Double? = Nothing,
+    '                             Optional noteTotale As Double? = Nothing)
 
-        Const QuestionHeight As Integer = 30
+    '    Const QuestionHeight As Integer = 30
 
-        ' Rectangle de la question (pleine largeur)
-        Dim questionRect As New Rectangle(MarginLeft, y, ContentWidth, QuestionHeight)
+    '    ' Rectangle de la question (pleine largeur)
+    '    Dim questionRect As New Rectangle(MarginLeft, y, ContentWidth, QuestionHeight)
 
-        e.Graphics.FillRectangle(New SolidBrush(QuestionBackgroundColor), questionRect)
+    '    e.Graphics.FillRectangle(New SolidBrush(QuestionBackgroundColor), questionRect)
 
-        ' Bordure gauche accentuée
-        Using accentPen As New Pen(HeaderBackgroundColor, 3)
-            e.Graphics.DrawLine(accentPen, MarginLeft, y, MarginLeft, y + QuestionHeight)
-        End Using
+    '    ' Bordure gauche accentuée
+    '    Using accentPen As New Pen(HeaderBackgroundColor, 3)
+    '        e.Graphics.DrawLine(accentPen, MarginLeft, y, MarginLeft, y + QuestionHeight)
+    '    End Using
 
-        ' Bordure
-        Using borderPen As New Pen(BorderColor, 0.5F)
-            e.Graphics.DrawRectangle(borderPen, questionRect)
-        End Using
+    '    ' Bordure
+    '    Using borderPen As New Pen(BorderColor, 0.5F)
+    '        e.Graphics.DrawRectangle(borderPen, questionRect)
+    '    End Using
 
-        ' Texte de la question
-        _frm.Alignment = StringAlignment.Near
-        _frm.LineAlignment = StringAlignment.Center
-        Using questionFont As New Font(oFontStr, 8, FontStyle.Bold)
-            e.Graphics.DrawString(numQuestion & ". " & questionText, questionFont, obr,
-                              New Rectangle(MarginLeft + 10, y,
-                                            ContentWidth - 20,
-                                            QuestionHeight), _frm)
-        End Using
-    End Sub
+    '    ' Texte de la question
+    '    _frm.Alignment = StringAlignment.Near
+    '    _frm.LineAlignment = StringAlignment.Center
+    '    Using questionFont As New Font(oFontStr, 8, FontStyle.Bold)
+    '        e.Graphics.DrawString(numQuestion & ". " & questionText, questionFont, obr,
+    '                          New Rectangle(MarginLeft + 10, y,
+    '                                        ContentWidth - 20,
+    '                                        QuestionHeight), _frm)
+    '    End Using
+    'End Sub
 
     ' Fonction pour afficher la ligne de notes en dessous d'une question
     Private Sub RenderNoteLine(e As PrintPageEventArgs, ByRef y As Integer,
@@ -1074,7 +1086,5 @@ Public Class Evaluation
 
         y += NoteLineHeight
     End Sub
-
-
 #End Region
 End Class

@@ -22,178 +22,253 @@ Partial Class Zoom_RH_Preparation_Paie_RegenrationEV
     'Do not modify it using the code editor.
     <System.Diagnostics.DebuggerStepThrough()> _
     Private Sub InitializeComponent()
-        Me.chk_fraisMedicaux = New RHP.ud_CheckBox()
-        Me.chk_Avances = New RHP.ud_CheckBox()
-        Me.chk_interet = New RHP.ud_CheckBox()
-        Me.Chk_prets = New RHP.ud_CheckBox()
-        Me.chk_conge = New RHP.ud_CheckBox()
-        Me.Titre_lbl = New System.Windows.Forms.Label()
-        Me.Panel2 = New System.Windows.Forms.Panel()
-        Me.Save_ud = New RHP.ud_button()
-        Me.chk_NF = New RHP.ud_CheckBox()
-        Me.Panel2.SuspendLayout()
+        Me.components = New System.ComponentModel.Container()
+        Dim DataGridViewCellStyle1 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
+        Dim DataGridViewCellStyle15 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
+        Dim DataGridViewCellStyle16 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
+        Dim DataGridViewCellStyle11 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
+        Dim DataGridViewCellStyle12 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
+        Me.ent_pnl = New System.Windows.Forms.TableLayoutPanel()
+        Me.Zoom_lbl = New System.Windows.Forms.Label()
+        Me.Close_pb = New System.Windows.Forms.PictureBox()
+        Me.Save_pb = New System.Windows.Forms.PictureBox()
+        Me.SelectAll_pb = New System.Windows.Forms.PictureBox()
+        Me.Request_pb = New System.Windows.Forms.PictureBox()
+        Me.Grille = New RHP.ud_Grd()
+        Me.Oui = New System.Windows.Forms.DataGridViewCheckBoxColumn()
+        Me.Cod_Rubrique = New System.Windows.Forms.DataGridViewTextBoxColumn()
+        Me.Mnt_Modules = New System.Windows.Forms.DataGridViewTextBoxColumn()
+        Me.Mnt_Preparation = New System.Windows.Forms.DataGridViewTextBoxColumn()
+        Me.Etat = New System.Windows.Forms.DataGridViewImageColumn()
+        Me.ent_pnl.SuspendLayout()
+        CType(Me.Close_pb, System.ComponentModel.ISupportInitialize).BeginInit()
+        CType(Me.Save_pb, System.ComponentModel.ISupportInitialize).BeginInit()
+        CType(Me.SelectAll_pb, System.ComponentModel.ISupportInitialize).BeginInit()
+        CType(Me.Request_pb, System.ComponentModel.ISupportInitialize).BeginInit()
+        CType(Me.Grille, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SuspendLayout()
         '
-        'chk_fraisMedicaux
+        'ent_pnl
         '
-        Me.chk_fraisMedicaux.AutoSize = True
-        Me.chk_fraisMedicaux.BackColor = System.Drawing.Color.Transparent
-        Me.chk_fraisMedicaux.Checked = True
-        Me.chk_fraisMedicaux.Location = New System.Drawing.Point(151, 46)
-        Me.chk_fraisMedicaux.Margin = New System.Windows.Forms.Padding(3, 2, 3, 2)
-        Me.chk_fraisMedicaux.MaximumSize = New System.Drawing.Size(0, 20)
-        Me.chk_fraisMedicaux.MinimumSize = New System.Drawing.Size(100, 20)
-        Me.chk_fraisMedicaux.Name = "chk_fraisMedicaux"
-        Me.chk_fraisMedicaux.Size = New System.Drawing.Size(189, 20)
-        Me.chk_fraisMedicaux.TabIndex = 0
-        Me.chk_fraisMedicaux.Text = "Remboursement des frais médicaux"
+        Me.ent_pnl.BackColor = System.Drawing.Color.FromArgb(CType(CType(208, Byte), Integer), CType(CType(231, Byte), Integer), CType(CType(239, Byte), Integer))
+        Me.ent_pnl.ColumnCount = 6
+        Me.ent_pnl.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 44.0!))
+        Me.ent_pnl.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 47.0!))
+        Me.ent_pnl.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 50.0!))
+        Me.ent_pnl.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100.0!))
+        Me.ent_pnl.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 8.0!))
+        Me.ent_pnl.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 45.0!))
+        Me.ent_pnl.Controls.Add(Me.Zoom_lbl, 3, 0)
+        Me.ent_pnl.Controls.Add(Me.Close_pb, 5, 0)
+        Me.ent_pnl.Controls.Add(Me.Save_pb, 0, 0)
+        Me.ent_pnl.Controls.Add(Me.SelectAll_pb, 1, 0)
+        Me.ent_pnl.Controls.Add(Me.Request_pb, 2, 0)
+        Me.ent_pnl.Dock = System.Windows.Forms.DockStyle.Top
+        Me.ent_pnl.Location = New System.Drawing.Point(2, 2)
+        Me.ent_pnl.Name = "ent_pnl"
+        Me.ent_pnl.Padding = New System.Windows.Forms.Padding(1)
+        Me.ent_pnl.RowCount = 1
+        Me.ent_pnl.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100.0!))
+        Me.ent_pnl.Size = New System.Drawing.Size(1190, 50)
+        Me.ent_pnl.TabIndex = 34
         '
-        'chk_Avances
+        'Zoom_lbl
         '
-        Me.chk_Avances.AutoSize = True
-        Me.chk_Avances.BackColor = System.Drawing.Color.Transparent
-        Me.chk_Avances.Checked = True
-        Me.chk_Avances.Location = New System.Drawing.Point(12, 75)
-        Me.chk_Avances.Margin = New System.Windows.Forms.Padding(3, 2, 3, 2)
-        Me.chk_Avances.MaximumSize = New System.Drawing.Size(0, 20)
-        Me.chk_Avances.MinimumSize = New System.Drawing.Size(100, 20)
-        Me.chk_Avances.Name = "chk_Avances"
-        Me.chk_Avances.Size = New System.Drawing.Size(100, 20)
-        Me.chk_Avances.TabIndex = 0
-        Me.chk_Avances.Text = "Avances"
+        Me.Zoom_lbl.BackColor = System.Drawing.Color.FromArgb(CType(CType(208, Byte), Integer), CType(CType(231, Byte), Integer), CType(CType(239, Byte), Integer))
+        Me.Zoom_lbl.Dock = System.Windows.Forms.DockStyle.Fill
+        Me.Zoom_lbl.Font = New System.Drawing.Font("Century Gothic", 11.25!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Zoom_lbl.ForeColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
+        Me.Zoom_lbl.Location = New System.Drawing.Point(145, 1)
+        Me.Zoom_lbl.Name = "Zoom_lbl"
+        Me.Zoom_lbl.Size = New System.Drawing.Size(988, 48)
+        Me.Zoom_lbl.TabIndex = 6
+        Me.Zoom_lbl.Text = "Importer les éléments variables des modules annexes"
+        Me.Zoom_lbl.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
         '
-        'chk_interet
+        'Close_pb
         '
-        Me.chk_interet.AutoSize = True
-        Me.chk_interet.BackColor = System.Drawing.Color.Transparent
-        Me.chk_interet.Checked = True
-        Me.chk_interet.Location = New System.Drawing.Point(151, 17)
-        Me.chk_interet.Margin = New System.Windows.Forms.Padding(3, 2, 3, 2)
-        Me.chk_interet.MaximumSize = New System.Drawing.Size(0, 20)
-        Me.chk_interet.MinimumSize = New System.Drawing.Size(100, 20)
-        Me.chk_interet.Name = "chk_interet"
-        Me.chk_interet.Size = New System.Drawing.Size(100, 20)
-        Me.chk_interet.TabIndex = 0
-        Me.chk_interet.Text = "Intérêts"
+        Me.Close_pb.Cursor = System.Windows.Forms.Cursors.Hand
+        Me.Close_pb.Dock = System.Windows.Forms.DockStyle.Fill
+        Me.Close_pb.Image = Global.RHP.My.Resources.Resources.btn_close
+        Me.Close_pb.Location = New System.Drawing.Point(1144, 1)
+        Me.Close_pb.Margin = New System.Windows.Forms.Padding(0)
+        Me.Close_pb.Name = "Close_pb"
+        Me.Close_pb.Size = New System.Drawing.Size(45, 48)
+        Me.Close_pb.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage
+        Me.Close_pb.TabIndex = 7
+        Me.Close_pb.TabStop = False
         '
-        'Chk_prets
+        'Save_pb
         '
-        Me.Chk_prets.AutoSize = True
-        Me.Chk_prets.BackColor = System.Drawing.Color.Transparent
-        Me.Chk_prets.Checked = True
-        Me.Chk_prets.Location = New System.Drawing.Point(12, 46)
-        Me.Chk_prets.Margin = New System.Windows.Forms.Padding(3, 2, 3, 2)
-        Me.Chk_prets.MaximumSize = New System.Drawing.Size(0, 20)
-        Me.Chk_prets.MinimumSize = New System.Drawing.Size(100, 20)
-        Me.Chk_prets.Name = "Chk_prets"
-        Me.Chk_prets.Size = New System.Drawing.Size(100, 20)
-        Me.Chk_prets.TabIndex = 0
-        Me.Chk_prets.Text = "Prêts"
+        Me.Save_pb.Cursor = System.Windows.Forms.Cursors.Hand
+        Me.Save_pb.Dock = System.Windows.Forms.DockStyle.Fill
+        Me.Save_pb.Image = Global.RHP.My.Resources.Resources.btn_save
+        Me.Save_pb.Location = New System.Drawing.Point(1, 1)
+        Me.Save_pb.Margin = New System.Windows.Forms.Padding(0)
+        Me.Save_pb.Name = "Save_pb"
+        Me.Save_pb.Size = New System.Drawing.Size(44, 48)
+        Me.Save_pb.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage
+        Me.Save_pb.TabIndex = 7
+        Me.Save_pb.TabStop = False
         '
-        'chk_conge
+        'SelectAll_pb
         '
-        Me.chk_conge.AutoSize = True
-        Me.chk_conge.BackColor = System.Drawing.Color.Transparent
-        Me.chk_conge.Checked = True
-        Me.chk_conge.Location = New System.Drawing.Point(12, 17)
-        Me.chk_conge.Margin = New System.Windows.Forms.Padding(3, 2, 3, 2)
-        Me.chk_conge.MaximumSize = New System.Drawing.Size(0, 20)
-        Me.chk_conge.MinimumSize = New System.Drawing.Size(100, 20)
-        Me.chk_conge.Name = "chk_conge"
-        Me.chk_conge.Size = New System.Drawing.Size(100, 20)
-        Me.chk_conge.TabIndex = 0
-        Me.chk_conge.Text = "Congés"
+        Me.SelectAll_pb.Cursor = System.Windows.Forms.Cursors.Hand
+        Me.SelectAll_pb.Dock = System.Windows.Forms.DockStyle.Fill
+        Me.SelectAll_pb.Image = Global.RHP.My.Resources.Resources.btn_selectAll
+        Me.SelectAll_pb.Location = New System.Drawing.Point(45, 1)
+        Me.SelectAll_pb.Margin = New System.Windows.Forms.Padding(0)
+        Me.SelectAll_pb.Name = "SelectAll_pb"
+        Me.SelectAll_pb.Size = New System.Drawing.Size(47, 48)
+        Me.SelectAll_pb.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage
+        Me.SelectAll_pb.TabIndex = 7
+        Me.SelectAll_pb.TabStop = False
         '
-        'Titre_lbl
+        'Request_pb
         '
-        Me.Titre_lbl.BackColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
-        Me.Titre_lbl.Dock = System.Windows.Forms.DockStyle.Top
-        Me.Titre_lbl.Font = New System.Drawing.Font("Century Gothic", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Titre_lbl.ForeColor = System.Drawing.Color.White
-        Me.Titre_lbl.Location = New System.Drawing.Point(2, 2)
-        Me.Titre_lbl.Name = "Titre_lbl"
-        Me.Titre_lbl.Size = New System.Drawing.Size(386, 31)
-        Me.Titre_lbl.TabIndex = 33
-        Me.Titre_lbl.Text = "Importer les éléments variables des modules annexes"
-        Me.Titre_lbl.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
+        Me.Request_pb.Cursor = System.Windows.Forms.Cursors.Hand
+        Me.Request_pb.Dock = System.Windows.Forms.DockStyle.Fill
+        Me.Request_pb.Image = Global.RHP.My.Resources.Resources.btn_request
+        Me.Request_pb.Location = New System.Drawing.Point(92, 1)
+        Me.Request_pb.Margin = New System.Windows.Forms.Padding(0)
+        Me.Request_pb.Name = "Request_pb"
+        Me.Request_pb.Size = New System.Drawing.Size(50, 48)
+        Me.Request_pb.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage
+        Me.Request_pb.TabIndex = 7
+        Me.Request_pb.TabStop = False
         '
-        'Panel2
+        'Grille
         '
-        Me.Panel2.BackColor = System.Drawing.Color.FromArgb(CType(CType(250, Byte), Integer), CType(CType(250, Byte), Integer), CType(CType(250, Byte), Integer))
-        Me.Panel2.Controls.Add(Me.Save_ud)
-        Me.Panel2.Controls.Add(Me.chk_conge)
-        Me.Panel2.Controls.Add(Me.Chk_prets)
-        Me.Panel2.Controls.Add(Me.chk_NF)
-        Me.Panel2.Controls.Add(Me.chk_fraisMedicaux)
-        Me.Panel2.Controls.Add(Me.chk_interet)
-        Me.Panel2.Controls.Add(Me.chk_Avances)
-        Me.Panel2.Dock = System.Windows.Forms.DockStyle.Fill
-        Me.Panel2.Location = New System.Drawing.Point(2, 33)
-        Me.Panel2.Name = "Panel2"
-        Me.Panel2.Size = New System.Drawing.Size(386, 157)
-        Me.Panel2.TabIndex = 1
+        Me.Grille.AfficherLesEntetesLignes = True
+        Me.Grille.AllowUserToAddRows = False
+        Me.Grille.AllowUserToOrderColumns = True
+        Me.Grille.AlternerLesLignes = False
+        Me.Grille.BackgroundColor = System.Drawing.Color.FromArgb(CType(CType(250, Byte), Integer), CType(CType(250, Byte), Integer), CType(CType(250, Byte), Integer))
+        Me.Grille.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D
+        Me.Grille.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.[Single]
+        DataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter
+        DataGridViewCellStyle1.BackColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
+        DataGridViewCellStyle1.Font = New System.Drawing.Font("Century Gothic", 8.25!)
+        DataGridViewCellStyle1.ForeColor = System.Drawing.Color.White
+        DataGridViewCellStyle1.Padding = New System.Windows.Forms.Padding(5)
+        DataGridViewCellStyle1.SelectionBackColor = System.Drawing.Color.White
+        DataGridViewCellStyle1.SelectionForeColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
+        DataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.[True]
+        Me.Grille.ColumnHeadersDefaultCellStyle = DataGridViewCellStyle1
+        Me.Grille.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize
+        Me.Grille.Columns.AddRange(New System.Windows.Forms.DataGridViewColumn() {Me.Oui, Me.Cod_Rubrique, Me.Mnt_Modules, Me.Mnt_Preparation, Me.Etat})
+        DataGridViewCellStyle15.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft
+        DataGridViewCellStyle15.BackColor = System.Drawing.SystemColors.Window
+        DataGridViewCellStyle15.Font = New System.Drawing.Font("Century Gothic", 8.25!)
+        DataGridViewCellStyle15.ForeColor = System.Drawing.SystemColors.ControlText
+        DataGridViewCellStyle15.SelectionBackColor = System.Drawing.Color.FromArgb(CType(CType(94, Byte), Integer), CType(CType(185, Byte), Integer), CType(CType(117, Byte), Integer))
+        DataGridViewCellStyle15.SelectionForeColor = System.Drawing.SystemColors.HighlightText
+        DataGridViewCellStyle15.WrapMode = System.Windows.Forms.DataGridViewTriState.[False]
+        Me.Grille.DefaultCellStyle = DataGridViewCellStyle15
+        Me.Grille.Dock = System.Windows.Forms.DockStyle.Fill
+        Me.Grille.EnableHeadersVisualStyles = False
+        Me.Grille.GridColor = System.Drawing.Color.FromArgb(CType(CType(208, Byte), Integer), CType(CType(215, Byte), Integer), CType(CType(229, Byte), Integer))
+        Me.Grille.Location = New System.Drawing.Point(2, 52)
+        Me.Grille.Margin = New System.Windows.Forms.Padding(4)
+        Me.Grille.Name = "Grille"
+        Me.Grille.ReadOnly = True
+        Me.Grille.RowHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.[Single]
+        DataGridViewCellStyle16.BackColor = System.Drawing.Color.FromArgb(CType(CType(169, Byte), Integer), CType(CType(210, Byte), Integer), CType(CType(224, Byte), Integer))
+        DataGridViewCellStyle16.Font = New System.Drawing.Font("Century Gothic", 8.25!)
+        Me.Grille.RowHeadersDefaultCellStyle = DataGridViewCellStyle16
+        Me.Grille.RowHeadersVisible = False
+        Me.Grille.RowHeadersWidth = 51
+        Me.Grille.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.CellSelect
+        Me.Grille.Size = New System.Drawing.Size(1190, 600)
+        Me.Grille.TabIndex = 35
         '
-        'Save_ud
+        'Oui
         '
-        Me.Save_ud.AutoSize = True
-        Me.Save_ud.BackColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
-        Me.Save_ud.Border = RHP.ud_button.BorderStyle.All
-        Me.Save_ud.BorderColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
-        Me.Save_ud.BorderSize = 2
-        Me.Save_ud.Cursor = System.Windows.Forms.Cursors.Hand
-        Me.Save_ud.ForeColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(36, Byte), Integer), CType(CType(36, Byte), Integer))
-        Me.Save_ud.Image = Global.RHP.My.Resources.Resources.btn_save
-        Me.Save_ud.isDefault = False
-        Me.Save_ud.Location = New System.Drawing.Point(281, 119)
-        Me.Save_ud.Margin = New System.Windows.Forms.Padding(3, 4, 3, 4)
-        Me.Save_ud.MinimumSize = New System.Drawing.Size(23, 25)
-        Me.Save_ud.Name = "Save_ud"
-        Me.Save_ud.Padding = New System.Windows.Forms.Padding(2)
-        Me.Save_ud.Size = New System.Drawing.Size(100, 33)
-        Me.Save_ud.TabIndex = 31
-        Me.Save_ud.Text = "Enregistrer"
+        Me.Oui.HeaderText = ""
+        Me.Oui.MinimumWidth = 50
+        Me.Oui.Name = "Oui"
+        Me.Oui.ReadOnly = True
+        Me.Oui.Width = 50
         '
-        'chk_NF
+        'Cod_Rubrique
         '
-        Me.chk_NF.AutoSize = True
-        Me.chk_NF.BackColor = System.Drawing.Color.Transparent
-        Me.chk_NF.Checked = True
-        Me.chk_NF.Location = New System.Drawing.Point(151, 75)
-        Me.chk_NF.Margin = New System.Windows.Forms.Padding(3, 2, 3, 2)
-        Me.chk_NF.MaximumSize = New System.Drawing.Size(0, 20)
-        Me.chk_NF.MinimumSize = New System.Drawing.Size(100, 20)
-        Me.chk_NF.Name = "chk_NF"
-        Me.chk_NF.Size = New System.Drawing.Size(189, 20)
-        Me.chk_NF.TabIndex = 0
-        Me.chk_NF.Text = "Notes de frais"
+        Me.Cod_Rubrique.HeaderText = "Rubrique"
+        Me.Cod_Rubrique.MinimumWidth = 200
+        Me.Cod_Rubrique.Name = "Cod_Rubrique"
+        Me.Cod_Rubrique.ReadOnly = True
+        Me.Cod_Rubrique.Resizable = System.Windows.Forms.DataGridViewTriState.[True]
+        Me.Cod_Rubrique.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable
+        Me.Cod_Rubrique.Width = 200
+        '
+        'Mnt_Modules
+        '
+        DataGridViewCellStyle11.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight
+        DataGridViewCellStyle11.Format = "N2"
+        Me.Mnt_Modules.DefaultCellStyle = DataGridViewCellStyle11
+        Me.Mnt_Modules.HeaderText = "Montant du module"
+        Me.Mnt_Modules.MinimumWidth = 6
+        Me.Mnt_Modules.Name = "Mnt_Modules"
+        Me.Mnt_Modules.ReadOnly = True
+        Me.Mnt_Modules.Resizable = System.Windows.Forms.DataGridViewTriState.[True]
+        Me.Mnt_Modules.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable
+        Me.Mnt_Modules.Width = 125
+        '
+        'Mnt_Preparation
+        '
+        DataGridViewCellStyle12.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight
+        DataGridViewCellStyle12.Format = "N2"
+        Me.Mnt_Preparation.DefaultCellStyle = DataGridViewCellStyle12
+        Me.Mnt_Preparation.HeaderText = "Montant Préparation"
+        Me.Mnt_Preparation.MinimumWidth = 6
+        Me.Mnt_Preparation.Name = "Mnt_Preparation"
+        Me.Mnt_Preparation.ReadOnly = True
+        Me.Mnt_Preparation.Resizable = System.Windows.Forms.DataGridViewTriState.[True]
+        Me.Mnt_Preparation.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable
+        Me.Mnt_Preparation.Width = 125
+        '
+        'Etat
+        '
+        Me.Etat.HeaderText = "Etat"
+        Me.Etat.MinimumWidth = 50
+        Me.Etat.Name = "Etat"
+        Me.Etat.ReadOnly = True
+        Me.Etat.Width = 50
         '
         'Zoom_RH_Preparation_Paie_RegenrationEV
         '
-        Me.AutoScaleDimensions = New System.Drawing.SizeF(96.0!, 96.0!)
+        Me.AutoScaleDimensions = New System.Drawing.SizeF(120.0!, 120.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi
         Me.BackColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
-        Me.ClientSize = New System.Drawing.Size(390, 192)
-        Me.Controls.Add(Me.Panel2)
-        Me.Controls.Add(Me.Titre_lbl)
+        Me.ClientSize = New System.Drawing.Size(1194, 654)
+        Me.Controls.Add(Me.Grille)
+        Me.Controls.Add(Me.ent_pnl)
         Me.DoubleBuffered = True
         Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None
+        Me.Margin = New System.Windows.Forms.Padding(4)
         Me.Name = "Zoom_RH_Preparation_Paie_RegenrationEV"
         Me.Padding = New System.Windows.Forms.Padding(2)
         Me.ShowIcon = False
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen
         Me.Text = "Regenration des éléments variables"
-        Me.Panel2.ResumeLayout(False)
-        Me.Panel2.PerformLayout()
+        Me.ent_pnl.ResumeLayout(False)
+        CType(Me.Close_pb, System.ComponentModel.ISupportInitialize).EndInit()
+        CType(Me.Save_pb, System.ComponentModel.ISupportInitialize).EndInit()
+        CType(Me.SelectAll_pb, System.ComponentModel.ISupportInitialize).EndInit()
+        CType(Me.Request_pb, System.ComponentModel.ISupportInitialize).EndInit()
+        CType(Me.Grille, System.ComponentModel.ISupportInitialize).EndInit()
         Me.ResumeLayout(False)
 
     End Sub
-    Friend WithEvents chk_fraisMedicaux As ud_CheckBox
-    Friend WithEvents chk_Avances As ud_CheckBox
-    Friend WithEvents chk_interet As ud_CheckBox
-    Friend WithEvents Chk_prets As ud_CheckBox
-    Friend WithEvents chk_conge As ud_CheckBox
-    Friend WithEvents Titre_lbl As Label
-    Friend WithEvents Panel2 As Panel
-    Friend WithEvents Save_ud As ud_button
-    Friend WithEvents chk_NF As ud_CheckBox
+    Friend WithEvents ent_pnl As TableLayoutPanel
+    Friend WithEvents Zoom_lbl As Label
+    Friend WithEvents Close_pb As PictureBox
+    Friend WithEvents Save_pb As PictureBox
+    Friend WithEvents SelectAll_pb As PictureBox
+    Friend WithEvents Request_pb As PictureBox
+    Friend WithEvents Grille As ud_Grd
+    Friend WithEvents Oui As DataGridViewCheckBoxColumn
+    Friend WithEvents Cod_Rubrique As DataGridViewTextBoxColumn
+    Friend WithEvents Mnt_Modules As DataGridViewTextBoxColumn
+    Friend WithEvents Mnt_Preparation As DataGridViewTextBoxColumn
+    Friend WithEvents Etat As DataGridViewImageColumn
 End Class

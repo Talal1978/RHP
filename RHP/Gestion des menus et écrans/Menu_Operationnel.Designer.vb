@@ -58,26 +58,29 @@ Partial Class Menu_Operationnel
         Me.LHH.BackColor = System.Drawing.Color.FromArgb(CType(CType(224, Byte), Integer), CType(CType(221, Byte), Integer), CType(CType(221, Byte), Integer))
         Me.LHH.Dock = System.Windows.Forms.DockStyle.Top
         Me.LHH.Location = New System.Drawing.Point(0, 0)
+        Me.LHH.Margin = New System.Windows.Forms.Padding(4, 0, 4, 0)
         Me.LHH.Name = "LHH"
-        Me.LHH.Size = New System.Drawing.Size(1387, 1)
+        Me.LHH.Size = New System.Drawing.Size(1734, 1)
         Me.LHH.TabIndex = 0
         '
         'LHF
         '
         Me.LHF.BackColor = System.Drawing.Color.FromArgb(CType(CType(224, Byte), Integer), CType(CType(221, Byte), Integer), CType(CType(221, Byte), Integer))
         Me.LHF.Dock = System.Windows.Forms.DockStyle.Bottom
-        Me.LHF.Location = New System.Drawing.Point(0, 599)
+        Me.LHF.Location = New System.Drawing.Point(0, 749)
+        Me.LHF.Margin = New System.Windows.Forms.Padding(4, 0, 4, 0)
         Me.LHF.Name = "LHF"
-        Me.LHF.Size = New System.Drawing.Size(1387, 1)
+        Me.LHF.Size = New System.Drawing.Size(1734, 1)
         Me.LHF.TabIndex = 1
         '
         'LHR
         '
         Me.LHR.BackColor = System.Drawing.Color.FromArgb(CType(CType(224, Byte), Integer), CType(CType(221, Byte), Integer), CType(CType(221, Byte), Integer))
         Me.LHR.Dock = System.Windows.Forms.DockStyle.Right
-        Me.LHR.Location = New System.Drawing.Point(1386, 1)
+        Me.LHR.Location = New System.Drawing.Point(1733, 1)
+        Me.LHR.Margin = New System.Windows.Forms.Padding(4, 0, 4, 0)
         Me.LHR.Name = "LHR"
-        Me.LHR.Size = New System.Drawing.Size(1, 598)
+        Me.LHR.Size = New System.Drawing.Size(1, 748)
         Me.LHR.TabIndex = 2
         '
         'Ud_Content
@@ -89,8 +92,9 @@ Partial Class Menu_Operationnel
         Me.Ud_Content.Controls.Add(Me.Panel2)
         Me.Ud_Content.Dock = System.Windows.Forms.DockStyle.Fill
         Me.Ud_Content.Location = New System.Drawing.Point(0, 0)
+        Me.Ud_Content.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
         Me.Ud_Content.Name = "Ud_Content"
-        Me.Ud_Content.Size = New System.Drawing.Size(1387, 600)
+        Me.Ud_Content.Size = New System.Drawing.Size(1734, 750)
         Me.Ud_Content.TabIndex = 0
         '
         'Trv
@@ -101,14 +105,15 @@ Partial Class Menu_Operationnel
         Me.Trv.ImageIndex = 0
         Me.Trv.ImageList = Me.ImageList1
         Me.Trv.ItemHeight = 30
-        Me.Trv.Location = New System.Drawing.Point(729, 0)
+        Me.Trv.Location = New System.Drawing.Point(911, 0)
+        Me.Trv.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
         Me.Trv.Name = "Trv"
         TreeNode1.ForeColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
         TreeNode1.Name = "Nd"
         TreeNode1.Text = "Menu opérationnel"
         Me.Trv.Nodes.AddRange(New System.Windows.Forms.TreeNode() {TreeNode1})
         Me.Trv.SelectedImageIndex = 0
-        Me.Trv.Size = New System.Drawing.Size(658, 600)
+        Me.Trv.Size = New System.Drawing.Size(823, 750)
         Me.Trv.TabIndex = 11
         '
         'ImageList1
@@ -124,7 +129,8 @@ Partial Class Menu_Operationnel
         Me.ImageList1.Images.SetKeyName(6, "btn_circle.png")
         Me.ImageList1.Images.SetKeyName(7, "btn_queries.png")
         Me.ImageList1.Images.SetKeyName(8, "btn_printing.png")
-        Me.ImageList1.Images.SetKeyName(9, "btn_circle_on.png")
+        Me.ImageList1.Images.SetKeyName(9, "btn_python.png")
+        Me.ImageList1.Images.SetKeyName(10, "btn_circle_on.png")
         '
         'Panel2
         '
@@ -137,25 +143,28 @@ Partial Class Menu_Operationnel
         Me.Panel2.Controls.Add(Me.Panel1)
         Me.Panel2.Dock = System.Windows.Forms.DockStyle.Left
         Me.Panel2.Location = New System.Drawing.Point(0, 0)
+        Me.Panel2.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
         Me.Panel2.Name = "Panel2"
-        Me.Panel2.Size = New System.Drawing.Size(729, 600)
+        Me.Panel2.Size = New System.Drawing.Size(911, 750)
         Me.Panel2.TabIndex = 12
         '
         'Recent_pb
         '
         Me.Recent_pb.Image = CType(resources.GetObject("Recent_pb.Image"), System.Drawing.Image)
-        Me.Recent_pb.Location = New System.Drawing.Point(5, 212)
+        Me.Recent_pb.Location = New System.Drawing.Point(6, 265)
+        Me.Recent_pb.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
         Me.Recent_pb.Name = "Recent_pb"
-        Me.Recent_pb.Size = New System.Drawing.Size(25, 25)
+        Me.Recent_pb.Size = New System.Drawing.Size(31, 31)
         Me.Recent_pb.TabIndex = 0
         Me.Recent_pb.TabStop = False
         '
         'PictureBox1
         '
         Me.PictureBox1.Image = Global.RHP.My.Resources.Resources.ud_recents
-        Me.PictureBox1.Location = New System.Drawing.Point(5, 386)
+        Me.PictureBox1.Location = New System.Drawing.Point(6, 482)
+        Me.PictureBox1.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
         Me.PictureBox1.Name = "PictureBox1"
-        Me.PictureBox1.Size = New System.Drawing.Size(25, 25)
+        Me.PictureBox1.Size = New System.Drawing.Size(31, 31)
         Me.PictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom
         Me.PictureBox1.TabIndex = 0
         Me.PictureBox1.TabStop = False
@@ -164,34 +173,38 @@ Partial Class Menu_Operationnel
         '
         Me.Label1.AutoSize = True
         Me.Label1.ForeColor = System.Drawing.Color.FromArgb(CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer))
-        Me.Label1.Location = New System.Drawing.Point(34, 219)
+        Me.Label1.Location = New System.Drawing.Point(42, 274)
+        Me.Label1.Margin = New System.Windows.Forms.Padding(4, 0, 4, 0)
         Me.Label1.Name = "Label1"
-        Me.Label1.Size = New System.Drawing.Size(84, 13)
+        Me.Label1.Size = New System.Drawing.Size(103, 16)
         Me.Label1.TabIndex = 1
         Me.Label1.Text = "Accès fréquents"
         '
         'Plx_Recents
         '
-        Me.Plx_Recents.Location = New System.Drawing.Point(3, 405)
+        Me.Plx_Recents.Location = New System.Drawing.Point(4, 506)
+        Me.Plx_Recents.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
         Me.Plx_Recents.Name = "Plx_Recents"
-        Me.Plx_Recents.Size = New System.Drawing.Size(726, 137)
+        Me.Plx_Recents.Size = New System.Drawing.Size(908, 171)
         Me.Plx_Recents.TabIndex = 11
         '
         'Label2
         '
         Me.Label2.AutoSize = True
         Me.Label2.ForeColor = System.Drawing.Color.FromArgb(CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer))
-        Me.Label2.Location = New System.Drawing.Point(34, 393)
+        Me.Label2.Location = New System.Drawing.Point(42, 491)
+        Me.Label2.Margin = New System.Windows.Forms.Padding(4, 0, 4, 0)
         Me.Label2.Name = "Label2"
-        Me.Label2.Size = New System.Drawing.Size(75, 13)
+        Me.Label2.Size = New System.Drawing.Size(92, 16)
         Me.Label2.TabIndex = 1
         Me.Label2.Text = "Accès récents"
         '
         'Plx_Frequents
         '
-        Me.Plx_Frequents.Location = New System.Drawing.Point(3, 235)
+        Me.Plx_Frequents.Location = New System.Drawing.Point(4, 294)
+        Me.Plx_Frequents.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
         Me.Plx_Frequents.Name = "Plx_Frequents"
-        Me.Plx_Frequents.Size = New System.Drawing.Size(726, 134)
+        Me.Plx_Frequents.Size = New System.Drawing.Size(908, 168)
         Me.Plx_Frequents.TabIndex = 9
         '
         'Panel1
@@ -202,27 +215,30 @@ Partial Class Menu_Operationnel
         Me.Panel1.Controls.Add(Me.Label6)
         Me.Panel1.Controls.Add(Me.Organisation_ud)
         Me.Panel1.Controls.Add(Me.AdminPersonel_ud)
-        Me.Panel1.Location = New System.Drawing.Point(3, 26)
+        Me.Panel1.Location = New System.Drawing.Point(4, 32)
+        Me.Panel1.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
         Me.Panel1.Name = "Panel1"
-        Me.Panel1.Size = New System.Drawing.Size(726, 171)
+        Me.Panel1.Size = New System.Drawing.Size(908, 214)
         Me.Panel1.TabIndex = 10
         '
         'System_ud
         '
         Me.System_ud.Image = Global.RHP.My.Resources.Resources.ud_system
         Me.System_ud.isSelected = False
-        Me.System_ud.Location = New System.Drawing.Point(534, 46)
+        Me.System_ud.Location = New System.Drawing.Point(668, 58)
+        Me.System_ud.Margin = New System.Windows.Forms.Padding(5, 5, 5, 5)
         Me.System_ud.Name = "System_ud"
-        Me.System_ud.Size = New System.Drawing.Size(166, 100)
+        Me.System_ud.Size = New System.Drawing.Size(208, 125)
         Me.System_ud.TabIndex = 3
         Me.System_ud.Titre = "Système"
         '
         'PictureBox4
         '
         Me.PictureBox4.Image = CType(resources.GetObject("PictureBox4.Image"), System.Drawing.Image)
-        Me.PictureBox4.Location = New System.Drawing.Point(3, 3)
+        Me.PictureBox4.Location = New System.Drawing.Point(4, 4)
+        Me.PictureBox4.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
         Me.PictureBox4.Name = "PictureBox4"
-        Me.PictureBox4.Size = New System.Drawing.Size(25, 25)
+        Me.PictureBox4.Size = New System.Drawing.Size(31, 31)
         Me.PictureBox4.TabIndex = 0
         Me.PictureBox4.TabStop = False
         '
@@ -230,9 +246,10 @@ Partial Class Menu_Operationnel
         '
         Me.Setting_ud.Image = CType(resources.GetObject("Setting_ud.Image"), System.Drawing.Image)
         Me.Setting_ud.isSelected = False
-        Me.Setting_ud.Location = New System.Drawing.Point(357, 46)
+        Me.Setting_ud.Location = New System.Drawing.Point(446, 58)
+        Me.Setting_ud.Margin = New System.Windows.Forms.Padding(5, 5, 5, 5)
         Me.Setting_ud.Name = "Setting_ud"
-        Me.Setting_ud.Size = New System.Drawing.Size(166, 100)
+        Me.Setting_ud.Size = New System.Drawing.Size(208, 125)
         Me.Setting_ud.TabIndex = 2
         Me.Setting_ud.Titre = "Paramétrages && imports"
         '
@@ -240,9 +257,10 @@ Partial Class Menu_Operationnel
         '
         Me.Label6.AutoSize = True
         Me.Label6.ForeColor = System.Drawing.Color.FromArgb(CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer))
-        Me.Label6.Location = New System.Drawing.Point(32, 10)
+        Me.Label6.Location = New System.Drawing.Point(40, 12)
+        Me.Label6.Margin = New System.Windows.Forms.Padding(4, 0, 4, 0)
         Me.Label6.Name = "Label6"
-        Me.Label6.Size = New System.Drawing.Size(105, 13)
+        Me.Label6.Size = New System.Drawing.Size(132, 16)
         Me.Label6.TabIndex = 1
         Me.Label6.Text = "Menus opérationnels"
         '
@@ -250,9 +268,10 @@ Partial Class Menu_Operationnel
         '
         Me.Organisation_ud.Image = Global.RHP.My.Resources.Resources.ud_Organisation
         Me.Organisation_ud.isSelected = False
-        Me.Organisation_ud.Location = New System.Drawing.Point(180, 46)
+        Me.Organisation_ud.Location = New System.Drawing.Point(225, 58)
+        Me.Organisation_ud.Margin = New System.Windows.Forms.Padding(5, 5, 5, 5)
         Me.Organisation_ud.Name = "Organisation_ud"
-        Me.Organisation_ud.Size = New System.Drawing.Size(166, 100)
+        Me.Organisation_ud.Size = New System.Drawing.Size(208, 125)
         Me.Organisation_ud.TabIndex = 2
         Me.Organisation_ud.Titre = "Organisation && développement RH"
         '
@@ -260,23 +279,25 @@ Partial Class Menu_Operationnel
         '
         Me.AdminPersonel_ud.Image = CType(resources.GetObject("AdminPersonel_ud.Image"), System.Drawing.Image)
         Me.AdminPersonel_ud.isSelected = False
-        Me.AdminPersonel_ud.Location = New System.Drawing.Point(3, 46)
+        Me.AdminPersonel_ud.Location = New System.Drawing.Point(4, 58)
+        Me.AdminPersonel_ud.Margin = New System.Windows.Forms.Padding(5, 5, 5, 5)
         Me.AdminPersonel_ud.Name = "AdminPersonel_ud"
-        Me.AdminPersonel_ud.Size = New System.Drawing.Size(166, 100)
+        Me.AdminPersonel_ud.Size = New System.Drawing.Size(208, 125)
         Me.AdminPersonel_ud.TabIndex = 2
         Me.AdminPersonel_ud.Titre = "Gestion administrative du personnel"
         '
         'Menu_Operationnel
         '
-        Me.AutoScaleDimensions = New System.Drawing.SizeF(96.0!, 96.0!)
+        Me.AutoScaleDimensions = New System.Drawing.SizeF(120.0!, 120.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi
         Me.BackColor = System.Drawing.Color.White
-        Me.ClientSize = New System.Drawing.Size(1387, 600)
+        Me.ClientSize = New System.Drawing.Size(1734, 750)
         Me.Controls.Add(Me.LHR)
         Me.Controls.Add(Me.LHF)
         Me.Controls.Add(Me.LHH)
         Me.Controls.Add(Me.Ud_Content)
         Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None
+        Me.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
         Me.Name = "Menu_Operationnel"
         Me.Text = "Menu_Browser"
         Me.Ud_Content.ResumeLayout(False)

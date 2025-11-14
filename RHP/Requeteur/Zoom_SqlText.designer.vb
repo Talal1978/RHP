@@ -35,25 +35,28 @@ Partial Class Zoom_SqlText
         'CTB_FAM_Art_Label
         '
         Me.CTB_FAM_Art_Label.AutoSize = True
-        Me.CTB_FAM_Art_Label.Location = New System.Drawing.Point(309, 138)
+        Me.CTB_FAM_Art_Label.Location = New System.Drawing.Point(412, 170)
+        Me.CTB_FAM_Art_Label.Margin = New System.Windows.Forms.Padding(4, 0, 4, 0)
         Me.CTB_FAM_Art_Label.Name = "CTB_FAM_Art_Label"
-        Me.CTB_FAM_Art_Label.Size = New System.Drawing.Size(0, 13)
+        Me.CTB_FAM_Art_Label.Size = New System.Drawing.Size(0, 16)
         Me.CTB_FAM_Art_Label.TabIndex = 34
         '
         'ANA_FAM_Art_Label
         '
         Me.ANA_FAM_Art_Label.AutoSize = True
-        Me.ANA_FAM_Art_Label.Location = New System.Drawing.Point(308, 169)
+        Me.ANA_FAM_Art_Label.Location = New System.Drawing.Point(411, 208)
+        Me.ANA_FAM_Art_Label.Margin = New System.Windows.Forms.Padding(4, 0, 4, 0)
         Me.ANA_FAM_Art_Label.Name = "ANA_FAM_Art_Label"
-        Me.ANA_FAM_Art_Label.Size = New System.Drawing.Size(0, 13)
+        Me.ANA_FAM_Art_Label.Size = New System.Drawing.Size(0, 16)
         Me.ANA_FAM_Art_Label.TabIndex = 35
         '
         'Sql_Text
         '
-        Me.Sql_Text.BackColor = System.Drawing.SystemColors.Control
         Me.Sql_Text.CharacterCasing = System.Windows.Forms.CharacterCasing.Normal
+        Me.Sql_Text.ContextMenuStrip = Nothing
         Me.Sql_Text.Dock = System.Windows.Forms.DockStyle.Fill
-        Me.Sql_Text.Location = New System.Drawing.Point(2, 2)
+        Me.Sql_Text.Location = New System.Drawing.Point(3, 46)
+        Me.Sql_Text.Margin = New System.Windows.Forms.Padding(5, 5, 5, 5)
         Me.Sql_Text.MaxLength = 999999999
         Me.Sql_Text.Multiline = True
         Me.Sql_Text.Name = "Sql_Text"
@@ -62,7 +65,7 @@ Partial Class Zoom_SqlText
         Me.Sql_Text.ReadOnly = True
         Me.Sql_Text.ScrollBars = System.Windows.Forms.ScrollBars.Both
         Me.Sql_Text.SelectionStart = 0
-        Me.Sql_Text.Size = New System.Drawing.Size(560, 392)
+        Me.Sql_Text.Size = New System.Drawing.Size(746, 439)
         Me.Sql_Text.TabIndex = 211
         Me.Sql_Text.TextAlign = System.Windows.Forms.HorizontalAlignment.Left
         Me.Sql_Text.UseSystemPasswordChar = False
@@ -72,17 +75,18 @@ Partial Class Zoom_SqlText
         Me.Personnal_pnl.BackColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
         Me.Personnal_pnl.ColumnCount = 2
         Me.Personnal_pnl.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100.0!))
-        Me.Personnal_pnl.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 30.0!))
-        Me.Personnal_pnl.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 20.0!))
-        Me.Personnal_pnl.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 20.0!))
+        Me.Personnal_pnl.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 40.0!))
+        Me.Personnal_pnl.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 27.0!))
+        Me.Personnal_pnl.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 27.0!))
         Me.Personnal_pnl.Controls.Add(Me.Close_pb, 1, 0)
         Me.Personnal_pnl.Controls.Add(Me.Label1, 0, 0)
         Me.Personnal_pnl.Dock = System.Windows.Forms.DockStyle.Top
-        Me.Personnal_pnl.Location = New System.Drawing.Point(2, 2)
+        Me.Personnal_pnl.Location = New System.Drawing.Point(3, 2)
+        Me.Personnal_pnl.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
         Me.Personnal_pnl.Name = "Personnal_pnl"
         Me.Personnal_pnl.RowCount = 1
         Me.Personnal_pnl.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100.0!))
-        Me.Personnal_pnl.Size = New System.Drawing.Size(560, 36)
+        Me.Personnal_pnl.Size = New System.Drawing.Size(746, 44)
         Me.Personnal_pnl.TabIndex = 212
         '
         'Close_pb
@@ -90,9 +94,10 @@ Partial Class Zoom_SqlText
         Me.Close_pb.Cursor = System.Windows.Forms.Cursors.Hand
         Me.Close_pb.Image = Global.RHP.My.Resources.Resources.btn_close_w
         Me.Close_pb.InitialImage = Nothing
-        Me.Close_pb.Location = New System.Drawing.Point(533, 3)
+        Me.Close_pb.Location = New System.Drawing.Point(710, 4)
+        Me.Close_pb.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
         Me.Close_pb.Name = "Close_pb"
-        Me.Close_pb.Size = New System.Drawing.Size(24, 29)
+        Me.Close_pb.Size = New System.Drawing.Size(32, 36)
         Me.Close_pb.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom
         Me.Close_pb.TabIndex = 8
         Me.Close_pb.TabStop = False
@@ -100,27 +105,29 @@ Partial Class Zoom_SqlText
         'Label1
         '
         Me.Label1.ForeColor = System.Drawing.Color.White
-        Me.Label1.Location = New System.Drawing.Point(3, 0)
+        Me.Label1.Location = New System.Drawing.Point(4, 0)
+        Me.Label1.Margin = New System.Windows.Forms.Padding(4, 0, 4, 0)
         Me.Label1.Name = "Label1"
-        Me.Label1.Size = New System.Drawing.Size(524, 35)
+        Me.Label1.Size = New System.Drawing.Size(698, 43)
         Me.Label1.TabIndex = 9
         Me.Label1.Text = "Visualiser le texte de la requête"
         Me.Label1.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
         '
         'Zoom_SqlText
         '
-        Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
+        Me.AutoScaleDimensions = New System.Drawing.SizeF(8.0!, 16.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.BackColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
-        Me.ClientSize = New System.Drawing.Size(564, 396)
-        Me.Controls.Add(Me.Personnal_pnl)
+        Me.ClientSize = New System.Drawing.Size(752, 487)
         Me.Controls.Add(Me.Sql_Text)
+        Me.Controls.Add(Me.Personnal_pnl)
         Me.Controls.Add(Me.ANA_FAM_Art_Label)
         Me.Controls.Add(Me.CTB_FAM_Art_Label)
         Me.DoubleBuffered = True
         Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None
+        Me.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
         Me.Name = "Zoom_SqlText"
-        Me.Padding = New System.Windows.Forms.Padding(2)
+        Me.Padding = New System.Windows.Forms.Padding(3, 2, 3, 2)
         Me.ShowIcon = False
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen
         Me.Text = "Visualiser le Texte Sql "

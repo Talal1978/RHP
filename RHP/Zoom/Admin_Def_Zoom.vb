@@ -85,12 +85,11 @@ Public Class Admin_Def_Zoom
                 For Each c As Match In rgx.Matches(Cod_Sql)
                     Cod_Sql = Cod_Sql.Replace(c.Value, "'" & GlobalVar(c.Value.Trim.ToString) & "'")
                 Next
-                rgx = New Regex(sql_injection, RegexOptions.IgnoreCase)
-                If rgx.Matches(Cod_Sql).Count > 0 Then
-                    ShowMessageBox("Votre requête contient des expressions interdites : " & rgx.Matches(Cod_Sql)(0).Value, "Vérification de zoom", MessageBoxButtons.OK, msgIcon.Error)
+                Dim rgs As New Regex(sql_injection, RegexOptions.IgnoreCase)
+                If rgs.IsMatch(Cod_Sql) Then
+                    ShowMessageBox("Votre expression contient des expressions intérdites", "Injection", MessageBoxButtons.OK, msgIcon.Error)
                     Return
                 End If
-
                 TblZoomP = DATA_READER_GRD(Cod_Sql)
                 Grd.DataSource = TblZoomP
                 If Not TblZoomP Is Nothing Then

@@ -385,6 +385,11 @@ suite:
                 f.Text = objText
                 f.Query_Generator(objName, objText)
                 newShowEcran(f)
+            Case "PYT"
+                Dim f As New Param_Python_Saisi
+                f.Text = objText
+                f.Python_Generator(objName, objText)
+                newShowEcran(f)
             Case "SYS"
                 Dim frm As Form = GetFormByName(objName)
                 If frm Is Nothing Then Return False

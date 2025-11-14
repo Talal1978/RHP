@@ -160,11 +160,12 @@ where HashBytes('SHA1',upper(isnull(Login,'984iuiuhiuht65161')))=HashBytes('SHA1
         End If
         '' Stocker la Connection Sql (UID) et le Pw (PWD)
         Dim Str As String = connectionString
+
         ConnectionSQL = Split(Split(Str, ";")(3), "=")(1)
         PWDConnectionSQL = Split(Split(Str, ";")(4), "=")(1)
         DB = Split(Split(Str, ";")(2), "=")(1)
+        Serveur = Split(Split(Str, ";")(1), "=")(1)
         theUser.Login = loginStored.Trim.Replace("'", "''").ToUpper
-
         ' ==================== NOUVELLE LOGIQUE D'AUTHENTIFICATION ====================
         Dim isAuthenticatedAD As Boolean = False
         Dim adUserInfo As ADUserInfo

@@ -87,10 +87,10 @@
 Dat_Du as 'Du', Dat_Au as 'Au',s.Statut,
 {If(Cod_Entite_txt.Text <> "", "", "Entite as Entité,")}
 {If(Cod_Grade_txt.Text <> "", "", " Grade,")}
- Matricule, Nom, Poste,CONVERT(bit, case isnull(Cod_Reply,'') when '' then 'false' else 'true' end) Effectuée,dbo.FindRubrique('Statut_Signature',v.Statut) 'Validation'
+ Matricule, Nom, Poste,CONVERT(bit, case isnull(Cod_Reply,'') when '' then 'false' else 'true' end) Effectuée,dbo.FindRubrique('Statut_Signature',v.Statut) 'Validation', Dat_Survey as 'Date'
 from Sys_Evaluation_Liste l
 outer apply(select Membre as Statut from Param_Rubriques where Nom_Controle ='Statut_Evaluation' and Valeur=Statut_Evaluation)s
-outer apply (select Cod_Reply, Statut, Paie_Calculee from Survey_Reply where id_Societe =l.id_Societe and Cod_Survey =l.Cod_Survey and ISNULL(Ref_Evaluation,'')=Cod_Evaluation and Typ_Evalue ='E' and Evalue =Matricule) v" & vbCrLf & swhere
+outer apply (select Cod_Reply, Statut, Paie_Calculee, Dat_Survey from Survey_Reply where id_Societe =l.id_Societe and Cod_Survey =l.Cod_Survey and ISNULL(Ref_Evaluation,'')=Cod_Evaluation and Typ_Evalue ='E' and Evalue =Matricule) v" & vbCrLf & swhere
         GRD(swhere, Grille)
         With Grille
             If Not .Columns.Contains("btn") Then
@@ -101,6 +101,7 @@ outer apply (select Cod_Reply, Statut, Paie_Calculee from Survey_Reply where id_
                     .Style = DevComponents.DotNetBar.eDotNetBarStyle.Windows7
                     .Name = "btn"
                     .HeaderText = ""
+                    .Frozen = True
                 End With
                 .Columns.Insert(0, btn)
             End If
@@ -174,5 +175,17 @@ outer apply (select Cod_Reply, Statut, Paie_Calculee from Survey_Reply where id_
                     newShowEcran(f, True)
                 End If
         End With
+    End Sub
+
+    Private Sub Grille_CellMouseMove(sender As Object, e As DataGridViewCellMouseEventArgs) Handles Grille.CellMouseMove
+        If e.RowIndex < 0 Then Return
+        If Grille.Rows.Count < 0 Then Return
+        Grille.Rows(e.RowIndex).DefaultCellStyle.BackColor = colorBase02
+    End Sub
+
+    Private Sub Grille_CellMouseLeave(sender As Object, e As DataGridViewCellEventArgs) Handles Grille.CellMouseLeave
+        If e.RowIndex < 0 Then Return
+        If Grille.Rows.Count < 0 Then Return
+        Grille.Rows(e.RowIndex).DefaultCellStyle.BackColor = Color.White
     End Sub
 End Class

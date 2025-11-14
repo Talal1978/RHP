@@ -182,7 +182,7 @@ Module Module_General
             Return Nothing
         End Try
     End Function
-    Sub GRD(ByVal Cod_Sql As String, ByVal grd As DataGridView)
+    Sub GRD(ByVal Cod_Sql As String, ByVal grd As ud_Grd)
         Try
             Dim DTR As DataTable = DATA_READER_GRD(Cod_Sql)
             With grd
@@ -194,6 +194,7 @@ Module Module_General
                 .ContextMenuStrip = AddContextMenu(False, True, True, True, False, False, False, False)
                 .AllowUserToAddRows = False
                 .ReadOnly = True
+                .EnableHeadersVisualStyles = False
                 ' .SelectionMode = DataGridViewSelectionMode.FullRowSelect
                 Dim c As Integer = DTR.Columns.Count - 1
                 For i = 0 To c
@@ -209,6 +210,13 @@ Module Module_General
                             '   .Columns(i).DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft
                         End If
                     End If
+                    ' AJOUT : Forcer le style du header pour chaque colonne
+                    With .Columns(i).HeaderCell.Style
+                        .BackColor = Color.FromArgb(56, 153, 185)
+                        .ForeColor = Color.White
+                        .SelectionBackColor = Color.FromArgb(56, 153, 185)
+                        .SelectionForeColor = Color.White
+                    End With
                 Next
             End With
         Catch ex As Exception

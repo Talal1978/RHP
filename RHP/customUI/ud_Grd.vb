@@ -213,8 +213,8 @@
         If e.RowIndex = -1 And e.ColumnIndex >= 0 Then
             If dicCol.ContainsKey(e.ColumnIndex) Then
 
-                ' Let DataGridView paint the cell with all its parts
-                e.Paint(e.CellBounds, DataGridViewPaintParts.All)
+                ' Let DataGridView paint the cell with all its parts except SelectionBackground
+                e.Paint(e.CellBounds, DataGridViewPaintParts.All And Not DataGridViewPaintParts.SelectionBackground)
 
                 ' Now overlay the filter icon
                 Dim rtg As New Rectangle(New Point(e.CellBounds.Right - 25, e.CellBounds.Top + (e.CellBounds.Height - 16) / 2), New Size(12, 12))
@@ -277,7 +277,11 @@
         If Dtr Is Nothing Then Return
         If Me.ColumnCount = 0 Then Return
         For i = 0 To ColumnCount - 1
-            Columns(i).HeaderCell.Style.ForeColor = Color.White
+            With Columns(i).HeaderCell.Style
+                .ForeColor = Color.White
+                .SelectionBackColor = Color.FromArgb(56, 153, 185)
+                .SelectionForeColor = Color.White
+            End With
         Next
         With Dtr
             For Each nd In dicCol.Keys
@@ -324,7 +328,11 @@
                     End If
                     If FilterStr.Trim <> "" Then
                         oFiltre &= IIf(oFiltre = "", "", " and ") & FilterStr
-                        Columns(nd).HeaderCell.Style.ForeColor = Color.Red
+                        With Columns(nd).HeaderCell.Style
+                            .ForeColor = Color.Red
+                            .SelectionBackColor = Color.FromArgb(56, 153, 185)
+                            .SelectionForeColor = Color.Red
+                        End With
                     End If
                 End If
             Next

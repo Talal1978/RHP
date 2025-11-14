@@ -431,7 +431,7 @@ Cod_Query_Text.Text.Contains("&") = True Then
         End With
     End Sub
 
-    Private Sub Adding()
+    Sub Adding()
         Reset()
         Dim A As String = InputBox("Saisissez le Nom du Modèle", "Nouvel Etat ou Procedure")
         If A.Contains("'") Or A.Contains("%") Or A.Contains("&") Or A.Contains(",") Then

@@ -639,24 +639,26 @@ order by case when patindex('%;'+Cod_Rubrique+';%',@EE)=0 then 999999 else patin
     End Sub
     Sub GetDataFromOtherModules()
         Try
+            If PrePaie_Grd Is Nothing OrElse PrePaie_Grd?.Rows.Count = 0 Then
+                ShowMessageBox("Votre grille est vide.", "Contrôle", MessageBoxButtons.OK, msgIcon.Stop)
+                TabControl1.SelectedIndex = 1
+                Return
+            End If
             If PrePaie_Grd.ModeFiltreActive Then
                 ShowMessageBox("Votre grille comporte un filtre." & vbCrLf & "Avant de continuer, veuillez défiltrer votre selection", "Filtre", MessageBoxButtons.OK, msgIcon.Stop)
                 TabControl1.SelectedIndex = 1
                 Return
             End If
-            Dim strChk As String = ""
             Dim f As New Zoom_RH_Preparation_Paie_RegenrationEV
             With f
+                .DatDeb = Dat_Deb_Periode_Text.Text
+                .DatFin = Dat_Fin_Periode_Text.Text
+                .CodPlan = Cod_Plan_Paie_Text.Text
+                .TblPrePaie = PrePaie.TblPrePaie
+                .modeSaisiePaie = "Journal"
+                .chargement()
                 newShowEcran(f, True)
-                AddHandler .FormClosing, Sub()
-                                             strChk = .getModules()
-                                         End Sub
             End With
-            Dim str() As String = strChk.Split({";"}, StringSplitOptions.RemoveEmptyEntries)
-            If str.Length < 5 Then Return
-            If Not str.Contains("1") Then Return
-            Cursor = Cursors.WaitCursor
-            PrePaie.MiseAJourModulesAnnexes(Cod_Plan_Paie_Text.Text, Dat_Deb_Periode_Text.Text, Dat_Fin_Periode_Text.Text, str(0), str(2), str(1), str(3), str(4), str(5))
             Cursor = Cursors.Default
         Catch ex As Exception
             ShowMessageBox(ex.Message)

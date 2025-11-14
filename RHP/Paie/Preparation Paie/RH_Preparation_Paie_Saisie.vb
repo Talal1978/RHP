@@ -23,7 +23,7 @@ Public Class RH_Preparation_Paie_Saisie
     Friend _caractereCurrent As String = ChrW(9733)
     Dim mnu1, mnu2, mnu3, mnu4, mnu5 As New ToolStripMenuItem
     Friend elementDetailBulletinPaie As String()
-    Dim _ToolTip As New ToolTip
+    Dim _ToolTip As New System.Windows.Forms.ToolTip
     Friend EBSalBase, ECSalNet, ECSalaireBrut, ECChargesPAtronales, EVJrConge, EVAvance, EVPret, EVInteret, EVRembFraisMedic, EVPrimeABrutifier, EVPrimeBrutifiee, EVNoteFrais As String
     Private Sub Me_Load(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles MyBase.Load
         Save_D = dictButtons("Save_D")
@@ -1021,75 +1021,29 @@ order by case when patindex('%;'+Cod_Rubrique+';%',@EE)=0 then 999999 else patin
         Nouveau()
     End Sub
     Sub GetDataFromOtherModules()
-        '    Try
-        Dim _EVJrConge As Boolean = False, _EVAvance As Boolean = False, _EVPret As Boolean = False, _EVInteret As Boolean = False, _EVRembFraisMedic As Boolean = False, _EVNoteFrais As Boolean = False
-            Dim strChk As String = ""
+        Try
+            If PrePaie_Grd Is Nothing OrElse PrePaie_Grd?.Rows.Count = 0 Then
+                ShowMessageBox("Votre grille est vide.", "Contrôle", MessageBoxButtons.OK, msgIcon.Stop)
+                Return
+            End If
+            If PrePaie_Grd.ModeFiltreActive Then
+                ShowMessageBox("Votre grille comporte un filtre." & vbCrLf & "Avant de continuer, veuillez défiltrer votre selection", "Filtre", MessageBoxButtons.OK, msgIcon.Stop)
+                Return
+            End If
             Dim f As New Zoom_RH_Preparation_Paie_RegenrationEV
             With f
-                AddHandler .FormClosing, Sub()
-                                             strChk = .getModules()
-                                         End Sub
+                .DatDeb = Dat_Deb_Periode_Text.Text
+                .DatFin = Dat_Fin_Periode_Text.Text
+                .CodPlan = Cod_Plan_Paie_Text.Text
+                .TblPrePaie = TblPrePaie
+                .modeSaisiePaie = "Classique"
+                .chargement()
                 newShowEcran(f, True)
             End With
-            Dim str() As String = strChk.Split({";"}, StringSplitOptions.RemoveEmptyEntries)
-            If str.Length < 5 Then Return
-            If Not str.Contains("1") Then Return
-            Cursor = Cursors.WaitCursor
-            Dim Tbl As DataTable = DATA_READER_GRD(getModulesExternes(Cod_Plan_Paie_Text.Text, Dat_Deb_Periode_Text.Text, Dat_Fin_Periode_Text.Text, str(0), str(2), str(1), str(3), str(4), str(5)))
-            For Each r As DataRow In Tbl.Rows
-                Dim _rw = TblPrePaie.Select($"Matricule='{r("Matricule")}' and Cod_Rubrique='{EVAvance}'")
-                If _rw.Length > 0 And r(EVAvance) <> 0 Then
-                    _rw(0)("Valeur") = r(EVAvance)
-                    If Not _EVAvance Then
-                        setRubriqueModified(EVAvance)
-                        _EVAvance = True
-                    End If
-                End If
-                _rw = TblPrePaie.Select($"Matricule='{r("Matricule")}' and Cod_Rubrique='{EVInteret}'")
-                If _rw.Length > 0 And r(EVInteret) <> 0 Then
-                    _rw(0)("Valeur") = r(EVInteret)
-                    If Not _EVInteret Then
-                        setRubriqueModified(EVInteret)
-                        _EVInteret = True
-                    End If
-                End If
-                _rw = TblPrePaie.Select($"Matricule='{r("Matricule")}' and Cod_Rubrique='{EVJrConge}'")
-                If _rw.Length > 0 And r(EVJrConge) <> 0 Then
-                    _rw(0)("Valeur") = r(EVJrConge)
-                    If Not _EVJrConge Then
-                        setRubriqueModified(EVJrConge)
-                        _EVJrConge = True
-                    End If
-                End If
-                _rw = TblPrePaie.Select($"Matricule='{r("Matricule")}' and Cod_Rubrique='{EVPret}'")
-                If _rw.Length > 0 And r(EVPret) <> 0 Then
-                    _rw(0)("Valeur") = r(EVPret)
-                    If Not _EVPret Then
-                        setRubriqueModified(EVPret)
-                        _EVPret = True
-                    End If
-                End If
-                _rw = TblPrePaie.Select($"Matricule='{r("Matricule")}' and Cod_Rubrique='{EVRembFraisMedic}'")
-                If _rw.Length > 0 And r(EVRembFraisMedic) <> 0 Then
-                    _rw(0)("Valeur") = r(EVRembFraisMedic)
-                    If Not _EVRembFraisMedic Then
-                        setRubriqueModified(EVRembFraisMedic)
-                        _EVRembFraisMedic = True
-                    End If
-                End If
-                _rw = TblPrePaie.Select($"Matricule='{r("Matricule")}' and Cod_Rubrique='{EVNoteFrais}'")
-                If _rw.Length > 0 And r(EVNoteFrais) <> 0 Then
-                    _rw(0)("Valeur") = r(EVNoteFrais)
-                    If Not _EVNoteFrais Then
-                        setRubriqueModified(EVNoteFrais)
-                        _EVNoteFrais = True
-                    End If
-                End If
-            Next
             Cursor = Cursors.Default
-        '  Catch ex As Exception
-        '   ShowMessageBox(ex.Message)
-        '     End Try
+        Catch ex As Exception
+            ShowMessageBox(ex.Message)
+        End Try
     End Sub
     Function getModulesExternes(CodPlan As String, DatDeb As Date, DatFin As Date, updConge As Boolean, updAvance As Boolean, updPret As Boolean, updInteret As Boolean, updRemb As Boolean, updNF As Boolean) As String
         Dim sqlStr As String = "select Matricule " &

@@ -1,4 +1,6 @@
 ﻿
+Imports System.Text.RegularExpressions
+
 Module Module_Declaration_Var
     Public cn As New ADODB.Connection
     Public cn1 As New OleDb.OleDbConnection
@@ -29,6 +31,7 @@ Module Module_Declaration_Var
     Public FermetureForcee As String = "N"
     Public DefaultLogo As System.Drawing.Image
     Public DB As String = ""
+    Public Serveur As String = ""
     Public Tbl_Param_General As New DataTable
     Public Tbl_Param_Rubriques As New DataTable
     Public VarTbl As New DataTable
@@ -86,6 +89,65 @@ Module Module_Declaration_Var
     Public sql_injection As String = "\b(eval)\b|\b(set)\b|\b(alter)\b|\b(create)\b|\b(drop)\b|\b(update)\b|\b(delete)\b|\b(truncate)\b|\b(insert)\b|\b(exec)\b|\b(union)\b|\b(cast)\b|\b(join)\b|--|/\*|\*/|""|--"
     Public sql_Sys_RH_Agent_AG As String = ""
 
+    'Public Function ControleInjectionSQL(query As String) As (Boolean, String)
+    '    ' Liste blanche stricte
+    '    Dim allowedPattern As String = "^[\s\w\.,\(\)\*=<>]+$"
+
+    '    ' 1. Vérifier les caractères autorisés
+    '    If Not Regex.IsMatch(query, allowedPattern) Then
+    '        Return (False, "Caractères non autorisés détectés")
+    '    End If
+
+    '    ' 2. Bloquer les mots-clés dangereux (blacklist complémentaire)
+    '    Dim dangerousKeywords As String() = {
+    '    "INSERT", "UPDATE", "DELETE", "DROP", "CREATE", "ALTER",
+    '    "EXEC", "EXECUTE", "TRUNCATE", "GRANT", "REVOKE",
+    '    "UNION", "DECLARE", "CAST", "CONVERT", "SCRIPT",
+    '    "XP_", "SP_", "OPENROWSET", "OPENDATASOURCE"
+    '}
+
+    '    For Each keyword In dangerousKeywords
+    '        If Regex.IsMatch(query, "\b" & keyword & "\b", RegexOptions.IgnoreCase) Then
+    '            Return (False, $"Mot-clé interdit détecté: {keyword}")
+    '        End If
+    '    Next
+
+    '    ' 3. Vérifier la présence de SELECT (obligatoire)
+    '    If Not Regex.IsMatch(query, "\bSELECT\b", RegexOptions.IgnoreCase) Then
+    '        Return (False, "La requête doit commencer par SELECT")
+    '    End If
+
+    '    ' 4. Vérifier que seuls les mots-clés autorisés sont présents
+    '    Dim allowedKeywords As String() = {
+    '    "SELECT", "FROM", "WHERE", "LEFT", "RIGHT", "INNER",
+    '    "CROSS", "JOIN", "APPLY", "AND", "OR", "ON", "AS",
+    '    "ORDER", "BY", "GROUP", "HAVING", "DISTINCT", "TOP"
+    '}
+
+    '    Dim words As MatchCollection = Regex.Matches(query, "\b[a-zA-Z_][a-zA-Z0-9_]*\b")
+
+    '    For Each word As Match In words
+    '        Dim isAllowed As Boolean = False
+
+    '        ' Vérifier si c'est un mot-clé autorisé
+    '        For Each allowed In allowedKeywords
+    '            If String.Equals(word.Value, allowed, StringComparison.OrdinalIgnoreCase) Then
+    '                isAllowed = True
+    '                Exit For
+    '            End If
+    '        Next
+
+    '        ' Si ce n'est pas un mot-clé, on suppose que c'est un nom de colonne/table
+    '        ' Vérifier qu'il suit les règles de nommage SQL standard
+    '        If Not isAllowed Then
+    '            If Not Regex.IsMatch(word.Value, "^[a-zA-Z_][a-zA-Z0-9_]*$") Then
+    '                Return (False, $"Nom invalide: {word.Value}")
+    '            End If
+    '        End If
+    '    Next
+
+    '    Return (True, "Requête valide")
+    'End Function
 
     Function GlobalVar(ByVal GV As String) As String
         Dim GVVal As String = ""
