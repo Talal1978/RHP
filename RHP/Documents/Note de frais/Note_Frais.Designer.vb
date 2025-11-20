@@ -23,12 +23,12 @@ Partial Class Note_Frais
     <System.Diagnostics.DebuggerStepThrough()>
     Private Sub InitializeComponent()
         Me.components = New System.ComponentModel.Container()
-        Dim DataGridViewCellStyle1 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
-        Dim DataGridViewCellStyle5 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
-        Dim DataGridViewCellStyle6 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
-        Dim DataGridViewCellStyle2 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
-        Dim DataGridViewCellStyle3 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
+        Dim DataGridViewCellStyle7 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
         Dim DataGridViewCellStyle4 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
+        Dim DataGridViewCellStyle11 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
+        Dim DataGridViewCellStyle8 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
+        Dim DataGridViewCellStyle9 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
+        Dim DataGridViewCellStyle10 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
         Me.Matricule_ = New System.Windows.Forms.LinkLabel()
         Me.Matricule_txt = New RHP.ud_TextBox()
         Me.Nom_Agent_Text = New RHP.ud_TextBox()
@@ -40,6 +40,7 @@ Partial Class Note_Frais
         Me.Mnt = New DevComponents.DotNetBar.Controls.DataGridViewDoubleInputColumn()
         Me.Comment = New System.Windows.Forms.DataGridViewTextBoxColumn()
         Me.GroupBox2 = New System.Windows.Forms.GroupBox()
+        Me.Avance_Deplament_chk = New RHP.ud_CheckBox()
         Me.Au_lbl = New System.Windows.Forms.Label()
         Me.Du_lbl = New System.Windows.Forms.Label()
         Me.Objet_Mission_txt = New RHP.ud_TextBox()
@@ -61,6 +62,8 @@ Partial Class Note_Frais
         Me.Label8 = New System.Windows.Forms.Label()
         Me.AllerRetour_chk = New RHP.ud_CheckBox()
         Me.Label7 = New System.Windows.Forms.Label()
+        Me.Moyen_Transport_cbo = New RHP.ud_ComboBox()
+        Me.Label9 = New System.Windows.Forms.Label()
         Me.Typ_Mission_cbo = New RHP.ud_ComboBox()
         Me.Label6 = New System.Windows.Forms.Label()
         Me.Typ_Deplacement_cbo = New RHP.ud_ComboBox()
@@ -172,25 +175,25 @@ Partial Class Note_Frais
         Me.Grd_Frais.BackgroundColor = System.Drawing.Color.White
         Me.Grd_Frais.BorderStyle = System.Windows.Forms.BorderStyle.None
         Me.Grd_Frais.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.[Single]
-        DataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter
-        DataGridViewCellStyle1.BackColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
-        DataGridViewCellStyle1.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        DataGridViewCellStyle1.ForeColor = System.Drawing.Color.White
-        DataGridViewCellStyle1.Padding = New System.Windows.Forms.Padding(5)
-        DataGridViewCellStyle1.SelectionBackColor = System.Drawing.Color.White
-        DataGridViewCellStyle1.SelectionForeColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
-        DataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.[True]
-        Me.Grd_Frais.ColumnHeadersDefaultCellStyle = DataGridViewCellStyle1
+        DataGridViewCellStyle7.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter
+        DataGridViewCellStyle7.BackColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
+        DataGridViewCellStyle7.Font = New System.Drawing.Font("Century Gothic", 8.25!)
+        DataGridViewCellStyle7.ForeColor = System.Drawing.Color.White
+        DataGridViewCellStyle7.Padding = New System.Windows.Forms.Padding(5)
+        DataGridViewCellStyle7.SelectionBackColor = System.Drawing.Color.White
+        DataGridViewCellStyle7.SelectionForeColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
+        DataGridViewCellStyle7.WrapMode = System.Windows.Forms.DataGridViewTriState.[True]
+        Me.Grd_Frais.ColumnHeadersDefaultCellStyle = DataGridViewCellStyle7
         Me.Grd_Frais.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize
         Me.Grd_Frais.Columns.AddRange(New System.Windows.Forms.DataGridViewColumn() {Me.Typ_Frais, Me.Base, Me.Tx, Me.Mnt, Me.Comment})
-        DataGridViewCellStyle5.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft
-        DataGridViewCellStyle5.BackColor = System.Drawing.SystemColors.Window
-        DataGridViewCellStyle5.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        DataGridViewCellStyle5.ForeColor = System.Drawing.SystemColors.ControlText
-        DataGridViewCellStyle5.SelectionBackColor = System.Drawing.Color.FromArgb(CType(CType(94, Byte), Integer), CType(CType(185, Byte), Integer), CType(CType(117, Byte), Integer))
-        DataGridViewCellStyle5.SelectionForeColor = System.Drawing.Color.Black
-        DataGridViewCellStyle5.WrapMode = System.Windows.Forms.DataGridViewTriState.[False]
-        Me.Grd_Frais.DefaultCellStyle = DataGridViewCellStyle5
+        DataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft
+        DataGridViewCellStyle4.BackColor = System.Drawing.SystemColors.Window
+        DataGridViewCellStyle4.Font = New System.Drawing.Font("Century Gothic", 8.25!)
+        DataGridViewCellStyle4.ForeColor = System.Drawing.SystemColors.ControlText
+        DataGridViewCellStyle4.SelectionBackColor = System.Drawing.Color.FromArgb(CType(CType(94, Byte), Integer), CType(CType(185, Byte), Integer), CType(CType(117, Byte), Integer))
+        DataGridViewCellStyle4.SelectionForeColor = System.Drawing.Color.Black
+        DataGridViewCellStyle4.WrapMode = System.Windows.Forms.DataGridViewTriState.[False]
+        Me.Grd_Frais.DefaultCellStyle = DataGridViewCellStyle4
         Me.Grd_Frais.Dock = System.Windows.Forms.DockStyle.Fill
         Me.Grd_Frais.EnableHeadersVisualStyles = False
         Me.Grd_Frais.GridColor = System.Drawing.Color.FromArgb(CType(CType(179, Byte), Integer), CType(CType(216, Byte), Integer), CType(CType(228, Byte), Integer))
@@ -198,9 +201,9 @@ Partial Class Note_Frais
         Me.Grd_Frais.Margin = New System.Windows.Forms.Padding(4)
         Me.Grd_Frais.Name = "Grd_Frais"
         Me.Grd_Frais.RowHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.[Single]
-        DataGridViewCellStyle6.BackColor = System.Drawing.Color.FromArgb(CType(CType(169, Byte), Integer), CType(CType(210, Byte), Integer), CType(CType(224, Byte), Integer))
-        DataGridViewCellStyle6.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        Me.Grd_Frais.RowHeadersDefaultCellStyle = DataGridViewCellStyle6
+        DataGridViewCellStyle11.BackColor = System.Drawing.Color.FromArgb(CType(CType(169, Byte), Integer), CType(CType(210, Byte), Integer), CType(CType(224, Byte), Integer))
+        DataGridViewCellStyle11.Font = New System.Drawing.Font("Century Gothic", 8.25!)
+        Me.Grd_Frais.RowHeadersDefaultCellStyle = DataGridViewCellStyle11
         Me.Grd_Frais.RowHeadersWidth = 51
         Me.Grd_Frais.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.CellSelect
         Me.Grd_Frais.Size = New System.Drawing.Size(1098, 378)
@@ -216,8 +219,8 @@ Partial Class Note_Frais
         '
         'Base
         '
-        DataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight
-        Me.Base.DefaultCellStyle = DataGridViewCellStyle2
+        DataGridViewCellStyle8.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight
+        Me.Base.DefaultCellStyle = DataGridViewCellStyle8
         Me.Base.HeaderText = "Base"
         Me.Base.MinimumWidth = 6
         Me.Base.Name = "Base"
@@ -227,8 +230,8 @@ Partial Class Note_Frais
         '
         'Tx
         '
-        DataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight
-        Me.Tx.DefaultCellStyle = DataGridViewCellStyle3
+        DataGridViewCellStyle9.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight
+        Me.Tx.DefaultCellStyle = DataGridViewCellStyle9
         Me.Tx.HeaderText = "Taux"
         Me.Tx.MinimumWidth = 6
         Me.Tx.Name = "Tx"
@@ -244,9 +247,9 @@ Partial Class Note_Frais
         Me.Mnt.BackgroundStyle.Class = "DataGridViewNumericBorder"
         Me.Mnt.BackgroundStyle.CornerType = DevComponents.DotNetBar.eCornerType.Square
         Me.Mnt.BackgroundStyle.TextColor = System.Drawing.SystemColors.ControlText
-        DataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight
-        DataGridViewCellStyle4.BackColor = System.Drawing.Color.FromArgb(CType(CType(179, Byte), Integer), CType(CType(216, Byte), Integer), CType(CType(228, Byte), Integer))
-        Me.Mnt.DefaultCellStyle = DataGridViewCellStyle4
+        DataGridViewCellStyle10.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight
+        DataGridViewCellStyle10.BackColor = System.Drawing.Color.FromArgb(CType(CType(179, Byte), Integer), CType(CType(216, Byte), Integer), CType(CType(228, Byte), Integer))
+        Me.Mnt.DefaultCellStyle = DataGridViewCellStyle10
         Me.Mnt.HeaderText = "Montant"
         Me.Mnt.Increment = 1.0R
         Me.Mnt.MinimumWidth = 6
@@ -263,6 +266,7 @@ Partial Class Note_Frais
         '
         'GroupBox2
         '
+        Me.GroupBox2.Controls.Add(Me.Avance_Deplament_chk)
         Me.GroupBox2.Controls.Add(Me.Au_lbl)
         Me.GroupBox2.Controls.Add(Me.Du_lbl)
         Me.GroupBox2.Controls.Add(Me.Objet_Mission_txt)
@@ -273,6 +277,8 @@ Partial Class Note_Frais
         Me.GroupBox2.Controls.Add(Me.pnl_nationale)
         Me.GroupBox2.Controls.Add(Me.AllerRetour_chk)
         Me.GroupBox2.Controls.Add(Me.Label7)
+        Me.GroupBox2.Controls.Add(Me.Moyen_Transport_cbo)
+        Me.GroupBox2.Controls.Add(Me.Label9)
         Me.GroupBox2.Controls.Add(Me.Typ_Mission_cbo)
         Me.GroupBox2.Controls.Add(Me.Label6)
         Me.GroupBox2.Controls.Add(Me.Typ_Deplacement_cbo)
@@ -306,6 +312,20 @@ Partial Class Note_Frais
         Me.GroupBox2.TabIndex = 256
         Me.GroupBox2.TabStop = False
         Me.GroupBox2.Text = "Fiche signalitique"
+        '
+        'Avance_Deplament_chk
+        '
+        Me.Avance_Deplament_chk.AutoSize = True
+        Me.Avance_Deplament_chk.Checked = False
+        Me.Avance_Deplament_chk.Enabled = False
+        Me.Avance_Deplament_chk.Location = New System.Drawing.Point(670, 439)
+        Me.Avance_Deplament_chk.Margin = New System.Windows.Forms.Padding(4, 7, 4, 7)
+        Me.Avance_Deplament_chk.MaximumSize = New System.Drawing.Size(0, 43)
+        Me.Avance_Deplament_chk.MinimumSize = New System.Drawing.Size(133, 43)
+        Me.Avance_Deplament_chk.Name = "Avance_Deplament_chk"
+        Me.Avance_Deplament_chk.Size = New System.Drawing.Size(304, 43)
+        Me.Avance_Deplament_chk.TabIndex = 297
+        Me.Avance_Deplament_chk.Text = "Accorder une avance sur déplacement"
         '
         'Au_lbl
         '
@@ -345,7 +365,7 @@ Partial Class Note_Frais
         Me.Objet_Mission_txt.ReadOnly = False
         Me.Objet_Mission_txt.ScrollBars = System.Windows.Forms.ScrollBars.Vertical
         Me.Objet_Mission_txt.SelectionStart = 0
-        Me.Objet_Mission_txt.Size = New System.Drawing.Size(944, 54)
+        Me.Objet_Mission_txt.Size = New System.Drawing.Size(523, 54)
         Me.Objet_Mission_txt.TabIndex = 293
         Me.Objet_Mission_txt.TextAlign = System.Windows.Forms.HorizontalAlignment.Left
         Me.Objet_Mission_txt.UseSystemPasswordChar = False
@@ -624,7 +644,8 @@ Partial Class Note_Frais
         '
         Me.AllerRetour_chk.AutoSize = True
         Me.AllerRetour_chk.Checked = True
-        Me.AllerRetour_chk.Location = New System.Drawing.Point(784, 403)
+        Me.AllerRetour_chk.Enabled = False
+        Me.AllerRetour_chk.Location = New System.Drawing.Point(670, 396)
         Me.AllerRetour_chk.Margin = New System.Windows.Forms.Padding(4, 6, 4, 6)
         Me.AllerRetour_chk.MaximumSize = New System.Drawing.Size(0, 36)
         Me.AllerRetour_chk.MinimumSize = New System.Drawing.Size(133, 36)
@@ -643,6 +664,33 @@ Partial Class Note_Frais
         Me.Label7.Size = New System.Drawing.Size(72, 19)
         Me.Label7.TabIndex = 284
         Me.Label7.Text = "Date OM"
+        '
+        'Moyen_Transport_cbo
+        '
+        Me.Moyen_Transport_cbo.DataSource = Nothing
+        Me.Moyen_Transport_cbo.DisplayMember = ""
+        Me.Moyen_Transport_cbo.DroppedDown = False
+        Me.Moyen_Transport_cbo.Font = New System.Drawing.Font("Century Gothic", 8.25!)
+        Me.Moyen_Transport_cbo.Location = New System.Drawing.Point(681, 157)
+        Me.Moyen_Transport_cbo.Margin = New System.Windows.Forms.Padding(4)
+        Me.Moyen_Transport_cbo.Name = "Moyen_Transport_cbo"
+        Me.Moyen_Transport_cbo.SelectedIndex = -1
+        Me.Moyen_Transport_cbo.SelectedItem = Nothing
+        Me.Moyen_Transport_cbo.SelectedValue = Nothing
+        Me.Moyen_Transport_cbo.Size = New System.Drawing.Size(232, 27)
+        Me.Moyen_Transport_cbo.TabIndex = 283
+        Me.Moyen_Transport_cbo.ValueMember = ""
+        '
+        'Label9
+        '
+        Me.Label9.AutoSize = True
+        Me.Label9.Font = New System.Drawing.Font("Century Gothic", 8.25!)
+        Me.Label9.Location = New System.Drawing.Point(608, 160)
+        Me.Label9.Margin = New System.Windows.Forms.Padding(6, 0, 6, 0)
+        Me.Label9.Name = "Label9"
+        Me.Label9.Size = New System.Drawing.Size(70, 19)
+        Me.Label9.TabIndex = 282
+        Me.Label9.Text = "Transport"
         '
         'Typ_Mission_cbo
         '
@@ -839,14 +887,14 @@ Partial Class Note_Frais
         Me.LinkLabel3.Font = New System.Drawing.Font("Century Gothic", 8.25!)
         Me.LinkLabel3.ForeColor = System.Drawing.Color.FromArgb(CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer))
         Me.LinkLabel3.LinkColor = System.Drawing.Color.FromArgb(CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer))
-        Me.LinkLabel3.Location = New System.Drawing.Point(35, 31)
+        Me.LinkLabel3.Location = New System.Drawing.Point(21, 33)
         Me.LinkLabel3.Margin = New System.Windows.Forms.Padding(6, 0, 6, 0)
         Me.LinkLabel3.Name = "LinkLabel3"
-        Me.LinkLabel3.Size = New System.Drawing.Size(99, 19)
+        Me.LinkLabel3.Size = New System.Drawing.Size(114, 19)
         Me.LinkLabel3.TabIndex = 249
         Me.LinkLabel3.TabStop = True
         Me.LinkLabel3.Tag = "SC"
-        Me.LinkLabel3.Text = "N° demande"
+        Me.LinkLabel3.Text = "N° note de frais"
         Me.LinkLabel3.VisitedLinkColor = System.Drawing.Color.FromArgb(CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer))
         '
         'Lib_Grade_Text
@@ -936,14 +984,14 @@ Partial Class Note_Frais
         Me.Commentaire_txt.Location = New System.Drawing.Point(137, 155)
         Me.Commentaire_txt.Margin = New System.Windows.Forms.Padding(6, 5, 6, 5)
         Me.Commentaire_txt.MaxLength = 490
-        Me.Commentaire_txt.Multiline = False
+        Me.Commentaire_txt.Multiline = True
         Me.Commentaire_txt.Name = "Commentaire_txt"
         Me.Commentaire_txt.Padding = New System.Windows.Forms.Padding(1, 0, 1, 0)
         Me.Commentaire_txt.PasswordChar = "" & Global.Microsoft.VisualBasic.ChrW(0)
         Me.Commentaire_txt.ReadOnly = False
-        Me.Commentaire_txt.ScrollBars = System.Windows.Forms.ScrollBars.None
+        Me.Commentaire_txt.ScrollBars = System.Windows.Forms.ScrollBars.Both
         Me.Commentaire_txt.SelectionStart = 0
-        Me.Commentaire_txt.Size = New System.Drawing.Size(780, 51)
+        Me.Commentaire_txt.Size = New System.Drawing.Size(472, 51)
         Me.Commentaire_txt.TabIndex = 236
         Me.Commentaire_txt.TextAlign = System.Windows.Forms.HorizontalAlignment.Left
         Me.Commentaire_txt.UseSystemPasswordChar = False
@@ -1109,4 +1157,7 @@ Partial Class Note_Frais
     Friend WithEvents Depart_lbl As Label
     Friend WithEvents Au_lbl As Label
     Friend WithEvents Du_lbl As Label
+    Friend WithEvents Avance_Deplament_chk As ud_CheckBox
+    Friend WithEvents Moyen_Transport_cbo As ud_ComboBox
+    Friend WithEvents Label9 As Label
 End Class

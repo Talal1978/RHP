@@ -44,13 +44,13 @@ Partial Class Param_Python
         Me.TabPage1 = New System.Windows.Forms.TabPage()
         Me.Text_Code_txt = New RHP.ud_TextBox()
         Me.Panel1 = New System.Windows.Forms.Panel()
+        Me.ud_withConn = New RHP.ud_CheckBox()
         Me.Actif_chk = New RHP.ud_CheckBox()
         Me.Cod_Python_Text = New RHP.ud_TextBox()
         Me.LinkLabel4 = New System.Windows.Forms.LinkLabel()
         Me.Typ_Python_Text = New RHP.ud_TextBox()
         Me.Nom_Python_Text = New RHP.ud_TextBox()
         Me.TabControl1 = New System.Windows.Forms.TabControl()
-        Me.ud_withConn = New RHP.ud_CheckBox()
         Me.TableLayoutPanel1.SuspendLayout()
         Me.TabPage2.SuspendLayout()
         CType(Me.Grd_Arguments, System.ComponentModel.ISupportInitialize).BeginInit()
@@ -251,7 +251,7 @@ Partial Class Param_Python
         Me.Text_Code_txt.ScrollBars = System.Windows.Forms.ScrollBars.Both
         Me.Text_Code_txt.SelectionStart = 0
         Me.Text_Code_txt.Size = New System.Drawing.Size(1085, 512)
-        Me.Text_Code_txt.TabIndex = 97
+        Me.Text_Code_txt.TabIndex = 4
         Me.Text_Code_txt.TextAlign = System.Windows.Forms.HorizontalAlignment.Left
         Me.Text_Code_txt.UseSystemPasswordChar = False
         '
@@ -270,6 +270,20 @@ Partial Class Param_Python
         Me.Panel1.Size = New System.Drawing.Size(1085, 90)
         Me.Panel1.TabIndex = 98
         '
+        'ud_withConn
+        '
+        Me.ud_withConn.AutoSize = True
+        Me.ud_withConn.Checked = False
+        Me.ud_withConn.Location = New System.Drawing.Point(500, 53)
+        Me.ud_withConn.Margin = New System.Windows.Forms.Padding(4)
+        Me.ud_withConn.MaximumSize = New System.Drawing.Size(0, 25)
+        Me.ud_withConn.MinimumSize = New System.Drawing.Size(133, 25)
+        Me.ud_withConn.Name = "ud_withConn"
+        Me.ud_withConn.RightToLeft = System.Windows.Forms.RightToLeft.Yes
+        Me.ud_withConn.Size = New System.Drawing.Size(320, 25)
+        Me.ud_withConn.TabIndex = 3
+        Me.ud_withConn.Text = "Inclure automatiquement la connection au serveur"
+        '
         'Actif_chk
         '
         Me.Actif_chk.AutoSize = True
@@ -281,7 +295,7 @@ Partial Class Param_Python
         Me.Actif_chk.Name = "Actif_chk"
         Me.Actif_chk.RightToLeft = System.Windows.Forms.RightToLeft.Yes
         Me.Actif_chk.Size = New System.Drawing.Size(133, 25)
-        Me.Actif_chk.TabIndex = 223
+        Me.Actif_chk.TabIndex = 2
         Me.Actif_chk.Text = "Actif"
         '
         'Cod_Python_Text
@@ -299,7 +313,7 @@ Partial Class Param_Python
         Me.Cod_Python_Text.ScrollBars = System.Windows.Forms.ScrollBars.None
         Me.Cod_Python_Text.SelectionStart = 0
         Me.Cod_Python_Text.Size = New System.Drawing.Size(281, 26)
-        Me.Cod_Python_Text.TabIndex = 96
+        Me.Cod_Python_Text.TabIndex = 0
         Me.Cod_Python_Text.TextAlign = System.Windows.Forms.HorizontalAlignment.Left
         Me.Cod_Python_Text.UseSystemPasswordChar = False
         '
@@ -364,20 +378,6 @@ Partial Class Param_Python
         Me.TabControl1.SelectedIndex = 0
         Me.TabControl1.Size = New System.Drawing.Size(1099, 637)
         Me.TabControl1.TabIndex = 216
-        '
-        'ud_withConn
-        '
-        Me.ud_withConn.AutoSize = True
-        Me.ud_withConn.Checked = False
-        Me.ud_withConn.Location = New System.Drawing.Point(500, 53)
-        Me.ud_withConn.Margin = New System.Windows.Forms.Padding(4)
-        Me.ud_withConn.MaximumSize = New System.Drawing.Size(0, 25)
-        Me.ud_withConn.MinimumSize = New System.Drawing.Size(133, 25)
-        Me.ud_withConn.Name = "ud_withConn"
-        Me.ud_withConn.RightToLeft = System.Windows.Forms.RightToLeft.Yes
-        Me.ud_withConn.Size = New System.Drawing.Size(320, 25)
-        Me.ud_withConn.TabIndex = 223
-        Me.ud_withConn.Text = "Inclure automatiquement la connection au serveur"
         '
         'Param_Python
         '

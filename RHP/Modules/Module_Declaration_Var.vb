@@ -27,7 +27,7 @@ Module Module_Declaration_Var
     Public NbDecimalStk As Integer = 2
     Public NbDecimalCtb As Integer = 2
     Public CheckStk As String = "O"
-    Public NumVersion As String = "2025.000.07"
+    Public NumVersion As String = "2025.100.00"
     Public FermetureForcee As String = "N"
     Public DefaultLogo As System.Drawing.Image
     Public DB As String = ""

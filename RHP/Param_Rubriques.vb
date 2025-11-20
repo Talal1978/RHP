@@ -1,4 +1,4 @@
-﻿Public Class RH_Param_Rubriques
+﻿Public Class Param_Rubriques
 
     Private Sub Cod_LinkClicked(ByVal sender As System.Object, ByVal e As System.Windows.Forms.LinkLabelLinkClickedEventArgs) Handles COD.LinkClicked
         Appel_Zoom1("MS086", Nom_Controle_Text, Me)
@@ -19,7 +19,7 @@
         Texte_Rubrique_Text.Text = FindLibelle("Texte_Rubrique", "Nom_Controle", Nom_Controle_Text.Text, "Param_Rubriques")
         NoAddRows_chk.Checked = FindLibelle("NoAddRows", "Nom_Controle", Nom_Controle_Text.Text, "Param_Rubriques")
         Dim C1, C2, C3, C4, C5, C6 As Object
-        With ComboBox_GRD
+        With Grille
             .Rows.Clear()
             .AllowUserToAddRows = Not NoAddRows_chk.Checked
         End With
@@ -34,8 +34,8 @@
                 C4 = IsNull(.Rows(i).Item("Champs02"), "")
                 C6 = IsNull(.Rows(i).Item("Rang"), "")
                 C5 = IsNull(.Rows(i).Item("Typ"), "")
-                ComboBox_GRD.Rows.Add(C2, C3, C4, C6, C5, C1)
-                ComboBox_GRD.Rows(i).ReadOnly = (C4 = "S")
+                Grille.Rows.Add(C2, C3, C4, C6, C5, C1)
+                Grille.Rows(i).ReadOnly = (C4 = "S")
             Next
         End With
     End Sub
@@ -44,7 +44,7 @@
         Dim rs As New ADODB.Recordset
         Dim Cod_Sql As String
         Dim swhere As String = ""
-        With ComboBox_GRD
+        With Grille
             For i = 0 To .RowCount - 2
                 For j = i + 1 To .RowCount - 2
                     If IsNull(.Item(0, i).Value, "").Trim.Replace("'", "").Replace(".", "").Replace(",", "") = IsNull(.Item(0, j).Value, "").Trim.Replace("'", "").Replace(".", "").Replace(",", "") Then
@@ -102,7 +102,7 @@
 
     Private Sub SuppressionDesLignesSélectionnéesToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs)
         If MessageBoxRHP(594) = MsgBoxResult.Cancel Then Exit Sub
-        With ComboBox_GRD
+        With Grille
             For Each c In .SelectedRows
                 If c.index < .RowCount - 1 Then
                     If .Item("Typ", c.index).Value = "S" Then
@@ -110,7 +110,7 @@
                         c.selected = False
                     Else
                         CnExecuting("delete from Param_Rubriques where Nom_controle='" & Nom_Controle_Text.Text & "' and valeur='" & .Item("Valeur", c.index).Value & "'")
-                        ComboBox_GRD.Rows.Remove(c)
+                        Grille.Rows.Remove(c)
                     End If
                 Else
                     c.selected = False
@@ -133,7 +133,7 @@
             AddHandler .Click, AddressOf ToExcel
         End With
         menu_context_copy.Items.AddRange(New System.Windows.Forms.ToolStripItem() {oMenu1, oMenu2})
-        With ComboBox_GRD
+        With Grille
 
             .ContextMenuStrip = menu_context_copy
         End With

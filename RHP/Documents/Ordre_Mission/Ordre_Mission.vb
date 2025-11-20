@@ -68,6 +68,7 @@
                 Dat_Au_txt.Text = IsNull(.Rows(0)("Dat_Au"), "")
                 Distance_txt.Text = IsNull(.Rows(0)("Distance"), "0,00")
                 AllerRetour_chk.Checked = IsNull(.Rows(0)("AllerRetour"), False)
+                Avance_Deplament_chk.Checked = IsNull(.Rows(0)("Avance_Deplament"), False)
                 Commentaire_txt.Text = IsNull(.Rows(0)("Commentaire"), "")
                 Dim TypMission = IsNull(.Rows(0)("Typ_Mission"), "1")
                 rd_nationale.Checked = (TypMission = "1")
@@ -109,6 +110,7 @@
                 rd_local.Checked = False
                 rd_internationale.Checked = False
                 AllerRetour_chk.Checked = True
+                Avance_Deplament_chk.Checked = False
             End If
 
             ' Charger les intéressés
@@ -319,6 +321,7 @@ outer apply (select Lib_Entite from Org_Entite where  id_Societe=d.id_Societe an
         rs("Dat_Du").Value = Dat_Du_txt.Text
         rs("Dat_Au").Value = Dat_Au_txt.Text
         rs("AllerRetour").Value = AllerRetour_chk.Checked
+        rs("Avance_Deplament").Value = Avance_Deplament_chk.Checked
         rs("Commentaire").Value = Commentaire_txt.Text
         rs("Statut").Value = statut
         rs("Dat_Modif").Value = oDat

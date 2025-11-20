@@ -23,9 +23,9 @@ Partial Class RH_Param_Abaques
     <System.Diagnostics.DebuggerStepThrough()> _
     Private Sub InitializeComponent()
         Me.components = New System.ComponentModel.Container()
-        Dim DataGridViewCellStyle4 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
-        Dim DataGridViewCellStyle5 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
-        Dim DataGridViewCellStyle6 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
+        Dim DataGridViewCellStyle1 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
+        Dim DataGridViewCellStyle2 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
+        Dim DataGridViewCellStyle3 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
         Me.Personnal_pnl = New System.Windows.Forms.TableLayoutPanel()
         Me.ButtonX1 = New DevComponents.DotNetBar.ButtonX()
         Me.ButtonX2 = New DevComponents.DotNetBar.ButtonX()
@@ -43,6 +43,7 @@ Partial Class RH_Param_Abaques
         Me.Cod_Abaque_txt = New RHP.ud_TextBox()
         Me.Lib_Abaque_txt = New RHP.ud_TextBox()
         Me.Panel1 = New System.Windows.Forms.Panel()
+        Me.Variable_Paie_chk = New RHP.ud_CheckBox()
         Me.Panel2 = New System.Windows.Forms.Panel()
         Me.Constante_rd = New RHP.ud_RadioBox()
         Me.fonction_rd = New RHP.ud_RadioBox()
@@ -108,93 +109,101 @@ Partial Class RH_Param_Abaques
         Me.abaque_GRD.BackgroundColor = System.Drawing.Color.FromArgb(CType(CType(250, Byte), Integer), CType(CType(250, Byte), Integer), CType(CType(250, Byte), Integer))
         Me.abaque_GRD.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D
         Me.abaque_GRD.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.[Single]
-        DataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter
-        DataGridViewCellStyle4.BackColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
-        DataGridViewCellStyle4.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        DataGridViewCellStyle4.ForeColor = System.Drawing.Color.White
-        DataGridViewCellStyle4.Padding = New System.Windows.Forms.Padding(5)
-        DataGridViewCellStyle4.SelectionBackColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
-        DataGridViewCellStyle4.SelectionForeColor = System.Drawing.Color.White
-        DataGridViewCellStyle4.WrapMode = System.Windows.Forms.DataGridViewTriState.[True]
-        Me.abaque_GRD.ColumnHeadersDefaultCellStyle = DataGridViewCellStyle4
+        DataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter
+        DataGridViewCellStyle1.BackColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
+        DataGridViewCellStyle1.Font = New System.Drawing.Font("Century Gothic", 8.25!)
+        DataGridViewCellStyle1.ForeColor = System.Drawing.Color.White
+        DataGridViewCellStyle1.Padding = New System.Windows.Forms.Padding(5)
+        DataGridViewCellStyle1.SelectionBackColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
+        DataGridViewCellStyle1.SelectionForeColor = System.Drawing.Color.White
+        DataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.[True]
+        Me.abaque_GRD.ColumnHeadersDefaultCellStyle = DataGridViewCellStyle1
         Me.abaque_GRD.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize
         Me.abaque_GRD.Columns.AddRange(New System.Windows.Forms.DataGridViewColumn() {Me.Clef_01, Me.Clef_02, Me.Clef_03, Me.Clef_04, Me.Valeur_01, Me.Valeur_02, Me.Valeur_03, Me.Valeur_04, Me.Flag})
-        DataGridViewCellStyle5.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft
-        DataGridViewCellStyle5.BackColor = System.Drawing.SystemColors.Window
-        DataGridViewCellStyle5.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        DataGridViewCellStyle5.ForeColor = System.Drawing.SystemColors.ControlText
-        DataGridViewCellStyle5.SelectionBackColor = System.Drawing.Color.FromArgb(CType(CType(94, Byte), Integer), CType(CType(185, Byte), Integer), CType(CType(117, Byte), Integer))
-        DataGridViewCellStyle5.SelectionForeColor = System.Drawing.SystemColors.HighlightText
-        DataGridViewCellStyle5.WrapMode = System.Windows.Forms.DataGridViewTriState.[False]
-        Me.abaque_GRD.DefaultCellStyle = DataGridViewCellStyle5
+        DataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft
+        DataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window
+        DataGridViewCellStyle2.Font = New System.Drawing.Font("Century Gothic", 8.25!)
+        DataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.ControlText
+        DataGridViewCellStyle2.SelectionBackColor = System.Drawing.Color.FromArgb(CType(CType(94, Byte), Integer), CType(CType(185, Byte), Integer), CType(CType(117, Byte), Integer))
+        DataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText
+        DataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.[False]
+        Me.abaque_GRD.DefaultCellStyle = DataGridViewCellStyle2
         Me.abaque_GRD.Dock = System.Windows.Forms.DockStyle.Fill
         Me.abaque_GRD.EnableHeadersVisualStyles = False
         Me.abaque_GRD.GridColor = System.Drawing.Color.FromArgb(CType(CType(208, Byte), Integer), CType(CType(215, Byte), Integer), CType(CType(229, Byte), Integer))
         Me.abaque_GRD.Location = New System.Drawing.Point(0, 220)
         Me.abaque_GRD.Name = "abaque_GRD"
         Me.abaque_GRD.RowHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.[Single]
-        DataGridViewCellStyle6.BackColor = System.Drawing.Color.FromArgb(CType(CType(169, Byte), Integer), CType(CType(210, Byte), Integer), CType(CType(224, Byte), Integer))
-        DataGridViewCellStyle6.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        Me.abaque_GRD.RowHeadersDefaultCellStyle = DataGridViewCellStyle6
+        DataGridViewCellStyle3.BackColor = System.Drawing.Color.FromArgb(CType(CType(169, Byte), Integer), CType(CType(210, Byte), Integer), CType(CType(224, Byte), Integer))
+        DataGridViewCellStyle3.Font = New System.Drawing.Font("Century Gothic", 8.25!)
+        Me.abaque_GRD.RowHeadersDefaultCellStyle = DataGridViewCellStyle3
         Me.abaque_GRD.RowHeadersWidth = 51
         Me.abaque_GRD.Size = New System.Drawing.Size(902, 519)
         Me.abaque_GRD.TabIndex = 3
         '
         'Clef_01
         '
+        Me.Clef_01.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells
         Me.Clef_01.HeaderText = "Clef 1"
         Me.Clef_01.MinimumWidth = 6
         Me.Clef_01.Name = "Clef_01"
-        Me.Clef_01.Width = 125
+        Me.Clef_01.Width = 86
         '
         'Clef_02
         '
+        Me.Clef_02.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells
         Me.Clef_02.HeaderText = "Clef 2"
         Me.Clef_02.MinimumWidth = 6
         Me.Clef_02.Name = "Clef_02"
-        Me.Clef_02.Width = 125
+        Me.Clef_02.Width = 86
         '
         'Clef_03
         '
+        Me.Clef_03.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells
         Me.Clef_03.HeaderText = "Clef 3"
         Me.Clef_03.MinimumWidth = 6
         Me.Clef_03.Name = "Clef_03"
-        Me.Clef_03.Width = 125
+        Me.Clef_03.Width = 86
         '
         'Clef_04
         '
+        Me.Clef_04.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells
         Me.Clef_04.HeaderText = "Clef 4"
         Me.Clef_04.MinimumWidth = 6
         Me.Clef_04.Name = "Clef_04"
-        Me.Clef_04.Width = 125
+        Me.Clef_04.Width = 86
         '
         'Valeur_01
         '
+        Me.Valeur_01.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells
         Me.Valeur_01.HeaderText = "Valeur 1"
         Me.Valeur_01.MinimumWidth = 6
         Me.Valeur_01.Name = "Valeur_01"
-        Me.Valeur_01.Width = 125
+        Me.Valeur_01.Width = 103
         '
         'Valeur_02
         '
+        Me.Valeur_02.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells
         Me.Valeur_02.HeaderText = "Valeur 2"
         Me.Valeur_02.MinimumWidth = 6
         Me.Valeur_02.Name = "Valeur_02"
-        Me.Valeur_02.Width = 125
+        Me.Valeur_02.Width = 103
         '
         'Valeur_03
         '
+        Me.Valeur_03.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells
         Me.Valeur_03.HeaderText = "Valeur 3"
         Me.Valeur_03.MinimumWidth = 6
         Me.Valeur_03.Name = "Valeur_03"
-        Me.Valeur_03.Width = 125
+        Me.Valeur_03.Width = 103
         '
         'Valeur_04
         '
+        Me.Valeur_04.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells
         Me.Valeur_04.HeaderText = "Valeur 4"
         Me.Valeur_04.MinimumWidth = 6
         Me.Valeur_04.Name = "Valeur_04"
-        Me.Valeur_04.Width = 125
+        Me.Valeur_04.Width = 103
         '
         'Flag
         '
@@ -239,7 +248,7 @@ Partial Class RH_Param_Abaques
         '
         Me.Lib_Abaque_txt.CharacterCasing = System.Windows.Forms.CharacterCasing.Normal
         Me.Lib_Abaque_txt.ContextMenuStrip = Nothing
-        Me.Lib_Abaque_txt.Location = New System.Drawing.Point(333, 19)
+        Me.Lib_Abaque_txt.Location = New System.Drawing.Point(333, 25)
         Me.Lib_Abaque_txt.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
         Me.Lib_Abaque_txt.MaxLength = 50
         Me.Lib_Abaque_txt.Multiline = False
@@ -249,13 +258,14 @@ Partial Class RH_Param_Abaques
         Me.Lib_Abaque_txt.ReadOnly = False
         Me.Lib_Abaque_txt.ScrollBars = System.Windows.Forms.ScrollBars.None
         Me.Lib_Abaque_txt.SelectionStart = 0
-        Me.Lib_Abaque_txt.Size = New System.Drawing.Size(410, 27)
+        Me.Lib_Abaque_txt.Size = New System.Drawing.Size(410, 21)
         Me.Lib_Abaque_txt.TabIndex = 72
         Me.Lib_Abaque_txt.TextAlign = System.Windows.Forms.HorizontalAlignment.Left
         Me.Lib_Abaque_txt.UseSystemPasswordChar = False
         '
         'Panel1
         '
+        Me.Panel1.Controls.Add(Me.Variable_Paie_chk)
         Me.Panel1.Controls.Add(Me.Panel2)
         Me.Panel1.Controls.Add(Me.callFunction_btn)
         Me.Panel1.Controls.Add(Me.DefaultVal_txt)
@@ -276,6 +286,19 @@ Partial Class RH_Param_Abaques
         Me.Panel1.Name = "Panel1"
         Me.Panel1.Size = New System.Drawing.Size(902, 220)
         Me.Panel1.TabIndex = 4
+        '
+        'Variable_Paie_chk
+        '
+        Me.Variable_Paie_chk.AutoSize = True
+        Me.Variable_Paie_chk.Checked = False
+        Me.Variable_Paie_chk.Location = New System.Drawing.Point(751, 49)
+        Me.Variable_Paie_chk.Margin = New System.Windows.Forms.Padding(4, 6, 4, 6)
+        Me.Variable_Paie_chk.MaximumSize = New System.Drawing.Size(0, 36)
+        Me.Variable_Paie_chk.MinimumSize = New System.Drawing.Size(133, 36)
+        Me.Variable_Paie_chk.Name = "Variable_Paie_chk"
+        Me.Variable_Paie_chk.Size = New System.Drawing.Size(133, 36)
+        Me.Variable_Paie_chk.TabIndex = 230
+        Me.Variable_Paie_chk.Text = "Géré en paie"
         '
         'Panel2
         '
@@ -336,7 +359,7 @@ Partial Class RH_Param_Abaques
         '
         Me.DefaultVal_txt.CharacterCasing = System.Windows.Forms.CharacterCasing.Normal
         Me.DefaultVal_txt.ContextMenuStrip = Nothing
-        Me.DefaultVal_txt.Location = New System.Drawing.Point(164, 168)
+        Me.DefaultVal_txt.Location = New System.Drawing.Point(164, 175)
         Me.DefaultVal_txt.Margin = New System.Windows.Forms.Padding(4, 5, 4, 5)
         Me.DefaultVal_txt.MaxLength = 50
         Me.DefaultVal_txt.Multiline = False
@@ -346,7 +369,7 @@ Partial Class RH_Param_Abaques
         Me.DefaultVal_txt.ReadOnly = False
         Me.DefaultVal_txt.ScrollBars = System.Windows.Forms.ScrollBars.None
         Me.DefaultVal_txt.SelectionStart = 0
-        Me.DefaultVal_txt.Size = New System.Drawing.Size(163, 32)
+        Me.DefaultVal_txt.Size = New System.Drawing.Size(163, 21)
         Me.DefaultVal_txt.TabIndex = 226
         Me.DefaultVal_txt.TextAlign = System.Windows.Forms.HorizontalAlignment.Left
         Me.DefaultVal_txt.UseSystemPasswordChar = False
@@ -488,15 +511,6 @@ Partial Class RH_Param_Abaques
     Friend WithEvents Cod_Abaque_txt As ud_TextBox
     Friend WithEvents Lib_Abaque_txt As ud_TextBox
     Friend WithEvents Panel1 As Panel
-    Friend WithEvents Clef_01 As DataGridViewTextBoxColumn
-    Friend WithEvents Clef_02 As DataGridViewTextBoxColumn
-    Friend WithEvents Clef_03 As DataGridViewTextBoxColumn
-    Friend WithEvents Clef_04 As DataGridViewTextBoxColumn
-    Friend WithEvents Valeur_01 As DataGridViewTextBoxColumn
-    Friend WithEvents Valeur_02 As DataGridViewTextBoxColumn
-    Friend WithEvents Valeur_03 As DataGridViewTextBoxColumn
-    Friend WithEvents Valeur_04 As DataGridViewTextBoxColumn
-    Friend WithEvents Flag As DataGridViewTextBoxColumn
     Friend WithEvents Typ_Retour As ud_ComboBox
     Friend WithEvents Typ_Retour_ As Label
     Friend WithEvents Label2 As Label
@@ -511,4 +525,14 @@ Partial Class RH_Param_Abaques
     Friend WithEvents Constante_rd As ud_RadioBox
     Friend WithEvents fonction_rd As ud_RadioBox
     Friend WithEvents Label4 As Label
+    Friend WithEvents Clef_01 As DataGridViewTextBoxColumn
+    Friend WithEvents Clef_02 As DataGridViewTextBoxColumn
+    Friend WithEvents Clef_03 As DataGridViewTextBoxColumn
+    Friend WithEvents Clef_04 As DataGridViewTextBoxColumn
+    Friend WithEvents Valeur_01 As DataGridViewTextBoxColumn
+    Friend WithEvents Valeur_02 As DataGridViewTextBoxColumn
+    Friend WithEvents Valeur_03 As DataGridViewTextBoxColumn
+    Friend WithEvents Valeur_04 As DataGridViewTextBoxColumn
+    Friend WithEvents Flag As DataGridViewTextBoxColumn
+    Friend WithEvents Variable_Paie_chk As ud_CheckBox
 End Class

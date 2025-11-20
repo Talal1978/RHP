@@ -1,5 +1,7 @@
 ﻿Imports System.Text.RegularExpressions
 Imports DevExpress.Utils.Extensions
+Imports DevExpress.XtraCharts.Native
+Imports DevExpress.XtraRichEdit.Model
 Public Class RH_Param_Abaques
 
     Private Sub Cod_LinkClicked(ByVal sender As System.Object, ByVal e As System.Windows.Forms.LinkLabelLinkClickedEventArgs) Handles Abaque_lbl.LinkClicked
@@ -29,6 +31,7 @@ Public Class RH_Param_Abaques
                 Typ_Retour.SelectedValue = IsNull(.Rows(0)("Typ_Retour"), "")
                 DefaultVal_txt.Text = IsNull(.Rows(0)("DefaultVal"), "").Replace("""", "")
                 fonction_rd.Checked = (IsNull(.Rows(0)("Typ_DefaultVal"), "C") = "F")
+                Variable_Paie_chk.Checked = IsNull(.Rows(0)("Variable_Paie"), False)
                 Constante_rd.Checked = Not fonction_rd.Checked
                 nbClef = IsNull(.Rows(0)("Nb_Clefs"), 1)
                 nbVals = IsNull(.Rows(0)("Nb_Valeurs"), 1)
@@ -88,21 +91,13 @@ Public Class RH_Param_Abaques
                     .FirstDisplayedCell = .Item(ColIndex, rowIndex)
                     Return False
                 End If
-                If rg.IsMatch(.Item(ColIndex, rowIndex).Value) Then
-                    ShowMessageBox("Evtitez les caractères spéciaux.", "Contrôle", MessageBoxButtons.OK, MessageBoxIcon.Stop)
-                    .Rows(rowIndex).Selected = True
-                    .FirstDisplayedCell = .Item(ColIndex, rowIndex)
-                    Return False
-                End If
-                For j = rowIndex + 1 To .RowCount - 2
-                    If .Item(ColIndex, rowIndex).Value = IsNull(.Item(ColIndex, j).Value, "").Trim Then
-                        ShowMessageBox("La clef :" & .Item(ColIndex, rowIndex).Value & " est en double")
-                        .Rows(rowIndex).Selected = True
-                        .Rows(j).Selected = True
-                        .FirstDisplayedCell = .Item(ColIndex, rowIndex)
-                        Return False
-                    End If
-                Next
+                'If rg.IsMatch(.Item(ColIndex, rowIndex).Value) Then
+                '    ShowMessageBox("Evtitez les caractères spéciaux.", "Contrôle", MessageBoxButtons.OK, MessageBoxIcon.Stop)
+                '    .Rows(rowIndex).Selected = True
+                '    .FirstDisplayedCell = .Item(ColIndex, rowIndex)
+                '    Return False
+                'End If
+
             Else
                 .Item(ColIndex, rowIndex).Value = ""
             End If
@@ -222,6 +217,47 @@ Public Class RH_Param_Abaques
                 If Not ControleValeurs(Valeur_02.Index, i) Then Return
                 If Not ControleValeurs(Valeur_03.Index, i) Then Return
                 If Not ControleValeurs(Valeur_04.Index, i) Then Return
+                If Nb_Clefs.Value = 1 Then
+                    For j = i + 1 To .RowCount - 2
+                        If .Item(Clef_01.Index, i).Value = IsNull(.Item(Clef_01.Index, j).Value, "").Trim Then
+                            ShowMessageBox("La clef :" & .Item(Clef_01.Index, i).Value & " est en double")
+                            .Rows(i).Selected = True
+                            .Rows(j).Selected = True
+                            .FirstDisplayedCell = .Item(Clef_01.Index, i)
+                            Return
+                        End If
+                    Next
+                ElseIf Nb_Clefs.Value = 2 Then
+                    For j = i + 1 To .RowCount - 2
+                        If .Item(Clef_01.Index, i).Value = IsNull(.Item(Clef_01.Index, j).Value, "").Trim And .Item(Clef_02.Index, i).Value = IsNull(.Item(Clef_02.Index, j).Value, "").Trim Then
+                            ShowMessageBox("La clef :" & .Item(Clef_01.Index, i).Value & " - " & .Item(Clef_02.Index, i).Value & ", est en double")
+                            .Rows(i).Selected = True
+                            .Rows(j).Selected = True
+                            .FirstDisplayedCell = .Item(Clef_01.Index, i)
+                            Return
+                        End If
+                    Next
+                ElseIf Nb_Clefs.Value = 3 Then
+                    For j = i + 1 To .RowCount - 2
+                        If .Item(Clef_01.Index, i).Value = IsNull(.Item(Clef_01.Index, j).Value, "").Trim And .Item(Clef_02.Index, i).Value = IsNull(.Item(Clef_02.Index, j).Value, "").Trim And .Item(Clef_03.Index, i).Value = IsNull(.Item(Clef_03.Index, j).Value, "").Trim Then
+                            ShowMessageBox("La clef :" & .Item(Clef_01.Index, i).Value & " - " & .Item(Clef_02.Index, i).Value & " - " & .Item(Clef_03.Index, i).Value & ", est en double")
+                            .Rows(i).Selected = True
+                            .Rows(j).Selected = True
+                            .FirstDisplayedCell = .Item(Clef_01.Index, i)
+                            Return
+                        End If
+                    Next
+                ElseIf Nb_Clefs.Value = 4 Then
+                    For j = i + 1 To .RowCount - 2
+                        If .Item(Clef_01.Index, i).Value = IsNull(.Item(Clef_01.Index, j).Value, "").Trim And .Item(Clef_02.Index, i).Value = IsNull(.Item(Clef_02.Index, j).Value, "").Trim And .Item(Clef_03.Index, i).Value = IsNull(.Item(Clef_03.Index, j).Value, "").Trim And .Item(Clef_04.Index, i).Value = IsNull(.Item(Clef_04.Index, j).Value, "").Trim Then
+                            ShowMessageBox("La clef :" & .Item(Clef_01.Index, i).Value & " - " & .Item(Clef_02.Index, i).Value & " - " & .Item(Clef_03.Index, i).Value & " - " & .Item(Clef_04.Index, i).Value & ", est en double")
+                            .Rows(i).Selected = True
+                            .Rows(j).Selected = True
+                            .FirstDisplayedCell = .Item(Clef_01.Index, i)
+                            Return
+                        End If
+                    Next
+                End If
             Next
             'enregistrer l'entête
             Cod_Sql = "select * from RH_Param_Abaques where Cod_Abaque='" & Cod_Abaque_txt.Text & "' 
@@ -246,6 +282,7 @@ Public Class RH_Param_Abaques
             rs("Typ_Retour").Value = Typ_Retour.SelectedValue
             rs("Nb_Clefs").Value = Nb_Clefs.Value
             rs("Nb_Valeurs").Value = Nb_Valeurs.Value
+            rs("Variable_Paie").Value = Variable_Paie_chk.Checked
             rs("Modified_By").Value = theUser.Login
             rs("Dat_Modif").Value = Now
             rs.Update()
@@ -286,7 +323,7 @@ Public Class RH_Param_Abaques
                 End If
             Next
         End With
-        CnExecuting("delete from RH_Param_Abaques_Detail where Cod_Abaque='" & Cod_Abaque_txt.Text & "' and Flag!='" & flg & "' and isnull(Nullif(id_Societe,-1)," & Societe.id_Societe & ")=" & Societe.id_Societe)
+        CnExecuting("delete from RH_Param_Abaques_Detail where Cod_Abaque='" & Cod_Abaque_txt.Text & "' and isnull(Flag,0)!='" & flg & "' and isnull(Nullif(id_Societe,-1)," & Societe.id_Societe & ")=" & Societe.id_Societe)
         MessageBoxRHP(352)
         Request()
     End Sub

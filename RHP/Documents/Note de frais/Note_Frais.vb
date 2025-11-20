@@ -23,6 +23,7 @@ Public Class Note_Frais
         End If
         If Typ_Frais.Items.Count = 0 Then Combo_GRD(Typ_Frais)
         If Typ_Mission_cbo.Items.Count = 0 Then Typ_Mission_cbo.fromRubrique("Typ_Mission")
+        If Moyen_Transport_cbo.Items.Count = 0 Then Moyen_Transport_cbo.fromRubrique("Moyen_Transport")
         If Typ_Deplacement_cbo.Items.Count = 0 Then
             Typ_Deplacement_cbo.fromRubrique("Typ_Deplacement")
         End If
@@ -48,13 +49,15 @@ Public Class Note_Frais
         Dim Tbl As DataTable = DATA_READER_GRD(SqlStr)
         With Tbl
             If .Rows.Count > 0 Then
+                Num_OM_txt.Text = IsNull(.Rows(0)("Num_OM"), "")
                 Mnt_NF_txt.Text = IsNull(.Rows(0)("Mnt_NF"), "0,00")
                 Mnt_NF_txt.Text = If(IsNumeric(Mnt_NF_txt.Text), FormatNumber(CDbl(Mnt_NF_txt.Text), 2), "0,00")
                 Matricule_txt.Text = IsNull(.Rows(0)("Matricule"), "")
                 requestMatricule()
                 Dat_NF_txt.Text = IsNull(.Rows(0)("Dat_NF"), "")
                 Commentaire_txt.Text = IsNull(.Rows(0)("Commentaire"), "")
-                Num_OM_txt.Text = IsNull(.Rows(0)("Num_OM"), "")
+                Moyen_Transport_cbo.SelectedValue = IsNull(.Rows(0)("Moyen_Transport"), "")
+
                 With pb_Valide
                     .Tag = ""
                     Select Case IsNull(Tbl.Rows(0)("Statut"), "")
@@ -200,6 +203,7 @@ where id_Societe=" & Societe.id_Societe & " and year(Dat_NF)=" & CDate(Dat_NF_tx
         rs("Dat_NF").Value = Dat_NF_txt.Text
         rs("Mnt_NF").Value = Mnt_NF_txt.Text
         rs("Commentaire").Value = Commentaire_txt.Text
+        rs("Moyen_Transport").Value = Moyen_Transport_cbo.SelectedValue
         rs("Statut").Value = statut
         rs("Num_OM").Value = Num_OM_txt.Text
         rs("Dat_Modif").Value = oDat
@@ -328,7 +332,7 @@ values ('Rh_Note_Frais','Num_NF','" & Num_NF_txt.Text & "','" & theUser.id_User 
     End Sub
     Sub checkCell(sender, e)
         If Grd_Frais.CurrentCell.ColumnIndex = Tx.Index Or Grd_Frais.CurrentCell.ColumnIndex = Base.Index Then
-            ControleSaisie(sender, e, True, False, True, False, False)
+            ControleSaisie(sender, e, True, False, False, False, False)
         End If
 
     End Sub
@@ -353,6 +357,7 @@ values ('Rh_Note_Frais','Num_NF','" & Num_NF_txt.Text & "','" & theUser.id_User 
                 Dat_Au_txt.Text = IsNull(.Rows(0)("Dat_Au"), "")
                 Distance_txt.Text = IsNull(.Rows(0)("Distance"), "0,00")
                 AllerRetour_chk.Checked = IsNull(.Rows(0)("AllerRetour"), False)
+                Avance_Deplament_chk.Checked = IsNull(.Rows(0)("Avance_Deplament"), False)
                 Commentaire_txt.Text = IsNull(.Rows(0)("Commentaire"), "")
                 Typ_Mission_cbo.SelectedValue = IsNull(.Rows(0)("Typ_Mission"), "1")
             Else
@@ -367,6 +372,7 @@ values ('Rh_Note_Frais','Num_NF','" & Num_NF_txt.Text & "','" & theUser.id_User 
                 Commentaire_txt.Text = ""
                 Pays_Destination_txt.ResetText()
                 AllerRetour_chk.Checked = False
+                Avance_Deplament_chk.Checked = False
                 Typ_Mission_cbo.SelectedIndex = -1
             End If
         End With
@@ -376,5 +382,9 @@ values ('Rh_Note_Frais','Num_NF','" & Num_NF_txt.Text & "','" & theUser.id_User 
     End Sub
     Private Sub Ville_Destination_txt_TextChanged(sender As Object, e As EventArgs) Handles Ville_Destination_txt.TextChanged
         Lib_Ville_Destination_txt.Text = FindLibelle("Ville", "Cod_Ville", Ville_Destination_txt.Text & "' and Cod_Pays='" & Societe.Cod_Pays, "Param_Ville")
+    End Sub
+
+    Private Sub Pays_Destination_txt_TextChanged(sender As Object, e As EventArgs) Handles Pays_Destination_txt.TextChanged
+        Lib_Pays_Destination_txt.Text = FindLibelle("Pays", "Cod_Pays", Pays_Destination_txt.Text, "Param_Pays")
     End Sub
 End Class

@@ -100,7 +100,6 @@ Partial Class Param_Ville
         '
         Me.Cod_Pay_Text.CharacterCasing = System.Windows.Forms.CharacterCasing.Normal
         Me.Cod_Pay_Text.ContextMenuStrip = Nothing
-        Me.Cod_Pay_Text.Enabled = False
         Me.Cod_Pay_Text.Location = New System.Drawing.Point(89, 26)
         Me.Cod_Pay_Text.Margin = New System.Windows.Forms.Padding(5)
         Me.Cod_Pay_Text.MaxLength = 10
@@ -108,7 +107,7 @@ Partial Class Param_Ville
         Me.Cod_Pay_Text.Name = "Cod_Pay_Text"
         Me.Cod_Pay_Text.Padding = New System.Windows.Forms.Padding(1, 0, 1, 0)
         Me.Cod_Pay_Text.PasswordChar = "" & Global.Microsoft.VisualBasic.ChrW(0)
-        Me.Cod_Pay_Text.ReadOnly = False
+        Me.Cod_Pay_Text.ReadOnly = True
         Me.Cod_Pay_Text.ScrollBars = System.Windows.Forms.ScrollBars.None
         Me.Cod_Pay_Text.SelectionStart = 0
         Me.Cod_Pay_Text.Size = New System.Drawing.Size(111, 26)
@@ -119,9 +118,8 @@ Partial Class Param_Ville
         '
         'Cod_Ville_Text
         '
-        Me.Cod_Ville_Text.CharacterCasing = System.Windows.Forms.CharacterCasing.Normal
+        Me.Cod_Ville_Text.CharacterCasing = System.Windows.Forms.CharacterCasing.Upper
         Me.Cod_Ville_Text.ContextMenuStrip = Nothing
-        Me.Cod_Ville_Text.Enabled = False
         Me.Cod_Ville_Text.Location = New System.Drawing.Point(89, 59)
         Me.Cod_Ville_Text.Margin = New System.Windows.Forms.Padding(5)
         Me.Cod_Ville_Text.MaxLength = 10
@@ -129,7 +127,7 @@ Partial Class Param_Ville
         Me.Cod_Ville_Text.Name = "Cod_Ville_Text"
         Me.Cod_Ville_Text.Padding = New System.Windows.Forms.Padding(1, 0, 1, 0)
         Me.Cod_Ville_Text.PasswordChar = "" & Global.Microsoft.VisualBasic.ChrW(0)
-        Me.Cod_Ville_Text.ReadOnly = False
+        Me.Cod_Ville_Text.ReadOnly = True
         Me.Cod_Ville_Text.ScrollBars = System.Windows.Forms.ScrollBars.None
         Me.Cod_Ville_Text.SelectionStart = 0
         Me.Cod_Ville_Text.Size = New System.Drawing.Size(111, 26)
@@ -154,7 +152,7 @@ Partial Class Param_Ville
         '
         'Ville_Text
         '
-        Me.Ville_Text.CharacterCasing = System.Windows.Forms.CharacterCasing.Normal
+        Me.Ville_Text.CharacterCasing = System.Windows.Forms.CharacterCasing.Upper
         Me.Ville_Text.ContextMenuStrip = Nothing
         Me.Ville_Text.Location = New System.Drawing.Point(206, 59)
         Me.Ville_Text.Margin = New System.Windows.Forms.Padding(5)

@@ -288,6 +288,7 @@ Cod_Python_Text.Text.Contains("&") = True Then
                 End If
             Next
         End With
+        ShowMessageBox("Enregistré")
     End Sub
     Private Sub Modele_Python_GRD_KeyUp(ByVal sender As Object, ByVal e As System.Windows.Forms.KeyEventArgs) Handles Grd_Arguments.KeyUp
         With Grd_Arguments

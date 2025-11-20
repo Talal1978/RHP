@@ -1,8 +1,6 @@
 ﻿Imports System.ComponentModel
 Imports System.Globalization
-Imports System.Net
 Imports System.Threading
-Imports System.IO
 Public Class Param_Python_Saisi
     Dim imgList As New ImageList
     Dim Tbl As New DataTable
@@ -183,7 +181,7 @@ Public Class Param_Python_Saisi
 
         Try
 
-            codeText = FindLibelle("Text_Code", "Cod_Python", Cod_Python_txt.Text, "Param_Python")
+            codeText = FindLibelle("Text_Code", "Cod_Python", Cod_Python_txt.Text, "Param_Python").replace("@idSoc", Societe.id_Societe)
             Dim shouldImportDate As Boolean = False
             With Arguments_Grd
                 For i = 0 To .RowCount - 1

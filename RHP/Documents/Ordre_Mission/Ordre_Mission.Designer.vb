@@ -23,9 +23,9 @@ Partial Class Ordre_Mission
     <System.Diagnostics.DebuggerStepThrough()>
     Private Sub InitializeComponent()
         Me.components = New System.ComponentModel.Container()
-        Dim DataGridViewCellStyle4 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
-        Dim DataGridViewCellStyle5 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
-        Dim DataGridViewCellStyle6 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
+        Dim DataGridViewCellStyle1 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
+        Dim DataGridViewCellStyle2 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
+        Dim DataGridViewCellStyle3 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
         Me.Panel1 = New System.Windows.Forms.Panel()
         Me.Grd_Interesses = New RHP.ud_Grd()
         Me.Matricule = New System.Windows.Forms.DataGridViewTextBoxColumn()
@@ -37,6 +37,7 @@ Partial Class Ordre_Mission
         Me.Cod_Entite = New System.Windows.Forms.DataGridViewTextBoxColumn()
         Me.Lib_Entite = New System.Windows.Forms.DataGridViewTextBoxColumn()
         Me.GroupBox1 = New System.Windows.Forms.GroupBox()
+        Me.Avance_Deplament_chk = New RHP.ud_CheckBox()
         Me.AllerRetour_chk = New RHP.ud_CheckBox()
         Me.pnl_internationale = New System.Windows.Forms.Panel()
         Me.Pays_Destination_txt = New RHP.ud_TextBox()
@@ -100,25 +101,25 @@ Partial Class Ordre_Mission
         Me.Grd_Interesses.BackgroundColor = System.Drawing.Color.White
         Me.Grd_Interesses.BorderStyle = System.Windows.Forms.BorderStyle.None
         Me.Grd_Interesses.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.[Single]
-        DataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter
-        DataGridViewCellStyle4.BackColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
-        DataGridViewCellStyle4.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        DataGridViewCellStyle4.ForeColor = System.Drawing.Color.White
-        DataGridViewCellStyle4.Padding = New System.Windows.Forms.Padding(5)
-        DataGridViewCellStyle4.SelectionBackColor = System.Drawing.Color.White
-        DataGridViewCellStyle4.SelectionForeColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
-        DataGridViewCellStyle4.WrapMode = System.Windows.Forms.DataGridViewTriState.[True]
-        Me.Grd_Interesses.ColumnHeadersDefaultCellStyle = DataGridViewCellStyle4
+        DataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter
+        DataGridViewCellStyle1.BackColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
+        DataGridViewCellStyle1.Font = New System.Drawing.Font("Century Gothic", 8.25!)
+        DataGridViewCellStyle1.ForeColor = System.Drawing.Color.White
+        DataGridViewCellStyle1.Padding = New System.Windows.Forms.Padding(5)
+        DataGridViewCellStyle1.SelectionBackColor = System.Drawing.Color.White
+        DataGridViewCellStyle1.SelectionForeColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
+        DataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.[True]
+        Me.Grd_Interesses.ColumnHeadersDefaultCellStyle = DataGridViewCellStyle1
         Me.Grd_Interesses.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize
         Me.Grd_Interesses.Columns.AddRange(New System.Windows.Forms.DataGridViewColumn() {Me.Matricule, Me.Nom, Me.Cod_Poste, Me.Lib_Poste, Me.Cod_Grade, Me.Lib_Grade, Me.Cod_Entite, Me.Lib_Entite})
-        DataGridViewCellStyle5.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft
-        DataGridViewCellStyle5.BackColor = System.Drawing.SystemColors.Window
-        DataGridViewCellStyle5.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        DataGridViewCellStyle5.ForeColor = System.Drawing.SystemColors.ControlText
-        DataGridViewCellStyle5.SelectionBackColor = System.Drawing.Color.FromArgb(CType(CType(94, Byte), Integer), CType(CType(185, Byte), Integer), CType(CType(117, Byte), Integer))
-        DataGridViewCellStyle5.SelectionForeColor = System.Drawing.Color.Black
-        DataGridViewCellStyle5.WrapMode = System.Windows.Forms.DataGridViewTriState.[False]
-        Me.Grd_Interesses.DefaultCellStyle = DataGridViewCellStyle5
+        DataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft
+        DataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window
+        DataGridViewCellStyle2.Font = New System.Drawing.Font("Century Gothic", 8.25!)
+        DataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.ControlText
+        DataGridViewCellStyle2.SelectionBackColor = System.Drawing.Color.FromArgb(CType(CType(94, Byte), Integer), CType(CType(185, Byte), Integer), CType(CType(117, Byte), Integer))
+        DataGridViewCellStyle2.SelectionForeColor = System.Drawing.Color.Black
+        DataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.[False]
+        Me.Grd_Interesses.DefaultCellStyle = DataGridViewCellStyle2
         Me.Grd_Interesses.Dock = System.Windows.Forms.DockStyle.Fill
         Me.Grd_Interesses.EnableHeadersVisualStyles = False
         Me.Grd_Interesses.GridColor = System.Drawing.Color.FromArgb(CType(CType(179, Byte), Integer), CType(CType(216, Byte), Integer), CType(CType(228, Byte), Integer))
@@ -126,9 +127,9 @@ Partial Class Ordre_Mission
         Me.Grd_Interesses.Margin = New System.Windows.Forms.Padding(4)
         Me.Grd_Interesses.Name = "Grd_Interesses"
         Me.Grd_Interesses.RowHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.[Single]
-        DataGridViewCellStyle6.BackColor = System.Drawing.Color.FromArgb(CType(CType(169, Byte), Integer), CType(CType(210, Byte), Integer), CType(CType(224, Byte), Integer))
-        DataGridViewCellStyle6.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        Me.Grd_Interesses.RowHeadersDefaultCellStyle = DataGridViewCellStyle6
+        DataGridViewCellStyle3.BackColor = System.Drawing.Color.FromArgb(CType(CType(169, Byte), Integer), CType(CType(210, Byte), Integer), CType(CType(224, Byte), Integer))
+        DataGridViewCellStyle3.Font = New System.Drawing.Font("Century Gothic", 8.25!)
+        Me.Grd_Interesses.RowHeadersDefaultCellStyle = DataGridViewCellStyle3
         Me.Grd_Interesses.RowHeadersWidth = 51
         Me.Grd_Interesses.Size = New System.Drawing.Size(1062, 330)
         Me.Grd_Interesses.TabIndex = 100
@@ -202,6 +203,7 @@ Partial Class Ordre_Mission
         '
         'GroupBox1
         '
+        Me.GroupBox1.Controls.Add(Me.Avance_Deplament_chk)
         Me.GroupBox1.Controls.Add(Me.AllerRetour_chk)
         Me.GroupBox1.Controls.Add(Me.pnl_internationale)
         Me.GroupBox1.Controls.Add(Me.pnl_nationale)
@@ -236,6 +238,19 @@ Partial Class Ordre_Mission
         Me.GroupBox1.TabIndex = 0
         Me.GroupBox1.TabStop = False
         Me.GroupBox1.Text = "Ordre de Mission"
+        '
+        'Avance_Deplament_chk
+        '
+        Me.Avance_Deplament_chk.AutoSize = True
+        Me.Avance_Deplament_chk.Checked = False
+        Me.Avance_Deplament_chk.Location = New System.Drawing.Point(608, 310)
+        Me.Avance_Deplament_chk.Margin = New System.Windows.Forms.Padding(4, 6, 4, 6)
+        Me.Avance_Deplament_chk.MaximumSize = New System.Drawing.Size(0, 36)
+        Me.Avance_Deplament_chk.MinimumSize = New System.Drawing.Size(133, 36)
+        Me.Avance_Deplament_chk.Name = "Avance_Deplament_chk"
+        Me.Avance_Deplament_chk.Size = New System.Drawing.Size(304, 36)
+        Me.Avance_Deplament_chk.TabIndex = 98
+        Me.Avance_Deplament_chk.Text = "Accorder une avance sur déplacement"
         '
         'AllerRetour_chk
         '
@@ -928,4 +943,5 @@ Partial Class Ordre_Mission
     Friend WithEvents Cod_Entite As DataGridViewTextBoxColumn
     Friend WithEvents Lib_Entite As DataGridViewTextBoxColumn
     Friend WithEvents AllerRetour_chk As ud_CheckBox
+    Friend WithEvents Avance_Deplament_chk As ud_CheckBox
 End Class

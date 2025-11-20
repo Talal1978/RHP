@@ -17,7 +17,7 @@ Public Class vsEngine
         End If
         Dim SqlStr As String = "select * from RH_Elements_Paie where isnull(nullif(id_Societe,-1)," & Societe.id_Societe & ")= " & Societe.id_Societe & " order by Typ_Function, Typ_Retour"
         Dim TblRub As DataTable = DATA_READER_GRD(SqlStr)
-        Dim TblAbaques = DATA_READER_GRD("select * from RH_Param_Abaques e left join RH_Param_Abaques_Detail d on e.Cod_Abaque=d.Cod_Abaque and e.id_Societe=d.id_Societe where isnull(nullif(e.id_Societe,-1)," & Societe.id_Societe & ")= " & Societe.id_Societe & " order by Typ_Retour")
+        Dim TblAbaques = DATA_READER_GRD("select * from RH_Param_Abaques e left join RH_Param_Abaques_Detail d on e.Cod_Abaque=d.Cod_Abaque and e.id_Societe=d.id_Societe where isnull(Variable_Paie,'false')='true' and isnull(nullif(e.id_Societe,-1)," & Societe.id_Societe & ")= " & Societe.id_Societe & " order by Typ_Retour")
         Dim StrVar As String = ""
         Dim nRows() As DataRow = TblRub.Select("Typ_Function not in ('FS','FU','FP')")
         With nRows

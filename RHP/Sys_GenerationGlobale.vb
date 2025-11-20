@@ -1,12 +1,14 @@
-﻿Public Class Sys_GenerationGlobale
+﻿Imports System.Threading
+Public Class Sys_GenerationGlobale
     Dim MenuTbl As New DataTable
     Dim TreeTbl As New DataTable
     Dim ControlTbl As New DataTable
     Dim LblTbl As New DataTable
     Dim oRow() As DataRow
     Friend Flag_Maj As Integer = 0
-    Dim WithEvents oTimer As New Timer
+    Dim WithEvents oTimer As New System.Windows.Forms.Timer
     Dim strState As String = ""
+    Dim workerThread As Thread
     Sub ListControlGereSecurity(ByVal frm As Object, ByVal oForm As String)
 
         Try
@@ -119,79 +121,29 @@
         End If
 
     End Sub
-
     Private Sub ButtonX1_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles Ud_button1.Click
-        Lbl1.Text = "Traitement en cours.  Merci de patienter..."
+
         Annuler_ud.Enabled = False
         Dim Rnd As New Random
         Flag_Maj = Rnd.Next(19049, 1905678)
-        Dim a As Reflection.Assembly = System.Reflection.Assembly.GetAssembly(Me.GetType)
-        Dim rs1 As New ADODB.Recordset
-
-
+        oTimer.Start()
+        Lbl1.Text = "Traitement en cours.  Merci de patienter..."
+        Lbl1.Refresh()
         ProgressBar1.Visible = True
-        For Each T As Type In a.GetTypes
-            Lbl1.Text = "Traitement en cours.  Merci de patienter..." & vbCrLf & vbCrLf & vbCrLf & T.Name
-            If GetType(Ecran).IsAssignableFrom(T) Then
-                Dim Frm = CType(Activator.CreateInstance(T), Ecran)
-                If Frm.Tag = "ECR" Then
-                    strState = Frm.Name
-                    rs1.Open("select * from Controle_Menu where Name_Ecran='" & Frm.Name & "'", cn, 2, 2)
-                    If rs1.EOF Then
-                        rs1.AddNew()
-                    Else
-                        rs1.Update()
-                    End If
-                    rs1("Name_Ecran").Value = Frm.Name
-                    rs1("Text_Ecran").Value = Frm.Text
-                    rs1("Typ_Ecran").Value = Frm.Tag
-                    rs1("Flag_Maj").Value = Flag_Maj
-
-                    rs1.Update()
-                    rs1.Close()
-
-                    'Insertion dans Controle_TreeView
-                    rs1.Open("select * from Controle_TreeView where Name_Ecran='" & Frm.Name & "'", cn, 2, 2)
-                    If rs1.EOF Then
-                        rs1.AddNew()
-                    Else
-                        rs1.Update()
-                    End If
-                    rs1("Name_Ecran").Value = Frm.Name
-                    rs1("Text_Ecran").Value = Frm.Text
-                    rs1("Typ_Ecran").Value = Frm.Tag
-                    rs1("Tag").Value = "Form"
-                    rs1("Flag_Maj").Value = Flag_Maj
-
-                    rs1.Update()
-                    rs1.Close()
-
-                    'Insertion des Contrôles Child de Chaque Form
-
-                    ListControlGereSecurity(Frm, Frm.Name)
-                End If
-            End If
-        Next
-
-        strState = "Mise à jour des images..."
-        strState = "Supression des écrans obsolètes..."
-
-        CnExecuting("Delete from Controle_Menu where Typ_Ecran in ('ECR') and   isnull(Flag_Maj,0)<>'" & Flag_Maj & "'")
-        CnExecuting("delete from Controle_Menu_Avance where  isnull(Flag_Maj,0)<>'" & Flag_Maj & "'  and isnull(Source,'')<>'U'")
-        CnExecuting("Delete from Controle_TreeView where Typ_Ecran in ('ECR') and   isnull(Flag_Maj,0)<>'" & Flag_Maj & "'")
-        CnExecuting("delete from Controle_Menu where Typ_Ecran in ('RPT') and Name_Ecran not in (select Cod_Report from Param_Mod_Edition)")
-        CnExecuting("delete from Controle_Menu where Typ_Ecran in ('QRY') and Name_Ecran not in (select Cod_Query from Param_Query)")
-        InitialisationGlobale()
-        Me.Close()
+        ' Créer un thread STA
+        workerThread = New Thread(AddressOf ProcessForms)
+        workerThread.SetApartmentState(ApartmentState.STA)
+        workerThread.IsBackground = True
+        workerThread.Start()
     End Sub
 
-    Private Sub Sys_GenerationGlobale_Load(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles MyBase.Load
+    Sub Sys_GenerationGlobale_Load(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles MyBase.Load
         MenuTbl = DATA_READER_GRD("select * from Controle_Menu")
         TreeTbl = DATA_READER_GRD("select * from Controle_TreeView")
         ControlTbl = DATA_READER_GRD("select * from Controle_Menu_Avance")
         LblTbl = DATA_READER_GRD("select * from Controle_Def_Label")
         With oTimer
-            .Interval = 100
+            .Interval = 200
             AddHandler .Tick, Sub()
                                   With Lbl
                                       .Text = strState
@@ -207,7 +159,72 @@
         Me.Close()
     End Sub
 
-    Private Sub Ud_button1_Load(sender As Object, e As EventArgs) Handles Ud_button1.Load
+    Sub ProcessForms()
+        Dim a As Reflection.Assembly = System.Reflection.Assembly.GetAssembly(Me.GetType)
+        Dim rs1 As New ADODB.Recordset
+        Try
+            For Each T As Type In a.GetTypes
+                If GetType(Ecran).IsAssignableFrom(T) Then
+                    Dim Frm = CType(Activator.CreateInstance(T), Ecran)
+                    Frm.SuspendLayout()
+                    If Frm.Tag = "ECR" Then
+                        strState = Frm.Text & "(" & Frm.Name & ")"
+                        rs1.Open("select * from Controle_Menu where Name_Ecran='" & Frm.Name & "'", cn, 2, 2)
+                        If rs1.EOF Then
+                            rs1.AddNew()
+                        Else
+                            rs1.Update()
+                        End If
+                        rs1("Name_Ecran").Value = Frm.Name
+                        rs1("Text_Ecran").Value = Frm.Text
+                        rs1("Typ_Ecran").Value = Frm.Tag
+                        rs1("Flag_Maj").Value = Flag_Maj
 
+                        rs1.Update()
+                        rs1.Close()
+
+                        'Insertion dans Controle_TreeView
+                        rs1.Open("select * from Controle_TreeView where Name_Ecran='" & Frm.Name & "'", cn, 2, 2)
+                        If rs1.EOF Then
+                            rs1.AddNew()
+                        Else
+                            rs1.Update()
+                        End If
+                        rs1("Name_Ecran").Value = Frm.Name
+                        rs1("Text_Ecran").Value = Frm.Text
+                        rs1("Typ_Ecran").Value = Frm.Tag
+                        rs1("Tag").Value = "Form"
+                        rs1("Flag_Maj").Value = Flag_Maj
+
+                        rs1.Update()
+                        rs1.Close()
+
+                        'Insertion des Contrôles Child de Chaque Form
+
+                        ListControlGereSecurity(Frm, Frm.Name)
+                        If Frm IsNot Nothing Then
+                            Frm.Dispose()
+                        End If
+                    End If
+                End If
+            Next
+            Me.Invoke(Sub() FinalizeProcess())
+        Catch ex As Exception
+            Me.Invoke(Sub() ErrorMsg(ex))
+        End Try
     End Sub
+
+    Sub FinalizeProcess()
+        strState = "Mise à jour des images..."
+        strState = "Supression des écrans obsolètes..."
+
+        CnExecuting("Delete from Controle_Menu where Typ_Ecran in ('ECR') and   isnull(Flag_Maj,0)<>'" & Flag_Maj & "'")
+        CnExecuting("delete from Controle_Menu_Avance where  isnull(Flag_Maj,0)<>'" & Flag_Maj & "'  and isnull(Source,'')<>'U'")
+        CnExecuting("Delete from Controle_TreeView where Typ_Ecran in ('ECR') and   isnull(Flag_Maj,0)<>'" & Flag_Maj & "'")
+        CnExecuting("delete from Controle_Menu where Typ_Ecran in ('RPT') and Name_Ecran not in (select Cod_Report from Param_Mod_Edition)")
+        CnExecuting("delete from Controle_Menu where Typ_Ecran in ('QRY') and Name_Ecran not in (select Cod_Query from Param_Query)")
+        InitialisationGlobale()
+        Me.Close()
+    End Sub
+
 End Class

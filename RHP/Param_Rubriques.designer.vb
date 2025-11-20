@@ -1,5 +1,5 @@
 ﻿<Global.Microsoft.VisualBasic.CompilerServices.DesignerGenerated()>
-Partial Class RH_Param_Rubriques
+Partial Class Param_Rubriques
     Inherits Ecran
 
     'Form rEmplace la méthode Dispose pour nettoyer la liste des composants.
@@ -23,14 +23,10 @@ Partial Class RH_Param_Rubriques
     <System.Diagnostics.DebuggerStepThrough()>
     Private Sub InitializeComponent()
         Me.components = New System.ComponentModel.Container()
-        'Dim DataGridViewCellStyle1 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
-        'Dim DataGridViewCellStyle2 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
-        'Dim DataGridViewCellStyle3 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
-        'Dim DataGridViewCellStyle4 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
-        Me.Personnal_pnl = New System.Windows.Forms.TableLayoutPanel()
-        Me.ButtonX1 = New DevComponents.DotNetBar.ButtonX()
-        Me.ButtonX2 = New DevComponents.DotNetBar.ButtonX()
-        Me.ComboBox_GRD = New RHP.ud_Grd()
+        Dim DataGridViewCellStyle4 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
+        Dim DataGridViewCellStyle5 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
+        Dim DataGridViewCellStyle6 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
+        Me.Grille = New RHP.ud_Grd()
         Me.Valeur = New System.Windows.Forms.DataGridViewTextBoxColumn()
         Me.Membre = New System.Windows.Forms.DataGridViewTextBoxColumn()
         Me.Champs02 = New System.Windows.Forms.DataGridViewTextBoxColumn()
@@ -42,67 +38,56 @@ Partial Class RH_Param_Rubriques
         Me.Texte_Rubrique_Text = New RHP.ud_TextBox()
         Me.NoAddRows_chk = New RHP.ud_CheckBox()
         Me.Panel1 = New System.Windows.Forms.Panel()
-        Me.Personnal_pnl.SuspendLayout()
-        CType(Me.ComboBox_GRD, System.ComponentModel.ISupportInitialize).BeginInit()
+        CType(Me.Grille, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.Panel1.SuspendLayout()
         Me.SuspendLayout()
         '
-        'Personnal_pnl
+        'Grille
         '
-        Me.Personnal_pnl.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-        Me.Personnal_pnl.ColumnCount = 2
-        Me.Personnal_pnl.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50.0!))
-        Me.Personnal_pnl.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50.0!))
-        Me.Personnal_pnl.Controls.Add(Me.ButtonX1, 0, 0)
-        Me.Personnal_pnl.Location = New System.Drawing.Point(0, 0)
-        Me.Personnal_pnl.Name = "Personnal_pnl"
-        Me.Personnal_pnl.RowCount = 1
-        Me.Personnal_pnl.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20.0!))
-        Me.Personnal_pnl.Size = New System.Drawing.Size(200, 100)
-        Me.Personnal_pnl.TabIndex = 0
-        '
-        'ButtonX1
-        '
-        Me.ButtonX1.AccessibleRole = System.Windows.Forms.AccessibleRole.PushButton
-        Me.ButtonX1.Anchor = System.Windows.Forms.AnchorStyles.None
-        Me.ButtonX1.Location = New System.Drawing.Point(16, 38)
-        Me.ButtonX1.Name = "ButtonX1"
-        Me.ButtonX1.Size = New System.Drawing.Size(67, 23)
-        Me.ButtonX1.TabIndex = 0
-        Me.ButtonX1.Text = "OK"
-        '
-        'ButtonX2
-        '
-        Me.ButtonX2.AccessibleRole = System.Windows.Forms.AccessibleRole.PushButton
-        Me.ButtonX2.Anchor = System.Windows.Forms.AnchorStyles.None
-        Me.ButtonX2.DialogResult = System.Windows.Forms.DialogResult.Cancel
-        Me.ButtonX2.Location = New System.Drawing.Point(36, 3)
-        Me.ButtonX2.Name = "ButtonX2"
-        Me.ButtonX2.Size = New System.Drawing.Size(28, 8)
-        Me.ButtonX2.TabIndex = 1
-        Me.ButtonX2.Text = "Annuler"
-        '
-        'ComboBox_GRD
-        '
-        Me.ComboBox_GRD.AllowUserToOrderColumns = True
-        Me.ComboBox_GRD.BackgroundColor = System.Drawing.Color.FromArgb(CType(CType(250, Byte), Integer), CType(CType(250, Byte), Integer), CType(CType(250, Byte), Integer))
-        Me.ComboBox_GRD.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D
-        Me.ComboBox_GRD.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.[Single]
-        Me.ComboBox_GRD.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize
-        Me.ComboBox_GRD.Columns.AddRange(New System.Windows.Forms.DataGridViewColumn() {Me.Valeur, Me.Membre, Me.Champs02, Me.Rang, Me.Typ, Me.Nom_Controle})
-        Me.ComboBox_GRD.Dock = System.Windows.Forms.DockStyle.Fill
-        Me.ComboBox_GRD.EnableHeadersVisualStyles = False
-        Me.ComboBox_GRD.GridColor = System.Drawing.Color.FromArgb(CType(CType(208, Byte), Integer), CType(CType(215, Byte), Integer), CType(CType(229, Byte), Integer))
-        Me.ComboBox_GRD.Location = New System.Drawing.Point(0, 36)
-        Me.ComboBox_GRD.Name = "ComboBox_GRD"
-        Me.ComboBox_GRD.RowHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.[Single]
-        Me.ComboBox_GRD.Size = New System.Drawing.Size(902, 601)
-        Me.ComboBox_GRD.TabIndex = 3
+        Me.Grille.AfficherLesEntetesLignes = True
+        Me.Grille.AllowUserToOrderColumns = True
+        Me.Grille.AlternerLesLignes = False
+        Me.Grille.BackgroundColor = System.Drawing.Color.FromArgb(CType(CType(250, Byte), Integer), CType(CType(250, Byte), Integer), CType(CType(250, Byte), Integer))
+        Me.Grille.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D
+        Me.Grille.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.[Single]
+        DataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter
+        DataGridViewCellStyle4.BackColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
+        DataGridViewCellStyle4.Font = New System.Drawing.Font("Century Gothic", 8.25!)
+        DataGridViewCellStyle4.ForeColor = System.Drawing.Color.White
+        DataGridViewCellStyle4.Padding = New System.Windows.Forms.Padding(5)
+        DataGridViewCellStyle4.SelectionBackColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
+        DataGridViewCellStyle4.SelectionForeColor = System.Drawing.Color.White
+        DataGridViewCellStyle4.WrapMode = System.Windows.Forms.DataGridViewTriState.[True]
+        Me.Grille.ColumnHeadersDefaultCellStyle = DataGridViewCellStyle4
+        Me.Grille.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize
+        Me.Grille.Columns.AddRange(New System.Windows.Forms.DataGridViewColumn() {Me.Valeur, Me.Membre, Me.Champs02, Me.Rang, Me.Typ, Me.Nom_Controle})
+        DataGridViewCellStyle5.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft
+        DataGridViewCellStyle5.BackColor = System.Drawing.SystemColors.Window
+        DataGridViewCellStyle5.Font = New System.Drawing.Font("Century Gothic", 8.25!)
+        DataGridViewCellStyle5.ForeColor = System.Drawing.SystemColors.ControlText
+        DataGridViewCellStyle5.SelectionBackColor = System.Drawing.Color.FromArgb(CType(CType(94, Byte), Integer), CType(CType(185, Byte), Integer), CType(CType(117, Byte), Integer))
+        DataGridViewCellStyle5.SelectionForeColor = System.Drawing.SystemColors.HighlightText
+        DataGridViewCellStyle5.WrapMode = System.Windows.Forms.DataGridViewTriState.[False]
+        Me.Grille.DefaultCellStyle = DataGridViewCellStyle5
+        Me.Grille.Dock = System.Windows.Forms.DockStyle.Fill
+        Me.Grille.EnableHeadersVisualStyles = False
+        Me.Grille.GridColor = System.Drawing.Color.FromArgb(CType(CType(208, Byte), Integer), CType(CType(215, Byte), Integer), CType(CType(229, Byte), Integer))
+        Me.Grille.Location = New System.Drawing.Point(0, 85)
+        Me.Grille.Name = "Grille"
+        Me.Grille.RowHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.[Single]
+        DataGridViewCellStyle6.BackColor = System.Drawing.Color.FromArgb(CType(CType(169, Byte), Integer), CType(CType(210, Byte), Integer), CType(CType(224, Byte), Integer))
+        DataGridViewCellStyle6.Font = New System.Drawing.Font("Century Gothic", 8.25!)
+        Me.Grille.RowHeadersDefaultCellStyle = DataGridViewCellStyle6
+        Me.Grille.RowHeadersWidth = 51
+        Me.Grille.Size = New System.Drawing.Size(1142, 552)
+        Me.Grille.TabIndex = 3
         '
         'Valeur
         '
         Me.Valeur.HeaderText = "Valeur"
+        Me.Valeur.MinimumWidth = 6
         Me.Valeur.Name = "Valeur"
+        Me.Valeur.Width = 125
         '
         'Membre
         '
@@ -116,33 +101,41 @@ Partial Class RH_Param_Rubriques
         '
         Me.Champs02.HeaderText = "Champs 02"
         Me.Champs02.MaxInputLength = 50
+        Me.Champs02.MinimumWidth = 6
         Me.Champs02.Name = "Champs02"
+        Me.Champs02.Width = 125
         '
         'Rang
         '
         Me.Rang.HeaderText = "Rang"
+        Me.Rang.MinimumWidth = 6
         Me.Rang.Name = "Rang"
+        Me.Rang.Width = 125
         '
         'Typ
         '
         Me.Typ.HeaderText = "Type"
+        Me.Typ.MinimumWidth = 6
         Me.Typ.Name = "Typ"
         Me.Typ.ReadOnly = True
+        Me.Typ.Width = 125
         '
         'Nom_Controle
         '
         Me.Nom_Controle.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells
         Me.Nom_Controle.HeaderText = "Nom_Controle"
+        Me.Nom_Controle.MinimumWidth = 6
         Me.Nom_Controle.Name = "Nom_Controle"
         Me.Nom_Controle.Visible = False
+        Me.Nom_Controle.Width = 125
         '
         'COD
         '
         Me.COD.AutoSize = True
         Me.COD.LinkColor = System.Drawing.Color.Black
-        Me.COD.Location = New System.Drawing.Point(8, 9)
+        Me.COD.Location = New System.Drawing.Point(39, 16)
         Me.COD.Name = "COD"
-        Me.COD.Size = New System.Drawing.Size(57, 16)
+        Me.COD.Size = New System.Drawing.Size(72, 19)
         Me.COD.TabIndex = 0
         Me.COD.TabStop = True
         Me.COD.Tag = ""
@@ -150,9 +143,10 @@ Partial Class RH_Param_Rubriques
         '
         'Nom_Controle_Text
         '
-        Me.Nom_Controle_Text.BackColor = System.Drawing.SystemColors.Control
         Me.Nom_Controle_Text.CharacterCasing = System.Windows.Forms.CharacterCasing.Normal
-        Me.Nom_Controle_Text.Location = New System.Drawing.Point(68, 6)
+        Me.Nom_Controle_Text.ContextMenuStrip = Nothing
+        Me.Nom_Controle_Text.Location = New System.Drawing.Point(118, 13)
+        Me.Nom_Controle_Text.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
         Me.Nom_Controle_Text.MaxLength = 32767
         Me.Nom_Controle_Text.Multiline = False
         Me.Nom_Controle_Text.Name = "Nom_Controle_Text"
@@ -161,16 +155,17 @@ Partial Class RH_Param_Rubriques
         Me.Nom_Controle_Text.ReadOnly = True
         Me.Nom_Controle_Text.ScrollBars = System.Windows.Forms.ScrollBars.None
         Me.Nom_Controle_Text.SelectionStart = 0
-        Me.Nom_Controle_Text.Size = New System.Drawing.Size(163, 21)
+        Me.Nom_Controle_Text.Size = New System.Drawing.Size(310, 26)
         Me.Nom_Controle_Text.TabIndex = 71
         Me.Nom_Controle_Text.TextAlign = System.Windows.Forms.HorizontalAlignment.Left
         Me.Nom_Controle_Text.UseSystemPasswordChar = False
         '
         'Texte_Rubrique_Text
         '
-        Me.Texte_Rubrique_Text.BackColor = System.Drawing.SystemColors.Window
         Me.Texte_Rubrique_Text.CharacterCasing = System.Windows.Forms.CharacterCasing.Normal
-        Me.Texte_Rubrique_Text.Location = New System.Drawing.Point(237, 6)
+        Me.Texte_Rubrique_Text.ContextMenuStrip = Nothing
+        Me.Texte_Rubrique_Text.Location = New System.Drawing.Point(436, 13)
+        Me.Texte_Rubrique_Text.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
         Me.Texte_Rubrique_Text.MaxLength = 50
         Me.Texte_Rubrique_Text.Multiline = False
         Me.Texte_Rubrique_Text.Name = "Texte_Rubrique_Text"
@@ -179,7 +174,7 @@ Partial Class RH_Param_Rubriques
         Me.Texte_Rubrique_Text.ReadOnly = False
         Me.Texte_Rubrique_Text.ScrollBars = System.Windows.Forms.ScrollBars.None
         Me.Texte_Rubrique_Text.SelectionStart = 0
-        Me.Texte_Rubrique_Text.Size = New System.Drawing.Size(319, 21)
+        Me.Texte_Rubrique_Text.Size = New System.Drawing.Size(662, 26)
         Me.Texte_Rubrique_Text.TabIndex = 72
         Me.Texte_Rubrique_Text.TextAlign = System.Windows.Forms.HorizontalAlignment.Left
         Me.Texte_Rubrique_Text.UseSystemPasswordChar = False
@@ -189,11 +184,12 @@ Partial Class RH_Param_Rubriques
         Me.NoAddRows_chk.AutoSize = True
         Me.NoAddRows_chk.Checked = True
         Me.NoAddRows_chk.Enabled = False
-        Me.NoAddRows_chk.Location = New System.Drawing.Point(558, 8)
-        Me.NoAddRows_chk.MaximumSize = New System.Drawing.Size(0, 20)
-        Me.NoAddRows_chk.MinimumSize = New System.Drawing.Size(100, 20)
+        Me.NoAddRows_chk.Location = New System.Drawing.Point(118, 47)
+        Me.NoAddRows_chk.Margin = New System.Windows.Forms.Padding(4)
+        Me.NoAddRows_chk.MaximumSize = New System.Drawing.Size(0, 25)
+        Me.NoAddRows_chk.MinimumSize = New System.Drawing.Size(100, 0)
         Me.NoAddRows_chk.Name = "NoAddRows_chk"
-        Me.NoAddRows_chk.Size = New System.Drawing.Size(152, 20)
+        Me.NoAddRows_chk.Size = New System.Drawing.Size(191, 25)
         Me.NoAddRows_chk.TabIndex = 73
         Me.NoAddRows_chk.Text = "Interdire l'ajout de ligne"
         '
@@ -206,32 +202,29 @@ Partial Class RH_Param_Rubriques
         Me.Panel1.Dock = System.Windows.Forms.DockStyle.Top
         Me.Panel1.Location = New System.Drawing.Point(0, 0)
         Me.Panel1.Name = "Panel1"
-        Me.Panel1.Size = New System.Drawing.Size(902, 36)
+        Me.Panel1.Size = New System.Drawing.Size(1142, 85)
         Me.Panel1.TabIndex = 4
         '
         'Param_Rubriques
         '
-        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None
+        Me.AutoScaleDimensions = New System.Drawing.SizeF(120.0!, 120.0!)
+        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi
         Me.BackColor = System.Drawing.Color.FromArgb(CType(CType(250, Byte), Integer), CType(CType(250, Byte), Integer), CType(CType(250, Byte), Integer))
-        Me.ClientSize = New System.Drawing.Size(902, 637)
-        Me.Controls.Add(Me.ComboBox_GRD)
+        Me.ClientSize = New System.Drawing.Size(1142, 637)
+        Me.Controls.Add(Me.Grille)
         Me.Controls.Add(Me.Panel1)
         Me.DoubleBuffered = True
         Me.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        Me.Name = "RH_Param_Rubriques"
+        Me.Name = "Param_Rubriques"
         Me.Tag = "ECR"
         Me.Text = "Paramètrage rubriques"
-        Me.Personnal_pnl.ResumeLayout(False)
-        CType(Me.ComboBox_GRD, System.ComponentModel.ISupportInitialize).EndInit()
+        CType(Me.Grille, System.ComponentModel.ISupportInitialize).EndInit()
         Me.Panel1.ResumeLayout(False)
         Me.Panel1.PerformLayout()
         Me.ResumeLayout(False)
 
     End Sub
-    Friend WithEvents Personnal_pnl As System.Windows.Forms.TableLayoutPanel
-    Friend WithEvents ButtonX1 As DevComponents.DotNetBar.ButtonX
-    Friend WithEvents ButtonX2 As DevComponents.DotNetBar.ButtonX
-    Friend WithEvents ComboBox_GRD As ud_Grd
+    Friend WithEvents Grille As ud_Grd
     Friend WithEvents COD As System.Windows.Forms.LinkLabel
     Friend WithEvents Nom_Controle_Text As ud_TextBox
     Friend WithEvents Texte_Rubrique_Text As ud_TextBox
