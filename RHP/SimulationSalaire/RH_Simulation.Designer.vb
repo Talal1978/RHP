@@ -976,7 +976,7 @@ Partial Class RH_Simulation
         'considerCumuls_chk
         '
         Me.considerCumuls_chk.AutoSize = True
-        Me.considerCumuls_chk.Checked = True
+        Me.considerCumuls_chk.Checked = False
         Me.considerCumuls_chk.Font = New System.Drawing.Font("Century Gothic", 8.25!)
         Me.considerCumuls_chk.Location = New System.Drawing.Point(102, 50)
         Me.considerCumuls_chk.Margin = New System.Windows.Forms.Padding(4, 5, 4, 5)

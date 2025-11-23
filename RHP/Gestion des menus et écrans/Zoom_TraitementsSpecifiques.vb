@@ -4,17 +4,13 @@
     Dim oLoc As New Point
 
     Private Sub Zoom_Load(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles MyBase.Load
-        Dim sqlStr = "SELECT     Cod_Query,isnull(Nom_Query,Cod_Query) as Nom_Query,Nature_Query, isnull(Relation ,'') as Relation
-                                    FROM         Controle_Def_Tunel t 
-                                    outer apply (select Nom_Query,Nature_Query from Param_Query where Cod_Query=t.Cod_Query) q
-                                    outer apply (select isnull(Visible,'false') as Visible from Controle_Droit where Name_Ecran=t.Cod_Query and Cod_Profile='" & theUser.Cod_Profile & "') d
+        Dim sqlStr = "SELECT     Cod_Traitement as Code,(select Traitement from Sys_Def_Ecran_Traitements_Specifiques where Code=t.Cod_Traitement) as Traitement,isnull(Typ_Traitement,'QRY') Typ_Traitement, isnull(Relation ,'') as Relation
+                                    FROM         Controle_Def_Ecran_Traitements_Specifiques t 
+                                    outer apply (select isnull(Visible,'false') as Visible from Controle_Droit where Name_Ecran=t.Cod_Traitement and Cod_Profile='" & theUser.Cod_Profile & "') d
                                     where Name_Ecran='" & leMenu.currentEcran.Name & "' and " & IIf(theUser.Cod_Profile = 1, "'True'", "d.Visible") & "='True' order by  Rang"
         Tbl_TraitementsSpecifiques = DATA_READER_GRD(sqlStr)
         With Zoom_Grd
             .DataSource = Tbl_TraitementsSpecifiques
-            .Columns("Cod_Query").HeaderText = "Code"
-            .Columns("Nom_Query").HeaderText = "Description"
-            .Columns("Nature_Query").Visible = False
             .Columns("Relation").Visible = False
             .setFilter({0, 1})
             .Fit()
@@ -27,7 +23,7 @@
     End Sub
 
     Sub ClickTraitementSpe(rowInd As Integer)
-        Dim nrw As DataRow() = Tbl_TraitementsSpecifiques.Select("Cod_Query='" & Zoom_Grd.Item("Cod_Query", rowInd).Value & "'")
+        Dim nrw As DataRow() = Tbl_TraitementsSpecifiques.Select("Code='" & Zoom_Grd.Item("Code", rowInd).Value & "'")
         If nrw.Length = 0 Then Return
         Try
             Cursor.Current = Cursors.WaitCursor
@@ -40,7 +36,7 @@
             Dim Relation As String() = Split(oRelation, ";")
             Dim chmp() As String = Nothing
             For i = 0 To Relation.Length - 1
-                chmp = Split(Relation(i).Trim.Replace("=", "").ToUpper, ":")
+                chmp = Split(Relation(i).Trim.ToUpper, ":=")
                 If chmp.Length > 0 Then
                     Critere.Add(chmp(0))
                     ValeurCritere.Add(chmp(1))
@@ -55,33 +51,57 @@
                     ValeurCritere(i) = ValeurCritere(i).Replace("""", "")
                 ElseIf IsNull(ValeurCritere(i), "") <> "" Then
                     Dim obj As Object = GetControlByName(ValeurCritere(i), leMenu.currentEcran)
-                    If obj Is Nothing Then Return
-                    If Not obj.GetType.Name = "ud_TextBox" And Not obj.GetType.Name = "TextBox" Then Return
-                    Dim Index_Value As String = obj.Text
-                    ValeurCritere(i) = Index_Value
+                    If obj IsNot Nothing Then
+                        If obj.GetType.Name = "ud_TextBox" Or obj.GetType.Name = "TextBox" Then
+                            Dim Index_Value As String = obj.Text
+                            ValeurCritere(i) = Index_Value
+                        End If
+                    End If
                 End If
             Next
-            Dim f As New Param_Query_Saisi
-            f.Text = nrw(0)("Nom_Query")
-            f.Query_Generator(nrw(0)("Cod_Query"), f.Text)
-            For i = 0 To Critere.Count - 1
-                If ValeurCritere(i).ToString.Trim.StartsWith("SELECT") Then
-                    For j = 0 To Critere.Count - 1
-                        ValeurCritere(i) = ValeurCritere(i).ToString.Replace(Critere(j), "'" & ValeurCritere(j) & "'")
-                    Next
-                    Try
-                        ValeurCritere(i) = IsNull(CnExecuting(ValeurCritere(i)).Fields(0).Value, "")
-                    Catch ex As Exception
+            If IsNull(nrw(0)("Typ_Traitement"), "") = "PYT" Then
+                Dim f As New Param_Python_Saisi With {
+                    .Text = nrw(0)("Traitement")
+                }
+                f.Python_Generator(nrw(0)("Code"), f.Text)
+                For i = 0 To Critere.Count - 1
+                    If ValeurCritere(i).ToString.Trim.StartsWith("SELECT") Then
+                        For j = 0 To Critere.Count - 1
+                            ValeurCritere(i) = ValeurCritere(i).ToString.Replace(Critere(j), "'" & ValeurCritere(j) & "'")
+                        Next
+                        Try
+                            ValeurCritere(i) = IsNull(CnExecuting(ValeurCritere(i)).Fields(0).Value, "")
+                        Catch ex As Exception
 
-                    End Try
-                End If
-                Affectation(f, Critere(i), ValeurCritere(i))
-            Next
-            If IsNull(nrw(0)("Nature_Query"), "") <> "TRT" And IsNull(nrw(0)("Nature_Query"), "") <> "EXP" Then
+                        End Try
+                    End If
+                    Affectation(f, Critere(i), ValeurCritere(i))
+                Next
                 newShowEcran(f)
             Else
-                f.Request()
+                Dim f As New Param_Query_Saisi
+                f.Text = nrw(0)("Traitement")
+                f.Query_Generator(nrw(0)("Code"), f.Text)
+                For i = 0 To Critere.Count - 1
+                    If ValeurCritere(i).ToString.Trim.StartsWith("SELECT") Then
+                        For j = 0 To Critere.Count - 1
+                            ValeurCritere(i) = ValeurCritere(i).ToString.Replace(Critere(j), "'" & ValeurCritere(j) & "'")
+                        Next
+                        Try
+                            ValeurCritere(i) = IsNull(CnExecuting(ValeurCritere(i)).Fields(0).Value, "")
+                        Catch ex As Exception
+
+                        End Try
+                    End If
+                    Affectation(f, Critere(i), ValeurCritere(i))
+                Next
+                If IsNull(nrw(0)("Typ_Traitement"), "") <> "TRT" And IsNull(nrw(0)("Typ_Traitement"), "") <> "EXP" Then
+                    newShowEcran(f)
+                Else
+                    f.Request()
+                End If
             End If
+
             Me.Close()
         Catch ex As Exception
             ErrorMsg(ex)

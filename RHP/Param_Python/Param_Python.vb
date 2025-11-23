@@ -79,9 +79,11 @@
         If Cod_Python_Text.Text = "" Then Exit Sub
         If MessageBox.Show("Etes-vous sûr de vouloir supprimer cette requête", "Vérification", MessageBoxButtons.OKCancel, MessageBoxIcon.Stop) = MsgBoxResult.Cancel Then Exit Sub
         '        Supprimer le Modèle ou le Procedure
-        If CnExecuting("select count(*) from Param_Python where Cod_Python='" & Cod_Python_Text.Text & "'").Fields(0).Value > 0 Then
-            CnExecuting("delete from Param_Python where Cod_Python='" & Cod_Python_Text.Text & "'")
-        End If
+        CnExecuting("delete from Param_Python where Cod_Python='" & Cod_Python_Text.Text & "'")
+        CnExecuting("delete from Param_Favoris where Form_Name='" & Cod_Python_Text.Text & "'")
+            CnExecuting("delete from Controle_TreeView where Name_Ecran='" & Cod_Python_Text.Text & "' and Typ_Ecran='PYT'")
+            CnExecuting("delete from Controle_Menu where Name_Ecran='" & Cod_Python_Text.Text & "' and Typ_Ecran='PYT'")
+            CnExecuting($"delete from Controle_Def_Ecran_Traitements_Specifiques where Cod_Traitement='{Cod_Python_Text.Text}'")
         Reset_Form(Me)
     End Sub
 

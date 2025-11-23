@@ -79,7 +79,7 @@
 
                 'Générer les traiement specifiques
                 If theUser.Typ_Role <> "Agent" Then
-                    If CnExecuting("select count(*) from  Controle_Def_Tunel where Name_Ecran='" & Me.Name & "'").Fields(0).Value > 0 Then
+                    If CnExecuting("select count(*) from  Controle_Def_Ecran_Traitements_Specifiques where Name_Ecran='" & Me.Name & "'").Fields(0).Value > 0 Then
                         Dim btn_ts = GenererTraitementSpe()
                         If btn_ts IsNot Nothing Then
                             With btn_ts

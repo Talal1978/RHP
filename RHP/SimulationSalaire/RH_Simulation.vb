@@ -382,7 +382,7 @@ order by  Rang")
         initialiserVBS()
         TabControl1.SelectedIndex = 0
         Nom_Agent_Text.Select()
-        considerCumuls_chk.Checked = True
+        considerCumuls_chk.Checked = False
         Typ_Agent.SelectedValue = "M"
         Typ_Contrat.SelectedValue = "CDI"
         Typ_Periode.SelectedValue = "0"
@@ -540,6 +540,7 @@ select Civilite, Nom_Agent, Prenom_Agent,Titre,Cod_Poste,Cod_Grade,Cod_Entite,Nb
         modeMajMatricule = True
         With TblAgent
             If .Rows.Count > 0 Then
+                considerCumuls_chk.Checked = True
                 Civilite_Combo.SelectedValue = IsNull(.Rows(0).Item("Civilite"), "")
                 Nom_Agent_Text.Text = IsNull(.Rows(0)("Nom_Agent"), "")
                 Prenom_Agent_Text.Text = IsNull(.Rows(0)("Prenom_Agent"), "")

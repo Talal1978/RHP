@@ -1,4 +1,5 @@
-﻿Imports System.Text.RegularExpressions
+﻿Imports System.Text
+Imports System.Text.RegularExpressions
 Class PayRollEngine
     Friend oAvancementStr As String = ""
     Friend oAvancementStrTitre As String = ""
@@ -17,6 +18,7 @@ Class PayRollEngine
     Friend DatDeb, DatFin As Date
     Friend reinitialiserPreparation As Boolean = False
     Friend myVBS As New vsEngine
+
     Sub New()
         curMat = ""
         CalculAuto = True
@@ -247,6 +249,7 @@ from RH_Preparation_Paie_Detail where Cod_Preparation='" & CodPreparation & "' a
         End With
         CalculTotal(True)
     End Sub
+
     Sub CalculTotal(CalculDetail As Boolean)
         dicMat = New Dictionary(Of String, Dictionary(Of String, Double))
         With TblPrePaie
@@ -258,135 +261,6 @@ from RH_Preparation_Paie_Detail where Cod_Preparation='" & CodPreparation & "' a
         End With
     End Sub
     Dim fstTest = True
-    Function CalculPaie(ByVal Matricule As String, CalculDetail As Boolean) As Boolean
-        If TblPrePaie Is Nothing Then Return False
-        If PaieCloture Then Return False
-        If Not CalculAuto Then Return False
-        Dim matRw() As DataRow = TblPrePaie.Select("Matricule='" & Matricule & "'")
-        Dim agRw() As DataRow = TblAgent.Select("Matricule='" & Matricule & "'")
-        If matRw.Length = 0 Then Return False
-        If agRw.Length = 0 Then Return False
-        Dim colName As String = ""
-        Dim EVstr As String = ""
-        Dim valCell As Double = 0
-        '  Try
-        With matRw(0)
-            CalculAuto = False
-            Dim vrw() As DataRow = Nothing
-            'Affectation des Rubriques cumulables et AG
-            If curMat <> Matricule Then
-                'Affectation des AG
-                Dim Ag() As DataRow = TblFunction.Select("Typ_Function='AG'")
-                For i = 0 To Ag.Length - 1
-                    If "int;float".Split(";").Contains(Ag(i)("Typ_Retour")) Then
-                        EVstr &= IIf(EVstr = "", "", vbCrLf) & " AffectVar " & Ag(i)("Cod_Function") & ";" & IsNull(agRw(0)(Ag(i)("Cod_Function")), 0)
-                    Else
-                        EVstr &= IIf(EVstr = "", "", vbCrLf) & " AffectVar " & Ag(i)("Cod_Function") & ";""" & IsNull(agRw(0)(Ag(i)("Cod_Function")), "") & """"
-                    End If
-                Next
-                'Affectation des Rubriques cumulables
-                Dim Crw() As DataRow = TblRubriqueCumulable.Select("Matricule='" & Matricule & "'")
-                For i = 0 To Crw.Length - 1
-                    EVstr &= IIf(EVstr = "", "", vbCrLf) & " AffectVar Cumul_" & Crw(i)("Cod_Rubrique") & ";" & Crw(i)("Cumul")
-                Next
-                curMat = Matricule
-            End If
-            For Each c In dicTypFunction.Where(Function(x) "EV;EB".Split(";").Contains(x.Value))
-                colName = c.Key
-                'Affectation des EV et EB
-                EVstr &= vbCrLf & " AffectVar " & colName & ";" & IsNull(matRw(0)(colName), 0)
-            Next
-            For Each c In dicTypFunction.Where(Function(x) "EX".Split(";").Contains(x.Value))
-                colName = c.Key
-                'Affectation des EX élément de base calculés
-                Dim xrw() As DataRow = TblEX_Base.Select("Matricule='" & Matricule & "' and Cod_Rubrique='" & colName & "'")
-                Dim valBase As Double = 0
-                If xrw.Length > 0 Then
-                    EVstr &= vbCrLf & "V_" & colName & " = " & IsNull(xrw(0)("Valeur"), 0)
-                    valBase = IsNull(xrw(0)("Valeur"), 0)
-                Else
-                    EVstr &= vbCrLf & "V_" & colName & " = 0 "
-                End If
-                If Not dicMat.ContainsKey(Matricule & "_|_" & colName) Then
-                    Dim dicRubDetail As New Dictionary(Of String, Double)
-                    dicRubDetail.Add("Nb", 0)
-                    dicRubDetail.Add("Tx", 0)
-                    dicRubDetail.Add("Base", valBase)
-                    dicMat.Add(Matricule & "_|_" & colName, dicRubDetail)
-                Else
-                    dicMat(Matricule & "_|_" & colName)("Nb") = 0
-                    dicMat(Matricule & "_|_" & colName)("Tx") = 0
-                    dicMat(Matricule & "_|_" & colName)("Base") = valBase
-                End If
-            Next
-
-            EVstr = TraitementCaractere(EVstr)
-            myVBS.ExecuteStatement(EVstr)
-
-            'If fstTest Then
-            '    Dim sw As New IO.StreamWriter(My.Application.Info.DirectoryPath & "\rsc\debugger_tumag.vbs", True)
-            '    sw.Write(myVBS.innerCodeStr)
-            '    sw.Close()
-            '    fstTest = False
-            'End If
-
-
-            'Calcul des éléments calculables
-            For Each c In dicTypFunction
-                colName = c.Key
-                If "EX;EC;FU;FP;FS".Split(";").Contains(c.Value) Then
-                    valCell = IsNull(myVBS.Eval(TraitementCaractere(colName)), 0)
-                    If valCell <> TblPrePaie.Select("Matricule='" & Matricule & "'")(0)(colName) Then
-                        TblPrePaie.Select("Matricule='" & Matricule & "'")(0)(colName) = valCell
-                        Modifie = True
-                    End If
-                    '  If manuel Then MsgBox(Matricule & "  >> " & colName & "  >>  " & TblPrePaie.Select("Matricule='" & Matricule & "'")(0)(colName))
-                    If "EC".Split(";").Contains(c.Value) And CalculDetail Then
-                        If Not dicMat.ContainsKey(Matricule & "_|_" & colName) Then
-                            Dim dicRubDetail As New Dictionary(Of String, Double)
-                            dicRubDetail.Add("Nb", 0)
-                            dicRubDetail.Add("Tx", 0)
-                            dicRubDetail.Add("Base", 0)
-                            dicMat.Add(Matricule & "_|_" & colName, dicRubDetail)
-                        Else
-                            dicMat(Matricule & "_|_" & colName)("Nb") = 0
-                            dicMat(Matricule & "_|_" & colName)("Tx") = 0
-                            dicMat(Matricule & "_|_" & colName)("Base") = 0
-                        End If
-                        vrw = TblEC.Select("Cod_Rubrique='" & colName & "'")
-                        If IsNull(vrw(0)("Nb"), "").Trim() = "" Then
-                            dicMat(Matricule & "_|_" & colName)("Nb") = 0
-                        Else
-                            dicMat(Matricule & "_|_" & colName)("Nb") = ConvertNombre(myVBS.Eval(TraitementCaractere(vrw(0)("Nb"))))
-                        End If
-                        If IsNull(vrw(0)("Tx"), "").Trim() = "" Then
-                            dicMat(Matricule & "_|_" & colName)("Tx") = 0
-                        Else
-                            dicMat(Matricule & "_|_" & colName)("Tx") = ConvertNombre(myVBS.Eval(TraitementCaractere(vrw(0)("Tx"))))
-                        End If
-                        If IsNull(vrw(0)("Base"), "").Trim() = "" Then
-                            dicMat(Matricule & "_|_" & colName)("Base") = 0
-                        Else
-                            dicMat(Matricule & "_|_" & colName)("Base") = ConvertNombre(myVBS.Eval(TraitementCaractere(vrw(0)("Base"))))
-                        End If
-
-                    End If
-                    If Not IsNumeric(IsNull(matRw(0)(colName), 0)) Then
-                        TblPrePaie.Select("Matricule='" & Matricule & "'")(0)(colName) = 0
-                    End If
-                End If
-            Next
-        End With
-        CalculAuto = True
-        '  Catch ex As Exception
-        Return True
-        '   If Not ex.HResult = -2146233079 Then
-        '   ShowMessageBox("Erreur de calcul de matricule : " & Matricule & ", Rubrique : " & colName & vbCrLf & ex.Message, "Calcul", MessageBoxButtons.OK, msgIcon.Stop)
-        '  End If
-        '  CalculAuto = True
-        '   Return False
-        '   End Try
-    End Function
     Function getModulesExternes(CodPlan As String, DatDeb As Date, DatFin As Date, updConge As Boolean, updAvance As Boolean, updPret As Boolean, updInteret As Boolean, updRemb As Boolean, updNF As Boolean) As String
         Return "select Matricule " &
                                   IIf(updConge = "0", "", ", convert(float,isnull(Duree_Conge,0)) as '" & EVJrConge & "'") &
@@ -657,4 +531,135 @@ from RH_Preparation_Paie_Detail where Cod_Preparation='" & CodPreparation & "' a
 
 #End Region
 
+#Region "Calcul"
+    Function CalculPaie(ByVal Matricule As String, CalculDetail As Boolean) As Boolean
+        If TblPrePaie Is Nothing Then Return False
+        If PaieCloture Then Return False
+        If Not CalculAuto Then Return False
+        Dim matRw() As DataRow = TblPrePaie.Select("Matricule='" & Matricule & "'")
+        Dim agRw() As DataRow = TblAgent.Select("Matricule='" & Matricule & "'")
+        If matRw.Length = 0 Then Return False
+        If agRw.Length = 0 Then Return False
+        Dim colName As String = ""
+        Dim EVstr As String = ""
+        Dim valCell As Double = 0
+        '  Try
+        With matRw(0)
+            CalculAuto = False
+            Dim vrw() As DataRow = Nothing
+            'Affectation des Rubriques cumulables et AG
+            If curMat <> Matricule Then
+                'Affectation des AG
+                Dim Ag() As DataRow = TblFunction.Select("Typ_Function='AG'")
+                For i = 0 To Ag.Length - 1
+                    If "int;float".Split(";").Contains(Ag(i)("Typ_Retour")) Then
+                        EVstr &= IIf(EVstr = "", "", vbCrLf) & " AffectVar " & Ag(i)("Cod_Function") & ";" & IsNull(agRw(0)(Ag(i)("Cod_Function")), 0)
+                    Else
+                        EVstr &= IIf(EVstr = "", "", vbCrLf) & " AffectVar " & Ag(i)("Cod_Function") & ";""" & IsNull(agRw(0)(Ag(i)("Cod_Function")), "") & """"
+                    End If
+                Next
+                'Affectation des Rubriques cumulables
+                Dim Crw() As DataRow = TblRubriqueCumulable.Select("Matricule='" & Matricule & "'")
+                For i = 0 To Crw.Length - 1
+                    EVstr &= IIf(EVstr = "", "", vbCrLf) & " AffectVar Cumul_" & Crw(i)("Cod_Rubrique") & ";" & Crw(i)("Cumul")
+                Next
+                curMat = Matricule
+            End If
+            For Each c In dicTypFunction.Where(Function(x) "EV;EB".Split(";").Contains(x.Value))
+                colName = c.Key
+                'Affectation des EV et EB
+                EVstr &= vbCrLf & " AffectVar " & colName & ";" & IsNull(matRw(0)(colName), 0)
+            Next
+            For Each c In dicTypFunction.Where(Function(x) "EX".Split(";").Contains(x.Value))
+                colName = c.Key
+                'Affectation des EX élément de base calculés
+                Dim xrw() As DataRow = TblEX_Base.Select("Matricule='" & Matricule & "' and Cod_Rubrique='" & colName & "'")
+                Dim valBase As Double = 0
+                If xrw.Length > 0 Then
+                    EVstr &= vbCrLf & "V_" & colName & " = " & IsNull(xrw(0)("Valeur"), 0)
+                    valBase = IsNull(xrw(0)("Valeur"), 0)
+                Else
+                    EVstr &= vbCrLf & "V_" & colName & " = 0 "
+                End If
+                If Not dicMat.ContainsKey(Matricule & "_|_" & colName) Then
+                    Dim dicRubDetail As New Dictionary(Of String, Double)
+                    dicRubDetail.Add("Nb", 0)
+                    dicRubDetail.Add("Tx", 0)
+                    dicRubDetail.Add("Base", valBase)
+                    dicMat.Add(Matricule & "_|_" & colName, dicRubDetail)
+                Else
+                    dicMat(Matricule & "_|_" & colName)("Nb") = 0
+                    dicMat(Matricule & "_|_" & colName)("Tx") = 0
+                    dicMat(Matricule & "_|_" & colName)("Base") = valBase
+                End If
+            Next
+
+            EVstr = TraitementCaractere(EVstr)
+            myVBS.ExecuteStatement(EVstr)
+
+            'If fstTest Then
+            '    Dim sw As New IO.StreamWriter(My.Application.Info.DirectoryPath & "\rsc\debugger_tumag.vbs", True)
+            '    sw.Write(myVBS.innerCodeStr)
+            '    sw.Close()
+            '    fstTest = False
+            'End If
+
+
+            'Calcul des éléments calculables
+            For Each c In dicTypFunction
+                colName = c.Key
+                If "EX;EC;FU;FP;FS".Split(";").Contains(c.Value) Then
+                    valCell = IsNull(myVBS.Eval(TraitementCaractere(colName)), 0)
+                    If valCell <> TblPrePaie.Select("Matricule='" & Matricule & "'")(0)(colName) Then
+                        TblPrePaie.Select("Matricule='" & Matricule & "'")(0)(colName) = valCell
+                        Modifie = True
+                    End If
+                    '  If manuel Then MsgBox(Matricule & "  >> " & colName & "  >>  " & TblPrePaie.Select("Matricule='" & Matricule & "'")(0)(colName))
+                    If "EC".Split(";").Contains(c.Value) And CalculDetail Then
+                        If Not dicMat.ContainsKey(Matricule & "_|_" & colName) Then
+                            Dim dicRubDetail As New Dictionary(Of String, Double)
+                            dicRubDetail.Add("Nb", 0)
+                            dicRubDetail.Add("Tx", 0)
+                            dicRubDetail.Add("Base", 0)
+                            dicMat.Add(Matricule & "_|_" & colName, dicRubDetail)
+                        Else
+                            dicMat(Matricule & "_|_" & colName)("Nb") = 0
+                            dicMat(Matricule & "_|_" & colName)("Tx") = 0
+                            dicMat(Matricule & "_|_" & colName)("Base") = 0
+                        End If
+                        vrw = TblEC.Select("Cod_Rubrique='" & colName & "'")
+                        If IsNull(vrw(0)("Nb"), "").Trim() = "" Then
+                            dicMat(Matricule & "_|_" & colName)("Nb") = 0
+                        Else
+                            dicMat(Matricule & "_|_" & colName)("Nb") = ConvertNombre(myVBS.Eval(TraitementCaractere(vrw(0)("Nb"))))
+                        End If
+                        If IsNull(vrw(0)("Tx"), "").Trim() = "" Then
+                            dicMat(Matricule & "_|_" & colName)("Tx") = 0
+                        Else
+                            dicMat(Matricule & "_|_" & colName)("Tx") = ConvertNombre(myVBS.Eval(TraitementCaractere(vrw(0)("Tx"))))
+                        End If
+                        If IsNull(vrw(0)("Base"), "").Trim() = "" Then
+                            dicMat(Matricule & "_|_" & colName)("Base") = 0
+                        Else
+                            dicMat(Matricule & "_|_" & colName)("Base") = ConvertNombre(myVBS.Eval(TraitementCaractere(vrw(0)("Base"))))
+                        End If
+
+                    End If
+                    If Not IsNumeric(IsNull(matRw(0)(colName), 0)) Then
+                        TblPrePaie.Select("Matricule='" & Matricule & "'")(0)(colName) = 0
+                    End If
+                End If
+            Next
+        End With
+        CalculAuto = True
+        '  Catch ex As Exception
+        Return True
+        '   If Not ex.HResult = -2146233079 Then
+        '   ShowMessageBox("Erreur de calcul de matricule : " & Matricule & ", Rubrique : " & colName & vbCrLf & ex.Message, "Calcul", MessageBoxButtons.OK, msgIcon.Stop)
+        '  End If
+        '  CalculAuto = True
+        '   Return False
+        '   End Try
+    End Function
+#End Region
 End Class

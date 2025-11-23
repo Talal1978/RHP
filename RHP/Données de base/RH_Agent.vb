@@ -1,4 +1,5 @@
-﻿Public Class RH_Agent
+﻿Imports System.Text.RegularExpressions
+Public Class RH_Agent
     Friend Code As String = ""
     Friend pic As New PictureBox
     Friend Cod_Simulation As String = ""
@@ -13,6 +14,7 @@
     Dim New_D As ud_btn
     Dim Import_D As ud_btn
     Dim canRate As Boolean = False
+
     Sub Chargement()
         If Save_D Is Nothing Then
             Save_D = dictButtons("Save_D")
@@ -371,401 +373,407 @@ order by Dat_Deb_Conge desc", Grd_Conge)
     Function Saving() As savingResult
         '   Try
         If CnExecuting("Select count(*) from Controle_Access where Name_Ecran='RH_Preparation_Paie' and Process_Id!='" & ProcessId & "' and id_Societe=" & Societe.id_Societe).Fields(0).Value > 0 Then
-                MessageBoxRHP(687)
-            End If
-            Dim ErrStr As String = ""
-            If Nom_Agent_Text.Text.Contains("**") Or Prenom_Agent_Text.Text.Contains("**") Then
-                Return New savingResult With {.message = MessageBoxRHPText(669), .result = False}
-            End If
-            If LTrim(Matricule_Text.Text) = "" And Not Societe.Compteur_Auto Then
-                Return New savingResult With {.message = MessageBoxRHPText(670), .result = False}
-            End If
-            If LTrim(Nom_Agent_Text.Text) = "" Or LTrim(Prenom_Agent_Text.Text) = "" Then
-                Return New savingResult With {.message = MessageBoxRHPText(671), .result = False}
-            End If
-            If Civilite_Combo.SelectedIndex = -1 Then
-                ErrStr = "La civitlité n'a pas été renseignée pour ce matricule."
-                Civilite_Combo.SelectedValue = "Mr"
-            End If
-            If LTrim(Cod_Plan_Paie_Text.Text) = "" And Droit_Paie.Checked Then
-                ErrStr = "Code Plan manquant. Le droit à la paie sera désactivé."
-                Droit_Paie.Checked = False
-            End If
-            If LTrim(Cod_Plan_Paie_Text.Text) <> "" And LTrim(Lib_Plan_Paie_Text.Text) = "" Then
-                Return New savingResult With {.message = "Plan de paie erroné.", .result = False}
-            End If
-            If LTrim(Cod_Plan_Paie_Text.Text) <> "" Then
-                Dim strRub As String = ""
-                With EB_Grd
-                    For i = 0 To .RowCount - 2
-                        If IsNull(.Item(Cod_Rubrique.Index, i).Value, "") <> "" Then
-                            strRub &= IIf(strRub = "", "", ",") & "'" & .Item(Cod_Rubrique.Index, i).Value & "'"
-                        End If
-                    Next
-                End With
-                If strRub.Trim <> "" Then
-                    Dim TblRub As DataTable = DATA_READER_GRD("select * from RH_Paie_Rubrique where isnull(nullif(id_societe,-1)," & Societe.id_Societe & ")=" & Societe.id_Societe & " and Cod_Rubrique in (" & strRub & ") 
-and not exists(select Cod_Plan_Paie from RH_Param_Plan_Paie where  ';'+isnull(Element_Paie,'')+';' like '%;'+Cod_Rubrique+';%' and id_Societe=" & Societe.id_Societe & " and Cod_Plan_Paie='" & Cod_Plan_Paie_Text.Text & "')")
-                    If TblRub.Rows.Count > 0 Then
-                        Return New savingResult With {.message = "Au moins un élément de la paie ne figure pas sur le plan choisi : [" & TblRub.Rows(0)("Cod_Rubrique") & "]", .result = False}
+            MessageBoxRHP(687)
+        End If
+        Dim ErrStr As String = ""
+        If Nom_Agent_Text.Text.Contains("**") Or Prenom_Agent_Text.Text.Contains("**") Then
+            Return New savingResult With {.message = MessageBoxRHPText(669), .result = False}
+        End If
+        If LTrim(Matricule_Text.Text) = "" And Not Societe.Compteur_Auto Then
+            Return New savingResult With {.message = MessageBoxRHPText(670), .result = False}
+        End If
+        If LTrim(Nom_Agent_Text.Text) = "" Or LTrim(Prenom_Agent_Text.Text) = "" Then
+            Return New savingResult With {.message = MessageBoxRHPText(671), .result = False}
+        End If
+        If Civilite_Combo.SelectedIndex = -1 Then
+            ErrStr = "La civitlité n'a pas été renseignée pour ce matricule."
+            Civilite_Combo.SelectedValue = "Mr"
+        End If
+        If LTrim(Cod_Plan_Paie_Text.Text) = "" And Droit_Paie.Checked Then
+            ErrStr = "Code Plan manquant. Le droit à la paie sera désactivé."
+            Droit_Paie.Checked = False
+        End If
+        If LTrim(Cod_Plan_Paie_Text.Text) <> "" And LTrim(Lib_Plan_Paie_Text.Text) = "" Then
+            Return New savingResult With {.message = "Plan de paie erroné.", .result = False}
+        End If
+        If LTrim(Cod_Plan_Paie_Text.Text) <> "" Then
+            Dim strRub As String = ""
+            With EB_Grd
+                For i = 0 To .RowCount - 2
+                    If IsNull(.Item(Cod_Rubrique.Index, i).Value, "") <> "" Then
+                        strRub &= IIf(strRub = "", "", ",") & "'" & .Item(Cod_Rubrique.Index, i).Value & "'"
                     End If
+                Next
+            End With
+            If strRub.Trim <> "" Then
+                Dim TblRub As DataTable = DATA_READER_GRD("select * from RH_Paie_Rubrique where isnull(nullif(id_societe,-1)," & Societe.id_Societe & ")=" & Societe.id_Societe & " and Cod_Rubrique in (" & strRub & ") 
+and not exists(select Cod_Plan_Paie from RH_Param_Plan_Paie where  ';'+isnull(Element_Paie,'')+';' like '%;'+Cod_Rubrique+';%' and id_Societe=" & Societe.id_Societe & " and Cod_Plan_Paie='" & Cod_Plan_Paie_Text.Text & "')")
+                If TblRub.Rows.Count > 0 Then
+                    Return New savingResult With {.message = "Au moins un élément de la paie ne figure pas sur le plan choisi : [" & TblRub.Rows(0)("Cod_Rubrique") & "]", .result = False}
                 End If
-
             End If
-            'Vérification des doublons
-            If CnExecuting("select count(Matricule) from RH_Agent where id_Societe=" & Societe.id_Societe & " and ltrim(rtrim(Matricule))<>'" & Matricule_Text.Text.Trim & "'
+
+        End If
+        'Vérification des doublons
+        If CnExecuting("select count(Matricule) from RH_Agent where id_Societe=" & Societe.id_Societe & " and ltrim(rtrim(Matricule))<>'" & Matricule_Text.Text.Trim & "'
                     and ltrim(rtrim(isnull(Nom_Agent,'')))='" & Nom_Agent_Text.Text.Trim.Replace("'", "''") & "' and  
                     ltrim(rtrim(isnull(Prenom_Agent,''))) ='" & Prenom_Agent_Text.Text.Trim.Replace("'", "''") & "' and isnull(Droit_Paie,'false')='" & Droit_Paie.Checked & "'
                     and not exists(select Matricule from Rh_Agent where id_Societe=" & Societe.id_Societe & " and ltrim(rtrim(Matricule))='" & Matricule_Text.Text.Trim & "')").Fields(0).Value > 0 And (Nom_Agent_Text.Text.Trim <> "" Or Prenom_Agent_Text.Text.Trim <> "") Then
-                ErrStr = "Un autre agent porte le même nom et prénon"
+            ErrStr = "Un autre agent porte le même nom et prénon"
+        End If
+        If Not estEmail(Mail_Text.Text) And Mail_Text.Text.Trim <> "" Then
+            ErrStr = "Erreur format de mail, il sera supprimé."
+            Mail_Text.Text = ""
+        End If
+        If estEmail(Mail_Text.Text) Then
+            Dim Tbl As DataTable = DATA_READER_GRD("select top 1 id_Societe, (select Den from Param_Societe where id_Societe=a.id_Societe) as Societe, Matricule, Nom_Agent+' '+Prenom_Agent as Nom from RH_Agent a where isnull(Mail,'')='" & Mail_Text.Text & "' and (Matricule!='" & Matricule_Text.Text & "' or  id_Societe !=" & Societe.id_Societe & ")")
+            If Tbl.Rows.Count > 0 Then
+                Return New savingResult With {.message = "Ce compte mail est déjà attribué à un autre agent : " & vbCrLf & Tbl.Rows(0)("Nom") & If(Tbl.Rows(0)("id_Societe") <> Societe.id_Societe, vbCrLf & "dans une autre société : " & vbCrLf & Tbl.Rows(0)("Societe"), ""), .result = False}
             End If
-            If Not estEmail(Mail_Text.Text) And Mail_Text.Text.Trim <> "" Then
-                ErrStr = "Erreur format de mail, il sera supprimé."
-                Mail_Text.Text = ""
+        End If
+        If Login_txt.Text.Trim <> "" Then
+            Dim Tbl As DataTable = DATA_READER_GRD("select top 1 id_Societe, (select Den from Param_Societe where id_Societe=a.id_Societe) as Societe, Matricule, Nom_Agent+' '+Prenom_Agent as Nom from RH_Agent a where isnull(Login,'')='" & Login_txt.Text & "' and (Matricule!='" & Matricule_Text.Text & "' or  id_Societe !=" & Societe.id_Societe & ")")
+            If Tbl.Rows.Count > 0 Then
+                Return New savingResult With {.message = "Ce compte mail est déjà attribué à un autre agent : " & vbCrLf & Tbl.Rows(0)("Nom") & If(Tbl.Rows(0)("id_Societe") <> Societe.id_Societe, vbCrLf & "dans une autre société : " & vbCrLf & Tbl.Rows(0)("Societe"), ""), .result = False}
             End If
-            If estEmail(Mail_Text.Text) Then
-                Dim Tbl As DataTable = DATA_READER_GRD("select top 1 id_Societe, (select Den from Param_Societe where id_Societe=a.id_Societe) as Societe, Matricule, Nom_Agent+' '+Prenom_Agent as Nom from RH_Agent a where isnull(Mail,'')='" & Mail_Text.Text & "' and (Matricule!='" & Matricule_Text.Text & "' or  id_Societe !=" & Societe.id_Societe & ")")
-                If Tbl.Rows.Count > 0 Then
-                    Return New savingResult With {.message = "Ce compte mail est déjà attribué à un autre agent : " & vbCrLf & Tbl.Rows(0)("Nom") & If(Tbl.Rows(0)("id_Societe") <> Societe.id_Societe, vbCrLf & "dans une autre société : " & vbCrLf & Tbl.Rows(0)("Societe"), ""), .result = False}
+        End If
+        'vérification des dates
+        If Not EstDate(Dat_Naissance_Text.Text) Then
+            Return New savingResult With {.message = MessageBoxRHPText(674), .result = False}
+        End If
+        If Not EstDate(Dat_Entree_Text.Text) Then
+            Return New savingResult With {.message = MessageBoxRHPText(675), .result = False}
+        ElseIf CDate(Dat_Naissance_Text.Text) >= CDate(Dat_Entree_Text.Text) Then
+            Return New savingResult With {.message = MessageBoxRHPText(676), .result = False}
+        End If
+        If EstDate(Dat_Confirmation_Text.Text) Then
+            If CDate(Dat_Confirmation_Text.Text) < CDate(Dat_Entree_Text.Text) Then
+                ErrStr = MessageBoxRHPText(677)
+            End If
+        End If
+        If EstDate(Dat_Sortie_Text.Text) Then
+            If CDate(Dat_Sortie_Text.Text) < CDate(Dat_Entree_Text.Text) Then
+                Return New savingResult With {.message = MessageBoxRHPText(678), .result = False}
+            ElseIf EstDate(Dat_Confirmation_Text.Text) Then
+                If CDate(Dat_Sortie_Text.Text) < CDate(Dat_Confirmation_Text.Text) Then
+                    Return New savingResult With {.message = MessageBoxRHPText(679), .result = False}
                 End If
             End If
-            If Login_txt.Text.Trim <> "" Then
-                Dim Tbl As DataTable = DATA_READER_GRD("select top 1 id_Societe, (select Den from Param_Societe where id_Societe=a.id_Societe) as Societe, Matricule, Nom_Agent+' '+Prenom_Agent as Nom from RH_Agent a where isnull(Login,'')='" & Login_txt.Text & "' and (Matricule!='" & Matricule_Text.Text & "' or  id_Societe !=" & Societe.id_Societe & ")")
-                If Tbl.Rows.Count > 0 Then
-                    Return New savingResult With {.message = "Ce compte mail est déjà attribué à un autre agent : " & vbCrLf & Tbl.Rows(0)("Nom") & If(Tbl.Rows(0)("id_Societe") <> Societe.id_Societe, vbCrLf & "dans une autre société : " & vbCrLf & Tbl.Rows(0)("Societe"), ""), .result = False}
-                End If
+            Droit_Paie.Checked = False
+        End If
+        If EstDate(Dat_Fin_Contrat_Text.Text) Then
+            If CDate(Dat_Fin_Contrat_Text.Text) < CDate(Dat_Entree_Text.Text) Then
+                Return New savingResult With {.message = MessageBoxRHPText(681), .result = False}
             End If
-            'vérification des dates
-            If Not EstDate(Dat_Naissance_Text.Text) Then
-                Return New savingResult With {.message = MessageBoxRHPText(674), .result = False}
-            End If
-            If Not EstDate(Dat_Entree_Text.Text) Then
-                Return New savingResult With {.message = MessageBoxRHPText(675), .result = False}
-            ElseIf CDate(Dat_Naissance_Text.Text) >= CDate(Dat_Entree_Text.Text) Then
-                Return New savingResult With {.message = MessageBoxRHPText(676), .result = False}
-            End If
-            If EstDate(Dat_Confirmation_Text.Text) Then
-                If CDate(Dat_Confirmation_Text.Text) < CDate(Dat_Entree_Text.Text) Then
-                    ErrStr = MessageBoxRHPText(677)
-                End If
-            End If
-            If EstDate(Dat_Sortie_Text.Text) Then
-                If CDate(Dat_Sortie_Text.Text) < CDate(Dat_Entree_Text.Text) Then
-                    Return New savingResult With {.message = MessageBoxRHPText(678), .result = False}
-                ElseIf EstDate(Dat_Confirmation_Text.Text) Then
-                    If CDate(Dat_Sortie_Text.Text) < CDate(Dat_Confirmation_Text.Text) Then
-                        Return New savingResult With {.message = MessageBoxRHPText(679), .result = False}
-                    End If
-                End If
-                Droit_Paie.Checked = False
-            End If
-            If EstDate(Dat_Fin_Contrat_Text.Text) Then
-                If CDate(Dat_Fin_Contrat_Text.Text) < CDate(Dat_Entree_Text.Text) Then
-                    Return New savingResult With {.message = MessageBoxRHPText(681), .result = False}
-                End If
-            End If
-            If Not IsNumeric(Droit_Conge_Mensuel_txt.Text) Then Droit_Conge_Mensuel_txt.Text = 0
-            If Droit_Conge_Mensuel_txt.Text = 0 Then
-                Return New savingResult With {.message = "Droit au congé par mois non renseigné.", .result = False}
-            End If
-            If is_AD_chk.Checked Then
-                If Not ApplyADInfo() Then is_AD_chk.Checked = False
-            End If
-            With Grd_Bancarisation
-                Dim tx As Double = 0
-                Dim mnt As Double = -1
-                .CurrentCell = .Item(0, 0)
-                For i = 0 To .RowCount - 1
-                    If IsNull(.Item(Mod_Paiement.Index, i).Value, "") <> "" And IsNumeric(IsNull(.Item(Valeur_.Index, i).Value, 0)) Then
-                        If IsNull(.Item(Typ_Valeur_Paiement.Index, i).Value, "Mnt") = "Prc" Then
-                            tx += CDbl(.Item(Valeur_.Index, i).Value)
-                        Else
-                            mnt += CDbl(.Item(Valeur_.Index, i).Value)
-                        End If
-                    End If
-                Next
-                If tx <> 100 And tx > 0 Then
-                    Return New savingResult With {.message = "Total pourcentage différent de 100%. " & tx, .result = False}
-                ElseIf mnt = 0 Then
-                    Return New savingResult With {.message = "Montant des paiements de salaire est null", .result = False}
-                End If
-            End With
-            'Vérifier les doublons au niveaux des éléments de paie
-            With EB_Grd
-                For i = 0 To .RowCount - 1
-                    '  For j = 0 To .RowCount - 1
-                    '     If IsNull(.Item(0, i).Value, "") <> "" And IsNull(.Item(0, j).Value, "") <> "" Then
-                    'If .Item(0, i).Value = .Item(0, j).Value And i <> j Then
-                    'TabControl1.SelectedIndex = 4
-                    '    Return New savingResult With {.message = MessageBoxRHPText(682, .Item(0, i).Value), .result = False}
-                    '        End If
-                    ' End If
-                    'Next
-                    Select Case .Item(Typ_Param.Index, i).Value
-                        Case "float"
-                            If Not IsNumeric(.Item(Valeur.Index, i).Value.ToString.Replace(".", ",")) Then
-
-                                TabControl1.SelectedIndex = 4
-                                Return New savingResult With {.message = MessageBoxRHPText(683, EB_Grd.Item(0, i).Value), .result = False}
-                            End If
-                        Case "int"
-                            If Not IsNumeric(.Item(Valeur.Index, i).Value.ToString.Replace(".", ",")) Then
-                                TabControl1.SelectedIndex = 4
-                                Return New savingResult With {.message = MessageBoxRHPText(683, EB_Grd.Item(0, i).Value), .result = False}
-                            Else
-                                .Item(Valeur.Index, i).Value = Math.Floor(CDbl(.Item(Valeur.Index, i).Value.ToString.Replace(".", ",")))
-                            End If
-                        Case "bit"
-                            If .Item(Valeur.Index, i).Value <> "1" And .Item(Valeur.Index, i).Value <> "0" Then
-                                TabControl1.SelectedIndex = 4
-                                Return New savingResult With {.message = MessageBoxRHPText(684, EB_Grd.Item(0, i).Value), .result = False}
-                            End If
-                        Case "smalldatetime"
-                            If Not EstDate(.Item(Valeur.Index, i).Value) Then
-                                TabControl1.SelectedIndex = 4
-                                Return New savingResult With {.message = MessageBoxRHPText(683, EB_Grd.Item(0, i).Value), .result = False}
-                            End If
-                    End Select
-                Next
-            End With
-            Domaines_Competence_Pnl.Text = ""
-            For Each cnt As ud_Domaine_Competence In Domaines_Competence_Pnl.Controls
-                Domaines_Competence_Pnl.Text &= If(String.IsNullOrWhiteSpace(Domaines_Competence_Pnl.Text), "", ";") & cnt.Name & "$" & cnt.Rating()
-            Next
-
-            Dim rs As New ADODB.Recordset
-            Dim Dat As Date = Now.Date
-            Dim CompteurAuto As Boolean = Societe.Compteur_Auto
-            Dim Cod_Sql As String = "select * from RH_Agent where Matricule='" & Matricule_Text.Text & "' and isnull(Matricule,'')<>''  and id_Societe=" & Societe.id_Societe
-            rs.Open(Cod_Sql, cn, 2, 2)
-            If rs.EOF Then
-                rs.AddNew()
-                If CompteurAuto And Matricule_Text.Text.Trim = "" Then
-                    CnExecuting("exec Sys_Compteur 'Agent'," & Societe.id_Societe)
-                    Code = FindLibelle("Last_Code", "Fichier", "Agent", "Param_Compteur")
-                ElseIf Matricule_Text.Text = "" And Not ModeSilent Then
-Recommence:
-                    Dim A As String = getMatricule()
-                    If A <> "" Then
-                        Code = A
+        End If
+        If Not IsNumeric(Droit_Conge_Mensuel_txt.Text) Then Droit_Conge_Mensuel_txt.Text = 0
+        If Droit_Conge_Mensuel_txt.Text = 0 Then
+            Return New savingResult With {.message = "Droit au congé par mois non renseigné.", .result = False}
+        End If
+        If is_AD_chk.Checked Then
+            If Not ApplyADInfo() Then is_AD_chk.Checked = False
+        End If
+        With Grd_Bancarisation
+            Dim ribRg As New Regex("^\d{24}$")
+            Dim tx As Double = 0
+            Dim mnt As Double = -1
+            .CurrentCell = .Item(0, 0)
+            For i = 0 To .RowCount - 1
+                If IsNull(.Item(Mod_Paiement.Index, i).Value, "") <> "" And IsNumeric(IsNull(.Item(Valeur_.Index, i).Value, 0)) Then
+                    If IsNull(.Item(Typ_Valeur_Paiement.Index, i).Value, "Mnt") = "Prc" Then
+                        tx += CDbl(.Item(Valeur_.Index, i).Value)
                     Else
-                        GoTo Recommence
+                        mnt += CDbl(.Item(Valeur_.Index, i).Value)
                     End If
-                Else
-                    Code = Matricule_Text.Text
                 End If
-                rs("Matricule").Value = Code
-                rs("id_Societe").Value = Societe.id_Societe
-                rs("Created_By").Value = theUser.Login
-                rs("Dat_Crea").Value = Dat
+                If IsNull(.Item(RIB.Index, i).Value, "") <> "" Then
+                    If Not ribRg.IsMatch(.Item(RIB.Index, i).Value) Then
+                        Return New savingResult With {.message = "Erreur format RIB (24 digits).", .result = False}
+                    End If
+                End If
+            Next
+            If tx <> 100 And tx > 0 Then
+                Return New savingResult With {.message = "Total pourcentage différent de 100%. " & tx, .result = False}
+            ElseIf mnt = 0 Then
+                Return New savingResult With {.message = "Montant des paiements de salaire est null", .result = False}
+            End If
+        End With
+        'Vérifier les doublons au niveaux des éléments de paie
+        With EB_Grd
+            For i = 0 To .RowCount - 1
+                '  For j = 0 To .RowCount - 1
+                '     If IsNull(.Item(0, i).Value, "") <> "" And IsNull(.Item(0, j).Value, "") <> "" Then
+                'If .Item(0, i).Value = .Item(0, j).Value And i <> j Then
+                'TabControl1.SelectedIndex = 4
+                '    Return New savingResult With {.message = MessageBoxRHPText(682, .Item(0, i).Value), .result = False}
+                '        End If
+                ' End If
+                'Next
+                Select Case .Item(Typ_Param.Index, i).Value
+                    Case "float"
+                        If Not IsNumeric(.Item(Valeur.Index, i).Value.ToString.Replace(".", ",")) Then
+
+                            TabControl1.SelectedIndex = 4
+                            Return New savingResult With {.message = MessageBoxRHPText(683, EB_Grd.Item(0, i).Value), .result = False}
+                        End If
+                    Case "int"
+                        If Not IsNumeric(.Item(Valeur.Index, i).Value.ToString.Replace(".", ",")) Then
+                            TabControl1.SelectedIndex = 4
+                            Return New savingResult With {.message = MessageBoxRHPText(683, EB_Grd.Item(0, i).Value), .result = False}
+                        Else
+                            .Item(Valeur.Index, i).Value = Math.Floor(CDbl(.Item(Valeur.Index, i).Value.ToString.Replace(".", ",")))
+                        End If
+                    Case "bit"
+                        If .Item(Valeur.Index, i).Value <> "1" And .Item(Valeur.Index, i).Value <> "0" Then
+                            TabControl1.SelectedIndex = 4
+                            Return New savingResult With {.message = MessageBoxRHPText(684, EB_Grd.Item(0, i).Value), .result = False}
+                        End If
+                    Case "smalldatetime"
+                        If Not EstDate(.Item(Valeur.Index, i).Value) Then
+                            TabControl1.SelectedIndex = 4
+                            Return New savingResult With {.message = MessageBoxRHPText(683, EB_Grd.Item(0, i).Value), .result = False}
+                        End If
+                End Select
+            Next
+        End With
+        Domaines_Competence_Pnl.Text = ""
+        For Each cnt As ud_Domaine_Competence In Domaines_Competence_Pnl.Controls
+            Domaines_Competence_Pnl.Text &= If(String.IsNullOrWhiteSpace(Domaines_Competence_Pnl.Text), "", ";") & cnt.Name & "$" & cnt.Rating()
+        Next
+
+        Dim rs As New ADODB.Recordset
+        Dim Dat As Date = Now.Date
+        Dim CompteurAuto As Boolean = Societe.Compteur_Auto
+        Dim Cod_Sql As String = "select * from RH_Agent where Matricule='" & Matricule_Text.Text & "' and isnull(Matricule,'')<>''  and id_Societe=" & Societe.id_Societe
+        rs.Open(Cod_Sql, cn, 2, 2)
+        If rs.EOF Then
+            rs.AddNew()
+            If CompteurAuto And Matricule_Text.Text.Trim = "" Then
+                CnExecuting("exec Sys_Compteur 'Agent'," & Societe.id_Societe)
+                Code = FindLibelle("Last_Code", "Fichier", "Agent", "Param_Compteur")
+            ElseIf Matricule_Text.Text = "" And Not ModeSilent Then
+Recommence:
+                Dim A As String = getMatricule()
+                If A <> "" Then
+                    Code = A
+                Else
+                    GoTo Recommence
+                End If
             Else
-                rs.Update()
                 Code = Matricule_Text.Text
             End If
-            rs("Nom_Agent").Value = Nom_Agent_Text.Text
-            rs("Prenom_Agent").Value = Prenom_Agent_Text.Text
-            rs("Sexe").Value = IIf(Civilite_Combo.SelectedValue = "Mr", "H", "F")
-            rs("CIN_Agent").Value = CIN_Agent_Text.Text
-            rs("NumCE").Value = NumCE_txt.Text
-            rs("NumPPR").Value = NumPPR_txt.Text
-            rs("Nationalite").Value = Nationalite_Text.Text
-            rs("Civilite").Value = Civilite_Combo.SelectedValue
-            rs("Adresse").Value = Adresse_Text.Text
-            rs("Cod_Ville").Value = Cod_Ville_Text.Text
-            rs("Cod_Pays").Value = Cod_Pays_Text.Text
-            rs("Cod_Pst").Value = Cod_Pst_Text.Text
-            rs("Fixe").Value = Fixe_Text.Text
-            rs("Gsm").Value = Gsm_Text.Text
-            rs("Mail").Value = Mail_Text.Text
-            rs("Situation").Value = Situation.SelectedValue
-            rs("Dat_Naissance").Value = Dat_Naissance_Text.Text
-            rs("Lieu_Naissance").Value = Lieu_Naissance_Text.Text
-            rs("Typ_Agent").Value = Typ_Agent.SelectedValue
-            rs("Typ_Contrat").Value = Typ_Contrat.SelectedValue
-            rs("Plan_Paie").Value = Cod_Plan_Paie_Text.Text
-            rs("Ref_Candidature").Value = Ref_Candidature_txt.Text
-            rs("Dat_Entree").Value = Dat_Entree_Text.Text
+            rs("Matricule").Value = Code
+            rs("id_Societe").Value = Societe.id_Societe
+            rs("Created_By").Value = theUser.Login
+            rs("Dat_Crea").Value = Dat
+        Else
+            rs.Update()
+            Code = Matricule_Text.Text
+        End If
+        rs("Nom_Agent").Value = Nom_Agent_Text.Text
+        rs("Prenom_Agent").Value = Prenom_Agent_Text.Text
+        rs("Sexe").Value = IIf(Civilite_Combo.SelectedValue = "Mr", "H", "F")
+        rs("CIN_Agent").Value = CIN_Agent_Text.Text
+        rs("NumCE").Value = NumCE_txt.Text
+        rs("NumPPR").Value = NumPPR_txt.Text
+        rs("Nationalite").Value = Nationalite_Text.Text
+        rs("Civilite").Value = Civilite_Combo.SelectedValue
+        rs("Adresse").Value = Adresse_Text.Text
+        rs("Cod_Ville").Value = Cod_Ville_Text.Text
+        rs("Cod_Pays").Value = Cod_Pays_Text.Text
+        rs("Cod_Pst").Value = Cod_Pst_Text.Text
+        rs("Fixe").Value = Fixe_Text.Text
+        rs("Gsm").Value = Gsm_Text.Text
+        rs("Mail").Value = Mail_Text.Text
+        rs("Situation").Value = Situation.SelectedValue
+        rs("Dat_Naissance").Value = Dat_Naissance_Text.Text
+        rs("Lieu_Naissance").Value = Lieu_Naissance_Text.Text
+        rs("Typ_Agent").Value = Typ_Agent.SelectedValue
+        rs("Typ_Contrat").Value = Typ_Contrat.SelectedValue
+        rs("Plan_Paie").Value = Cod_Plan_Paie_Text.Text
+        rs("Ref_Candidature").Value = Ref_Candidature_txt.Text
+        rs("Dat_Entree").Value = Dat_Entree_Text.Text
+        rs("Dat_Confirmation").Value = Dat_Confirmation_Text.Text
+        If EstDate(Dat_Confirmation_Text.Text) Then
             rs("Dat_Confirmation").Value = Dat_Confirmation_Text.Text
-            If EstDate(Dat_Confirmation_Text.Text) Then
-                rs("Dat_Confirmation").Value = Dat_Confirmation_Text.Text
-            Else
-                rs("Dat_Confirmation").Value = Nothing
-            End If
-            If EstDate(Dat_Sortie_Text.Text) Then
-                rs("Dat_Sortie").Value = Dat_Sortie_Text.Text
-            Else
-                rs("Dat_Sortie").Value = Nothing
-            End If
-            If EstDate(Dat_Fin_Contrat_Text.Text) Then
-                rs("Dat_Fin_Contrat").Value = Dat_Fin_Contrat_Text.Text
-            Else
-                rs("Dat_Fin_Contrat").Value = Nothing
-            End If
-            rs("Droit_Paie").Value = Droit_Paie.Checked
-            rs("Typ_Periode").Value = Typ_Periode.SelectedValue
-            rs("Motif_Depart").Value = Motif_Depart.SelectedValue
-            rs("Commentaire").Value = Commentaire_Text.Text
-            rs("Titre").Value = Titre_txt.Text
-            rs("Cod_Poste").Value = Poste_Text.Text
-            rs("Cod_Grade").Value = Grade_Text.Text
-            rs("Cod_Entite").Value = Cod_Entite_txt.Text
-            rs("Affectation_1").Value = Affectation_1_txt.Text
-            rs("Affectation_2").Value = Affectation_2_txt.Text
-            rs("Nbr_Personne_A_Charge").Value = Nbr_Personne_A_Charge.Value
-            rs("CNSS").Value = CNSS_Text.Text
-            rs("Organisme1").Value = Organisme1_Text.Text
-            rs("Identifiant01").Value = Identifiant01_txt.Text
-            rs("Identifiant02").Value = Identifiant02_txt.Text
-            rs("Identifiant03").Value = Identifiant03_txt.Text
-            rs("Ref_Candidature").Value = Ref_Candidature_txt.Text
-            rs("Domaines_Competence").Value = Domaines_Competence_Pnl.Text
-            rs("Droit_Conge_Mensuel").Value = Droit_Conge_Mensuel_txt.Text
-            rs("Login").Value = Login_txt.Text.Trim
-            rs("is_AD").Value = is_AD_chk.Checked
-            rs("Dat_Modif").Value = Dat
-            rs("Modified_By").Value = theUser.Login
-            If Cod_Simulation <> "" Then
-                rs("Cod_Simulation").Value = Cod_Simulation
-                Cod_Simulation = ""
-            End If
+        Else
+            rs("Dat_Confirmation").Value = Nothing
+        End If
+        If EstDate(Dat_Sortie_Text.Text) Then
+            rs("Dat_Sortie").Value = Dat_Sortie_Text.Text
+        Else
+            rs("Dat_Sortie").Value = Nothing
+        End If
+        If EstDate(Dat_Fin_Contrat_Text.Text) Then
+            rs("Dat_Fin_Contrat").Value = Dat_Fin_Contrat_Text.Text
+        Else
+            rs("Dat_Fin_Contrat").Value = Nothing
+        End If
+        rs("Droit_Paie").Value = Droit_Paie.Checked
+        rs("Typ_Periode").Value = Typ_Periode.SelectedValue
+        rs("Motif_Depart").Value = Motif_Depart.SelectedValue
+        rs("Commentaire").Value = Commentaire_Text.Text
+        rs("Titre").Value = Titre_txt.Text
+        rs("Cod_Poste").Value = Poste_Text.Text
+        rs("Cod_Grade").Value = Grade_Text.Text
+        rs("Cod_Entite").Value = Cod_Entite_txt.Text
+        rs("Affectation_1").Value = Affectation_1_txt.Text
+        rs("Affectation_2").Value = Affectation_2_txt.Text
+        rs("Nbr_Personne_A_Charge").Value = Nbr_Personne_A_Charge.Value
+        rs("CNSS").Value = CNSS_Text.Text
+        rs("Organisme1").Value = Organisme1_Text.Text
+        rs("Identifiant01").Value = Identifiant01_txt.Text
+        rs("Identifiant02").Value = Identifiant02_txt.Text
+        rs("Identifiant03").Value = Identifiant03_txt.Text
+        rs("Ref_Candidature").Value = Ref_Candidature_txt.Text
+        rs("Domaines_Competence").Value = Domaines_Competence_Pnl.Text
+        rs("Droit_Conge_Mensuel").Value = Droit_Conge_Mensuel_txt.Text
+        rs("Login").Value = Login_txt.Text.Trim
+        rs("is_AD").Value = is_AD_chk.Checked
+        rs("Dat_Modif").Value = Dat
+        rs("Modified_By").Value = theUser.Login
+        If Cod_Simulation <> "" Then
+            rs("Cod_Simulation").Value = Cod_Simulation
+            Cod_Simulation = ""
+        End If
 
-            'Enregistrer la nouvelle photo
-            rs("Photo").Value = PhotoToByte(PictureBox1.Image)
+        'Enregistrer la nouvelle photo
+        rs("Photo").Value = PhotoToByte(PictureBox1.Image)
+        rs.Update()
+        rs.Close()
+
+
+        'Enregistrer le CV :
+        CnExecuting("delete from RH_Agent_CV where Matricule='" & Code & "' and id_Societe=" & Societe.id_Societe)
+        rs.Open("select * from RH_Agent_CV", cn, 2, 2)
+        With Formations_GRD
+            For i = 0 To .RowCount - 1
+                If .Item(0, i).Value <> "" Then
+                    rs.AddNew()
+                    rs("id_Societe").Value = Societe.id_Societe
+                    rs("Matricule").Value = Code
+                    rs("Typ_CV").Value = "F"
+                    rs("Annee").Value = .Item(0, i).Value
+                    rs("Diplome").Value = .Item(1, i).Value
+                    rs("Etablissement").Value = .Item(2, i).Value
+                    rs("Niveau").Value = .Item(3, i).Value
+                    rs("Commentaire").Value = .Item(4, i).Value
+                    rs.Update()
+                End If
+            Next
+        End With
+        With Experiences_Grd
+            For i = 0 To .RowCount - 1
+                If .Item(0, i).Value <> "" Then
+                    rs.AddNew()
+                    rs("id_Societe").Value = Societe.id_Societe
+                    rs("Matricule").Value = Code
+                    rs("Typ_CV").Value = "E"
+                    rs("Dat_Deb").Value = .Item(0, i).Value
+                    rs("Dat_Fin").Value = .Item(1, i).Value
+                    rs("Etablissement").Value = .Item(2, i).Value
+                    rs("Poste").Value = .Item(3, i).Value
+                    rs("Commentaire").Value = .Item(4, i).Value
+                    rs.Update()
+                End If
+            Next
+        End With
+        rs.Close()
+        'Enregistrer la famille :
+        CnExecuting("delete from RH_Agent_Famille where Matricule='" & Code & "'  and id_Societe=" & Societe.id_Societe)
+        rs.Open("select * from RH_Agent_Famille", cn, 2, 2)
+        With Famille_Grd
+            For i = 0 To .RowCount - 1
+                If .Item(0, i).Value <> "" Then
+                    rs.AddNew()
+                    rs("id_Societe").Value = Societe.id_Societe
+                    rs("Matricule").Value = Code
+                    rs("Nom_Prenom").Value = .Item(0, i).Value
+                    rs("Lien_Parente").Value = .Item(1, i).Value
+                    rs("Dat_Naissance").Value = .Item(2, i).Value
+                    rs("Scolarise").Value = .Item(3, i).Value
+                    rs.Update()
+                End If
+            Next
+        End With
+        rs.Close()
+        With EB_Grd
+            Dim rd As New Random
+            Dim flg As Integer = rd.Next(100, 9050)
+
+            Dim val As Double = 0
+            For i = 0 To .RowCount - 1
+                val = ConvertNombre(Replace(.Item("Valeur", i).Value, ".", ","))
+                rs.Open("select * from RH_Agent_Element_Paie where Cod_Rubrique='" & IsNull(.Item(Cod_Rubrique.Index, i).Value, "") & "' and Matricule='" & Code & "'  and id_Societe=" & Societe.id_Societe, cn, 2, 2)
+                If .Item(Cod_Rubrique.Index, i).Value <> "" And val <> 0 Then
+                    If rs.EOF Then
+                        rs.AddNew()
+                        rs("id_Societe").Value = Societe.id_Societe
+                        rs("Matricule").Value = Code
+                        rs("Cod_Rubrique").Value = .Item(Cod_Rubrique.Index, i).Value
+                    Else
+                        rs.Update()
+                    End If
+                    rs("Valeur").Value = val
+                    rs("Flg").Value = flg
+                    rs.Update()
+                End If
+                rs.Close()
+            Next
+            CnExecuting("delete from RH_Agent_Element_Paie where Matricule='" & Code & "' and isnull(Flg,0)<>" & flg & " and id_Societe=" & Societe.id_Societe)
+        End With
+        SavingNotes()
+        'Recalcul de congé
+        If Not IsNumeric(Reliquat_Anterieurs_txt.Text) Then Reliquat_Anterieurs_txt.Text = 0
+        rs.Open("select * from RH_Conge where id_Societe=" & Societe.id_Societe & " and Matricule='" & Matricule_Text.Text & "'  and Annee=" & Now.Year, cn, 2, 2)
+        If rs.EOF Then
+            rs.AddNew()
+            rs("id_Societe").Value = Societe.id_Societe
+            rs("Matricule").Value = Code
+            rs("Annee").Value = Now.Year
+            rs("Conge_Annuel").Value = 0
+            rs("Acquis_Anciennete").Value = 0
+            rs("Droit_Conge").Value = 0
+            rs("Conge_Pris").Value = 0
+            rs("Created_By").Value = theUser.Login
+            rs("Dat_Crea").Value = Dat
+        Else
             rs.Update()
-            rs.Close()
-
-
-            'Enregistrer le CV :
-            CnExecuting("delete from RH_Agent_CV where Matricule='" & Code & "' and id_Societe=" & Societe.id_Societe)
-            rs.Open("select * from RH_Agent_CV", cn, 2, 2)
-            With Formations_GRD
-                For i = 0 To .RowCount - 1
-                    If .Item(0, i).Value <> "" Then
-                        rs.AddNew()
-                        rs("id_Societe").Value = Societe.id_Societe
-                        rs("Matricule").Value = Code
-                        rs("Typ_CV").Value = "F"
-                        rs("Annee").Value = .Item(0, i).Value
-                        rs("Diplome").Value = .Item(1, i).Value
-                        rs("Etablissement").Value = .Item(2, i).Value
-                        rs("Niveau").Value = .Item(3, i).Value
-                        rs("Commentaire").Value = .Item(4, i).Value
-                        rs.Update()
-                    End If
-                Next
-            End With
-            With Experiences_Grd
-                For i = 0 To .RowCount - 1
-                    If .Item(0, i).Value <> "" Then
-                        rs.AddNew()
-                        rs("id_Societe").Value = Societe.id_Societe
-                        rs("Matricule").Value = Code
-                        rs("Typ_CV").Value = "E"
-                        rs("Dat_Deb").Value = .Item(0, i).Value
-                        rs("Dat_Fin").Value = .Item(1, i).Value
-                        rs("Etablissement").Value = .Item(2, i).Value
-                        rs("Poste").Value = .Item(3, i).Value
-                        rs("Commentaire").Value = .Item(4, i).Value
-                        rs.Update()
-                    End If
-                Next
-            End With
-            rs.Close()
-            'Enregistrer la famille :
-            CnExecuting("delete from RH_Agent_Famille where Matricule='" & Code & "'  and id_Societe=" & Societe.id_Societe)
-            rs.Open("select * from RH_Agent_Famille", cn, 2, 2)
-            With Famille_Grd
-                For i = 0 To .RowCount - 1
-                    If .Item(0, i).Value <> "" Then
-                        rs.AddNew()
-                        rs("id_Societe").Value = Societe.id_Societe
-                        rs("Matricule").Value = Code
-                        rs("Nom_Prenom").Value = .Item(0, i).Value
-                        rs("Lien_Parente").Value = .Item(1, i).Value
-                        rs("Dat_Naissance").Value = .Item(2, i).Value
-                        rs("Scolarise").Value = .Item(3, i).Value
-                        rs.Update()
-                    End If
-                Next
-            End With
-            rs.Close()
-            With EB_Grd
-                Dim rd As New Random
-                Dim flg As Integer = rd.Next(100, 9050)
-
-                Dim val As Double = 0
-                For i = 0 To .RowCount - 1
-                    val = ConvertNombre(Replace(.Item("Valeur", i).Value, ".", ","))
-                    rs.Open("select * from RH_Agent_Element_Paie where Cod_Rubrique='" & IsNull(.Item(Cod_Rubrique.Index, i).Value, "") & "' and Matricule='" & Code & "'  and id_Societe=" & Societe.id_Societe, cn, 2, 2)
-                    If .Item(Cod_Rubrique.Index, i).Value <> "" And val <> 0 Then
-                        If rs.EOF Then
-                            rs.AddNew()
-                            rs("id_Societe").Value = Societe.id_Societe
-                            rs("Matricule").Value = Code
-                            rs("Cod_Rubrique").Value = .Item(Cod_Rubrique.Index, i).Value
-                        Else
-                            rs.Update()
-                        End If
-                        rs("Valeur").Value = val
-                        rs("Flg").Value = flg
-                        rs.Update()
-                    End If
-                    rs.Close()
-                Next
-                CnExecuting("delete from RH_Agent_Element_Paie where Matricule='" & Code & "' and isnull(Flg,0)<>" & flg & " and id_Societe=" & Societe.id_Societe)
-            End With
-            SavingNotes()
-            'Recalcul de congé
-            If Not IsNumeric(Reliquat_Anterieurs_txt.Text) Then Reliquat_Anterieurs_txt.Text = 0
-            rs.Open("select * from RH_Conge where id_Societe=" & Societe.id_Societe & " and Matricule='" & Matricule_Text.Text & "'  and Annee=" & Now.Year, cn, 2, 2)
-            If rs.EOF Then
-                rs.AddNew()
-                rs("id_Societe").Value = Societe.id_Societe
-                rs("Matricule").Value = Code
-                rs("Annee").Value = Now.Year
-                rs("Conge_Annuel").Value = 0
-                rs("Acquis_Anciennete").Value = 0
-                rs("Droit_Conge").Value = 0
-                rs("Conge_Pris").Value = 0
-                rs("Created_By").Value = theUser.Login
-                rs("Dat_Crea").Value = Dat
-            Else
-                rs.Update()
-            End If
-            rs("Reliquat_Anterieurs").Value = CDbl(Reliquat_Anterieurs_txt.Text)
-            rs("Solde_Conge").Value = CDbl(rs("Droit_Conge").Value) + CDbl(Reliquat_Anterieurs_txt.Text) - CDbl(rs("Conge_Pris").Value)
-            rs("Dat_Modif").Value = Dat
-            rs("Modified_By").Value = theUser.Login
-            rs.Update()
-            rs.Close()
-            'Bancarisation
-            CnExecuting("delete from RH_Agent_Paiement where Matricule='" & Matricule_Text.Text & "' and id_Societe=" & Societe.id_Societe)
-            rs.Open("select * from RH_Agent_Paiement where Matricule='" & Matricule_Text.Text & "' and id_Societe=" & Societe.id_Societe, cn, 2, 2)
-            With Grd_Bancarisation
-                For i = 0 To .RowCount - 1
-                    If IsNull(.Item(RIB.Index, i).Value, "") <> "" Then
-                        rs.AddNew()
-                        rs("id_Societe").Value = Societe.id_Societe
-                        rs("Matricule").Value = Code
-                        rs("Mod_Paiement").Value = IsNull(.Item(Mod_Paiement.Index, i).Value, "VIRE")
-                        rs("Banque").Value = .Item(Banque.Index, i).Value
-                        rs("Agence").Value = .Item(Agence.Index, i).Value
-                        rs("Compte_Bancaire").Value = .Item(Compte_Bancaire.Index, i).Value
-                        rs("RIB").Value = .Item(RIB.Index, i).Value
-                        rs("Salaire_Domicilie").Value = IsNull(.Item(Salaire_Domicilie.Index, i).Value, False)
-                        rs("Typ_Valeur_Paiement").Value = IsNull(.Item(Typ_Valeur_Paiement.Index, i).Value, "Mnt")
-                        rs("Valeur").Value = IsNull(.Item(Valeur_.Index, i).Value, 0)
-                        rs.Update()
-                    End If
-                Next
-            End With
-            rs.Close()
-            Matricule_Text.Text = Code
-            If ErrStr <> "" Then
-                Return New savingResult With {.message = ErrStr, .result = True}
-            Else
-                Return New savingResult With {.message = "Enregistré avec succès", .result = True}
-            End If
+        End If
+        rs("Reliquat_Anterieurs").Value = CDbl(Reliquat_Anterieurs_txt.Text)
+        rs("Solde_Conge").Value = CDbl(rs("Droit_Conge").Value) + CDbl(Reliquat_Anterieurs_txt.Text) - CDbl(rs("Conge_Pris").Value)
+        rs("Dat_Modif").Value = Dat
+        rs("Modified_By").Value = theUser.Login
+        rs.Update()
+        rs.Close()
+        'Bancarisation
+        CnExecuting("delete from RH_Agent_Paiement where Matricule='" & Matricule_Text.Text & "' and id_Societe=" & Societe.id_Societe)
+        rs.Open("select * from RH_Agent_Paiement where Matricule='" & Matricule_Text.Text & "' and id_Societe=" & Societe.id_Societe, cn, 2, 2)
+        With Grd_Bancarisation
+            For i = 0 To .RowCount - 1
+                If IsNull(.Item(RIB.Index, i).Value, "") <> "" Then
+                    rs.AddNew()
+                    rs("id_Societe").Value = Societe.id_Societe
+                    rs("Matricule").Value = Code
+                    rs("Mod_Paiement").Value = IsNull(.Item(Mod_Paiement.Index, i).Value, "VIRE")
+                    rs("Banque").Value = .Item(Banque.Index, i).Value
+                    rs("Agence").Value = .Item(Agence.Index, i).Value
+                    rs("Compte_Bancaire").Value = .Item(Compte_Bancaire.Index, i).Value
+                    rs("RIB").Value = .Item(RIB.Index, i).Value
+                    rs("Salaire_Domicilie").Value = IsNull(.Item(Salaire_Domicilie.Index, i).Value, False)
+                    rs("Typ_Valeur_Paiement").Value = IsNull(.Item(Typ_Valeur_Paiement.Index, i).Value, "Mnt")
+                    rs("Valeur").Value = IsNull(.Item(Valeur_.Index, i).Value, 0)
+                    rs.Update()
+                End If
+            Next
+        End With
+        rs.Close()
+        Matricule_Text.Text = Code
+        If ErrStr <> "" Then
+            Return New savingResult With {.message = ErrStr, .result = True}
+        Else
+            Return New savingResult With {.message = "Enregistré avec succès", .result = True}
+        End If
         '   Catch ex As Exception
         '   Return New savingResult With {.message = ex.Message, .result = False}
         '    End Try
@@ -1014,49 +1022,51 @@ select 'RH_Simulation' as Tbl,count(*) from RH_Simulation where Matricule='{0}'"
     Private Sub BlocNote_Grd_CellPainting(sender As Object, e As DataGridViewCellPaintingEventArgs) Handles BlocNote_Grd.CellPainting
         With BlocNote_Grd
             If e.ColumnIndex <> .Columns("Valeur_Donnee").Index Or e.RowIndex < 0 Then Exit Sub
-            Dim oX, oY As Integer
-            oX = e.CellBounds.Location.X + e.CellBounds.Width - 16
-            oY = (e.RowIndex + 1) * e.CellBounds.Height
 
-            If IsNull(.Item("Typ_Donnee", e.RowIndex).Value, "") = "Dat" Then
-                e.Graphics.DrawImage(My.Resources.calendrier, oX, oY)
-                .Item(.Columns("Valeur_Donnee").Index, e.RowIndex).ReadOnly = True
-                .Item("Valeur_Donnee", e.RowIndex).ReadOnly = True
-                .Item("Valeur_Donnee", e.RowIndex).Style.Alignment = DataGridViewContentAlignment.TopLeft
-            ElseIf IsNull(.Item("Typ_Donnee", e.RowIndex).Value, "") = "Mnu" Then
-                e.Graphics.DrawImage(My.Resources.MenuLocal, oX, oY)
-                .Item(.Columns("Valeur_Donnee").Index, e.RowIndex).ReadOnly = True
-                .Item("Valeur_Donnee", e.RowIndex).ReadOnly = True
-                .Item("Valeur_Donnee", e.RowIndex).Style.Alignment = DataGridViewContentAlignment.TopLeft
-            ElseIf IsNull(.Item("Typ_Donnee", e.RowIndex).Value, "") = "Rub" Then
-                e.Graphics.DrawImage(My.Resources.MenuLocal, oX, oY)
-                .Item(.Columns("Valeur_Donnee").Index, e.RowIndex).ReadOnly = True
-                .Item("Valeur_Donnee", e.RowIndex).ReadOnly = True
-                .Item("Valeur_Donnee", e.RowIndex).Style.Alignment = DataGridViewContentAlignment.TopLeft
-            ElseIf IsNull(.Item("Typ_Donnee", e.RowIndex).Value, "") = "File" Then
-                e.Graphics.DrawImage(My.Resources.MenuLocal, oX, oY)
-                .Item(.Columns("Valeur_Donnee").Index, e.RowIndex).ReadOnly = True
-            ElseIf IsNull(.Item("Typ_Donnee", e.RowIndex).Value, "") = "Boolean" Then
-                e.Graphics.DrawImage(My.Resources.MenuLocal, oX, oY)
-                .Item(.Columns("Valeur_Donnee").Index, e.RowIndex).ReadOnly = True
-            ElseIf IsNull(.Item("Typ_Donnee", e.RowIndex).Value, "") = "Path" Then
-                e.Graphics.DrawImage(My.Resources.MenuLocal, oX, oY)
-                .Item(.Columns("Valeur_Donnee").Index, e.RowIndex).ReadOnly = True
-            ElseIf IsNull(.Item("Typ_Donnee", e.RowIndex).Value, "") = "Ser" Then
-                e.Graphics.DrawImage(My.Resources.MenuLocal, oX, oY)
-                .Item(.Columns("Valeur_Donnee").Index, e.RowIndex).ReadOnly = True
-            ElseIf .Item("Typ_Donnee", e.RowIndex).Value = "Num" Then
-                .Item(.Columns("Valeur_Donnee").Index, e.RowIndex).ReadOnly = False
-                .Item("Valeur_Donnee", e.RowIndex).Style.Alignment = DataGridViewContentAlignment.TopRight
-                .Item("Valeur_Donnee", e.RowIndex).Value = FormatNumber(IsNull(.Item("Valeur_Donnee", e.RowIndex).Value, "0"), 3)
-            ElseIf .Item("Typ_Donnee", e.RowIndex).Value = "Ent" Then
-                .Item(.Columns("Valeur_Donnee").Index, e.RowIndex).ReadOnly = False
-                .Item("Valeur_Donnee", e.RowIndex).Style.Alignment = DataGridViewContentAlignment.TopRight
-                .Item("Valeur_Donnee", e.RowIndex).Value = FormatNumber(IsNull(.Item("Valeur_Donnee", e.RowIndex).Value, "0"), 0)
-            Else
-                .Item("Valeur_Donnee", e.RowIndex).Style.Alignment = DataGridViewContentAlignment.TopLeft
-                .Item(.Columns("Valeur_Donnee").Index, e.RowIndex).ReadOnly = False
+            ' Peindre le fond, les bordures et la sélection
+            e.PaintBackground(e.CellBounds, True)
+
+            Dim typeData As String = IsNull(.Item("Typ_Donnee", e.RowIndex).Value, "")
+            Dim hasIcon As Boolean = False
+            Dim iconImage As Image = Nothing
+
+            ' Déterminer si on doit afficher une icône
+            Select Case typeData
+                Case "Dat"
+                    iconImage = My.Resources.calendrier
+                    hasIcon = True
+                    .Item("Valeur_Donnee", e.RowIndex).ReadOnly = True
+
+                Case "Mnu", "Rub", "File", "Boolean", "Path", "Ser"
+                    iconImage = My.Resources.MenuLocal
+                    hasIcon = True
+                    .Item("Valeur_Donnee", e.RowIndex).ReadOnly = True
+
+                Case "Num", "Ent"
+                    .Item("Valeur_Donnee", e.RowIndex).ReadOnly = False
+
+                Case Else
+                    .Item("Valeur_Donnee", e.RowIndex).ReadOnly = False
+            End Select
+
+            ' Si on a une icône, la dessiner
+            If hasIcon AndAlso iconImage IsNot Nothing Then
+                Dim iconRect As New Rectangle(
+                e.CellBounds.Right - 20,
+                e.CellBounds.Top + ((e.CellBounds.Height - 16) \ 2),
+                16, 16)
+
+                ' S'assurer que l'icône est dans les limites de la cellule
+                If iconRect.Right <= e.CellBounds.Right AndAlso iconRect.Bottom <= e.CellBounds.Bottom Then
+                    e.Graphics.DrawImage(iconImage, iconRect)
+                End If
             End If
+
+            ' Peindre le contenu texte
+            e.PaintContent(e.CellBounds)
+
+            ' Marquer comme géré
+            e.Handled = True
         End With
     End Sub
     Private Sub BlocNote_Grd_EditingControlShowing(sender As Object, e As DataGridViewEditingControlShowingEventArgs) Handles BlocNote_Grd.EditingControlShowing
@@ -1318,5 +1328,26 @@ select 'RH_Simulation' as Tbl,count(*) from RH_Simulation where Matricule='{0}'"
             Next
             RearrangeControls()
         End If
+    End Sub
+
+    Private Sub BlocNote_Grd_MouseMove(sender As Object, e As MouseEventArgs) Handles BlocNote_Grd.MouseMove
+
+    End Sub
+
+    Private Sub BlocNote_Grd_CellMouseMove(sender As Object, e As DataGridViewCellMouseEventArgs) Handles BlocNote_Grd.CellMouseMove
+        If e.ColumnIndex < 0 Then Return
+        If e.RowIndex < 0 Then Return
+        With BlocNote_Grd
+            If e.ColumnIndex = Valeur_Donnee.Index Then
+                If .Item(e.ColumnIndex, e.RowIndex).ReadOnly Then
+                    .Cursor = Cursors.Hand
+                Else
+                    .Cursor = Cursors.Default
+                End If
+            Else
+                .Cursor = Cursors.Default
+            End If
+        End With
+
     End Sub
 End Class

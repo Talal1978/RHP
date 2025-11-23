@@ -3,7 +3,7 @@
     Friend swhere As String = ""
     Friend f_preparation As New RH_Preparation_Paie
     Dim oSize As New Size
-    Dim oLoc As New Point
+    Friend oLoc As New Point
     Dim TblSource As New DataTable
     Private Sub Zoom_Escape(ByVal sender As Object, ByVal e As System.Windows.Forms.KeyEventArgs) Handles Me.KeyUp
         If e.KeyData = Keys.Escape Then Me.Close()

@@ -112,7 +112,7 @@
             Next
         End With
     End Sub
-    Private Sub Deleting()
+    Sub Deleting()
         If Cod_Query_Text.Text = "" Then Exit Sub
         If MessageBoxRHP(560, Nom_Query_Text.Text) = MsgBoxResult.Cancel Then Exit Sub
 
@@ -124,15 +124,13 @@
         End If
 
         'Supprimer le lien du Procedure
-        If CnExecuting("Select count(*) from Controle_TreeView where Name_Ecran='" & Cod_Query_Text.Text & "'").Fields(0).Value > 0 Then
-            CnExecuting("delete from Controle_TreeView where Name_Ecran='" & Cod_Query_Text.Text & "' and Typ_Ecran='QRY'")
-            CnExecuting("delete from Controle_Menu where Name_Ecran='" & Cod_Query_Text.Text & "' and Typ_Ecran='QRY'")
+        CnExecuting("delete from Controle_TreeView where Name_Ecran='" & Cod_Query_Text.Text & "' and Typ_Ecran='QRY'")
+        CnExecuting("delete from Controle_Menu where Name_Ecran='" & Cod_Query_Text.Text & "' and Typ_Ecran='QRY'")
             'Supprimer le lien des favoris
             CnExecuting("delete from Param_Favoris where Form_Name='" & Cod_Query_Text.Text & "'")
-        End If
-
+            CnExecuting($"delete from Controle_Def_Ecran_Traitements_Specifiques where Cod_Traitement='{Cod_Query_Text.Text}'")
         Reset_Form(Me)
-        Reset_Form(Me)
+        '     Reset_Form(Me)
     End Sub
 
     Private Sub LinkLabel4_LinkClicked(ByVal sender As System.Object, ByVal e As System.Windows.Forms.LinkLabelLinkClickedEventArgs) Handles LinkLabel4.LinkClicked

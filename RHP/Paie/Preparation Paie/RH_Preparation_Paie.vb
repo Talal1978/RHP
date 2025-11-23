@@ -19,6 +19,7 @@ Public Class RH_Preparation_Paie
     Dim add_agent_D As ud_btn
     Dim Calcul_D As ud_btn
     Dim NetToBrut_D As ud_btn
+    Dim modeChargementElement As Boolean = False
     Private Sub RH_Preparation_Paie_FormClosing(ByVal sender As Object, ByVal e As System.Windows.Forms.FormClosingEventArgs) Handles Me.FormClosing
         With PrePaie_Grd
             If .RowCount > 0 And Save_D.Enabled Then
@@ -509,8 +510,14 @@ where isnull(Ventilable,'false')='true' and id_Societe=" & Societe.id_Societe & 
         End If
     End Sub
     Sub Refreshing()
+        If PrePaie.Modifie Then
+            If ShowMessageBox("Voulez-vous enregistrer avant de continuer? Sinon tous les éléments seront predus.", "Enregistrer", MessageBoxButtons.OKCancel, msgIcon.Warning) = DialogResult.OK Then
+                Saving()
+                Return
+            End If
+        End If
         If Cod_Preparation_Text.Text <> "" Then
-            If ShowMessageBox("Vous êtes entrain de réinitialiser votre préparation. Tous les éléments autres que variables seront supprimés." & vbCrLf & "Voulez-vous continuer?", "RéInitialisation", MessageBoxButtons.OKCancel, msgIcon.Warning) = DialogResult.Cancel Then Return
+            If ShowMessageBox("Vous êtes entrain de réinitialiser votre préparation. Tous les éléments autres que variables seront supprimés." & vbCrLf & "Voulez-vous continuer?", "Réinitialisation", MessageBoxButtons.OKCancel, msgIcon.Warning) = DialogResult.Cancel Then Return
             PrePaie.reinitialiserPreparation = True
         End If
         Cursor = Cursors.WaitCursor
@@ -603,6 +610,7 @@ from RH_Preparation_Paie_Detail where id_Societe =" & Societe.id_Societe & "
 group by Cod_Rubrique
 order by case when patindex('%;'+Cod_Rubrique+';%',@EE)=0 then 999999 else patindex('%;'+Cod_Rubrique+';%',@EE) end),'')").Fields(0).Value, ";").Split({";"}, StringSplitOptions.RemoveEmptyEntries)
         New_D.Enabled = False
+        modeChargementElement = True
         Request()
     End Sub
     Sub Initialisation()
@@ -1169,7 +1177,12 @@ order by case when patindex('%;'+Cod_Rubrique+';%',@EE)=0 then 999999 else patin
         HighLighter()
         AttendreProcess(False)
         New_D.Enabled = True
-        PrePaie.Modifie = False
+        If modeChargementElement Then
+            PrePaie.Modifie = True
+            modeChargementElement = False
+        Else
+            PrePaie.Modifie = False
+        End If
     End Sub
 
 

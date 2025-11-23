@@ -889,6 +889,12 @@
     <Compile Include="Organisation\Org_Poste.vb">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="Paiement\Zoom_Paiement_Add.designer.vb">
+      <DependentUpon>Zoom_Paiement_Add.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Paiement\Zoom_Paiement_Add.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Paie\Paramétrage paie\RH_Param_EV_Modules_Annexes.designer.vb">
       <DependentUpon>RH_Param_EV_Modules_Annexes.vb</DependentUpon>
     </Compile>
@@ -2085,6 +2091,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Organisation\Org_Poste.resx">
       <DependentUpon>Org_Poste.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Paiement\Zoom_Paiement_Add.resx">
+      <DependentUpon>Zoom_Paiement_Add.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Paie\Paramétrage paie\RH_Param_EV_Modules_Annexes.resx">
       <DependentUpon>RH_Param_EV_Modules_Annexes.vb</DependentUpon>

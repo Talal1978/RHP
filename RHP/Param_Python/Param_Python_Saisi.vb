@@ -101,6 +101,9 @@ Public Class Param_Python_Saisi
         Dim r, c As Integer
         r = Arguments_Grd.CurrentRow.Index
         c = Arguments_Grd.CurrentCell.ColumnIndex
+        If r < 0 Then Return
+        If c < 0 Then Return
+        If Arguments_Grd.RowCount = 0 Then Return
         If c <> Valeur.Index Or r < 0 Then Exit Sub
         Dim FonctionCritere As String = Arguments_Grd.Item(Fonction_Critere.Index, r).Value
         Dim oCell As DataGridViewTextBoxCell = TryCast(Arguments_Grd.Item(Valeur.Index, r), DataGridViewTextBoxCell)
@@ -116,15 +119,15 @@ Public Class Param_Python_Saisi
                 Tbl = DATA_READER_GRD(Cod_Sql)
                 With Tbl
                     If Tbl.Rows.Count > 0 Then
-                        If RTrim(LTrim(IsNull(.Rows(0).Item("Condition"), ""))) <> "" Then
+                        Dim str = RTrim(LTrim(IsNull(.Rows(0).Item("Condition"), "")))
+                        If str <> "" Then
                             Condition = IsNull(.Rows(0).Item("Condition"), "")
                             Dim Condition1 As String()
                             Condition1 = Split(Condition, "&")
                             Dim Longeur As Integer = UBound(Condition1)
                             Condition = ""
-
                             For i As Integer = 0 To Longeur
-                                If Condition1(i).Trim.ToUpper = "IDSOC" Then
+                                If Condition1(i).Trim.ToUpper.Contains("IDSOC") Then
                                     Condition1(i) = Societe.id_Societe
                                 Else
                                     For k = 0 To Arguments_Grd.RowCount - 1
@@ -136,7 +139,7 @@ Public Class Param_Python_Saisi
                                 Condition = RTrim(Condition.Trim("""")) & RTrim(LTrim(Condition1(i)).Trim(""""))
                             Next
                         End If
-                        Appel_Zoom(.Rows(0).Item("Champs_01"), .Rows(0).Item("Champs_02"), .Rows(0).Item("Table_Argument"), Condition, oCell, Me)
+                        Appel_Zoom(.Rows(0).Item("Champs_01"), .Rows(0).Item("Champs_02"), .Rows(0).Item("Table_Critere"), Condition, oCell, Me)
                     End If
                 End With
             Case "Combo"

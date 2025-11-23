@@ -196,7 +196,7 @@ Module Module_General
                 .ReadOnly = True
                 .EnableHeadersVisualStyles = False
                 ' .SelectionMode = DataGridViewSelectionMode.FullRowSelect
-                Dim c As Integer = DTR.Columns.Count - 1
+                Dim c As Integer = DTR?.Columns.Count - 1
                 For i = 0 To c
                     If TblAccess.Select("[Name_Ecran]='" & grd.FindForm.Name & "' and [Name_Controle]='" & .Columns(i).Name & "' and [Typ_Controle]='DataGridColumn' and [Visible]='false'").Length > 0 Then
                         .Columns(i).Visible = False

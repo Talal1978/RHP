@@ -18,7 +18,12 @@
     End Sub
     Private Sub Cod_Preparation__LinkClicked(sender As Object, e As LinkLabelLinkClickedEventArgs) Handles Cod_Preparation_.LinkClicked
         If Cod_Paiement_txt.Text <> "" Then Return
-        Appel_Zoom1("MS013", Cod_Preparation_Text, Me, "Cod_Plan_Paie='" & Cod_Plan_Paie_Text.Text & "'")
+        Dim f As New Zoom_Paiement_Add
+        With f
+            .f_Paiement = Me
+            .PreparationVsAvance = "P"
+            newShowEcran(f, True)
+        End With
     End Sub
     Private Sub LinkLabel2_LinkClicked(sender As Object, e As LinkLabelLinkClickedEventArgs) Handles LinkLabel2.LinkClicked
         Appel_Zoom1("MS055", Cod_Caisse_Bank_Text, Me)
@@ -70,7 +75,7 @@
                 Traite_Check.Checked = False
                 Cloture_D.Enabled = True
                 R_Paie.Checked = True
-                R_Avance.Checked = True
+                R_Avance.Checked = False
                 Cpt_Bnk_chk.Checked = True
             End If
         End With
@@ -122,10 +127,11 @@
     Sub RequestDetail()
         GRD("exec Sys_Paiement '" & Cod_Preparation_Text.Text & "','" & Num_List_Avance_txt.Text & "','" & Mod_Paiement.SelectedValue & "'," & Societe.id_Societe, Grd_Paiement)
         With Grd_Paiement
+            If .DataSource Is Nothing Then Return
             Dim ind(.DisplayedColumnCount(False) - 1) As Integer
             Dim nb As Integer = 0
             .ReadOnly = False
-            CType(.DataSource, DataTable).Columns("Montant à payer").ReadOnly = False
+            CType(?.DataSource, DataTable).Columns("Montant à payer").ReadOnly = False
             .RowHeadersVisible = True
             For i = 0 To .DisplayedColumnCount(False) - 1
                 ind(0) = .Columns(i).Index
@@ -150,7 +156,12 @@
 
     Private Sub LinkLabel3_LinkClicked(sender As Object, e As LinkLabelLinkClickedEventArgs) Handles LinkLabel3.LinkClicked
         If Cod_Paiement_txt.Text <> "" Then Return
-        Appel_Zoom1("MS146", Num_List_Avance_txt, Me, "Cod_Plan_Paie='" & Cod_Plan_Paie_Text.Text & "'")
+        Dim f As New Zoom_Paiement_Add
+        With f
+            .f_Paiement = Me
+            .PreparationVsAvance = "A"
+            newShowEcran(f, True)
+        End With
     End Sub
     Private Sub Num_List_Avance_txt_TextChanged(sender As Object, e As EventArgs) Handles Num_List_Avance_txt.TextChanged
         R_Avance.Checked = (Num_List_Avance_txt.Text <> "")

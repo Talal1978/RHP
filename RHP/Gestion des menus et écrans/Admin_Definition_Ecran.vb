@@ -116,6 +116,19 @@
                     Grd_Report.Rows.Add(C1, C2, C3)
                 Next
             End With
+            SqlStr = "select Cod_Traitement,(select Traitement from Sys_Def_Ecran_Traitements_Specifiques where Code=r.Cod_Traitement) as Traitement, isnull(Typ_Traitement,'QRY') Typ_Traitement, Relation 
+                        from Controle_Def_Ecran_Traitements_Specifiques r where Name_Ecran='" & Name_Ecran_Text.Text & "'
+order by Rang"
+            Tbl = DATA_READER_GRD(SqlStr)
+            With Tbl
+                For i = 0 To .Rows.Count - 1
+                    C1 = IsNull(.Rows(i).Item("Cod_Traitement"), "")
+                    C2 = IsNull(.Rows(i).Item("Traitement"), "")
+                    C3 = IsNull(.Rows(i).Item("Typ_Traitement"), "")
+                    Dim C4 = IsNull(.Rows(i).Item("Relation"), "")
+                    Grille_Traitements.Rows.Add(C1, C2, C3, C4)
+                Next
+            End With
             RequestLabels()
         Catch ex As Exception
             ErrorMsg(ex)
@@ -186,7 +199,22 @@
                 Next
             End With
             rs.Close()
-
+            CnExecuting("delete from Controle_Def_Ecran_Traitements_Specifiques where Name_Ecran='" & Name_Ecran_Text.Text & "'")
+            rs.Open("select * from Controle_Def_Ecran_Traitements_Specifiques", cn, 2, 2)
+            With Grille_Traitements
+                For i = 0 To .RowCount - 1
+                    If IsNull(.Item(Cod_Traitement.Index, i).Value, "") <> "" Then
+                        rs.AddNew()
+                        rs("Name_Ecran").Value = Name_Ecran_Text.Text
+                        rs("Cod_Traitement").Value = .Item(Cod_Traitement.Index, i).Value
+                        rs("Typ_Traitement").Value = .Item(Typ_Traitement.Index, i).Value
+                        rs("Relation").Value = .Item(Relation.Index, i).Value
+                        rs("Rang").Value = Droite("0000" & i, 4)
+                        rs.Update()
+                    End If
+                Next
+            End With
+            rs.Close()
             Tbl_Controle_Def_Ecran = DATA_READER_GRD("select convert(bit,ContientSociete) as ContientSociete,Name_Ecran, Index_Ecran, Table_Ref, 
 Index_Table, Num_Zoom,isnull(Modal,'false') as Modal, isnull(PJ,'false') as PJ, isnull(Info,'false') as Info
 from Controle_Def_Ecran d
@@ -396,5 +424,31 @@ outer apply (select count(name) as ContientSociete from sys.columns where object
         Catch ex As Exception
             ErrorMsg(ex)
         End Try
+    End Sub
+
+    Private Sub Grille_Traitements_CellMouseMove(sender As Object, e As DataGridViewCellMouseEventArgs) Handles Grille_Traitements.CellMouseMove
+        If e.RowIndex < 0 Then Return
+        Grille_Traitements.Cursor = If(e.ColumnIndex = Cod_Traitement.Index, Cursors.Hand, Cursors.Default)
+
+    End Sub
+
+    Private Sub Grille_Traitements_CellMouseDoubleClick(sender As Object, e As DataGridViewCellMouseEventArgs) Handles Grille_Traitements.CellMouseDoubleClick
+        Dim r As Integer = e.RowIndex
+        With Grille_Traitements
+            If e.RowIndex = .RowCount - 1 Then
+                .Rows.Add("")
+            End If
+            If e.ColumnIndex = Cod_Traitement.Index Then
+                Appel_Zoom1("MS170", .Item(e.ColumnIndex, r), Me)
+                .Item(Lib_Traitement.Index, r).Value = FindLibelle("Traitement", "Code", .Item(e.ColumnIndex, r).Value, "Sys_Def_Ecran_Traitements_Specifiques")
+                .Item(Typ_Traitement.Index, r).Value = IsNull(FindLibelle("Type", "Code", .Item(e.ColumnIndex, r).Value, "Sys_Def_Ecran_Traitements_Specifiques"), "QRY")
+                Dim sqlCriteria As String = "select string_agg(Critere+':='+isnull(Default_Value,''),';')  WITHIN GROUP (ORDER BY Rang) AS   Crt from Param_Query_Criteres where Cod_Query='" & .Item(e.ColumnIndex, r).Value & "'"
+                If .Item(Typ_Traitement.Index, r).Value = "PYT" Then
+                    sqlCriteria = "select string_agg(isnull(Argument,'')+':='+isnull(Default_Value,''),';')  WITHIN GROUP (ORDER BY Rang) AS   Crt from Param_Python_Arguments where Cod_Python='" & .Item(e.ColumnIndex, r).Value & "'"
+                End If
+                Dim crt As String = CnExecuting(sqlCriteria).Fields(0).Value
+                .Item(Relation.Index, r).Value = IsNull(crt, "")
+            End If
+        End With
     End Sub
 End Class

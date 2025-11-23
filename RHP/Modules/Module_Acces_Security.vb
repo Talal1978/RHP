@@ -12,13 +12,29 @@
     Sub Affectation(ByVal f As Form, ByVal NameControle As String, ByVal oValeur As String)
         Select Case True
             Case f.GetType Is GetType(Param_Query_Saisi)
-                Dim oGrd As ud_Grd = TryCast(f, Param_Query_Saisi).Criteres_Grd
-                For i = 0 To oGrd.RowCount - 1
-                    If IsNull(oGrd.Item(TryCast(f, Param_Query_Saisi).Critere.Index, i).Value, "").ToUpper.Trim = NameControle.ToUpper.Trim Then
-                        oGrd.Item(TryCast(f, Param_Query_Saisi).Valeur.Index, i).Value = oValeur
-                        Exit Sub
-                    End If
-                Next
+                Dim qryFrm As Param_Query_Saisi = TryCast(f, Param_Query_Saisi)
+                With qryFrm
+                    Dim oGrd As ud_Grd = .Criteres_Grd
+                    For i = 0 To oGrd.RowCount - 1
+                        If IsNull(oGrd.Item(.Critere.Index, i).Value, "").ToUpper.Trim = NameControle.ToUpper.Trim Then
+                            oGrd.Item(.Valeur.Index, i).Value = oValeur
+                            Exit Sub
+                        End If
+                    Next
+                End With
+
+            Case f.GetType Is GetType(Param_Python_Saisi)
+                Dim pytFrm As Param_Python_Saisi = TryCast(f, Param_Python_Saisi)
+                With pytFrm
+                    Dim oGrd As ud_Grd = .Arguments_Grd
+                    For i = 0 To oGrd.RowCount - 1
+                        If IsNull(oGrd.Item(.Argument.Index, i).Value, "").ToUpper.Trim = NameControle.ToUpper.Trim Then
+                            oGrd.Item(.Valeur.Index, i).Value = oValeur
+                            Exit Sub
+                        End If
+                    Next
+                End With
+
             Case Else
                 Dim c As Object = GetControlByName(NameControle, f)
                 If c IsNot Nothing Then

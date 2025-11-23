@@ -26,7 +26,6 @@ Partial Class RH_Paiement
         Dim DataGridViewCellStyle1 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
         Dim DataGridViewCellStyle2 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
         Dim DataGridViewCellStyle3 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
-        Dim DataGridViewCellStyle4 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
         Me.Traite_Check = New RHP.ud_CheckBox()
         Me.EntPnl = New System.Windows.Forms.Panel()
         Me.Cpt_Bnk_chk = New RHP.ud_CheckBox()
@@ -107,7 +106,7 @@ Partial Class RH_Paiement
         Me.EntPnl.Location = New System.Drawing.Point(0, 0)
         Me.EntPnl.Margin = New System.Windows.Forms.Padding(5, 6, 5, 6)
         Me.EntPnl.Name = "EntPnl"
-        Me.EntPnl.Size = New System.Drawing.Size(1171, 236)
+        Me.EntPnl.Size = New System.Drawing.Size(1171, 279)
         Me.EntPnl.TabIndex = 210
         '
         'Cpt_Bnk_chk
@@ -130,11 +129,11 @@ Partial Class RH_Paiement
         Me.GroupBox2.Controls.Add(Me.Filtre_chk)
         Me.GroupBox2.Controls.Add(Me.GroupBox4)
         Me.GroupBox2.Controls.Add(Me.GroupBox3)
-        Me.GroupBox2.Location = New System.Drawing.Point(452, 106)
-        Me.GroupBox2.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
+        Me.GroupBox2.Location = New System.Drawing.Point(612, 110)
+        Me.GroupBox2.Margin = New System.Windows.Forms.Padding(4)
         Me.GroupBox2.Name = "GroupBox2"
-        Me.GroupBox2.Padding = New System.Windows.Forms.Padding(4, 4, 4, 4)
-        Me.GroupBox2.Size = New System.Drawing.Size(570, 122)
+        Me.GroupBox2.Padding = New System.Windows.Forms.Padding(4)
+        Me.GroupBox2.Size = New System.Drawing.Size(409, 165)
         Me.GroupBox2.TabIndex = 247
         Me.GroupBox2.TabStop = False
         Me.GroupBox2.Text = "Filtre rapide"
@@ -145,7 +144,7 @@ Partial Class RH_Paiement
         Me.Filtre_chk.BackColor = System.Drawing.Color.Transparent
         Me.Filtre_chk.Checked = True
         Me.Filtre_chk.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        Me.Filtre_chk.Location = New System.Drawing.Point(415, 35)
+        Me.Filtre_chk.Location = New System.Drawing.Point(23, 115)
         Me.Filtre_chk.Margin = New System.Windows.Forms.Padding(5, 6, 5, 6)
         Me.Filtre_chk.MaximumSize = New System.Drawing.Size(0, 31)
         Me.Filtre_chk.MinimumSize = New System.Drawing.Size(146, 31)
@@ -159,9 +158,9 @@ Partial Class RH_Paiement
         Me.GroupBox4.Controls.Add(Me.R_BNK1)
         Me.GroupBox4.Controls.Add(Me.R_BNK0)
         Me.GroupBox4.Location = New System.Drawing.Point(202, 15)
-        Me.GroupBox4.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
+        Me.GroupBox4.Margin = New System.Windows.Forms.Padding(4)
         Me.GroupBox4.Name = "GroupBox4"
-        Me.GroupBox4.Padding = New System.Windows.Forms.Padding(4, 4, 4, 4)
+        Me.GroupBox4.Padding = New System.Windows.Forms.Padding(4)
         Me.GroupBox4.Size = New System.Drawing.Size(202, 95)
         Me.GroupBox4.TabIndex = 9
         Me.GroupBox4.TabStop = False
@@ -171,7 +170,7 @@ Partial Class RH_Paiement
         Me.R_BNK1.AutoSize = True
         Me.R_BNK1.Checked = False
         Me.R_BNK1.Location = New System.Drawing.Point(8, 15)
-        Me.R_BNK1.Margin = New System.Windows.Forms.Padding(5, 5, 5, 5)
+        Me.R_BNK1.Margin = New System.Windows.Forms.Padding(5)
         Me.R_BNK1.MaximumSize = New System.Drawing.Size(0, 31)
         Me.R_BNK1.MinimumSize = New System.Drawing.Size(0, 31)
         Me.R_BNK1.Name = "R_BNK1"
@@ -184,7 +183,7 @@ Partial Class RH_Paiement
         Me.R_BNK0.AutoSize = True
         Me.R_BNK0.Checked = False
         Me.R_BNK0.Location = New System.Drawing.Point(8, 52)
-        Me.R_BNK0.Margin = New System.Windows.Forms.Padding(5, 5, 5, 5)
+        Me.R_BNK0.Margin = New System.Windows.Forms.Padding(5)
         Me.R_BNK0.MaximumSize = New System.Drawing.Size(0, 31)
         Me.R_BNK0.MinimumSize = New System.Drawing.Size(0, 31)
         Me.R_BNK0.Name = "R_BNK0"
@@ -197,9 +196,9 @@ Partial Class RH_Paiement
         Me.GroupBox3.Controls.Add(Me.R_RIB1)
         Me.GroupBox3.Controls.Add(Me.R_RIB0)
         Me.GroupBox3.Location = New System.Drawing.Point(22, 15)
-        Me.GroupBox3.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
+        Me.GroupBox3.Margin = New System.Windows.Forms.Padding(4)
         Me.GroupBox3.Name = "GroupBox3"
-        Me.GroupBox3.Padding = New System.Windows.Forms.Padding(4, 4, 4, 4)
+        Me.GroupBox3.Padding = New System.Windows.Forms.Padding(4)
         Me.GroupBox3.Size = New System.Drawing.Size(174, 95)
         Me.GroupBox3.TabIndex = 9
         Me.GroupBox3.TabStop = False
@@ -209,7 +208,7 @@ Partial Class RH_Paiement
         Me.R_RIB1.AutoSize = True
         Me.R_RIB1.Checked = False
         Me.R_RIB1.Location = New System.Drawing.Point(8, 15)
-        Me.R_RIB1.Margin = New System.Windows.Forms.Padding(5, 5, 5, 5)
+        Me.R_RIB1.Margin = New System.Windows.Forms.Padding(5)
         Me.R_RIB1.MaximumSize = New System.Drawing.Size(0, 31)
         Me.R_RIB1.MinimumSize = New System.Drawing.Size(0, 31)
         Me.R_RIB1.Name = "R_RIB1"
@@ -222,7 +221,7 @@ Partial Class RH_Paiement
         Me.R_RIB0.AutoSize = True
         Me.R_RIB0.Checked = False
         Me.R_RIB0.Location = New System.Drawing.Point(8, 52)
-        Me.R_RIB0.Margin = New System.Windows.Forms.Padding(5, 5, 5, 5)
+        Me.R_RIB0.Margin = New System.Windows.Forms.Padding(5)
         Me.R_RIB0.MaximumSize = New System.Drawing.Size(0, 31)
         Me.R_RIB0.MinimumSize = New System.Drawing.Size(0, 31)
         Me.R_RIB0.Name = "R_RIB0"
@@ -234,7 +233,7 @@ Partial Class RH_Paiement
         '
         Me.Dat_Paiement.Format = System.Windows.Forms.DateTimePickerFormat.[Short]
         Me.Dat_Paiement.Location = New System.Drawing.Point(895, 49)
-        Me.Dat_Paiement.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
+        Me.Dat_Paiement.Margin = New System.Windows.Forms.Padding(4)
         Me.Dat_Paiement.Name = "Dat_Paiement"
         Me.Dat_Paiement.Size = New System.Drawing.Size(125, 24)
         Me.Dat_Paiement.TabIndex = 5
@@ -260,10 +259,10 @@ Partial Class RH_Paiement
         Me.GroupBox1.Controls.Add(Me.Cod_Preparation_Text)
         Me.GroupBox1.Controls.Add(Me.Cod_Preparation_)
         Me.GroupBox1.Location = New System.Drawing.Point(15, 106)
-        Me.GroupBox1.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
+        Me.GroupBox1.Margin = New System.Windows.Forms.Padding(4)
         Me.GroupBox1.Name = "GroupBox1"
-        Me.GroupBox1.Padding = New System.Windows.Forms.Padding(4, 4, 4, 4)
-        Me.GroupBox1.Size = New System.Drawing.Size(430, 122)
+        Me.GroupBox1.Padding = New System.Windows.Forms.Padding(4)
+        Me.GroupBox1.Size = New System.Drawing.Size(589, 165)
         Me.GroupBox1.TabIndex = 245
         Me.GroupBox1.TabStop = False
         Me.GroupBox1.Text = "Nature"
@@ -272,12 +271,12 @@ Partial Class RH_Paiement
         '
         Me.R_Avance.AutoSize = True
         Me.R_Avance.Checked = False
-        Me.R_Avance.Location = New System.Drawing.Point(5, 68)
-        Me.R_Avance.Margin = New System.Windows.Forms.Padding(5, 5, 5, 5)
-        Me.R_Avance.MaximumSize = New System.Drawing.Size(0, 31)
+        Me.R_Avance.Location = New System.Drawing.Point(5, 101)
+        Me.R_Avance.Margin = New System.Windows.Forms.Padding(5)
+        Me.R_Avance.MaximumSize = New System.Drawing.Size(100, 31)
         Me.R_Avance.MinimumSize = New System.Drawing.Size(0, 31)
         Me.R_Avance.Name = "R_Avance"
-        Me.R_Avance.Size = New System.Drawing.Size(142, 31)
+        Me.R_Avance.Size = New System.Drawing.Size(100, 31)
         Me.R_Avance.TabIndex = 8
         Me.R_Avance.Text = "Avance"
         '
@@ -285,12 +284,12 @@ Partial Class RH_Paiement
         '
         Me.R_Paie.AutoSize = True
         Me.R_Paie.Checked = False
-        Me.R_Paie.Location = New System.Drawing.Point(5, 30)
-        Me.R_Paie.Margin = New System.Windows.Forms.Padding(5, 5, 5, 5)
-        Me.R_Paie.MaximumSize = New System.Drawing.Size(0, 31)
+        Me.R_Paie.Location = New System.Drawing.Point(5, 34)
+        Me.R_Paie.Margin = New System.Windows.Forms.Padding(5)
+        Me.R_Paie.MaximumSize = New System.Drawing.Size(100, 31)
         Me.R_Paie.MinimumSize = New System.Drawing.Size(0, 31)
         Me.R_Paie.Name = "R_Paie"
-        Me.R_Paie.Size = New System.Drawing.Size(142, 31)
+        Me.R_Paie.Size = New System.Drawing.Size(100, 31)
         Me.R_Paie.TabIndex = 7
         Me.R_Paie.Text = "Paie"
         '
@@ -300,17 +299,17 @@ Partial Class RH_Paiement
         Me.Num_List_Avance_txt.CharacterCasing = System.Windows.Forms.CharacterCasing.Normal
         Me.Num_List_Avance_txt.ContextMenuStrip = Nothing
         Me.Num_List_Avance_txt.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        Me.Num_List_Avance_txt.Location = New System.Drawing.Point(264, 66)
+        Me.Num_List_Avance_txt.Location = New System.Drawing.Point(221, 106)
         Me.Num_List_Avance_txt.Margin = New System.Windows.Forms.Padding(5, 6, 5, 6)
         Me.Num_List_Avance_txt.MaxLength = 32767
-        Me.Num_List_Avance_txt.Multiline = False
+        Me.Num_List_Avance_txt.Multiline = True
         Me.Num_List_Avance_txt.Name = "Num_List_Avance_txt"
         Me.Num_List_Avance_txt.Padding = New System.Windows.Forms.Padding(1, 0, 1, 0)
         Me.Num_List_Avance_txt.PasswordChar = "" & Global.Microsoft.VisualBasic.ChrW(0)
         Me.Num_List_Avance_txt.ReadOnly = True
         Me.Num_List_Avance_txt.ScrollBars = System.Windows.Forms.ScrollBars.None
         Me.Num_List_Avance_txt.SelectionStart = 0
-        Me.Num_List_Avance_txt.Size = New System.Drawing.Size(158, 26)
+        Me.Num_List_Avance_txt.Size = New System.Drawing.Size(359, 49)
         Me.Num_List_Avance_txt.TabIndex = 10
         Me.Num_List_Avance_txt.TabStop = False
         Me.Num_List_Avance_txt.TextAlign = System.Windows.Forms.HorizontalAlignment.Left
@@ -321,7 +320,7 @@ Partial Class RH_Paiement
         Me.LinkLabel3.AutoSize = True
         Me.LinkLabel3.Font = New System.Drawing.Font("Century Gothic", 8.25!)
         Me.LinkLabel3.LinkColor = System.Drawing.Color.Black
-        Me.LinkLabel3.Location = New System.Drawing.Point(195, 69)
+        Me.LinkLabel3.Location = New System.Drawing.Point(155, 110)
         Me.LinkLabel3.Margin = New System.Windows.Forms.Padding(5, 0, 5, 0)
         Me.LinkLabel3.Name = "LinkLabel3"
         Me.LinkLabel3.Size = New System.Drawing.Size(63, 19)
@@ -336,17 +335,17 @@ Partial Class RH_Paiement
         Me.Cod_Preparation_Text.CharacterCasing = System.Windows.Forms.CharacterCasing.Normal
         Me.Cod_Preparation_Text.ContextMenuStrip = Nothing
         Me.Cod_Preparation_Text.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        Me.Cod_Preparation_Text.Location = New System.Drawing.Point(264, 31)
+        Me.Cod_Preparation_Text.Location = New System.Drawing.Point(221, 34)
         Me.Cod_Preparation_Text.Margin = New System.Windows.Forms.Padding(5, 6, 5, 6)
         Me.Cod_Preparation_Text.MaxLength = 32767
-        Me.Cod_Preparation_Text.Multiline = False
+        Me.Cod_Preparation_Text.Multiline = True
         Me.Cod_Preparation_Text.Name = "Cod_Preparation_Text"
         Me.Cod_Preparation_Text.Padding = New System.Windows.Forms.Padding(1, 0, 1, 0)
         Me.Cod_Preparation_Text.PasswordChar = "" & Global.Microsoft.VisualBasic.ChrW(0)
         Me.Cod_Preparation_Text.ReadOnly = True
         Me.Cod_Preparation_Text.ScrollBars = System.Windows.Forms.ScrollBars.None
         Me.Cod_Preparation_Text.SelectionStart = 0
-        Me.Cod_Preparation_Text.Size = New System.Drawing.Size(158, 26)
+        Me.Cod_Preparation_Text.Size = New System.Drawing.Size(359, 53)
         Me.Cod_Preparation_Text.TabIndex = 9
         Me.Cod_Preparation_Text.TabStop = False
         Me.Cod_Preparation_Text.TextAlign = System.Windows.Forms.HorizontalAlignment.Left
@@ -357,7 +356,7 @@ Partial Class RH_Paiement
         Me.Cod_Preparation_.AutoSize = True
         Me.Cod_Preparation_.Font = New System.Drawing.Font("Century Gothic", 8.25!)
         Me.Cod_Preparation_.LinkColor = System.Drawing.Color.Black
-        Me.Cod_Preparation_.Location = New System.Drawing.Point(170, 35)
+        Me.Cod_Preparation_.Location = New System.Drawing.Point(128, 38)
         Me.Cod_Preparation_.Margin = New System.Windows.Forms.Padding(5, 0, 5, 0)
         Me.Cod_Preparation_.Name = "Cod_Preparation_"
         Me.Cod_Preparation_.Size = New System.Drawing.Size(90, 19)
@@ -372,7 +371,7 @@ Partial Class RH_Paiement
         Me.Mod_Paiement.DisplayMember = ""
         Me.Mod_Paiement.DroppedDown = False
         Me.Mod_Paiement.Location = New System.Drawing.Point(602, 50)
-        Me.Mod_Paiement.Margin = New System.Windows.Forms.Padding(5, 5, 5, 5)
+        Me.Mod_Paiement.Margin = New System.Windows.Forms.Padding(5)
         Me.Mod_Paiement.Name = "Mod_Paiement"
         Me.Mod_Paiement.SelectedIndex = -1
         Me.Mod_Paiement.SelectedItem = Nothing
@@ -408,7 +407,7 @@ Partial Class RH_Paiement
         Me.Bank_txt.CharacterCasing = System.Windows.Forms.CharacterCasing.Upper
         Me.Bank_txt.ContextMenuStrip = Nothing
         Me.Bank_txt.Location = New System.Drawing.Point(424, 52)
-        Me.Bank_txt.Margin = New System.Windows.Forms.Padding(5, 5, 5, 5)
+        Me.Bank_txt.Margin = New System.Windows.Forms.Padding(5)
         Me.Bank_txt.MaxLength = 49
         Me.Bank_txt.Multiline = False
         Me.Bank_txt.Name = "Bank_txt"
@@ -428,7 +427,7 @@ Partial Class RH_Paiement
         Me.Cod_Caisse_Bank_Text.CharacterCasing = System.Windows.Forms.CharacterCasing.Upper
         Me.Cod_Caisse_Bank_Text.ContextMenuStrip = Nothing
         Me.Cod_Caisse_Bank_Text.Location = New System.Drawing.Point(174, 50)
-        Me.Cod_Caisse_Bank_Text.Margin = New System.Windows.Forms.Padding(5, 5, 5, 5)
+        Me.Cod_Caisse_Bank_Text.Margin = New System.Windows.Forms.Padding(5)
         Me.Cod_Caisse_Bank_Text.MaxLength = 49
         Me.Cod_Caisse_Bank_Text.Multiline = False
         Me.Cod_Caisse_Bank_Text.Name = "Cod_Caisse_Bank_Text"
@@ -545,44 +544,42 @@ Partial Class RH_Paiement
         '
         Me.Grd_Paiement.AfficherLesEntetesLignes = True
         Me.Grd_Paiement.AllowUserToAddRows = False
-        DataGridViewCellStyle1.BackColor = System.Drawing.Color.FromArgb(CType(CType(219, Byte), Integer), CType(CType(235, Byte), Integer), CType(CType(240, Byte), Integer))
-        Me.Grd_Paiement.AlternatingRowsDefaultCellStyle = DataGridViewCellStyle1
         Me.Grd_Paiement.AlternerLesLignes = False
         Me.Grd_Paiement.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.AllCells
         Me.Grd_Paiement.BackgroundColor = System.Drawing.Color.FromArgb(CType(CType(250, Byte), Integer), CType(CType(250, Byte), Integer), CType(CType(250, Byte), Integer))
         Me.Grd_Paiement.BorderStyle = System.Windows.Forms.BorderStyle.None
         Me.Grd_Paiement.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.[Single]
-        DataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter
-        DataGridViewCellStyle2.BackColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
-        DataGridViewCellStyle2.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        DataGridViewCellStyle2.ForeColor = System.Drawing.Color.White
-        DataGridViewCellStyle2.Padding = New System.Windows.Forms.Padding(5)
-        DataGridViewCellStyle2.SelectionBackColor = System.Drawing.Color.White
-        DataGridViewCellStyle2.SelectionForeColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
-        DataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.[True]
-        Me.Grd_Paiement.ColumnHeadersDefaultCellStyle = DataGridViewCellStyle2
+        DataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter
+        DataGridViewCellStyle1.BackColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
+        DataGridViewCellStyle1.Font = New System.Drawing.Font("Century Gothic", 8.25!)
+        DataGridViewCellStyle1.ForeColor = System.Drawing.Color.White
+        DataGridViewCellStyle1.Padding = New System.Windows.Forms.Padding(5)
+        DataGridViewCellStyle1.SelectionBackColor = System.Drawing.Color.White
+        DataGridViewCellStyle1.SelectionForeColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
+        DataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.[True]
+        Me.Grd_Paiement.ColumnHeadersDefaultCellStyle = DataGridViewCellStyle1
         Me.Grd_Paiement.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize
-        DataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft
-        DataGridViewCellStyle3.BackColor = System.Drawing.SystemColors.Window
-        DataGridViewCellStyle3.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        DataGridViewCellStyle3.ForeColor = System.Drawing.SystemColors.ControlText
-        DataGridViewCellStyle3.SelectionBackColor = System.Drawing.Color.FromArgb(CType(CType(94, Byte), Integer), CType(CType(185, Byte), Integer), CType(CType(117, Byte), Integer))
-        DataGridViewCellStyle3.SelectionForeColor = System.Drawing.SystemColors.HighlightText
-        DataGridViewCellStyle3.WrapMode = System.Windows.Forms.DataGridViewTriState.[False]
-        Me.Grd_Paiement.DefaultCellStyle = DataGridViewCellStyle3
+        DataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft
+        DataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window
+        DataGridViewCellStyle2.Font = New System.Drawing.Font("Century Gothic", 8.25!)
+        DataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.ControlText
+        DataGridViewCellStyle2.SelectionBackColor = System.Drawing.Color.FromArgb(CType(CType(94, Byte), Integer), CType(CType(185, Byte), Integer), CType(CType(117, Byte), Integer))
+        DataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText
+        DataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.[False]
+        Me.Grd_Paiement.DefaultCellStyle = DataGridViewCellStyle2
         Me.Grd_Paiement.Dock = System.Windows.Forms.DockStyle.Fill
         Me.Grd_Paiement.EnableHeadersVisualStyles = False
         Me.Grd_Paiement.GridColor = System.Drawing.Color.FromArgb(CType(CType(208, Byte), Integer), CType(CType(215, Byte), Integer), CType(CType(229, Byte), Integer))
-        Me.Grd_Paiement.Location = New System.Drawing.Point(0, 236)
-        Me.Grd_Paiement.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
+        Me.Grd_Paiement.Location = New System.Drawing.Point(0, 279)
+        Me.Grd_Paiement.Margin = New System.Windows.Forms.Padding(4)
         Me.Grd_Paiement.Name = "Grd_Paiement"
         Me.Grd_Paiement.RowHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.[Single]
-        DataGridViewCellStyle4.BackColor = System.Drawing.Color.FromArgb(CType(CType(169, Byte), Integer), CType(CType(210, Byte), Integer), CType(CType(224, Byte), Integer))
-        DataGridViewCellStyle4.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        Me.Grd_Paiement.RowHeadersDefaultCellStyle = DataGridViewCellStyle4
+        DataGridViewCellStyle3.BackColor = System.Drawing.Color.FromArgb(CType(CType(169, Byte), Integer), CType(CType(210, Byte), Integer), CType(CType(224, Byte), Integer))
+        DataGridViewCellStyle3.Font = New System.Drawing.Font("Century Gothic", 8.25!)
+        Me.Grd_Paiement.RowHeadersDefaultCellStyle = DataGridViewCellStyle3
         Me.Grd_Paiement.RowHeadersWidth = 51
         Me.Grd_Paiement.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.CellSelect
-        Me.Grd_Paiement.Size = New System.Drawing.Size(1171, 700)
+        Me.Grd_Paiement.Size = New System.Drawing.Size(1171, 657)
         Me.Grd_Paiement.TabIndex = 225
         '
         'RH_Paiement
