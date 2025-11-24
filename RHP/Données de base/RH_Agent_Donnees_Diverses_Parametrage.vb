@@ -54,7 +54,7 @@
                     rs1("Text_Donnee").Value = .Item(Text_Donnee.Index, i).Value
                     rs1("Typ_Donnee").Value = .Item(Typ_Donnee.Index, i).Value
                     rs1("Menu_Donnee").Value = .Item(Menu_Donnee.Index, i).Value
-                    rs1("Variable_Paie").Value = .Item(Variable_Paie.Index, i).Value
+                    rs1("Variable_Paie").Value = IsNull(.Item(Variable_Paie.Index, i).Value, False)
                     rs1("Rang").Value = .Item(Rang.Index, i).Value
                     rs1.Update()
                     rs1.Close()

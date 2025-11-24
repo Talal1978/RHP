@@ -202,7 +202,7 @@ Public Class Param_Python_Saisi
                             codeText = .Item(Argument.Index, i).Value & " = datetime.date(" & CDate(val).Year & ", " & CDate(val).Month & ", " & CDate(val).Day & ")" & vbCrLf & codeText
                         Case Else
                             val = val.Replace("\\", "\")
-                            val = val.Replace("\", "\\")
+                            val = val.Replace("\", "/")
                             codeText = CStr(.Item(Argument.Index, i).Value).ToUpper & " = """ & val & """" & vbCrLf & codeText
                     End Select
                 Next

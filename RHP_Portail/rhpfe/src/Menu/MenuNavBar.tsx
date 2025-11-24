@@ -10,11 +10,12 @@ import { PersonOutlineOutlined, Notifications } from "@mui/icons-material";
 import { cntX } from "./MenuMain";
 import { Avatar, Typography } from "@mui/material";
 import MenuProfile from "./MenuProfile";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import "./mainmenu.scss";
 import { socket } from "../socket";
 
 export default function MenuNavBar() {
+  const navigate = useNavigate();
   const [nbSignature, setNbsignature] = useState(0);
   const { isOpen, setIsOpen } = useContext(cntX);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -74,6 +75,9 @@ export default function MenuNavBar() {
             alt="Remy Sharp"
             src={`${process.env.PUBLIC_URL}/logoRHPBlanc.png`}
             sx={{ ml: 2 }}
+            onClick={(event: React.MouseEvent<HTMLElement>) => {
+              navigate("test")
+            }}
           />
         </Toolbar>
       </AppBar>

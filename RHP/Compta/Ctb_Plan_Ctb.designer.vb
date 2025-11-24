@@ -37,6 +37,10 @@ Partial Class Ctb_Plan_Ctb
         Me.GroupBox1 = New System.Windows.Forms.GroupBox()
         Me.Label7 = New System.Windows.Forms.Label()
         Me.Nat_Cpt_Combo = New RHP.ud_ComboBox()
+        Me.Cpt_Eco_txt = New RHP.ud_TextBox()
+        Me.Label2 = New System.Windows.Forms.Label()
+        Me.Cpt_Budget_txt = New RHP.ud_TextBox()
+        Me.Label5 = New System.Windows.Forms.Label()
         Me.GroupBox1.SuspendLayout()
         Me.SuspendLayout()
         '
@@ -135,7 +139,7 @@ Partial Class Ctb_Plan_Ctb
         Me.Cpt_Red_Text.AccessibleDescription = ""
         Me.Cpt_Red_Text.CharacterCasing = System.Windows.Forms.CharacterCasing.Normal
         Me.Cpt_Red_Text.ContextMenuStrip = Nothing
-        Me.Cpt_Red_Text.Location = New System.Drawing.Point(184, 201)
+        Me.Cpt_Red_Text.Location = New System.Drawing.Point(184, 204)
         Me.Cpt_Red_Text.Margin = New System.Windows.Forms.Padding(3, 4, 3, 4)
         Me.Cpt_Red_Text.MaxLength = 5
         Me.Cpt_Red_Text.Multiline = False
@@ -153,7 +157,7 @@ Partial Class Ctb_Plan_Ctb
         'Cpt_Redlink
         '
         Me.Cpt_Redlink.AutoSize = True
-        Me.Cpt_Redlink.Location = New System.Drawing.Point(57, 203)
+        Me.Cpt_Redlink.Location = New System.Drawing.Point(65, 202)
         Me.Cpt_Redlink.Name = "Cpt_Redlink"
         Me.Cpt_Redlink.Size = New System.Drawing.Size(115, 19)
         Me.Cpt_Redlink.TabIndex = 57
@@ -163,7 +167,7 @@ Partial Class Ctb_Plan_Ctb
         'Label3
         '
         Me.Label3.AutoSize = True
-        Me.Label3.Location = New System.Drawing.Point(71, 233)
+        Me.Label3.Location = New System.Drawing.Point(77, 307)
         Me.Label3.Name = "Label3"
         Me.Label3.Size = New System.Drawing.Size(101, 19)
         Me.Label3.TabIndex = 60
@@ -175,7 +179,7 @@ Partial Class Ctb_Plan_Ctb
         Me.Typ_Clf_Combo.DataSource = Nothing
         Me.Typ_Clf_Combo.DisplayMember = ""
         Me.Typ_Clf_Combo.DroppedDown = False
-        Me.Typ_Clf_Combo.Location = New System.Drawing.Point(184, 228)
+        Me.Typ_Clf_Combo.Location = New System.Drawing.Point(184, 304)
         Me.Typ_Clf_Combo.Margin = New System.Windows.Forms.Padding(3, 4, 3, 4)
         Me.Typ_Clf_Combo.Name = "Typ_Clf_Combo"
         Me.Typ_Clf_Combo.SelectedIndex = -1
@@ -190,7 +194,7 @@ Partial Class Ctb_Plan_Ctb
         Me.Sen_Naturel_Combo.DataSource = Nothing
         Me.Sen_Naturel_Combo.DisplayMember = ""
         Me.Sen_Naturel_Combo.DroppedDown = False
-        Me.Sen_Naturel_Combo.Location = New System.Drawing.Point(184, 256)
+        Me.Sen_Naturel_Combo.Location = New System.Drawing.Point(184, 332)
         Me.Sen_Naturel_Combo.Margin = New System.Windows.Forms.Padding(3, 4, 3, 4)
         Me.Sen_Naturel_Combo.Name = "Sen_Naturel_Combo"
         Me.Sen_Naturel_Combo.SelectedIndex = -1
@@ -203,7 +207,7 @@ Partial Class Ctb_Plan_Ctb
         'Label4
         '
         Me.Label4.AutoSize = True
-        Me.Label4.Location = New System.Drawing.Point(79, 256)
+        Me.Label4.Location = New System.Drawing.Point(86, 334)
         Me.Label4.Name = "Label4"
         Me.Label4.Size = New System.Drawing.Size(93, 19)
         Me.Label4.TabIndex = 60
@@ -212,6 +216,10 @@ Partial Class Ctb_Plan_Ctb
         '
         'GroupBox1
         '
+        Me.GroupBox1.Controls.Add(Me.Cpt_Budget_txt)
+        Me.GroupBox1.Controls.Add(Me.Label5)
+        Me.GroupBox1.Controls.Add(Me.Cpt_Eco_txt)
+        Me.GroupBox1.Controls.Add(Me.Label2)
         Me.GroupBox1.Controls.Add(Me.Label7)
         Me.GroupBox1.Controls.Add(Me.Nat_Cpt_Combo)
         Me.GroupBox1.Controls.Add(Me.Itt_Cpt_Text)
@@ -240,7 +248,7 @@ Partial Class Ctb_Plan_Ctb
         'Label7
         '
         Me.Label7.AutoSize = True
-        Me.Label7.Location = New System.Drawing.Point(32, 291)
+        Me.Label7.Location = New System.Drawing.Point(39, 364)
         Me.Label7.Name = "Label7"
         Me.Label7.Size = New System.Drawing.Size(140, 19)
         Me.Label7.TabIndex = 208
@@ -252,7 +260,7 @@ Partial Class Ctb_Plan_Ctb
         Me.Nat_Cpt_Combo.DataSource = Nothing
         Me.Nat_Cpt_Combo.DisplayMember = ""
         Me.Nat_Cpt_Combo.DroppedDown = False
-        Me.Nat_Cpt_Combo.Location = New System.Drawing.Point(184, 286)
+        Me.Nat_Cpt_Combo.Location = New System.Drawing.Point(184, 362)
         Me.Nat_Cpt_Combo.Margin = New System.Windows.Forms.Padding(3, 4, 3, 4)
         Me.Nat_Cpt_Combo.Name = "Nat_Cpt_Combo"
         Me.Nat_Cpt_Combo.SelectedIndex = -1
@@ -261,6 +269,66 @@ Partial Class Ctb_Plan_Ctb
         Me.Nat_Cpt_Combo.Size = New System.Drawing.Size(213, 24)
         Me.Nat_Cpt_Combo.TabIndex = 7
         Me.Nat_Cpt_Combo.ValueMember = ""
+        '
+        'Cpt_Eco_txt
+        '
+        Me.Cpt_Eco_txt.AccessibleDescription = ""
+        Me.Cpt_Eco_txt.CharacterCasing = System.Windows.Forms.CharacterCasing.Normal
+        Me.Cpt_Eco_txt.ContextMenuStrip = Nothing
+        Me.Cpt_Eco_txt.Location = New System.Drawing.Point(184, 234)
+        Me.Cpt_Eco_txt.Margin = New System.Windows.Forms.Padding(3, 5, 3, 5)
+        Me.Cpt_Eco_txt.MaxLength = 5
+        Me.Cpt_Eco_txt.Multiline = False
+        Me.Cpt_Eco_txt.Name = "Cpt_Eco_txt"
+        Me.Cpt_Eco_txt.Padding = New System.Windows.Forms.Padding(1, 0, 1, 0)
+        Me.Cpt_Eco_txt.PasswordChar = "" & Global.Microsoft.VisualBasic.ChrW(0)
+        Me.Cpt_Eco_txt.ReadOnly = False
+        Me.Cpt_Eco_txt.ScrollBars = System.Windows.Forms.ScrollBars.None
+        Me.Cpt_Eco_txt.SelectionStart = 0
+        Me.Cpt_Eco_txt.Size = New System.Drawing.Size(213, 25)
+        Me.Cpt_Eco_txt.TabIndex = 209
+        Me.Cpt_Eco_txt.TextAlign = System.Windows.Forms.HorizontalAlignment.Left
+        Me.Cpt_Eco_txt.UseSystemPasswordChar = False
+        '
+        'Label2
+        '
+        Me.Label2.AutoSize = True
+        Me.Label2.Location = New System.Drawing.Point(22, 235)
+        Me.Label2.Name = "Label2"
+        Me.Label2.Size = New System.Drawing.Size(159, 19)
+        Me.Label2.TabIndex = 210
+        Me.Label2.Tag = ""
+        Me.Label2.Text = "Compte économique"
+        '
+        'Cpt_Budget_txt
+        '
+        Me.Cpt_Budget_txt.AccessibleDescription = ""
+        Me.Cpt_Budget_txt.CharacterCasing = System.Windows.Forms.CharacterCasing.Normal
+        Me.Cpt_Budget_txt.ContextMenuStrip = Nothing
+        Me.Cpt_Budget_txt.Location = New System.Drawing.Point(184, 267)
+        Me.Cpt_Budget_txt.Margin = New System.Windows.Forms.Padding(3, 6, 3, 6)
+        Me.Cpt_Budget_txt.MaxLength = 5
+        Me.Cpt_Budget_txt.Multiline = False
+        Me.Cpt_Budget_txt.Name = "Cpt_Budget_txt"
+        Me.Cpt_Budget_txt.Padding = New System.Windows.Forms.Padding(1, 0, 1, 0)
+        Me.Cpt_Budget_txt.PasswordChar = "" & Global.Microsoft.VisualBasic.ChrW(0)
+        Me.Cpt_Budget_txt.ReadOnly = False
+        Me.Cpt_Budget_txt.ScrollBars = System.Windows.Forms.ScrollBars.None
+        Me.Cpt_Budget_txt.SelectionStart = 0
+        Me.Cpt_Budget_txt.Size = New System.Drawing.Size(213, 30)
+        Me.Cpt_Budget_txt.TabIndex = 211
+        Me.Cpt_Budget_txt.TextAlign = System.Windows.Forms.HorizontalAlignment.Left
+        Me.Cpt_Budget_txt.UseSystemPasswordChar = False
+        '
+        'Label5
+        '
+        Me.Label5.AutoSize = True
+        Me.Label5.Location = New System.Drawing.Point(42, 272)
+        Me.Label5.Name = "Label5"
+        Me.Label5.Size = New System.Drawing.Size(139, 19)
+        Me.Label5.TabIndex = 212
+        Me.Label5.Tag = ""
+        Me.Label5.Text = "Compte budétaire"
         '
         'Ctb_Plan_Ctb
         '
@@ -296,4 +364,8 @@ Partial Class Ctb_Plan_Ctb
     Friend WithEvents GroupBox1 As System.Windows.Forms.GroupBox
     Friend WithEvents Label7 As System.Windows.Forms.Label
     Friend WithEvents Nat_Cpt_Combo As ud_ComboBox
+    Friend WithEvents Cpt_Eco_txt As ud_TextBox
+    Friend WithEvents Label2 As Label
+    Friend WithEvents Cpt_Budget_txt As ud_TextBox
+    Friend WithEvents Label5 As Label
 End Class

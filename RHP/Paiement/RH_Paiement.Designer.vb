@@ -38,7 +38,6 @@ Partial Class RH_Paiement
         Me.R_RIB1 = New RHP.ud_RadioBox()
         Me.R_RIB0 = New RHP.ud_RadioBox()
         Me.Dat_Paiement = New System.Windows.Forms.DateTimePicker()
-        Me.LinkLabel4 = New System.Windows.Forms.LinkLabel()
         Me.GroupBox1 = New System.Windows.Forms.GroupBox()
         Me.R_Avance = New RHP.ud_RadioBox()
         Me.R_Paie = New RHP.ud_RadioBox()
@@ -56,7 +55,6 @@ Partial Class RH_Paiement
         Me.Label2 = New System.Windows.Forms.Label()
         Me.Label5 = New System.Windows.Forms.Label()
         Me.Label4 = New System.Windows.Forms.Label()
-        Me.Cod_Plan_Paie_Text = New RHP.ud_TextBox()
         Me.Grd_Paiement = New RHP.ud_Grd()
         Me.EntPnl.SuspendLayout()
         Me.GroupBox2.SuspendLayout()
@@ -73,7 +71,7 @@ Partial Class RH_Paiement
         Me.Traite_Check.Checked = False
         Me.Traite_Check.Enabled = False
         Me.Traite_Check.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        Me.Traite_Check.Location = New System.Drawing.Point(174, 82)
+        Me.Traite_Check.Location = New System.Drawing.Point(855, 47)
         Me.Traite_Check.Margin = New System.Windows.Forms.Padding(5, 6, 5, 6)
         Me.Traite_Check.MaximumSize = New System.Drawing.Size(0, 31)
         Me.Traite_Check.MinimumSize = New System.Drawing.Size(146, 31)
@@ -89,7 +87,6 @@ Partial Class RH_Paiement
         Me.EntPnl.Controls.Add(Me.Cpt_Bnk_chk)
         Me.EntPnl.Controls.Add(Me.GroupBox2)
         Me.EntPnl.Controls.Add(Me.Dat_Paiement)
-        Me.EntPnl.Controls.Add(Me.LinkLabel4)
         Me.EntPnl.Controls.Add(Me.GroupBox1)
         Me.EntPnl.Controls.Add(Me.Mod_Paiement)
         Me.EntPnl.Controls.Add(Me.Lib_Paiement_txt)
@@ -101,7 +98,6 @@ Partial Class RH_Paiement
         Me.EntPnl.Controls.Add(Me.Label2)
         Me.EntPnl.Controls.Add(Me.Label5)
         Me.EntPnl.Controls.Add(Me.Label4)
-        Me.EntPnl.Controls.Add(Me.Cod_Plan_Paie_Text)
         Me.EntPnl.Dock = System.Windows.Forms.DockStyle.Top
         Me.EntPnl.Location = New System.Drawing.Point(0, 0)
         Me.EntPnl.Margin = New System.Windows.Forms.Padding(5, 6, 5, 6)
@@ -232,23 +228,11 @@ Partial Class RH_Paiement
         'Dat_Paiement
         '
         Me.Dat_Paiement.Format = System.Windows.Forms.DateTimePickerFormat.[Short]
-        Me.Dat_Paiement.Location = New System.Drawing.Point(895, 49)
+        Me.Dat_Paiement.Location = New System.Drawing.Point(896, 18)
         Me.Dat_Paiement.Margin = New System.Windows.Forms.Padding(4)
         Me.Dat_Paiement.Name = "Dat_Paiement"
         Me.Dat_Paiement.Size = New System.Drawing.Size(125, 24)
         Me.Dat_Paiement.TabIndex = 5
-        '
-        'LinkLabel4
-        '
-        Me.LinkLabel4.AutoSize = True
-        Me.LinkLabel4.LinkColor = System.Drawing.Color.Black
-        Me.LinkLabel4.Location = New System.Drawing.Point(854, 22)
-        Me.LinkLabel4.Margin = New System.Windows.Forms.Padding(4, 0, 4, 0)
-        Me.LinkLabel4.Name = "LinkLabel4"
-        Me.LinkLabel4.Size = New System.Drawing.Size(39, 19)
-        Me.LinkLabel4.TabIndex = 246
-        Me.LinkLabel4.TabStop = True
-        Me.LinkLabel4.Text = "Plan"
         '
         'GroupBox1
         '
@@ -493,7 +477,7 @@ Partial Class RH_Paiement
         'Label2
         '
         Me.Label2.AutoSize = True
-        Me.Label2.Location = New System.Drawing.Point(852, 55)
+        Me.Label2.Location = New System.Drawing.Point(851, 20)
         Me.Label2.Margin = New System.Windows.Forms.Padding(4, 0, 4, 0)
         Me.Label2.Name = "Label2"
         Me.Label2.Size = New System.Drawing.Size(43, 19)
@@ -519,26 +503,6 @@ Partial Class RH_Paiement
         Me.Label4.Size = New System.Drawing.Size(64, 19)
         Me.Label4.TabIndex = 234
         Me.Label4.Text = "Banque"
-        '
-        'Cod_Plan_Paie_Text
-        '
-        Me.Cod_Plan_Paie_Text.CharacterCasing = System.Windows.Forms.CharacterCasing.Normal
-        Me.Cod_Plan_Paie_Text.ContextMenuStrip = Nothing
-        Me.Cod_Plan_Paie_Text.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        Me.Cod_Plan_Paie_Text.Location = New System.Drawing.Point(895, 18)
-        Me.Cod_Plan_Paie_Text.Margin = New System.Windows.Forms.Padding(5, 6, 5, 6)
-        Me.Cod_Plan_Paie_Text.MaxLength = 50
-        Me.Cod_Plan_Paie_Text.Multiline = False
-        Me.Cod_Plan_Paie_Text.Name = "Cod_Plan_Paie_Text"
-        Me.Cod_Plan_Paie_Text.Padding = New System.Windows.Forms.Padding(1, 0, 1, 0)
-        Me.Cod_Plan_Paie_Text.PasswordChar = "" & Global.Microsoft.VisualBasic.ChrW(0)
-        Me.Cod_Plan_Paie_Text.ReadOnly = True
-        Me.Cod_Plan_Paie_Text.ScrollBars = System.Windows.Forms.ScrollBars.None
-        Me.Cod_Plan_Paie_Text.SelectionStart = 0
-        Me.Cod_Plan_Paie_Text.Size = New System.Drawing.Size(126, 26)
-        Me.Cod_Plan_Paie_Text.TabIndex = 4
-        Me.Cod_Plan_Paie_Text.TextAlign = System.Windows.Forms.HorizontalAlignment.Left
-        Me.Cod_Plan_Paie_Text.UseSystemPasswordChar = False
         '
         'Grd_Paiement
         '
@@ -613,7 +577,6 @@ Partial Class RH_Paiement
     Friend WithEvents EntPnl As Panel
     Friend WithEvents Cod_Preparation_Text As ud_TextBox
     Friend WithEvents Cod_Preparation_ As LinkLabel
-    Friend WithEvents Cod_Plan_Paie_Text As ud_TextBox
     Friend WithEvents Traite_Check As ud_CheckBox
     Friend WithEvents Cod_Paiement_txt As ud_TextBox
     Friend WithEvents LinkLabel1 As LinkLabel
@@ -630,7 +593,6 @@ Partial Class RH_Paiement
     Friend WithEvents LinkLabel3 As LinkLabel
     Friend WithEvents Mod_Paiement As ud_ComboBox
     Friend WithEvents Label5 As Label
-    Friend WithEvents LinkLabel4 As LinkLabel
     Friend WithEvents Dat_Paiement As DateTimePicker
     Friend WithEvents Label2 As Label
     Friend WithEvents GroupBox2 As GroupBox

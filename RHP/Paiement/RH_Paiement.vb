@@ -56,7 +56,6 @@
                 Dat_Paiement.Value = IsNull(.Rows(0)("Dat_Paiement"), Now.Date)
                 Cod_Caisse_Bank_Text.Text = IsNull(.Rows(0)("Cod_Caisse_Bank"), "")
                 Bank_txt.Text = IsNull(.Rows(0)("Bank"), "")
-                Cod_Plan_Paie_Text.Text = IsNull(.Rows(0)("Cod_Plan_Paie"), "")
                 Mod_Paiement.SelectedValue = IsNull(.Rows(0)("Mod_Paiement"), "")
                 Cod_Preparation_Text.Text = IsNull(.Rows(0)("Cod_Preparation"), "")
                 Num_List_Avance_txt.Text = IsNull(.Rows(0)("Num_List_Avance"), "")
@@ -68,7 +67,6 @@
                 Dat_Paiement.Value = Now.Date.ToShortDateString
                 Cod_Caisse_Bank_Text.Text = ""
                 Bank_txt.Text = ""
-                Cod_Plan_Paie_Text.Text = ""
                 Mod_Paiement.SelectedIndex = -1
                 Cod_Preparation_Text.Text = ""
                 Num_List_Avance_txt.Text = ""
@@ -144,12 +142,7 @@
             TblSource = .DataSource
         End With
     End Sub
-    Private Sub LinkLabel4_LinkClicked(sender As Object, e As LinkLabelLinkClickedEventArgs) Handles LinkLabel4.LinkClicked
-        If Cod_Paiement_txt.Text <> "" Then Return
-        Appel_Zoom1("MS012", Cod_Plan_Paie_Text, Me)
-    End Sub
-
-    Private Sub Cod_Plan_Paie_Text_TextChanged(sender As Object, e As EventArgs) Handles Cod_Plan_Paie_Text.TextChanged
+    Private Sub Cod_Plan_Paie_Text_TextChanged(sender As Object, e As EventArgs)
         Cod_Preparation_Text.Text = ""
         Num_List_Avance_txt.Text = ""
     End Sub
@@ -280,7 +273,6 @@
         rs("Typ_Caisse_Bank").Value = TypCaisseBank
         rs("Mod_Paiement").Value = Mod_Paiement.SelectedValue
         rs("Cod_Preparation").Value = Cod_Preparation_Text.Text
-        rs("Cod_Plan_Paie").Value = Cod_Plan_Paie_Text.Text
         rs("Num_List_Avance").Value = Num_List_Avance_txt.Text
         rs("Cpt_Bnk").Value = Cpt_Bnk_chk.Checked
         rs("Cloture").Value = avecValidation
@@ -370,7 +362,6 @@
         Lib_Paiement_txt.Select()
         R_Paie.Checked = True
         Cod_Caisse_Bank_Text.Text = CnExecuting("select isnull((select top 1 Cod_Caisse_Bank from Compta_Caisse_Banque where Typ_Caisse_Bank='B' and id_Societe=" & Societe.id_Societe & "),'')").Fields(0).Value
-        Cod_Plan_Paie_Text.Text = CnExecuting("select isnull((select top 1 Cod_Plan_Paie  from RH_Param_Plan_Paie where  id_Societe=" & Societe.id_Societe & "),'')").Fields(0).Value
         Mod_Paiement.SelectedValue = "VIRE"
         Cpt_Bnk_chk.Checked = True
     End Sub

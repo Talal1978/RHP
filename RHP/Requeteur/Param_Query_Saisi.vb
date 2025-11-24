@@ -65,16 +65,16 @@ Public Class Param_Query_Saisi
         Dim oY = CInt(e.CellBounds.Top + e.CellBounds.Height / 2 - My.Resources.MenuLocal.Height / 2)
         e.Paint(e.ClipBounds, DataGridViewPaintParts.Background)
 
-        If Tbl.Rows(e.RowIndex).Item("Fonction_Critere") = "Calender" Then
+        If IsNull(Tbl.Rows(e.RowIndex).Item("Fonction_Critere"), "") = "Calender" Then
             e.Graphics.DrawImage(My.Resources.calendar, oX, oY)
             Criteres_Grd.Item(Valeur.Index, e.RowIndex).ReadOnly = True
-        ElseIf Tbl.Rows(e.RowIndex).Item("Fonction_Critere") = "Appel_Zoom" Then
+        ElseIf IsNull(Tbl.Rows(e.RowIndex).Item("Fonction_Critere"), "") = "Appel_Zoom" Then
             e.Graphics.DrawImage(My.Resources.MenuLocal, oX, oY)
             Criteres_Grd.Item(Valeur.Index, e.RowIndex).ReadOnly = True
-        ElseIf Tbl.Rows(e.RowIndex).Item("Fonction_Critere") = "Combo" Then
+        ElseIf IsNull(Tbl.Rows(e.RowIndex).Item("Fonction_Critere"), "") = "Combo" Then
             e.Graphics.DrawImage(My.Resources.MenuLocal, oX, oY)
             Criteres_Grd.Item(Valeur.Index, e.RowIndex).ReadOnly = True
-        ElseIf Tbl.Rows(e.RowIndex).Item("Fonction_Critere") = "Boolean" Then
+        ElseIf IsNull(Tbl.Rows(e.RowIndex).Item("Fonction_Critere"), "") = "Boolean" Then
             e.Graphics.DrawImage(My.Resources.MenuLocal, oX, oY)
             Criteres_Grd.Item(Valeur.Index, e.RowIndex).ReadOnly = True
         Else

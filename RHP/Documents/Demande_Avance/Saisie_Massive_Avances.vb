@@ -292,7 +292,6 @@ Reprendre:
         End If
         Dim f As New RH_Paiement
         With f
-            .Cod_Plan_Paie_Text.Text = Cod_Plan_Paie_Text.Text
             .Lib_Paiement_txt.Text = "Paiement des avances : " & Lib_List_Avance_txt.Text
             .R_Avance.Checked = True
             .Num_List_Avance_txt.Text = Num_List_Avance_txt.Text

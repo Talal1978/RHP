@@ -310,10 +310,10 @@ Public Class RH_Param_Abaques
                     rs("Clef_02").Value = If(Clef_02.Visible, .Item(Clef_02.Index, i).Value, "")
                     rs("Clef_03").Value = If(Clef_03.Visible, .Item(Clef_03.Index, i).Value, "")
                     rs("Clef_04").Value = If(Clef_04.Visible, .Item(Clef_04.Index, i).Value, "")
-                    rs("Valeur_01").Value = If(Valeur_01.Visible, .Item(Valeur_01.Index, i).Value, Nothing)
-                    rs("Valeur_02").Value = If(Valeur_02.Visible, .Item(Valeur_02.Index, i).Value, Nothing)
-                    rs("Valeur_03").Value = If(Valeur_03.Visible, .Item(Valeur_03.Index, i).Value, Nothing)
-                    rs("Valeur_04").Value = If(Valeur_04.Visible, .Item(Valeur_04.Index, i).Value, Nothing)
+                    rs("Valeur_01").Value = If(Valeur_01.Visible, traitementTyp(.Item(Valeur_01.Index, i).Value), Nothing)
+                    rs("Valeur_02").Value = If(Valeur_02.Visible, traitementTyp(.Item(Valeur_02.Index, i).Value), Nothing)
+                    rs("Valeur_03").Value = If(Valeur_03.Visible, traitementTyp(.Item(Valeur_03.Index, i).Value), Nothing)
+                    rs("Valeur_04").Value = If(Valeur_04.Visible, traitementTyp(.Item(Valeur_04.Index, i).Value), Nothing)
                     rs("Flag").Value = flg
                     rs("Rang").Value = i + 1
                     rs("Modified_By").Value = theUser.Login
@@ -327,7 +327,29 @@ Public Class RH_Param_Abaques
         MessageBoxRHP(352)
         Request()
     End Sub
-
+    Function traitementTyp(valeur As Object) As Object
+        Select Case Typ_Retour.SelectedValue
+            Case "int"
+                If IsNumeric(valeur) Then
+                    valeur = CInt(valeur)
+                Else
+                    valeur = 0
+                End If
+            Case "float"
+                If IsNumeric(valeur) Then
+                    valeur = CStr(CDbl(valeur)).Replace(",", ".")
+                Else
+                    valeur = 0
+                End If
+            Case "bit"
+                If EstBool(valeur) Then
+                    valeur = CBool(valeur)
+                Else
+                    valeur = False
+                End If
+        End Select
+        Return valeur
+    End Function
     Private Sub SuppressionDesLignesSélectionnéesToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs)
         If MessageBoxRHP(594) = MsgBoxResult.Cancel Then Exit Sub
         With abaque_GRD

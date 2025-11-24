@@ -21,7 +21,7 @@
 select convert(bit, case when CodPaiement is null then 0 else 1 end) as 'Check',Cod_Preparation as Préparation,	Lib_Preparation as Intitulé,Dat_Deb_Periode as 'Début', Dat_Fin_Periode as 'Fin', isnull(Cloture,'false') as 'Clôturée', Annee_Paie as Année 
 from RH_Preparation_Paie p
 outer apply (select value as CodPaiement from string_split(@swhere,';') where Value=p.Cod_Preparation)v
-where Cod_Plan_Paie='{f_Paiement.Cod_Plan_Paie_Text.Text }' and id_Societe={Societe.id_Societe}
+where id_Societe={Societe.id_Societe}
 order by Dat_Fin_Periode desc"
             TblSource = DATA_READER_GRD(Cod_Sql)
         ElseIf PreparationVsAvance = "A" Then
@@ -29,7 +29,7 @@ order by Dat_Fin_Periode desc"
 select convert(bit, case when CodPaiement is null then 0 else 1 end) as 'Check',	Num_List_Avance as 'N° de liste des avances',	Lib_List_Avance Désignation, Dat_Avance as 'Date',Cloture as 'Clôturée'
 from RH_Paie_Avance_Liste p
 outer apply (select value as CodPaiement from string_split(@swhere,';') where Value=p.Num_List_Avance)v
-where Cod_Plan_Paie='{f_Paiement.Cod_Plan_Paie_Text.Text }' and id_Societe={Societe.id_Societe}
+where id_Societe={Societe.id_Societe}
 order by Dat_Fin_Periode desc"
         End If
         If Cod_Sql = "" Then Return

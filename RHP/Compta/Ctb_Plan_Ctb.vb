@@ -53,6 +53,8 @@
             Itt_Cpt_Text.Text = FindLibelle("Itt_Cpt", "Cpt_Gnr", Cpt_Gnr_Text.Text, "Compta_Plan_Ctb")
             Typ_Cpt_Combo.SelectedValue = FindLibelle("Typ_Cpt", "Cpt_Gnr", Cpt_Gnr_Text.Text, "Compta_Plan_Ctb")
             Cpt_Red_Text.Text = FindLibelle("Cpt_Red", "Cpt_Gnr", Cpt_Gnr_Text.Text, "Compta_Plan_Ctb")
+            Cpt_Eco_txt.Text = FindLibelle("Cpt_Eco", "Cpt_Gnr", Cpt_Gnr_Text.Text, "Compta_Plan_Ctb")
+            Cpt_Budget_txt.Text = FindLibelle("Cpt_Budget", "Cpt_Gnr", Cpt_Gnr_Text.Text, "Compta_Plan_Ctb")
             Typ_Clf_Combo.SelectedValue = FindLibelle("Typ_Clf", "Cpt_Gnr", Cpt_Gnr_Text.Text, "Compta_Plan_Ctb")
             Sen_Naturel_Combo.SelectedValue = FindLibelle("Sen_Naturel", "Cpt_Gnr", Cpt_Gnr_Text.Text, "Compta_Plan_Ctb")
             Nat_Cpt_Combo.SelectedValue = FindLibelle("Nat_Cpt", "Cpt_Gnr", Cpt_Gnr_Text.Text, "Compta_Plan_Ctb")
@@ -117,6 +119,8 @@
         rs("Itt_Cpt").Value = Itt_Cpt_Text.Text
         rs("Typ_Cpt").Value = Typ_Cpt_Combo.SelectedValue
         rs("Cpt_Red").Value = Cpt_Red_Text.Text
+        rs("Cpt_Eco").Value = Cpt_Eco_txt.Text
+        rs("Cpt_Budget").Value = Cpt_Budget_txt.Text
         rs("Typ_Clf").Value = Typ_Clf_Combo.SelectedValue
         rs("Sen_Naturel").Value = Sen_Naturel_Combo.SelectedValue
         rs("Nat_Cpt").Value = Nat_Cpt_Combo.SelectedValue
@@ -175,4 +179,6 @@
         End If
         Enabling(Cpt_Gnr_Text, False)
     End Sub
+
+
 End Class
