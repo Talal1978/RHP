@@ -86,7 +86,7 @@ Module Module_Declaration_Var
     Public defaultBackColor As Color = Color.FromArgb(250, 250, 250)
     Public jsonFilePath As String = "db.json"
     Public jsonObject As New Newtonsoft.Json.Linq.JObject
-    Public sql_injection As String = "\b(eval)\b|\b(set)\b|\b(alter)\b|\b(create)\b|\b(drop)\b|\b(update)\b|\b(delete)\b|\b(truncate)\b|\b(insert)\b|\b(exec)\b|\b(union)\b|\b(cast)\b|\b(join)\b|--|/\*|\*/|""|--"
+    Public sql_injection As String = "\b(eval)\b|\b(set)\b|\b(alter)\b|\b(create)\b|\b(drop)\b|\b(update)\b|\b(delete)\b|\b(truncate)\b|\b(insert)\b|\b(exec)\b|\b(union)\b|\b(cast)\b|--|/\*|\*/|""|--"
     Public sql_Sys_RH_Agent_AG As String = ""
 
     'Public Function ControleInjectionSQL(query As String) As (Boolean, String)

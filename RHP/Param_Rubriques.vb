@@ -40,7 +40,7 @@
         End With
     End Sub
 
-    Private Sub Saving()
+    Sub Saving()
         Dim rs As New ADODB.Recordset
         Dim Cod_Sql As String
         Dim swhere As String = ""

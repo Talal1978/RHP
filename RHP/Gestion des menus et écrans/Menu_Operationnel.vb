@@ -94,8 +94,8 @@
                 Dim crw() As DataRow = Tbl_Controle_Droit_Mnu.Select("[Parent]='" & _nd.Name & "'", "Rang Asc")
                 .ForeColor = If(crw.Length > 0, colorBase01, Trv.ForeColor)
                 .ToolTipText = nrw(i)("Text_Ecran")
-                .ImageIndex = 5 + Array.IndexOf("FDR;ECR;QRY;RPT;PYT".Split(";"), nrw(i)("Typ_Ecran"))
-                .SelectedImageIndex = If(.ImageIndex = 6, 10, .ImageIndex)
+                .ImageIndex = 5 + Array.IndexOf("FDR;ECR;QRY;RPT;PYT;EML".Split(";"), nrw(i)("Typ_Ecran"))
+                .SelectedImageIndex = If(.ImageIndex = 6, 11, .ImageIndex)
                 If crw.Length > 0 Then
                     TreeviewMaj(_nd)
                 End If

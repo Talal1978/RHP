@@ -164,6 +164,9 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="BouncyCastle.Cryptography, Version=2.0.0.0, Culture=neutral, PublicKeyToken=072edcf4a5328938, processorArchitecture=MSIL">
+      <HintPath>..\packages\BouncyCastle.Cryptography.2.4.0\lib\net461\BouncyCastle.Cryptography.dll</HintPath>
+    </Reference>
     <Reference Include="CrystalDecisions.CrystalReports.Engine, Version=10.5.3700.0, Culture=neutral, PublicKeyToken=692fbea5521e1304, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>bin\Debug\CrystalDecisions.CrystalReports.Engine.dll</HintPath>
@@ -328,6 +331,9 @@
       <SpecificVersion>False</SpecificVersion>
       <EmbedInteropTypes>True</EmbedInteropTypes>
       <HintPath>bin\Debug\Interop.MSScriptControl.dll</HintPath>
+    </Reference>
+    <Reference Include="itextsharp, Version=5.5.13.4, Culture=neutral, PublicKeyToken=8354ae6d2174ddca, processorArchitecture=MSIL">
+      <HintPath>..\packages\iTextSharp.5.5.13.4\lib\net461\itextsharp.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Bcl.AsyncInterfaces, Version=9.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Bcl.AsyncInterfaces.9.0.0\lib\net462\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
@@ -852,6 +858,12 @@
       <DependentUpon>Zoom_GPEC_Domaines_Competence.vb</DependentUpon>
     </Compile>
     <Compile Include="GPEC\Zoom_GPEC_Domaines_Competence.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Mailing\Mailing_Saisi.designer.vb">
+      <DependentUpon>Mailing_Saisi.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Mailing\Mailing_Saisi.vb">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="My Project\Resources.Designer.vb">
@@ -1395,25 +1407,25 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Modules\ListViewColumnSorter.vb" />
-    <Compile Include="SendMail\Mailing_Destinataires.Designer.vb">
+    <Compile Include="Mailing\Mailing_Destinataires.Designer.vb">
       <DependentUpon>Mailing_Destinataires.vb</DependentUpon>
     </Compile>
-    <Compile Include="SendMail\Mailing_Destinataires.vb">
+    <Compile Include="Mailing\Mailing_Destinataires.vb">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Modules\Module_Comptabilite_Import.vb" />
     <Compile Include="Modules\Module_SimilitudeString.vb" />
     <Compile Include="Zoom\Module_Zoom.vb" />
-    <Compile Include="SendMail\Mailing_Dest_Import.designer.vb">
+    <Compile Include="Mailing\Mailing_Dest_Import.designer.vb">
       <DependentUpon>Mailing_Dest_Import.vb</DependentUpon>
     </Compile>
-    <Compile Include="SendMail\Mailing_Dest_Import.vb">
+    <Compile Include="Mailing\Mailing_Dest_Import.vb">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="SendMail\Mailing_List.designer.vb">
+    <Compile Include="Mailing\Mailing_List.designer.vb">
       <DependentUpon>Mailing_List.vb</DependentUpon>
     </Compile>
-    <Compile Include="SendMail\Mailing_List.vb">
+    <Compile Include="Mailing\Mailing_List.vb">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="customUI\ud_PanelWait.designer.vb">
@@ -1688,10 +1700,10 @@
     <Compile Include="Paie\Paramétrage paie\RH_Parametrage_Rubrique_Paie.vb">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="SendMail\Admin_Messagerie.designer.vb">
+    <Compile Include="Mailing\Admin_Messagerie.designer.vb">
       <DependentUpon>Admin_Messagerie.vb</DependentUpon>
     </Compile>
-    <Compile Include="SendMail\Admin_Messagerie.vb">
+    <Compile Include="Mailing\Admin_Messagerie.vb">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Param_Abonnement.designer.vb">
@@ -1700,11 +1712,11 @@
     <Compile Include="Param_Abonnement.vb">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="SendMail\Module_Mailing.vb" />
-    <Compile Include="SendMail\Mailing.designer.vb">
+    <Compile Include="Mailing\Module_Mailing.vb" />
+    <Compile Include="Mailing\Mailing.designer.vb">
       <DependentUpon>Mailing.vb</DependentUpon>
     </Compile>
-    <Compile Include="SendMail\Mailing.vb">
+    <Compile Include="Mailing\Mailing.vb">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Modules\Module_Internet.vb" />
@@ -2077,6 +2089,10 @@
     <EmbeddedResource Include="GPEC\Zoom_GPEC_Domaines_Competence.resx">
       <DependentUpon>Zoom_GPEC_Domaines_Competence.vb</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Mailing\Mailing_Saisi.resx">
+      <DependentUpon>Mailing_Saisi.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <EmbeddedResource Include="Notification\Notifications.resx">
       <DependentUpon>Notifications.vb</DependentUpon>
     </EmbeddedResource>
@@ -2348,14 +2364,14 @@
     <EmbeddedResource Include="Données de base\RH_Agent_Liste.resx">
       <DependentUpon>RH_Agent_Liste.vb</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="SendMail\Mailing_Destinataires.resx">
+    <EmbeddedResource Include="Mailing\Mailing_Destinataires.resx">
       <DependentUpon>Mailing_Destinataires.vb</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="SendMail\Mailing_Dest_Import.resx">
+    <EmbeddedResource Include="Mailing\Mailing_Dest_Import.resx">
       <DependentUpon>Mailing_Dest_Import.vb</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="SendMail\Mailing_List.resx">
+    <EmbeddedResource Include="Mailing\Mailing_List.resx">
       <DependentUpon>Mailing_List.vb</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
@@ -2500,7 +2516,7 @@
       <DependentUpon>RH_Parametrage_Rubrique_Paie.vb</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="SendMail\Admin_Messagerie.resx">
+    <EmbeddedResource Include="Mailing\Admin_Messagerie.resx">
       <DependentUpon>Admin_Messagerie.vb</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
@@ -2508,7 +2524,7 @@
       <DependentUpon>Param_Abonnement.vb</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="SendMail\Mailing.resx">
+    <EmbeddedResource Include="Mailing\Mailing.resx">
       <DependentUpon>Mailing.vb</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>

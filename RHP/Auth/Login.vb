@@ -417,7 +417,7 @@ where HashBytes('SHA1',upper(isnull(Login,'984iuiuhiuht65161')))=HashBytes('SHA1
                 If emailUser.IndexOf("@") > 4 Then
                     pt_mail = Gauche(emailUser, 1) & "......" & Droite(emailUser, emailUser.Length - emailUser.IndexOf("@"))
                 End If
-                If EnvoiDeMail(emailUser, emailUser, "Génération de mot de passe", "Bonjour" & vbCrLf & "Voici votre nouveau mot de passe : " & psw) Then
+                If EnvoiDeMail(emailUser, emailUser, "Génération de mot de passe", "Bonjour" & vbCrLf & "Voici votre nouveau mot de passe : " & psw).envoye Then
                     ShowMessageBox("Votre nouveau mot de passe vous a été envoyé à votre adresse mail : " & pt_mail, "Changement de mot de passe", MessageBoxButtons.OK, msgIcon.Information)
                     If usrNot(0)("Origine") = "Agent" Then
                         CnExecuting("update Rh_Agent set PW='" & Encrypt(psw) & "', Dat_Modif=getdate() where isnull(Login,'')='" & theUser.Login & "'")

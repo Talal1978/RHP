@@ -390,6 +390,11 @@ suite:
                 f.Text = objText
                 f.Python_Generator(objName, objText)
                 newShowEcran(f)
+            Case "EML"
+                Dim f As New Mailing_Saisi
+                f.Text = objText
+                f.Mailing_Generator(objName, objText)
+                newShowEcran(f)
             Case "SYS"
                 Dim frm As Form = GetFormByName(objName)
                 If frm Is Nothing Then Return False

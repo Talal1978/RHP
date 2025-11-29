@@ -78,6 +78,25 @@
                     Affectation(f, Critere(i), ValeurCritere(i))
                 Next
                 newShowEcran(f)
+            ElseIf IsNull(nrw(0)("Typ_Traitement"), "") = "EML" Then
+                Dim f As New Mailing_Saisi With {
+                    .Text = nrw(0)("Traitement")
+                }
+                f.Mailing_Generator(nrw(0)("Code"), f.Text)
+                For i = 0 To Critere.Count - 1
+                    If ValeurCritere(i).ToString.Trim.StartsWith("SELECT") Then
+                        For j = 0 To Critere.Count - 1
+                            ValeurCritere(i) = ValeurCritere(i).ToString.Replace(Critere(j), "'" & ValeurCritere(j) & "'")
+                        Next
+                        Try
+                            ValeurCritere(i) = IsNull(CnExecuting(ValeurCritere(i)).Fields(0).Value, "")
+                        Catch ex As Exception
+
+                        End Try
+                    End If
+                    Affectation(f, Critere(i), ValeurCritere(i))
+                Next
+                newShowEcran(f)
             Else
                 Dim f As New Param_Query_Saisi
                 f.Text = nrw(0)("Traitement")

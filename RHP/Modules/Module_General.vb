@@ -162,12 +162,18 @@ Module Module_General
         Return CodSql
 
     End Function
-    Function DATA_READER_GRD(ByVal Cod_Sql As String, Optional AfficherSql As Boolean = False) As DataTable
+    Function DATA_READER_GRD(ByVal Cod_Sql As String, Optional AfficherSql As Boolean = False, Optional oconn As OleDbConnection = Nothing) As DataTable
         If AfficherSql Then
             MsgBox(Cod_Sql)
         End If
+        If oconn Is Nothing Then
+            oconn = cn1
+        End If
         Try
-            Dim CMD As OleDbCommand = cn1.CreateCommand()
+            If oconn.State = ConnectionState.Closed Then
+                oconn.Open()
+            End If
+            Dim CMD As OleDbCommand = oconn.CreateCommand()
             With CMD
                 .CommandText = Cod_Sql
                 .CommandTimeout = 0

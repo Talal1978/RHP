@@ -1,5 +1,6 @@
 import React from 'react'
 import UdValeurUnique from './Components/UdValeurUnique'
+import UdGrilleCases from './Components/UdGrilleCases'
 
 const TestSurvey = () => {
   return (
@@ -20,6 +21,14 @@ const TestSurvey = () => {
     <UdValeurUnique Obligatoire={true} 
     Typ_Reponse="liste" numQuestion="4" laquestion="Choisissez une réponse parmi la liste"
     avecNote={false} modeScoring="auto" coef={1} maxScore={1} colonnes='Options 01;Options 02;Options 03' funcScoring='' noteManuelle={1} />
+   
+    <UdValeurUnique Obligatoire={true} 
+    Typ_Reponse="multiLine" numQuestion="5" laquestion="Justifier votre choix"
+    avecNote={false} modeScoring="auto" coef={1} maxScore={1} colonnes='' funcScoring='' noteManuelle={1} />
+    
+    <UdGrilleCases Obligatoire={true} 
+    numQuestion="6" laquestion="Sur une échelle de 1 à 10, comment évalueriez-vous les options suivantes ?"
+    avecNote={false} modeScoring="auto" coef={1} maxScore={1} colonnes='Options 01;Options 02;Options 03' lignes='Lignes 01;Lignes 02;Lignes 03'  noteManuelle={1} />
     
     </div>
     </div>

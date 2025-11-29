@@ -206,7 +206,7 @@ select id_Societe, Den,isnull(Droits,'') Droits,convert(bit,case when ';'+Droits
             psw &= AryL(rnd.Next(0, AryL.Count - 1))
         Next
 
-        If EnvoiDeMail(Mail_Text.Text, "", "Génération de mot de passe", $"Bonjour {Nom_User_Text.Text } {Prenom_User_Text.Text }," & vbCrLf & $"L'administrateur de RHP a procédé la réinitialisation de votre mot de passe.{vbCrLf}Voici votre nouveau mot de passe : " & psw) Then
+        If EnvoiDeMail(Mail_Text.Text, "", "Génération de mot de passe", $"Bonjour {Nom_User_Text.Text } {Prenom_User_Text.Text }," & vbCrLf & $"L'administrateur de RHP a procédé la réinitialisation de votre mot de passe.{vbCrLf}Voici votre nouveau mot de passe : " & psw).envoye Then
             ShowMessageBox("Le nouveau mot de passe a été envoyé à l'adresse mail : " & Mail_Text.Text, "Changement de mot de passe", MessageBoxButtons.OK, msgIcon.Information)
             If theUser.Typ_Role = "Agent" Then
                 CnExecuting("update Rh_Agent set PW='" & Encrypt(psw) & "', Dat_Modif=getdate() where isnull(Mail,'')='" & theUser.Login & "'")

@@ -94,7 +94,7 @@
                IIf(submitAcceptation_chk.Checked, "Merci de bien vouloir vous connecter à RHP pour acception cette désignation.", "") & vbCrLf & "Merci pour votre habituelle collaboration."
             Dim mailSuppleant As String = FindLibelle("Mail", "Matricule", Suppleant_txt.Text, "Rh_Agent")
             If estEmail(mailSuppleant) Then
-                If EnvoiDeMail(mailSuppleant, "", "Procuration de signature", textToSuppelant, Nothing, mailSuppleant, "") Then
+                If EnvoiDeMail(mailSuppleant, "", "Procuration de signature", textToSuppelant, Nothing, mailSuppleant, "").envoye Then
                     CnExecuting("update Rh_Agent set Notified='true', Dat_Notif=getdate() where Matricule='" & Matricule_txt.Text & "'")
                 End If
             End If
@@ -194,7 +194,7 @@
             Dim textToAgent As String = "Bonjour " & Nom_Agent_Text.Text & vbCrLf & Nom_Suppleant_txt.Text & " désigné(e) en tant que votre suppléant a accepté cette désignation."
             Dim mailAgent As String = FindLibelle("Mail", "Matricule", Matricule_txt.Text, "Rh_Agent")
             If estEmail(mailAgent) Then
-                If EnvoiDeMail(mailAgent, "", "Procuration de signature", textToAgent, Nothing, mailAgent, "") Then
+                If EnvoiDeMail(mailAgent, "", "Procuration de signature", textToAgent, Nothing, mailAgent, "").envoye Then
                     CnExecuting("update Rh_Agent set Notified='true', Dat_Notif=getdate() where Matricule='" & Matricule_txt.Text & "'")
                 End If
             End If

@@ -445,6 +445,9 @@ outer apply (select count(name) as ContientSociete from sys.columns where object
                 Dim sqlCriteria As String = "select string_agg(Critere+':='+isnull(Default_Value,''),';')  WITHIN GROUP (ORDER BY Rang) AS   Crt from Param_Query_Criteres where Cod_Query='" & .Item(e.ColumnIndex, r).Value & "'"
                 If .Item(Typ_Traitement.Index, r).Value = "PYT" Then
                     sqlCriteria = "select string_agg(isnull(Argument,'')+':='+isnull(Default_Value,''),';')  WITHIN GROUP (ORDER BY Rang) AS   Crt from Param_Python_Arguments where Cod_Python='" & .Item(e.ColumnIndex, r).Value & "'"
+                ElseIf .Item(Typ_Traitement.Index, r).Value = "EML" Then
+                    sqlCriteria = "select string_agg(isnull(Parametre,'')+':='+isnull(Default_Value,''),';')  WITHIN GROUP (ORDER BY Rang) AS   Crt from Mailing_Parametres where Cod_Mailing='" & .Item(e.ColumnIndex, r).Value & "'"
+
                 End If
                 Dim crt As String = CnExecuting(sqlCriteria).Fields(0).Value
                 .Item(Relation.Index, r).Value = IsNull(crt, "")

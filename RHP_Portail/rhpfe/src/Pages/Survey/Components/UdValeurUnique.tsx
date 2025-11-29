@@ -7,7 +7,7 @@ import CalendarZoom from "../../../components/Calendar/CalendarZoom";
 import { Arrondi } from "../../../modules/module_general_formulas";
 import { TInputType, ObjetGenerique } from "../../../types";
 
-// Types d'entrée basés sur la logique VB
+// Types d'entrée mis à jour
 type TReponseType =
   | "numerique"
   | "entier"
@@ -16,7 +16,8 @@ type TReponseType =
   | "heure"
   | "alpha"
   | "liste"
-  | "bit";
+  | "bit"
+  | "multiLine";
 
 // Modes de scoring basés sur la logique VB
 type TModeScoring = "manuel" | "auto" | "na";
@@ -48,6 +49,7 @@ type TNoteResult = {
   note_totale: number;
 };
 
+
 /**
  * Réplique du contrôle utilisateur Visual Basic "ud_valeur_unique".
  * @component
@@ -75,6 +77,14 @@ const UdValeurUnique = ({
     coef: coef,
     note_totale: 0,
   });
+  
+  // Fonction utilitaire déplacée à l'intérieur pour éviter ts(2451)
+  const isSmallInputType = (type: TReponseType) => 
+    ["numerique", "entier", "date", "dateTime", "heure", "bit"].includes(type);
+
+  // Définir le résultat de l'appel ici
+  const isSmallInputResult = isSmallInputType(Typ_Reponse);
+
 
   // --- LOGIQUE DE SCORING ---
 
@@ -128,14 +138,10 @@ const UdValeurUnique = ({
 
   const InputComponent = useMemo(() => {
     
-    // Détermine la taille optimale pour les grands écrans
-    const isSmallInput = ["numerique", "entier", "date", "dateTime", "heure", "bit"].includes(Typ_Reponse);
-    
     const commonProps: ObjetGenerique = {
         valeur: inputValue,
         onchange: (name: string, value: any) => handleValueChange(value),
         style: { width: "100%" },
-        // label: "" n'est plus dans commonProps pour la conformité TS
         sx: { 
             "& .MuiInputBase-input": { 
                 backgroundColor: 'white !important', 
@@ -151,6 +157,23 @@ const UdValeurUnique = ({
       case "numerique":
       case "entier":
         return <TextBox {...commonProps} label="" type={Typ_Reponse === "numerique" ? "number" : "integer"} nomControle={`reponse_${Typ_Reponse}`} />;
+      
+      case "alpha":
+        return <TextBox {...commonProps} label="" type="text" nomControle="reponse_alpha" />;
+
+      case "multiLine":
+        return (
+            <TextBox 
+                {...commonProps} 
+                label="" 
+                type="text" 
+                style={{ minWidth: "39vw" }}
+                nomControle="reponse_multiline"
+                multiline={true}
+                rows={4}
+            />
+        );
+
       case "date":
       case "dateTime":
       case "heure":
@@ -162,14 +185,12 @@ const UdValeurUnique = ({
             onchange={handleDateChange}
             onClear={() => handleDateChange("reponse_date", null)}
             sx={{
-                ...commonProps.md,
+                ...commonProps.lg,
                 width: "100%",
                 "& input": { fontSize: "1em", textAlign: "center", backgroundColor: 'white !important' },
             }}
           />
         );
-      case "alpha":
-        return <TextBox {...commonProps} label="" type="text" nomControle="reponse_alpha" />;
       case "liste":
         const options = colonnes.split(";").filter((c) => c.trim() !== "");
         return (
@@ -222,7 +243,7 @@ const UdValeurUnique = ({
       className="ud-valeur-unique"
       sx={{
         ...sx,
-        backgroundColor: "#f5f5f5", // Simule le 'WhiteSmoke' du VB
+        backgroundColor: "#f5f5f5",
         display: "grid",
         gridTemplateColumns: {
           xs: "1fr",
@@ -281,15 +302,10 @@ const UdValeurUnique = ({
           className="grd-content"
           sx={{
             gridColumn: { xs: "1 / -1", sm: 2 },
+            // La direction change si c'est un champ large (multiLine/alpha) ou sur petit écran
             display: 'flex',
-            flexDirection: {
-                xs: 'column',
-                sm: 'row',
-            },
-            alignItems: {
-                xs: 'flex-start',
-                sm: 'center'
-            },
+            flexDirection: (Typ_Reponse === 'multiLine' || Typ_Reponse === 'alpha') ? 'column' : { xs: 'column', sm: 'row' },
+            alignItems: (Typ_Reponse === 'multiLine' || Typ_Reponse === 'alpha') ? 'flex-start' : { xs: 'flex-start', sm: 'center' },
             justifyContent: 'space-between',
             gap: { xs: '0.5em', sm: '1em' },
             padding: {
@@ -315,16 +331,16 @@ const UdValeurUnique = ({
           <Box 
             className="input-container" 
             sx={{ 
-                // Styles d'optimisation de taille pour les inputs numériques/dates
+                // Styles d'optimisation de taille
                 minWidth: { 
                     xs: '100%', 
-                    sm: ["numerique", "entier", "date", "dateTime", "heure", "bit"].includes(Typ_Reponse) ? '120px' : '200px' 
+                    sm: isSmallInputResult ? '120px' : '200px' 
                 },
                 maxWidth: { 
                     xs: '100%', 
-                    sm: ["numerique", "entier", "date", "dateTime", "heure", "bit"].includes(Typ_Reponse) ? '180px' : 'none' 
+                    sm: isSmallInputResult ? '180px' : 'none' 
                 },
-                flexGrow: ["numerique", "entier", "date", "dateTime", "heure", "bit"].includes(Typ_Reponse) ? 0 : 1,
+                flexGrow: isSmallInputResult ? 0 : 1,
                 
                 padding: '0 5px',
                 "& .MuiInput-underline:after": { borderBottom: 'none' }, 
@@ -402,7 +418,7 @@ const UdValeurUnique = ({
 export default UdValeurUnique;
 
 // -----------------------------------------------------------------------
-// COMPOSANT AUXILIAIRE POUR LES CHAMPS DE NOTE
+// COMPOSANT AUXILIAIRE POUR LES CHAMPS DE NOTE (INCHANGÉ)
 // -----------------------------------------------------------------------
 
 const NoteField = ({
