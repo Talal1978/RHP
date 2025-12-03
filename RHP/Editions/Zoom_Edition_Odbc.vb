@@ -1,6 +1,7 @@
 ﻿Imports CrystalDecisions.CrystalReports.Engine
 Imports CrystalDecisions.Shared
 Imports PdfSharp.Pdf
+
 Public Class Zoom_Edition_Odbc
     Friend Pie_Valide, Gere_Wkf As Char
     Friend etat As String
@@ -8,113 +9,96 @@ Public Class Zoom_Edition_Odbc
     Friend ParamList As New ArrayList
     Friend ValList As New ArrayList
     Friend oMailSujet As String = ""
-    Dim ts As New ToolStrip
-    Private Sub Aperçu_Odbc_FormClosing(ByVal sender As Object, ByVal e As System.Windows.Forms.FormClosingEventArgs) Handles Me.FormClosing
-        Try
-            If CrystalReportViewer1.ReportSource IsNot Nothing Then CrystalReportViewer1.ReportSource.close()
-        Catch ex As Exception
 
-        End Try
-    End Sub
-    Sub GeneratingReport()
-        Try
-            Cursor = Cursors.WaitCursor
-            CrystalReportViewer1.Cursor = Cursors.WaitCursor
-            ' On Error GoTo cr_suite
-            Dim cryRpt As New ReportDocument
-            Dim ODBCRHP As String = FindParam("ODBC_RHP")
-            If ODBCRHP = "" Then
-                MsgBox("ODBC non renseigné dans les paramétres généraux")
-                Exit Sub
-            End If
-            Dim DataBaseName As String = DB.ToUpper
-            With cryRpt
-                .Load(etat)
-                .DataSourceConnections(0).SetConnection(ODBCRHP, DataBaseName, False)
-                .DataSourceConnections(0).SetLogon(ConnectionSQL, PWDConnectionSQL)
-            End With
-            Dim paramFields As New ParameterFields()
+    Private ts As ToolStrip
+    Private cryRpt As ReportDocument
 
-            Dim i As Integer
-            For i = 0 To ParamList.Count - 1
-                Dim paramField As New ParameterField()
-                Dim discreteVal As New ParameterDiscreteValue()
-                paramField.ParameterFieldName = ParamList(i)
-                discreteVal.Value = ValList(i)
-                paramField.CurrentValues.Add(discreteVal)
-                paramFields.Add(paramField)
-            Next
-
-            With CrystalReportViewer1
-                .ParameterFieldInfo = paramFields
-                .ReportSource = cryRpt
-            End With
-            Cursor = Cursors.Default
-            CrystalReportViewer1.Cursor = Cursors.Default
-            Exit Sub
-        Catch ex As Exception
-            ShowMessageBox(ex.Message)
-        End Try
-        Me.Close()
-    End Sub
     Private Sub Zoom_Edition_Odbc_Load(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles MyBase.Load
         Try
             Dim rg As New System.Text.RegularExpressions.Regex("\\([^\\]+)\.[^.]+$")
             Dim match As System.Text.RegularExpressions.Match = rg.Match(etat)
             Dim rptName As String = ""
             Dim withPassWord = False
+
             If match.Success Then
                 rptName = match.Groups(1).Value
                 withPassWord = FindLibelle("withPassword", "Cod_Report", rptName, "Param_Mod_Edition")
             End If
-            CrystalReportViewer1.Cursor = Cursors.WaitCursor
-            Cursor = Cursors.WaitCursor
-            Dim eml As New ToolStripButton
+
             Me.WindowState = FormWindowState.Maximized
+            Cursor = Cursors.WaitCursor
+            CrystalReportViewer1.Cursor = Cursors.WaitCursor
+
+            Dim eml As New ToolStripButton
+
             With CrystalReportViewer1
-                .Refresh()
+                .DisplayGroupTree = DisplayTree
+                .EnableRefresh = True
+                .EnableDrillDown = True
+
                 If Gere_Wkf = "O" Then
                     If Pie_Valide = "O" Then
                         .ShowPrintButton = True
                         .ShowExportButton = True
-                        ts.Visible = True
                     Else
                         .ShowPrintButton = False
                         .ShowExportButton = False
-                        ts.Visible = False
                     End If
                 Else
                     .ShowPrintButton = Droits.EstAuthentic
+                    .ShowExportButton = Droits.EstAuthentic
                 End If
-                .DisplayGroupTree = DisplayTree
+
+                .ShowCloseButton = True
+                .ShowCopyButton = True
+                .ShowGroupTreeButton = DisplayTree
+                .ShowPageNavigateButtons = True
+                .ShowRefreshButton = True
+                .ShowTextSearchButton = True
+                .ShowZoomButton = True
+
+                .Refresh()
             End With
-            ts = CType(CrystalReportViewer1.Controls(4), ToolStrip)
-            With eml
-                .Image = My.Resources.msg0
-                .ToolTipText = "Envoyer par mail"
-                .Visible = CrystalReportViewer1.ShowPrintButton
-                AddHandler .Click, AddressOf Emailing
-            End With
-            ts.Items.Remove(ts.Items(2))
-            ts.Items.Insert(2, eml)
-            ts.Refresh()
+
+            If CrystalReportViewer1.Controls.Count > 4 Then
+                ts = CType(CrystalReportViewer1.Controls(4), ToolStrip)
+
+                With eml
+                    .Image = My.Resources.msg0
+                    .ToolTipText = "Envoyer par mail"
+                    .Visible = CrystalReportViewer1.ShowPrintButton
+                    AddHandler .Click, AddressOf Emailing
+                End With
+
+                If ts.Items.Count > 2 Then
+                    ts.Items.Remove(ts.Items(2))
+                End If
+                ts.Items.Insert(2, eml)
+
+                ts.Visible = CrystalReportViewer1.ShowPrintButton OrElse CrystalReportViewer1.ShowExportButton
+                ts.Refresh()
+            End If
+
             If CBool(withPassWord) Then
                 Dim fullFileName As String = ""
                 If rptName <> "" Then
                     fullFileName = rptName & "_" & (New Random).Next(10000, 99999) & ".pdf"
                 End If
+
                 Dim saveFileDialog As New SaveFileDialog()
-                ' Set properties for the save file dialog
-                saveFileDialog.InitialDirectory = importPath ' Optional: Set the initial directory
-                saveFileDialog.Filter = "Pdf Files (*.pdf)|*.txt|All Files (*.*)|*.*" ' Optional: Filter for file types
-                saveFileDialog.FilterIndex = 1 ' Optional: Set default filter
-                saveFileDialog.RestoreDirectory = True ' Optional: Restore directory between uses
-                If fullFileName <> "" Then saveFileDialog.FileName = fullFileName ' Set default file name
-                ' Show the dialog and get the result
+                With saveFileDialog
+                    .InitialDirectory = importPath
+                    .Filter = "Fichiers PDF (*.pdf)|*.pdf|Tous les fichiers (*.*)|*.*"
+                    .FilterIndex = 1
+                    .RestoreDirectory = True
+                    .FileName = fullFileName
+                    .Title = "Enregistrer le rapport PDF protégé"
+                End With
+
                 If saveFileDialog.ShowDialog() = DialogResult.OK Then
-                    ' Get the selected file path
                     fullFileName = saveFileDialog.FileName
                     RptExportingToPdf(fullFileName, True)
+                Else
                     Me.Close()
                 End If
             Else
@@ -122,84 +106,266 @@ Public Class Zoom_Edition_Odbc
             End If
 
             Cursor = Cursors.Default
-        Catch ex As Exception
-            ShowMessageBox(ex.Message)
-        End Try
-        CrystalReportViewer1.Cursor = Cursors.Default
-        Cursor = Cursors.Default
-    End Sub
-    Sub Emailing()
-        Dim rpt As New ReportDocument
-        rpt = CrystalReportViewer1.ReportSource
-        On Error GoTo suite
-        System.IO.Directory.Delete("PDF", True)
-suite:
-        If Not System.IO.Directory.Exists("PDF") Then System.IO.Directory.CreateDirectory("PDF")
-        Dim rnd As New Random
-        Dim Filename As String = "PDF\" & rpt.Name & rnd.Next(0, 10000) & ".pdf"
-        rpt.ExportToDisk(ExportFormatType.PortableDocFormat, Filename)
-        With Zoom_Mail
-            Dim oEmails As String = ""
-            .To_Text.Text = .ExtraireEmailValid(oEmails)
-            .Object_Text.Text = oMailSujet
-            .StartPosition = FormStartPosition.CenterScreen
-            .PJ_List.Items.Clear()
-            .PJList.Clear()
-            .PJList.Add(Filename)
-            .ShowDialog()
-        End With
+            CrystalReportViewer1.Cursor = Cursors.Default
 
+        Catch ex As Exception
+            ShowMessageBox("Erreur lors du chargement : " & vbCrLf & ex.Message, "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            Cursor = Cursors.Default
+            CrystalReportViewer1.Cursor = Cursors.Default
+        End Try
+    End Sub
+
+    Private Sub Aperçu_Odbc_FormClosing(ByVal sender As Object, ByVal e As System.Windows.Forms.FormClosingEventArgs) Handles Me.FormClosing
+        Try
+            If CrystalReportViewer1.ReportSource IsNot Nothing Then
+                CType(CrystalReportViewer1.ReportSource, ReportDocument).Close()
+                CrystalReportViewer1.ReportSource = Nothing
+            End If
+
+            If cryRpt IsNot Nothing Then
+                cryRpt.Close()
+                cryRpt.Dispose()
+                cryRpt = Nothing
+            End If
+        Catch ex As Exception
+        End Try
+    End Sub
+
+    Sub GeneratingReport()
+        Try
+            Cursor = Cursors.WaitCursor
+            CrystalReportViewer1.Cursor = Cursors.WaitCursor
+            Dim ODBCRHP As String = FindParam("ODBC_RHP")
+            If String.IsNullOrEmpty(ODBCRHP) Then
+                ShowMessageBox("ODBC non renseigné dans les paramètres généraux", "Erreur de configuration", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+                Me.Close()
+                Exit Sub
+            End If
+            cryRpt = New ReportDocument()
+            Dim DataBaseName As String = DB.ToUpper
+            With cryRpt
+                .Load(etat)
+                If .DataSourceConnections.Count > 0 Then
+                    .DataSourceConnections(0).SetConnection(ODBCRHP, DataBaseName, False)
+                    .DataSourceConnections(0).SetLogon(ConnectionSQL, PWDConnectionSQL)
+                End If
+                For Each table As CrystalDecisions.CrystalReports.Engine.Table In .Database.Tables
+                    Dim logonInfo As New TableLogOnInfo()
+                    logonInfo.ConnectionInfo.ServerName = ODBCRHP
+                    logonInfo.ConnectionInfo.DatabaseName = DataBaseName
+                    logonInfo.ConnectionInfo.UserID = ConnectionSQL
+                    logonInfo.ConnectionInfo.Password = PWDConnectionSQL
+                    table.ApplyLogOnInfo(logonInfo)
+                Next
+            End With
+
+            ' *** MODIFICATION IMPORTANTE : Définir les paramètres AVANT d'assigner le ReportSource ***
+            ' Passer les paramètres au rapport principal
+            For i As Integer = 0 To ParamList.Count - 1
+                Try
+                    cryRpt.SetParameterValue(ParamList(i).ToString(), ValList(i))
+                Catch ex As Exception
+                    Debug.WriteLine($"Erreur paramètre principal {ParamList(i)} : {ex.Message}")
+                End Try
+            Next
+
+            ' Passer les paramètres aux sous-rapports
+            Try
+                PasserParametresAuxSousRapports(cryRpt)
+            Catch ex As Exception
+                Debug.WriteLine("Erreur lors du passage des paramètres aux sous-rapports : " & ex.Message)
+            End Try
+
+            ' *** MAINTENANT on peut assigner le ReportSource ***
+            CrystalReportViewer1.ReportSource = cryRpt
+
+            ' Ne PAS appeler RefreshReport ici car cela redemandera les paramètres
+            ' CrystalReportViewer1.RefreshReport()
+
+            Cursor = Cursors.Default
+            CrystalReportViewer1.Cursor = Cursors.Default
+        Catch ex As Exception
+            ShowMessageBox("Erreur lors de la génération du rapport : " & vbCrLf & ex.Message, "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            Me.Close()
+        End Try
+    End Sub
+
+    Private Sub PasserParametresAuxSousRapports(rpt As ReportDocument)
+        If rpt Is Nothing OrElse rpt.ReportDefinition Is Nothing Then Exit Sub
+
+        Try
+            For Each section As Section In rpt.ReportDefinition.Sections
+                If section Is Nothing OrElse section.ReportObjects Is Nothing Then Continue For
+
+                For Each reportObject As ReportObject In section.ReportObjects
+                    If reportObject.Kind = ReportObjectKind.SubreportObject Then
+                        Try
+                            Dim subReport As SubreportObject = CType(reportObject, SubreportObject)
+                            Dim subReportDoc As ReportDocument = subReport.OpenSubreport(subReport.SubreportName)
+
+                            If subReportDoc IsNot Nothing AndAlso subReportDoc.DataDefinition IsNot Nothing Then
+                                For i As Integer = 0 To ParamList.Count - 1
+                                    Try
+                                        Dim paramName As String = ParamList(i).ToString()
+                                        Dim paramValue As Object = ValList(i)
+
+                                        ' Vérifier si le paramètre existe dans le sous-rapport
+                                        Dim paramExists As Boolean = False
+                                        For Each paramDef As ParameterFieldDefinition In subReportDoc.DataDefinition.ParameterFields
+                                            If paramDef.Name = paramName OrElse paramDef.ParameterFieldName = paramName Then
+                                                paramExists = True
+                                                Exit For
+                                            End If
+                                        Next
+
+                                        If paramExists Then
+                                            subReportDoc.SetParameterValue(paramName, paramValue)
+                                        End If
+                                    Catch exParam As Exception
+                                        Debug.WriteLine($"Impossible de passer le paramètre {ParamList(i)} au sous-rapport : {exParam.Message}")
+                                    End Try
+                                Next
+                            End If
+                        Catch exSub As Exception
+                            Debug.WriteLine($"Erreur avec le sous-rapport : {exSub.Message}")
+                        End Try
+                    End If
+                Next
+            Next
+        Catch ex As Exception
+            Debug.WriteLine($"Erreur générale lors du traitement des sous-rapports : {ex.Message}")
+        End Try
+    End Sub
+
+    Sub Emailing()
+        Try
+            If CrystalReportViewer1.ReportSource Is Nothing Then
+                ShowMessageBox("Aucun rapport à envoyer", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information)
+                Exit Sub
+            End If
+
+            Dim rpt As ReportDocument = CType(CrystalReportViewer1.ReportSource, ReportDocument)
+
+            Try
+                System.IO.Directory.Delete("PDF", True)
+            Catch ex As Exception
+
+            End Try
+
+
+            If Not System.IO.Directory.Exists("PDF") Then
+                System.IO.Directory.CreateDirectory("PDF")
+            End If
+
+            Dim rnd As New Random
+            Dim Filename As String = "PDF\" & rpt.Name & rnd.Next(0, 10000) & ".pdf"
+
+            Dim exportOpts As New ExportOptions()
+            exportOpts.ExportFormatType = ExportFormatType.PortableDocFormat
+            exportOpts.ExportDestinationType = ExportDestinationType.DiskFile
+
+            Dim diskOpts As New DiskFileDestinationOptions()
+            diskOpts.DiskFileName = Filename
+            exportOpts.ExportDestinationOptions = diskOpts
+
+            rpt.Export(exportOpts)
+
+            With Zoom_Mail
+                Dim oEmails As String = ""
+                .To_Text.Text = .ExtraireEmailValid(oEmails)
+                .Object_Text.Text = oMailSujet
+                .StartPosition = FormStartPosition.CenterScreen
+                .PJ_List.Items.Clear()
+                .PJList.Clear()
+                .PJList.Add(Filename)
+                .ShowDialog()
+            End With
+
+        Catch ex As Exception
+            ShowMessageBox("Erreur lors de la préparation de l'email : " & vbCrLf & ex.Message, "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error)
+        End Try
     End Sub
 
     Sub RptExportingToPdf(fullFileName As String, Optional ByVal withPassWord As Boolean = False)
-        Dim cryRpt As New ReportDocument
-        Dim ODBCRHP As String = FindParam("ODBC_RHP")
-        If ODBCRHP = "" Then
-            MsgBox("ODBC non renseigné dans les paramétres généraux")
-            Exit Sub
-        End If
-        Dim DataBaseName As String = DB.ToUpper
+        Try
+            Dim exportRpt As New ReportDocument
+            Dim ODBCRHP As String = FindParam("ODBC_RHP")
 
-        With cryRpt
-            .Load(etat)
-            .DataSourceConnections(0).SetConnection(ODBCRHP, DataBaseName, False)
-            .DataSourceConnections(0).SetLogon(ConnectionSQL, PWDConnectionSQL)
-        End With
+            If String.IsNullOrEmpty(ODBCRHP) Then
+                ShowMessageBox("ODBC non renseigné dans les paramètres généraux", "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+                Exit Sub
+            End If
 
-        For i = 0 To ParamList.Count - 1
-            cryRpt.SetParameterValue(ParamList(i), ValList(i))
-        Next
-        CType(cryRpt, ReportDocument).ExportToDisk(ExportFormatType.PortableDocFormat, fullFileName)
-        If withPassWord Then
-            Dim pwd As String = (New Random).Next(10000, 99999)
-            Dim encryptedFile = fullFileName.Replace(".pdf", "") & "_protected.pdf"
-            ShowMessageBox("Votre mot de passe : " & vbCrLf & pwd, "Mot de passe : " & fullFileName, MessageBoxButtons.OK)
-            ApplyPasswordToPdf(fullFileName, encryptedFile, pwd)
-        Else
-            StartPrograme(fullFileName)
-        End If
-        Me.Close()
+            Dim DataBaseName As String = DB.ToUpper
+
+            With exportRpt
+                .Load(etat)
+                If .DataSourceConnections.Count > 0 Then
+                    .DataSourceConnections(0).SetConnection(ODBCRHP, DataBaseName, False)
+                    .DataSourceConnections(0).SetLogon(ConnectionSQL, PWDConnectionSQL)
+                End If
+            End With
+
+            For i As Integer = 0 To ParamList.Count - 1
+                exportRpt.SetParameterValue(ParamList(i).ToString(), ValList(i))
+            Next
+
+            Dim exportOptions As New ExportOptions()
+            exportOptions.ExportFormatType = ExportFormatType.PortableDocFormat
+            exportOptions.ExportDestinationType = ExportDestinationType.DiskFile
+
+            Dim diskOpts As New DiskFileDestinationOptions()
+            diskOpts.DiskFileName = fullFileName
+            exportOptions.ExportDestinationOptions = diskOpts
+
+            exportRpt.Export(exportOptions)
+
+            If withPassWord Then
+                Dim pwd As String = (New Random).Next(10000, 99999).ToString()
+                Dim encryptedFile As String = fullFileName.Replace(".pdf", "") & "_protected.pdf"
+
+                ShowMessageBox("Votre mot de passe : " & vbCrLf & vbCrLf & pwd, "Mot de passe", MessageBoxButtons.OK, MessageBoxIcon.Information)
+                ApplyPasswordToPdf(fullFileName, encryptedFile, pwd)
+            Else
+                StartPrograme(fullFileName)
+            End If
+
+            exportRpt.Close()
+            exportRpt.Dispose()
+
+        Catch ex As Exception
+            ShowMessageBox("Erreur lors de l'export PDF : " & vbCrLf & ex.Message, "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error)
+        Finally
+            Me.Close()
+        End Try
     End Sub
+
     Sub ApplyPasswordToPdf(inputFile As String, outputFile As String, userPassword As String)
-        ' Open the existing PDF
-        Dim document As PdfDocument = PdfSharp.Pdf.IO.PdfReader.Open(inputFile, PdfSharp.Pdf.IO.PdfDocumentOpenMode.Modify)
+        Try
+            Dim document As PdfDocument = PdfSharp.Pdf.IO.PdfReader.Open(inputFile, PdfSharp.Pdf.IO.PdfDocumentOpenMode.Modify)
 
-        ' Set the security settings for the PDF
-        document.SecuritySettings.UserPassword = userPassword
-        document.SecuritySettings.OwnerPassword = userPassword
+            With document.SecuritySettings
+                .UserPassword = userPassword
+                .OwnerPassword = userPassword
+                .PermitAnnotations = False
+                .PermitAssembleDocument = False
+                .PermitExtractContent = False
+                .PermitFormsFill = True
+                .PermitFullQualityPrint = False
+                .PermitModifyDocument = False
+                .PermitPrint = True
+            End With
 
-        ' Set permissions for the PDF (This version of PdfSharp doesn't allow detailed permission control)
-        '   document.SecuritySettings.PermitAccessibilityExtractContent = False ' Disable extracting content
-        document.SecuritySettings.PermitAnnotations = False ' Disable annotations
-        document.SecuritySettings.PermitAssembleDocument = False ' Disable assembling the document
-        document.SecuritySettings.PermitExtractContent = False ' Disable content copying
-        document.SecuritySettings.PermitFormsFill = True ' Allow filling forms
-        document.SecuritySettings.PermitFullQualityPrint = False ' Disable high-quality printing
-        document.SecuritySettings.PermitModifyDocument = False ' Disable modifying the document
-        document.SecuritySettings.PermitPrint = True ' Allow printing
-        System.IO.File.Delete(inputFile)
-        ' Save the new password-protected PDF
-        document.Save(outputFile)
-        StartPrograme(outputFile)
+            document.Save(outputFile)
+            document.Close()
+
+            System.IO.File.Delete(inputFile)
+
+            StartPrograme(outputFile)
+
+        Catch ex As Exception
+            ShowMessageBox("Erreur lors de la protection du PDF : " & vbCrLf & ex.Message, "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error)
+        End Try
     End Sub
+
 End Class

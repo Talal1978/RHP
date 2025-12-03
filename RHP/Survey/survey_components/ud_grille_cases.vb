@@ -130,15 +130,55 @@ Public Class ud_grille_cases
         With Grd
             Dim laNote As Double = 0
             Dim note_totale As Double = 0
-            For i = 0 To .RowCount - 1
+            If Typ_Reponse = "oui_non" Or Typ_Reponse = "vrai_faux" Then
+                If CBool(.Item(1, 0).Tag) Then
+                    laNote = 1
+                Else
+                    laNote = 0
+                End If
+            ElseIf Typ_Reponse = "cocher" Or Typ_Reponse = "echelle" Then
                 For j = 1 To .ColumnCount - 1
-                    If CBool(.Item(j, i).Tag) Then
-                        laNote += j + 1
+                    If CBool(.Item(j, 0).Tag) Then
+                        laNote = j
                         Exit For
                     End If
                 Next
-            Next
-            laNote = Math.Round(laNote / Math.Max(1, .RowCount), 2)
+            Else
+                If modeScoring = "multi_sum" Then
+                        For i = 0 To .RowCount - 1
+                            For j = 1 To .ColumnCount - 1
+                                If CBool(.Item(j, i).Tag) Then
+                                laNote += 1
+                            End If
+                            Next
+                        Next
+                    ElseIf modeScoring = "multi_avg" Then
+                        For i = 0 To .RowCount - 1
+                            For j = 1 To .ColumnCount - 1
+                                If CBool(.Item(j, i).Tag) Then
+                                laNote += 1
+                            End If
+                            Next
+                        Next
+                        laNote = Math.Round(laNote / (.RowCount * (.ColumnCount - 1)), 2)
+                    ElseIf modeScoring = "multi_max" Then
+                        For i = 0 To .RowCount - 1
+                            For j = 1 To .ColumnCount - 1
+                                If CBool(.Item(j, i).Tag) Then
+                                    laNote = Math.Max(j, laNote)
+                                End If
+                            Next
+                        Next
+                    ElseIf modeScoring = "multi_min" Then
+                        For i = 0 To .RowCount - 1
+                            For j = 1 To .ColumnCount - 1
+                                If CBool(.Item(j, i).Tag) Then
+                                    laNote = Math.Min(j, laNote)
+                                End If
+                            Next
+                        Next
+                    End If
+                End If
             If funcScoring <> "" Then
                 Dim noteFunc = Module_Generateur_Survey.myVBS.Eval($"Func_Survey_{codQuestion}({laNote})")
                 If IsNumeric(noteFunc) Then laNote = Math.Round(CDbl(noteFunc), 2)

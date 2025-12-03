@@ -19,7 +19,6 @@ export const authentication = async (req: Request, res: Response) => {
     where HashBytes('SHA1',upper(Mail))=HashBytes('SHA1',@lg) and Pw='${encrypt(
     pwd
   )}'`;
-  console.log(sqlStr);
   const rsl = await lireSql(sqlStr, [
     { param: "login", sqlType: NVarChar, valeur: login },
   ]);

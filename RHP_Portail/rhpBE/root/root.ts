@@ -58,6 +58,7 @@ import {
   isPaieEncours,
   releaseAccessibleApi,
 } from "../modules/module_access";
+import { surveyQuestions } from "../controlers/survey";
 import { ficheposte } from "../controlers/org_ficheposte";
 import { generateReport } from "../controlers/report";
 const mainRooting = express.Router();
@@ -108,6 +109,8 @@ mainRooting.post("/get_mnt_prets_encours", validate, get_mnt_prets_encours);
 mainRooting.post("/delete_demande_conge", validate, delete_demande_conge);
 mainRooting.post("/get_conge_droits", validate, get_conge_droits);
 mainRooting.post("/calcul_conge", validate, calcul_conge);
+
+mainRooting.get("/surveyQuestions", validate, surveyQuestions);
 
 mainRooting.post("/save_note_frais", validate, save_note_frais);
 mainRooting.post("/note_frais_liste", validate, noteFraisListe);

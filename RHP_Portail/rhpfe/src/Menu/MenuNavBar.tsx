@@ -76,7 +76,7 @@ export default function MenuNavBar() {
             src={`${process.env.PUBLIC_URL}/logoRHPBlanc.png`}
             sx={{ ml: 2 }}
             onClick={(event: React.MouseEvent<HTMLElement>) => {
-              navigate("test")
+              navigate("/test")
             }}
           />
         </Toolbar>

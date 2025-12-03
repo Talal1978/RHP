@@ -17,7 +17,7 @@ import { setSocket, socket } from "../../socket";
 export const Login = () => {
   const navigate = useNavigate();
   const [errorMsg, setErrorMsg] = useState("");
-  const [credention, setCredentials] = useState({ login: "", password: "" });
+  const [credention, setCredentials] = useState({ login: "talal.hamdaoui@gmail.com", password: "azer" });
   const myAxiosGet = useAxiosGet();
   const authentification = useCallback(async () => {
     const rsl = await myAxiosGet({

@@ -8,6 +8,7 @@ import { colorBase } from "../../modules/module_general";
 import "./calendarZoom.scss";
 import { styleLabel } from "../../types";
 import { SxProps, ThemeProvider, createTheme } from "@mui/material";
+
 const CalendarZoom = ({
   onClear,
   label,
@@ -17,7 +18,7 @@ const CalendarZoom = ({
   nomControle,
   sx,
 }: {
-  onClear: any;
+  onClear?: any;
   nomControle: string;
   label: string;
   valeur?: string | Date;
@@ -29,7 +30,8 @@ const CalendarZoom = ({
     <ThemeProvider theme={theme}>
       <DesktopDatePicker
         className={`calendarZoom ${readOnly ? "inactif" : "actif"}`}
-        sx={{ ...sx, minWidth: "160px" }}
+        // CORRECTION ICI : "minWidth" est placé AVANT "...sx" pour permettre la surcharge
+        sx={{ minWidth: "175px", ...sx }} 
         readOnly={readOnly}
         label={label}
         format="dd/MM/yyyy"
@@ -61,11 +63,11 @@ const CalendarZoom = ({
         onChange={(e) => {
           if (Boolean(onchange) && !readOnly)
             if (estDate(e)) {
-              const laDate = e.toLocaleDateString("en-US", {
-                year: "numeric",
-                month: "2-digit",
-                day: "2-digit",
-              });
+              // const laDate = e.toLocaleDateString("en-US", {
+              //   year: "numeric",
+              //   month: "2-digit",
+              //   day: "2-digit",
+              // });
               onchange(nomControle, e);
             } else {
               console.log("La date entrée n'est pas valide", e);
@@ -83,7 +85,7 @@ const theme = createTheme({
         notchedOutline: {
           "&:focus": {
             borderColor: colorBase.colorBase02,
-          },
+          },width: '180px',
         },
       },
     },

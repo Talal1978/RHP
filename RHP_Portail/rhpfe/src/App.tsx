@@ -4,6 +4,7 @@ import React, {
   Suspense,
   createContext,
   lazy,
+  useMemo,
   useState,
 } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
@@ -14,6 +15,7 @@ import Loading from "./components/Loading/Loading";
 import { TMsgBox } from "./types";
 import MsgBox from "./components/MsgBox/MsgBox";
 import TestSurvey from "./Pages/Survey/TestSurvey";
+import Survey_Rendering from "./Pages/Survey/Survey_Rendering";
 export const parentCntX = createContext<{
   msgProps: TMsgBox;
   setMsgProps: Dispatch<SetStateAction<TMsgBox>>;
@@ -42,16 +44,22 @@ const ReportViewer = lazy(() =>
 function App() {
   const [showMsgBox, setShowMsgBox] = useState(false);
   const [msgProps, setMsgProps] = useState<TMsgBox>({ msg: "" });
+  const contextValue = useMemo(() => ({
+    showMsgBox, 
+    setShowMsgBox, 
+    msgProps, 
+    setMsgProps
+  }), [showMsgBox, msgProps]);
   return (
     <parentCntX.Provider
-      value={{ showMsgBox, setShowMsgBox, msgProps, setMsgProps }}
+      value={contextValue}
     >
       <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={fr}>
         <BrowserRouter>
           <Suspense fallback={<Loading />}>
             <Routes>
               <Route path="/" element={<Login />} />
-              <Route path="/myspace/test" element={<TestSurvey />} />
+              <Route path="/test" element={<Survey_Rendering avecNote={false} />} />
               <Route
                 path="/myspace/:ecran/:titre/:num?"
                 element={<MenuMain />}
