@@ -56,9 +56,10 @@ useEffect(() => {
   const handleValueChange = (value: any) => setInputValue(value);
   const handleDateChange = (name: string, date: Date | null) => setInputValue(date);
   const handleManualNoteChange = (value: any) => {
+    if (!note?.note_manuelle) return;
     const newNote = safeNumber(value, 0);
     const safeMaxScore = safeNumber(note?.max_score, 100000000);
-    handleNoteManuelle && handleNoteManuelle(numQuestion,{ note: Math.min(newNote, safeMaxScore), coef: (note?.coef || 1), note_totale: Math.min(newNote, safeMaxScore) * (note?.coef || 1), max_score: safeMaxScore  });
+    handleNoteManuelle && handleNoteManuelle(numQuestion,{...note, note: Math.min(newNote, safeMaxScore), coef: (note?.coef || 1), note_totale: Math.min(newNote, safeMaxScore) * (note?.coef || 1), max_score: safeMaxScore  });
   };
 
   const InputComponent = useMemo(() => {
@@ -74,7 +75,6 @@ useEffect(() => {
             textAlign: 'right' 
         }
     };
-
     switch (Typ_Reponse) {
       case "numerique":
       case "entier":
@@ -214,7 +214,6 @@ export default UdValeurUnique;
 
 const NoteField = ({ label, value, readonly, onChange = () => {} }: any) => {
   const safeValue = safeArrondi(value, 2);
-  console.log("Rendering NoteField:", label, safeValue, readonly);
   return (
     <Grid container spacing={1} alignItems="center">
       <Grid xs={6}><Typography sx={{ color: colorBase.colorBase01, fontSize: "0.8em" }}>{label}</Typography></Grid>
@@ -225,9 +224,9 @@ const NoteField = ({ label, value, readonly, onChange = () => {} }: any) => {
           type="number" 
           valeur={safeValue} 
           readonly={readonly} 
-          onchange={onChange} 
+          onchange={(n, v) => onChange(v)} 
           style={{ width: "100%" }} 
-          sx={{ "& .MuiInputBase-input": { textAlign: "center", fontWeight: "bold", fontSize: "1em", padding: "0", color: readonly ? colorBase.colorBase01 :   "white" } }} 
+          sx={{ "& .MuiInputBase-input": { textAlign: "center", fontWeight: "bold", fontSize: "1em", padding: "0", backgroundColor: readonly ? '#dff1f7' :   "white" } }} 
         />
       </Grid>
     </Grid>

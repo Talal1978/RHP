@@ -52,16 +52,10 @@ const Survey_Rendering = ({ avecNote }: { avecNote: boolean }) => {
     const [questions, setQuestions] = useState<TQuestion[]>([]);
     const [answers, setAnswers] = useState<TAnswers>({});
     const [isLoading, setIsLoading] = useState(true);
-
-    // CORRECTION: Utiliser useRef pour questions pour éviter la boucle infinie
     const questionsRef = useRef<TQuestion[]>([]);
     useEffect(() => {
         questionsRef.current = questions;
     }, [questions]);
-    useEffect(() => {
-     console.log("🔄 Mise à jour answers:", answers);
-    }, [answers]);
-    // CORRECTION: Appeler directement dans useEffect pour éviter les re-déclenchements
     useEffect(() => {
         let isMounted = true;
 
@@ -74,13 +68,7 @@ const Survey_Rendering = ({ avecNote }: { avecNote: boolean }) => {
                 if (!isMounted) return; // Éviter les updates si le composant est démonté
 
                 if (rsl.data.result && rsl.data.data.length > 0) {
-                    console.log("📊 Questions chargées depuis la DB:");
-                    rsl.data.data.forEach((q: TQuestion) => {
-                        console.log(`  Q[${q.NumQuestion}]: "${q.Question?.substring(0, 40)}..." - Obligatoire: ${q.Obligatoire}, Obligatoire_Si: "${q.Obligatoire_Si || '(vide)'}", Erreur_Si: "${q.Erreur_Si || '(vide)'}"`);
-                    });
-
                     setQuestions(rsl.data.data);
-
                     const initialAnswers: TAnswers = {};
                     rsl.data.data.forEach((q: TQuestion) => {
                         initialAnswers[q.NumQuestion] = {
@@ -100,12 +88,8 @@ const Survey_Rendering = ({ avecNote }: { avecNote: boolean }) => {
                             mode_scoring: q.Mode_Scoring,
                         };
                     });
-
-                    console.log("Questions chargées avec valeurs initiales:", initialAnswers);
-                    setAnswers(initialAnswers);
-                } else {
-                    console.log("0 Questions chargées:", rsl.data.data);
-                }
+                     setAnswers(initialAnswers);
+                } 
             } catch (error) {
                 console.error("Erreur chargement questions:", error);
             } finally {
@@ -121,20 +105,18 @@ const Survey_Rendering = ({ avecNote }: { avecNote: boolean }) => {
         return () => {
             isMounted = false;
         };
-    }, []); // CORRECTION: Dépendances vides - se déclenche UNE SEULE FOIS au montage
-
-    // CORRECTION: Retirer questions des dépendances et utiliser questionsRef
+    }, []);
     const handleValueChange = useCallback((
         qNum: number,
         newValue: any
     ) => {
         setAnswers(prevAnswers => {
             const currentQ = questionsRef.current.find(q => q.NumQuestion === qNum);
+            let hasChanged = false
             if (!currentQ) {
-                console.warn(`❌ Question ${qNum} non trouvée`);
                 return prevAnswers;
             }
-            let finalNote = answers[qNum]?.note ;
+            let finalNote = prevAnswers[qNum]?.note ;
             if (finalNote!== null) {
                 if (currentQ.Mode_Scoring === 'func' && currentQ.Func_Scoring) {
                     try {
@@ -143,7 +125,6 @@ const Survey_Rendering = ({ avecNote }: { avecNote: boolean }) => {
                             prevAnswers,
                             newValue || defaultValueMap[currentQ.Typ_Reponse], currentQ.Typ_Reponse
                         );
-                        console.log(`🧮 Note fonctionnelle pour Q${qNum}:`,currentQ.Func_Scoring, funcScore );
                         const score = safeNumber(funcScore, 0);
                         const coef = safeNumber(currentQ.Coef, 1);
 
@@ -162,16 +143,9 @@ const Survey_Rendering = ({ avecNote }: { avecNote: boolean }) => {
                             note_totale: 0
                         };
                     }
-                } else if (currentQ.Mode_Scoring === 'na') {
-                    finalNote = null;
-                } else if (currentQ.Mode_Scoring === 'manuel') {
-                    console.log(`🧮 Note manuelle pour Q${qNum}:`, finalNote);
-                    // Ne rien faire, garder la note manuelle
-                } else if (currentQ.Mode_Scoring === 'auto') {
-                    // Exemple simple: pour les types numériques, on peut définir la note comme la valeur elle-même
-                   let score = safeNumber(getValeur(newValue, currentQ.Typ_Reponse), 0);
+                   } else if (currentQ.Mode_Scoring === 'auto') {
+                    let score = safeNumber(getValeur(newValue, currentQ.Typ_Reponse), 0);
                    const coef = safeNumber(currentQ.Coef, 1);
-                   console.log(`🧮 Note automatique pour Q${qNum}:`, score, newValue);
                    finalNote = {
                         ...finalNote,
                         note: score,
@@ -195,7 +169,9 @@ const Survey_Rendering = ({ avecNote }: { avecNote: boolean }) => {
             }
 
             //mise à jour de la réponse
-            const updatedAnswers = {
+              let updatedAnswers = {} as TAnswers;
+            if (newValue !== prevAnswers[qNum]?.value || finalNote?.note_totale !== prevAnswers[qNum]?.note?.note_totale) {
+                updatedAnswers = {
                 ...prevAnswers,
                 [qNum]: {
                     ...prevAnswers[qNum],
@@ -204,9 +180,9 @@ const Survey_Rendering = ({ avecNote }: { avecNote: boolean }) => {
                     typ_reponse: currentQ.Typ_Reponse
                 }
             };
-
-            const reEvaluatedAnswers: TAnswers = { ...updatedAnswers };
-
+        
+          const reEvaluatedAnswers: TAnswers = { ...updatedAnswers };
+            hasChanged = false;
             questionsRef.current.forEach(q => {
                 const qState = updatedAnswers[q.NumQuestion] || initialAnswerState;
                 // Traitement des questions obligatoires 
@@ -220,6 +196,9 @@ const Survey_Rendering = ({ avecNote }: { avecNote: boolean }) => {
                             isMandatory: q.Obligatoire || isConditionallyMandatory,
                             isVisible: q.Obligatoire || isConditionallyMandatory,
                         };
+                        if (isConditionallyMandatory !== qState.isMandatory) {
+                            hasChanged = true;
+                        }
                     } catch (error) {
                         console.error(`Erreur évaluation Obligatoire_Si Q${q.NumQuestion}:`, error);
                     }
@@ -240,25 +219,25 @@ const Survey_Rendering = ({ avecNote }: { avecNote: boolean }) => {
                             hasError: hasConditionallyError,
                             errorMsg: hasConditionallyError ? q.Erreur_Msg : '',
                         };
+                        if (hasConditionallyError !== qState.hasError) {
+                            hasChanged = true;
+                        }
                     } catch (error) {
                         console.error(`Erreur évaluation Erreur_Si Q${q.NumQuestion}:`, error);
                     }
                 }
             })
-
-            return reEvaluatedAnswers;
+            return hasChanged ? reEvaluatedAnswers : updatedAnswers;
+           }
+            else {
+                return prevAnswers;
+            }
         });
     }, []); // CORRECTION: Dépendances vides car on utilise questionsRef
 
 
     const QuestionRenderer = (q: TQuestion) => {
         const qState = answers[q.NumQuestion] || initialAnswerState;
-
-        // LOG DEBUG: Afficher les props pour Q[2]
-        if (q.NumQuestion === 2) {
-            console.log(`🎨 Rendu Q[2] - isMandatory: ${qState.isMandatory}, isVisible: ${qState.isVisible}`);
-        }
-
         const commonProps = {
             numQuestion:  q.NumQuestion ,
             laquestion: q.Question,
@@ -268,6 +247,15 @@ const Survey_Rendering = ({ avecNote }: { avecNote: boolean }) => {
             colonnes: q.Reponses_Possibles,
             valeurInitiale: qState.value,
             onValueChange: (value: any) => handleValueChange(q.NumQuestion, value),
+            handleNoteManuelle: (numQuestion: number, note: TNoteResult) => {
+                setAnswers(prevAnswers => ({
+                    ...prevAnswers,
+                    [numQuestion]: {
+                        ...prevAnswers[numQuestion],
+                        note: note
+                    }
+                }));
+            }   
         };
 
         switch (q.Typ_Reponse) {

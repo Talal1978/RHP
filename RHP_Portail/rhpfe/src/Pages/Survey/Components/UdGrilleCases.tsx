@@ -59,6 +59,7 @@ const UdGrilleCases = ({
   });
   
   const handleManualNoteChange = ( value: any) => {
+    if (!note?.note_manuelle) return;
     const newNote = safeNumber(value, 0);
     const safeMaxScore = safeNumber(note?.max_score, 100000000);
     handleNoteManuelle && handleNoteManuelle(numQuestion,{ note: Math.min(newNote, safeMaxScore), coef: note?.coef || 1, note_totale: Math.min(newNote, safeMaxScore) * (note?.coef || 1), max_score: safeMaxScore });
