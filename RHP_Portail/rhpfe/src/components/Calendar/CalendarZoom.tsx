@@ -31,7 +31,7 @@ const CalendarZoom = ({
       <DesktopDatePicker
         className={`calendarZoom ${readOnly ? "inactif" : "actif"}`}
         // CORRECTION ICI : "minWidth" est placé AVANT "...sx" pour permettre la surcharge
-        sx={{ minWidth: "175px", ...sx }} 
+        sx={{ minWidth: "175px", ...sx }}
         readOnly={readOnly}
         label={label}
         format="dd/MM/yyyy"
@@ -39,8 +39,8 @@ const CalendarZoom = ({
           valeur instanceof Date
             ? valeur
             : estDate(valeur)
-            ? parse(formatDateFR(valeur), "dd/MM/yyyy", new Date())
-            : valeur
+              ? parse(formatDateFR(valeur), "dd/MM/yyyy", new Date())
+              : valeur
         }
         slotProps={{
           openPickerButton: {
@@ -53,6 +53,12 @@ const CalendarZoom = ({
             variant: "standard",
             InputLabelProps: {
               style: styleLabel,
+              sx: { fontSize: { xs: "1rem", sm: "1rem" } },
+            },
+            sx: {
+              "& .MuiInputBase-input": {
+                fontSize: { xs: "1rem", sm: "1rem" },
+              },
             },
           },
 
@@ -70,7 +76,7 @@ const CalendarZoom = ({
               // });
               onchange(nomControle, e);
             } else {
-              console.log("La date entrée n'est pas valide", e);
+
             }
         }}
       />
@@ -85,7 +91,7 @@ const theme = createTheme({
         notchedOutline: {
           "&:focus": {
             borderColor: colorBase.colorBase02,
-          },width: '180px',
+          }, width: '180px',
         },
       },
     },

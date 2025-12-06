@@ -14,8 +14,7 @@ import { fr } from "date-fns/locale/fr";
 import Loading from "./components/Loading/Loading";
 import { TMsgBox } from "./types";
 import MsgBox from "./components/MsgBox/MsgBox";
-import TestSurvey from "./Pages/Survey/TestSurvey";
-import Survey_Rendering from "./Pages/Survey/Survey_Rendering";
+import Evaluation from "./Pages/Evaluation/Evaluation";
 export const parentCntX = createContext<{
   msgProps: TMsgBox;
   setMsgProps: Dispatch<SetStateAction<TMsgBox>>;
@@ -59,7 +58,7 @@ function App() {
           <Suspense fallback={<Loading />}>
             <Routes>
               <Route path="/" element={<Login />} />
-              <Route path="/test" element={<Survey_Rendering avecNote={false} />} />
+              <Route path="/test" element={<Evaluation />} />
               <Route
                 path="/myspace/:ecran/:titre/:num?"
                 element={<MenuMain />}

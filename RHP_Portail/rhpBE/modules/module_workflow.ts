@@ -52,7 +52,7 @@ export async function signer(req: Request, res: Response) {
       { param: "id_Societe", sqlType: Int, valeur: id_Societe },
     ]
   );
-  console.log("Datas", rsl.data, RowId, id_Societe);
+
   res.send(rsl);
 }
 export async function get_parapheur(req: Request, res: Response) {

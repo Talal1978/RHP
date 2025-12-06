@@ -98,46 +98,45 @@ export default class fileClass {
       const seq: number = Number(Date.now());
       const cheminUploads = VGLOBALES.UPLOADS_PATH;
       const audioBuffer = Buffer.from(audio, "base64");
-      const filePath = path.resolve(cheminUploads + "/" + filename); // = join(__dirname, "uploads", filename);
-      fs.writeFile(filePath, audioBuffer, async (err) => {
-        if (err)
-          return res
-            .status(209)
-            .send({ message: "Erreur lors de l'écriture du fichier" });
-        else {
-          let ged = {
-            fd_id: seq,
-            name_ecran: name_ecran,
-            typ: "F",
-            value_index: index_ecran,
-            fd_alias: filename,
-            file_path: filePath,
-            media_duration,
-            parent_dir: 0,
-            created_by: created_by,
-            dat_crea: toSqlDateFormat(new Date(), true),
-          };
-          let rsl = await ecrireSql({
-            tableName: "Param_GED",
-            fields: ged,
-            joinFields: ["fd_id"],
-            excludeFields: [],
-            login: created_by,
-          });
-          if (rsl.result) {
-            return res.status(200).send({
-              fd_name: filename,
-              alias: filename,
-              fd_id: seq,
-            });
-          }
-          return res
-            .status(209)
-            .send({ message: "Erreur chargement de fichier" });
-        }
+      const filePath = path.resolve(cheminUploads + "/" + filename);
+
+      await fs.promises.writeFile(filePath, audioBuffer as unknown as Uint8Array);
+
+      let ged = {
+        fd_id: seq,
+        name_ecran: name_ecran,
+        typ: "F",
+        value_index: index_ecran,
+        fd_alias: filename,
+        file_path: filePath,
+        media_duration,
+        parent_dir: 0,
+        created_by: created_by,
+        dat_crea: toSqlDateFormat(new Date(), true),
+      };
+
+      let rsl = await ecrireSql({
+        tableName: "Param_GED",
+        fields: ged,
+        joinFields: ["fd_id"],
+        excludeFields: [],
+        login: created_by,
       });
+
+      if (rsl.result) {
+        return res.status(200).send({
+          fd_name: filename,
+          alias: filename,
+          fd_id: seq,
+        });
+      }
+      return res
+        .status(209)
+        .send({ message: "Erreur chargement de fichier" });
+
     } catch (error) {
-      res.status(209).send("Erreur chargement du fichier audio.");
+      console.error("Erreur chargement du fichier audio:", error);
+      return res.status(209).send("Erreur chargement du fichier audio.");
     }
   };
   static readFile = async (req: Request, res: Response) => {
@@ -199,9 +198,9 @@ export default class fileClass {
             });
           }
         } else {
-          console.log("not exist", file_oldName, fs.existsSync(file_oldName));
+
         }
-        console.log("after", file_oldName, fs.existsSync(file_oldName));
+
       }
       const rsl = await lireSql(
         `declare @fd_id bigint = ${fd_id}
@@ -278,7 +277,7 @@ select fd,alias,typ from Tbl`);
         );
         if (
           failedDeletes.length ===
-            files.filter((d) => d["typ"] === "F").length &&
+          files.filter((d) => d["typ"] === "F").length &&
           failedDeletes.length > 0
         ) {
           return res.status(209).send({ data: `Suppression impossible` });

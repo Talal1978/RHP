@@ -71,7 +71,7 @@ function ComboBox({
           {label}
         </InputLabel>
         <Select
-          sx={{ fontSize: { xs: "0.85rem", sm: "1rem" } }}
+          sx={{ fontSize: { xs: "1rem", sm: "1rem" } }}
           className="comboBox"
           labelId="demo-simple-select-standard-label"
           variant="standard"

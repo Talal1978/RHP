@@ -29,6 +29,10 @@ const RH_Dossier_Maladie = lazy(
 const RH_Demande_Conge_Liste = lazy(
   () => import("../Pages/Conges/RH_Demande_Conge_Liste")
 );
+const Evaluation_Liste = lazy(
+  () => import("../Pages/Evaluation/Evaluation_Liste")
+);
+const Evaluation = lazy(() => import("../Pages/Evaluation/Evaluation"));
 const RH_Demande_Conge = lazy(() => import("../Pages/Conges/RH_Demande_Conge"));
 const Ecran = ({ style }: { style?: React.CSSProperties }) => {
   const { tbnMenu, settbnMenu, showSignature, signatureProps } =
@@ -78,6 +82,9 @@ const Ecran = ({ style }: { style?: React.CSSProperties }) => {
         break;
       case "RH_Demande_Conge_Liste":
         setEcran(<RH_Demande_Conge_Liste />);
+        break;
+      case "Evaluation_Liste":
+        setEcran(<Evaluation_Liste />);
         break;
       default:
         setEcran(

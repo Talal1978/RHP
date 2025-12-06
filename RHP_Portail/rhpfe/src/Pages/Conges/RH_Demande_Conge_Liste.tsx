@@ -154,7 +154,7 @@ const RH_Demande_Conge_Liste = () => {
                     }
                   })
                   .catch((err) => {
-                    console.log(err);
+
                     setDs([]);
                     setDsFields({});
                   });

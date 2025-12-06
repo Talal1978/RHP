@@ -34,13 +34,12 @@ export const Login = () => {
     } else {
       setRubriques((await myAxiosGet({ apiStr: "list_rubriques" }))?.data);
       setErrorMsg("");
+      console.log(rsl.data.data);
       setAgent(rsl.data.data);
       setJwt(rsl.data.jwt);
       navigate("/myspace");
       await setSocket(rsl.data.jwt);
-      // socket.on("connecte", (user: string) => {
-      //   console.log(user, "connecté");
-      // });
+
     }
   }, [credention]);
   const keyUpEv = useCallback(

@@ -54,14 +54,14 @@ const RH_Agent = ({ readonly = false }: { readonly?: boolean }) => {
       name: "Supprimer",
       disabled: true,
       libelle: "Supprimer",
-      action: () => console.log("Supprimer"),
+      action: () => {},
       icon: <WidgetsIcon />,
     },
     {
       name: "Autres",
       disabled: false,
       libelle: "Autres",
-      action: () => console.log("Autres"),
+      action: () => {},
       icon: <WidgetsIcon />,
     },
   ];
@@ -93,7 +93,7 @@ const RH_Agent = ({ readonly = false }: { readonly?: boolean }) => {
         }
       })
       .catch((err) => {
-        console.log(err);
+
         setRhAgent({});
         setRhCompetence([]);
         setRhFormation([]);
@@ -109,10 +109,10 @@ const RH_Agent = ({ readonly = false }: { readonly?: boolean }) => {
       typMsg: "warning",
       typReply: "YesNoCancel",
       handleOk: async () => {
-        console.log("first ok");
+
       },
       handleCancel: async () => {
-        console.log("second cancel");
+
       },
     });
   }

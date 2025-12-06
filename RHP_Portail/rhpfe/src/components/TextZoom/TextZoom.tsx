@@ -24,7 +24,7 @@ const TextZoom = ({
   label,
   findlibelle,
   valeur = "",
-  onchange = () => {},
+  onchange = () => { },
   style,
 }: TextFieldProps & {
   readonly?: boolean;
@@ -45,7 +45,7 @@ const TextZoom = ({
         setLibelleText(dt.data);
       })
       .catch((err) => {
-        console.log(err);
+
         setLibelleText("");
       });
   }, [valeur]);
@@ -62,6 +62,14 @@ const TextZoom = ({
         <TextField
           className="textZoom"
           style={{ flexGrow: 1 }}
+          sx={{
+            "& .MuiInputBase-input": {
+              fontSize: { xs: "1rem", sm: "1rem" },
+            },
+            "& .MuiInputLabel-root": {
+              fontSize: { xs: "1rem", sm: "1rem" },
+            },
+          }}
           id={nomControle}
           label={label}
           value={findlibelle ? libelleText : valeur}
@@ -76,7 +84,7 @@ const TextZoom = ({
           InputProps={{
             readOnly: true,
           }}
-          onChange={(e) => {}}
+          onChange={(e) => { }}
         />
       </ThemeProvider>
       {!readonly && (

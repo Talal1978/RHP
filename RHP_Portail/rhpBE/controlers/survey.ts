@@ -20,6 +20,23 @@ order by isnull(Rang,0)`;
         { param: "idSoc", sqlType: Int, valeur: id_Societe }
         ]
     );
-    console.log("surveyQuestions rsl:", rsl);
+    return res.send({ result: rsl.result, data: rsl.data });
+};
+export const surveyAnswers = async (req: Request, res: Response) => {
+    const { cod_survey, cod_reply } = req.query;
+    const { id_Societe } = req.params;
+      const ans_sql = `SELECT  Cod_Reply, Cod_Question, isnull(Num_Sous_Question,'0') as Num_Sous_Question, 
+isnull(Reponses,'') as Reponses, isnull(Note,0) as Note, isnull(Coef,1) as Coef, isnull(Note_Totale,0) as Note_Totale, isnull(Statut,'') as Statut, isnull(Paie_Calculee,'false') as Paie_Calculee
+FROM Survey_Reply_Detail d
+outer apply (select Statut, Paie_Calculee, Cod_Survey from Survey_Reply where Cod_Reply=d.Cod_Reply and id_Societe=@idSoc)e
+where Cod_Survey=@cod_survey and Cod_Reply=@cod_reply`;
+    const rsl = await lireSql(
+        ans_sql,
+        [{ param: "cod_survey", sqlType: NVarChar, valeur: cod_survey },
+        { param: "idSoc", sqlType: Int, valeur: id_Societe },
+        { param: "cod_reply", sqlType: Int, valeur: cod_reply }
+        ]
+    );
+
     return res.send({ result: rsl.result, data: rsl.data });
 };

@@ -154,7 +154,7 @@ const Demande_Pret_Liste = () => {
                     }
                   })
                   .catch((err) => {
-                    console.log(err);
+
                     setDs([]);
                     setDsFields({});
                   });

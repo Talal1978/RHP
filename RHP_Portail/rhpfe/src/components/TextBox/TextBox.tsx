@@ -15,7 +15,7 @@ function TextBox({
   valeur = "",
   type = "text",
   readonly = false,
-  onchange = () => {},
+  onchange = () => { },
   style,
   ...props
 }: TextFieldProps & {
@@ -30,8 +30,8 @@ function TextBox({
   useEffect(() => {
     setEstErreur(
       Boolean(valeur) &&
-        Object.keys(formatsUsuels).includes(type) &&
-        !new RegExp(formatsUsuels[type]).test(String(valeur))
+      Object.keys(formatsUsuels).includes(type) &&
+      !new RegExp(formatsUsuels[type]).test(String(valeur))
     );
   }, [valeur]);
   return (
@@ -51,6 +51,10 @@ function TextBox({
           "& .MuiInputBase-input": {
             textAlign:
               type === "number" || type === "integer" ? "right" : "left",
+            fontSize: { xs: "1rem", sm: "1rem" },
+          },
+          "& .MuiInputLabel-root": {
+            fontSize: { xs: "1rem", sm: "1rem" },
           },
         }}
         FormHelperTextProps={{

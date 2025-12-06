@@ -24,11 +24,10 @@ const GrilleRow = ({
       key={indRow}
       sx={{
         "&:last-child td, &:last-child th": { border: 0 },
-        fontSize: "medium",
+        fontSize: { xs: "0.90rem", sm: "1rem" },
       }}
-      className={`ligne ${indRow % 2 === 0 ? "pair" : "impair"} ${
-        readOnly ? " unselectable " : ""
-      }`}
+      className={`ligne ${indRow % 2 === 0 ? "pair" : "impair"} ${readOnly ? " unselectable " : ""
+        }`}
     >
       {action && !isFiltred && (
         <TableCell
@@ -67,9 +66,8 @@ const GrilleRow = ({
                 ...typ.sx,
                 ...setBorder,
               }}
-              className={`cl${colInd} rw${indRow} ${
-                Fields[col].readOnly || readOnly ? " unselectable " : ""
-              }`}
+              className={`cl${colInd} rw${indRow} ${Fields[col].readOnly || readOnly ? " unselectable " : ""
+                }`}
               onClick={(e) =>
                 onclick({
                   colListe: Object.keys(Fields),

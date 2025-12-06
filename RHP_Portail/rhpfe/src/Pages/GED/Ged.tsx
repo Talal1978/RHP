@@ -205,7 +205,7 @@ const Ged = (props: TGed) => {
           }
         })
         .catch((err) => {
-          console.log(err);
+
           setAllDocs([]);
           setSelectedDocs([]);
         });
@@ -266,7 +266,7 @@ const Ged = (props: TGed) => {
             setSelectedDocs(newDocs);
           })
           .catch((err) => {
-            console.log(err);
+
             newDocs[i] = {
               ...newDocs[i],
               newName: doc.FD_Alias!,

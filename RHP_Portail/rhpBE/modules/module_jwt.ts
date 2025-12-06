@@ -19,7 +19,7 @@ export const getToken = (
   id_Societe: string,
   TeamLeader: string,
   RacineHierarchique: string,
-  id_User: string
+  id_User: string,
 ) => {
   const processId = String(Math.floor(Math.random() * 100000));
   let stoken = "";
@@ -89,7 +89,7 @@ export const validate = (req: Request, res: Response, next: NextFunction) => {
     } = decod as TJwtSession;
     const jwtSession = jwtSessions.find((ss) => (ss.processId = processId));
     if (!jwtSession) {
-      console.log("5 RHP : Accès non authorisé");
+
       return res.status(403).send("5 RHP : Accès non authorisé");
     }
     req.params.processId = processId;

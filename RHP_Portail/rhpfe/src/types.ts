@@ -1,7 +1,6 @@
 import { colorBase } from "./modules/module_general";
 
 export const styleLabel = {
-  fontSize: "1rem",
   color: colorBase.colorBase01,
   fontWeight: "bold",
 };

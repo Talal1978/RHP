@@ -251,13 +251,16 @@ export function getAnswerValue(expression: string, answers: TAnswers): any {
     return "";
 }
 
-export function evaluateExpression(expression: string, answers: TAnswers, currentAnswerValue: any = null, typ_reponse: TQuestionType): any {
+export function evaluateExpression(expression: string, answers: TAnswers, currentAnswerValue: any = null, typ_reponse: TQuestionType, evalue: string, evaluateur: string, typ_survey: string): any {
     if (!expression || expression.trim().length === 0) return true;
 
     let evaluatedExpression = expression;
 
-    // Remplacement de CurrentAnswer
-    evaluatedExpression = evaluatedExpression.replace(/CurrentAnswer/gi, getValeur(currentAnswerValue ?? '', typ_reponse));
+    // Remplacement de CurrentAnswer, Evalue, Evaluateur et Typ_Evaluation
+    evaluatedExpression = evaluatedExpression.replace(/\bCurrentAnswer\b/gi, getValeur(currentAnswerValue ?? '', typ_reponse));
+    evaluatedExpression = evaluatedExpression.replace(/\bEvalue\b/gi, evalue);
+    evaluatedExpression = evaluatedExpression.replace(/\bEvaluateur\b/gi, evaluateur);
+    evaluatedExpression = evaluatedExpression.replace(/\bTyp_Evaluation\b/gi, typ_survey);
 
     // Remplacement des fonctions InStr
     const funcRegex = /(InStr)\s*\((.*?)\)/gi;
@@ -288,7 +291,7 @@ export function evaluateExpression(expression: string, answers: TAnswers, curren
         const numericTypes = ['numerique', 'entier', 'echelle', 'grille_cases', 'grille_choix', 'cocher', 'oui_non', 'vrai_faux', 'choix'];
         if (numericTypes.includes(answer.typ_reponse)) {
             const numVal = typeof val === 'number' ? val : safeNumber(val, 0);
-            console.log(`✅ Type numérique détecté pour Q[${qNum}], valeur: ${numVal}`);
+
             return String(numVal);
         }
         const strVal = String(val);

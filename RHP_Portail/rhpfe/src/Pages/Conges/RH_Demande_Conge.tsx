@@ -557,7 +557,7 @@ const RH_Demande_Conge = () => {
     Nouveau,
     currentNum,
   ]);
-  useEffect(() => console.log(ligne), [ligne]);
+
   return (
     <>
       <GroupBox
@@ -749,7 +749,7 @@ const RH_Demande_Conge = () => {
                 dataSource={ligne}
                 Colonnes={Colonnes}
                 className="laGrille"
-                onclick={(e) => console.log("first", e)}
+
               />
             </Box>
           </Grid>

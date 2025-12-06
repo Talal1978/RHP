@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useState, useRef, Dispatch, SetStateAction } from 'react';
 import { Box, Typography } from "@mui/material";
 import UdValeurUnique from './Components/UdValeurUnique';
 import UdGrilleCases from './Components/UdGrilleCases';
@@ -6,7 +6,7 @@ import UdGrilleChoix from './Components/UdGrilleChoix';
 import UdGrilleLibre from './Components/UdGrilleLibre';
 import { colorBase } from '../../modules/module_general';
 import Loading from '../../components/Loading/Loading';
-import { TAnswers, TAnswerState, TNoteResult, TQuestion } from './Types';
+import { TAnswers, TAnswerState, TDbAnswer, TNoteResult, TQuestion } from './Types';
 import useAxiosGet from '../../hooks/useAxiosGet';
 import { defaultValueMap, evaluateExpression, func_multi_avg, func_multi_max, func_multi_min, func_multi_sum, getValeur, safeNumber } from './Survey_Functions';
 
@@ -20,7 +20,6 @@ const initialAnswerState: TAnswerState = {
     typ_reponse: "alpha",
     mode_scoring: "na",
 };
-
 function initializeQuestionValue(q: TQuestion): any {
     const typesGrilles = ['grille_cases', 'grille_choix', 'grille_libre', 'echelle', 'cocher', 'vrai_faux', 'oui_non', 'choix'];
 
@@ -46,8 +45,15 @@ function initializeQuestionValue(q: TQuestion): any {
 
     return null;
 }
+interface TProps {
+    cod_survey: string
+    cod_reply: number
+    evalue: string
+    evaluateur: string
+    typ_survey: 'E' | 'R' | 'F'
+}
 
-const Survey_Rendering = ({ avecNote }: { avecNote: boolean }) => {
+const Survey_Rendering = ({ cod_survey, cod_reply, evalue, evaluateur, typ_survey }: TProps) => {
     const myAxios = useAxiosGet();
     const [questions, setQuestions] = useState<TQuestion[]>([]);
     const [answers, setAnswers] = useState<TAnswers>({});
@@ -59,39 +65,109 @@ const Survey_Rendering = ({ avecNote }: { avecNote: boolean }) => {
     useEffect(() => {
         let isMounted = true;
 
-        const loadQuestions = async () => {
+        const loadData = async () => {
             setIsLoading(true);
 
+
             try {
-                const rsl = await myAxios({ apiStr: 'surveyQuestions', bdy: { cod_survey: 'SVY000005' } });
+                // Fetch both questions and answers in parallel
+                const [rslQuestions, rslAnswers] = await Promise.all([
+                    myAxios({ apiStr: 'surveyQuestions', bdy: { cod_survey } }),
+                    myAxios({ apiStr: 'surveyAnswers', bdy: { cod_survey, cod_reply } }) // Assuming cod_reply or cod_survey needed here
+                ]);
 
-                if (!isMounted) return; // Éviter les updates si le composant est démonté
+                if (!isMounted) {
 
-                if (rsl.data.result && rsl.data.data.length > 0) {
-                    setQuestions(rsl.data.data);
+                    return;
+                }
+
+
+                if (rslQuestions.data?.result && rslQuestions.data?.data?.length > 0) {
+                    const fetchedQuestions: TQuestion[] = rslQuestions.data.data;
+                    setQuestions(fetchedQuestions);
+
+                    const dbAnswers: any[] = rslAnswers.data?.result ? rslAnswers.data.data : [];
+
+
                     const initialAnswers: TAnswers = {};
-                    rsl.data.data.forEach((q: TQuestion) => {
+
+                    fetchedQuestions.forEach((q: TQuestion) => {
+                        // Initialize default value
+                        let value = initializeQuestionValue(q);
+                        let note: TNoteResult | null = q.Mode_Scoring === 'na' ? null : {
+                            note: 0,
+                            coef: safeNumber(q.Coef, 1),
+                            note_totale: 0,
+                            max_score: safeNumber(q.Max_Score, 0),
+                            min_score: 0,
+                            note_manuelle: q.Mode_Scoring === 'manuel' ? true : false,
+                        };
+
+                        // Find answers for this question
+                        const qAnswers = dbAnswers.filter(a => a.Cod_Question === q.Cod_Question);
+
+                        if (qAnswers.length > 0) {
+                            // Logic to map DB answers to state value
+                            // Case 1: Complex grids (grille_cases, grille_choix, etc.) using Num_Sous_Question
+                            if (['grille_cases', 'grille_choix', 'grille_libre', 'echelle', 'cocher', 'choix', 'oui_non', 'vrai_faux'].includes(q.Typ_Reponse)) {
+                                if (Array.isArray(value)) {
+                                    qAnswers.forEach(ans => {
+                                        const rowIndex = parseInt(ans.Num_Sous_Question)
+                                        if (rowIndex >= 0 && rowIndex < value.length) {
+                                            const reponsesArr = ans.Reponses.split(';');
+                                            if (Array.isArray(value[rowIndex])) {
+                                                const rowData = value[rowIndex].map((_: any, colIndex: number) => {
+                                                    // Safe access to reponsesArr
+                                                    if (colIndex < reponsesArr.length) {
+                                                        const val = reponsesArr[colIndex];
+                                                        // Convert based on type if needed, but 'Reponses' is string
+                                                        // If the component expects 0/1 for checkboxes
+                                                        if (val === "1") return 1;
+                                                        if (val === "0") return 0;
+                                                        return val;
+                                                    }
+                                                    return defaultValueMap[q.Typ_Reponse] ?? 0;
+                                                });
+                                                value[rowIndex] = rowData;
+                                            }
+                                        }
+                                    });
+                                }
+                            } else {
+                                // Case 2: Simple values (valeur_unique, paragraph, etc.)
+                                // Usually just one row with Num_Sous_Question '0' or matching question
+                                const ans = qAnswers[0]; // Take the first one
+                                value = ans.Reponses;
+                                // Convert types if necessary (e.g. numeric)
+                                if (['entier', 'numerique'].includes(q.Typ_Reponse)) {
+                                    value = safeNumber(value);
+                                }
+                            }
+
+                            // Map Note
+                            // Taking note from the first answer row found? Or sum?
+                            // VB code: .noteManuelle = If(nrw.Length > 0, CDbl(IsNull(nrw(0)("Note"), 0)), 0)
+                            if (note && qAnswers.length > 0) {
+                                note.note = safeNumber(qAnswers[0].Note, 0);
+                                note.note_totale = safeNumber(qAnswers[0].Note_Totale, 0);
+                            }
+                        }
+
                         initialAnswers[q.NumQuestion] = {
                             ...initialAnswerState,
-                            value: initializeQuestionValue(q),
-                            note: q.Mode_Scoring === 'na' ? null : {
-                                note: 0,
-                                coef: safeNumber(q.Coef, 1),
-                                note_totale: 0,
-                                max_score: safeNumber(q.Max_Score, 0),
-                                min_score: 0,
-                                note_manuelle: q.Mode_Scoring === 'manuel' ? true : false,
-
-                            },
+                            value: value,
+                            note: note,
                             isMandatory: q.Obligatoire,
                             typ_reponse: q.Typ_Reponse,
                             mode_scoring: q.Mode_Scoring,
                         };
                     });
-                     setAnswers(initialAnswers);
-                } 
+                    setAnswers(initialAnswers);
+                } else {
+                    console.warn("⚠️ No questions found from API");
+                }
             } catch (error) {
-                console.error("Erreur chargement questions:", error);
+                console.error("❌ Erreur chargement données survey:", error);
             } finally {
                 if (isMounted) {
                     setIsLoading(false);
@@ -99,7 +175,7 @@ const Survey_Rendering = ({ avecNote }: { avecNote: boolean }) => {
             }
         };
 
-        loadQuestions();
+        loadData();
 
         // Cleanup function
         return () => {
@@ -116,14 +192,14 @@ const Survey_Rendering = ({ avecNote }: { avecNote: boolean }) => {
             if (!currentQ) {
                 return prevAnswers;
             }
-            let finalNote = prevAnswers[qNum]?.note ;
-            if (finalNote!== null) {
+            let finalNote = prevAnswers[qNum]?.note;
+            if (finalNote !== null) {
                 if (currentQ.Mode_Scoring === 'func' && currentQ.Func_Scoring) {
                     try {
                         const funcScore = evaluateExpression(
                             currentQ.Func_Scoring,
                             prevAnswers,
-                            newValue || defaultValueMap[currentQ.Typ_Reponse], currentQ.Typ_Reponse
+                            newValue || defaultValueMap[currentQ.Typ_Reponse], currentQ.Typ_Reponse, evalue, evaluateur, typ_survey
                         );
                         const score = safeNumber(funcScore, 0);
                         const coef = safeNumber(currentQ.Coef, 1);
@@ -143,10 +219,10 @@ const Survey_Rendering = ({ avecNote }: { avecNote: boolean }) => {
                             note_totale: 0
                         };
                     }
-                   } else if (currentQ.Mode_Scoring === 'auto') {
+                } else if (currentQ.Mode_Scoring === 'auto') {
                     let score = safeNumber(getValeur(newValue, currentQ.Typ_Reponse), 0);
-                   const coef = safeNumber(currentQ.Coef, 1);
-                   finalNote = {
+                    const coef = safeNumber(currentQ.Coef, 1);
+                    finalNote = {
                         ...finalNote,
                         note: score,
                         coef: coef,
@@ -169,66 +245,66 @@ const Survey_Rendering = ({ avecNote }: { avecNote: boolean }) => {
             }
 
             //mise à jour de la réponse
-              let updatedAnswers = {} as TAnswers;
+            let updatedAnswers = {} as TAnswers;
             if (newValue !== prevAnswers[qNum]?.value || finalNote?.note_totale !== prevAnswers[qNum]?.note?.note_totale) {
                 updatedAnswers = {
-                ...prevAnswers,
-                [qNum]: {
-                    ...prevAnswers[qNum],
-                    value: newValue,
-                    note: finalNote,
-                    typ_reponse: currentQ.Typ_Reponse
-                }
-            };
-        
-          const reEvaluatedAnswers: TAnswers = { ...updatedAnswers };
-            hasChanged = false;
-            questionsRef.current.forEach(q => {
-                const qState = updatedAnswers[q.NumQuestion] || initialAnswerState;
-                // Traitement des questions obligatoires 
-                if (q.Obligatoire_Si && q.Obligatoire_Si.trim().length !== 0) {
-                    const mandatoryRule = q.Obligatoire_Si;
-                    let isConditionallyMandatory = false;
-                    try {
-                        isConditionallyMandatory = evaluateExpression(mandatoryRule, updatedAnswers, null, q.Typ_Reponse) === true;
-                        reEvaluatedAnswers[q.NumQuestion] = {
-                            ...qState,
-                            isMandatory: q.Obligatoire || isConditionallyMandatory,
-                            isVisible: q.Obligatoire || isConditionallyMandatory,
-                        };
-                        if (isConditionallyMandatory !== qState.isMandatory) {
-                            hasChanged = true;
-                        }
-                    } catch (error) {
-                        console.error(`Erreur évaluation Obligatoire_Si Q${q.NumQuestion}:`, error);
+                    ...prevAnswers,
+                    [qNum]: {
+                        ...prevAnswers[qNum],
+                        value: newValue,
+                        note: finalNote,
+                        typ_reponse: currentQ.Typ_Reponse
                     }
-                }
+                };
 
-                // Traitement des réponses avec erreur conditionnelle                       }
-                if (q.Erreur_Si && q.Erreur_Si.trim().length !== 0) {
-                    const errorRule = q.Erreur_Si;
-                    let hasConditionallyError = false;
-                    try {
-                        hasConditionallyError = evaluateExpression(
-                            errorRule,
-                            updatedAnswers,
-                            qState.value || defaultValueMap[q.Typ_Reponse], q.Typ_Reponse
-                        ) === true;
-                        reEvaluatedAnswers[q.NumQuestion] = {
-                            ...qState,
-                            hasError: hasConditionallyError,
-                            errorMsg: hasConditionallyError ? q.Erreur_Msg : '',
-                        };
-                        if (hasConditionallyError !== qState.hasError) {
-                            hasChanged = true;
+                const reEvaluatedAnswers: TAnswers = { ...updatedAnswers };
+                hasChanged = false;
+                questionsRef.current.forEach(q => {
+                    const qState = updatedAnswers[q.NumQuestion] || initialAnswerState;
+                    // Traitement des questions obligatoires 
+                    if (q.Obligatoire_Si && q.Obligatoire_Si.trim().length !== 0) {
+                        const mandatoryRule = q.Obligatoire_Si;
+                        let isConditionallyMandatory = false;
+                        try {
+                            isConditionallyMandatory = evaluateExpression(mandatoryRule, updatedAnswers, null, q.Typ_Reponse, evalue, evaluateur, typ_survey) === true;
+                            reEvaluatedAnswers[q.NumQuestion] = {
+                                ...qState,
+                                isMandatory: q.Obligatoire || isConditionallyMandatory,
+                                isVisible: q.Obligatoire || isConditionallyMandatory,
+                            };
+                            if (isConditionallyMandatory !== qState.isMandatory) {
+                                hasChanged = true;
+                            }
+                        } catch (error) {
+                            console.error(`Erreur évaluation Obligatoire_Si Q${q.NumQuestion}:`, error);
                         }
-                    } catch (error) {
-                        console.error(`Erreur évaluation Erreur_Si Q${q.NumQuestion}:`, error);
                     }
-                }
-            })
-            return hasChanged ? reEvaluatedAnswers : updatedAnswers;
-           }
+
+                    // Traitement des réponses avec erreur conditionnelle                       }
+                    if (q.Erreur_Si && q.Erreur_Si.trim().length !== 0) {
+                        const errorRule = q.Erreur_Si;
+                        let hasConditionallyError = false;
+                        try {
+                            hasConditionallyError = evaluateExpression(
+                                errorRule,
+                                updatedAnswers,
+                                qState.value || defaultValueMap[q.Typ_Reponse], q.Typ_Reponse, evalue, evaluateur, typ_survey
+                            ) === true;
+                            reEvaluatedAnswers[q.NumQuestion] = {
+                                ...qState,
+                                hasError: hasConditionallyError,
+                                errorMsg: hasConditionallyError ? q.Erreur_Msg : '',
+                            };
+                            if (hasConditionallyError !== qState.hasError) {
+                                hasChanged = true;
+                            }
+                        } catch (error) {
+                            console.error(`Erreur évaluation Erreur_Si Q${q.NumQuestion}:`, error);
+                        }
+                    }
+                })
+                return hasChanged ? reEvaluatedAnswers : updatedAnswers;
+            }
             else {
                 return prevAnswers;
             }
@@ -239,7 +315,7 @@ const Survey_Rendering = ({ avecNote }: { avecNote: boolean }) => {
     const QuestionRenderer = (q: TQuestion) => {
         const qState = answers[q.NumQuestion] || initialAnswerState;
         const commonProps = {
-            numQuestion:  q.NumQuestion ,
+            numQuestion: q.NumQuestion,
             laquestion: q.Question,
             Obligatoire: qState.isMandatory,
             avecNote: q.AvecNote,
@@ -255,7 +331,7 @@ const Survey_Rendering = ({ avecNote }: { avecNote: boolean }) => {
                         note: note
                     }
                 }));
-            }   
+            }
         };
 
         switch (q.Typ_Reponse) {
@@ -328,14 +404,15 @@ const Survey_Rendering = ({ avecNote }: { avecNote: boolean }) => {
     };
 
     const totalScore = useMemo(() => {
-        return questions.reduce((total, q) => {
+        return questions.reduce((total: { noteTotal: number, coefTotal: number }, q) => {
             const qState = answers[q.NumQuestion];
             if (qState && qState.isVisible && q.AvecNote) {
                 const noteTotal = safeNumber(qState.note?.note_totale, 0);
-                return total + noteTotal;
+                const coefTotal = safeNumber(qState.note?.coef, 0);
+                return { noteTotal: total.noteTotal + noteTotal, coefTotal: total.coefTotal + coefTotal };
             }
             return total;
-        }, 0);
+        }, { noteTotal: 0, coefTotal: 0 });
     }, [answers, questions]);
 
     if (isLoading) {
@@ -357,19 +434,18 @@ const Survey_Rendering = ({ avecNote }: { avecNote: boolean }) => {
                 borderRadius: '8px',
                 boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
             }}>
-                <h1 style={{
-                    color: colorBase.colorBase01,
-                    marginBottom: '20px',
-                    borderBottom: `2px solid ${colorBase.colorBase02}`,
-                    paddingBottom: '10px'
-                }}>
-                    Questionnaire de Satisfaction
-                </h1>
+                {questions && questions.length > 0 && questions[0].AvecNote && totalScore.coefTotal > 0 && (
+                    <Box sx={{ mt: 4, pt: 2, borderTop: '2px solid #ccc' }}>
+                        <Typography variant="h6" sx={{ color: colorBase.colorBase01, display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 10px' }}>
+                            <span>Note finale : <span style={{ fontWeight: 'bold', color: 'gray' }}>{(totalScore.noteTotal / totalScore.coefTotal).toFixed(2)}</span></span> <span>Coefficient: <span style={{ fontWeight: 'bold', color: 'gray' }}>{totalScore.coefTotal}</span></span> <span>Score global: <span style={{ fontWeight: 'bold', color: 'gray' }}>{totalScore.noteTotal.toFixed(2)}</span></span>
+                        </Typography>
+                    </Box>
+                )}
 
                 {questions.map((q) => {
                     const qState = answers[q.NumQuestion];
                     if (!qState || !qState.isVisible) return null;
-                    console.log(`🔍 Rendu Q[${q.NumQuestion}] - note: ${qState.note}`);
+
                     return (
                         <Box key={q.NumQuestion} sx={{ mb: 2 }}>
                             {QuestionRenderer(q)}
@@ -381,12 +457,6 @@ const Survey_Rendering = ({ avecNote }: { avecNote: boolean }) => {
                         </Box>
                     );
                 })}
-
-                <Box sx={{ mt: 4, pt: 2, borderTop: '2px solid #ccc' }}>
-                    <Typography variant="h6" sx={{ color: colorBase.colorBase01 }}>
-                        Score Total du Questionnaire: {totalScore.toFixed(2)}
-                    </Typography>
-                </Box>
             </div>
         </div>
     );

@@ -262,31 +262,27 @@ export function evalFormula(expression: string) {
     try {
         const processedExpr = traitementFonctions(expression);
 
-        console.log("═══════════════════════════════════════");
-        console.log("Expression originale:", expression);
-        console.log("Expression traitée:", processedExpr);
-        console.log("═══════════════════════════════════════");
+
 
         const funcNames = Object.keys(VB_FUNCTIONS);
         const funcValues = Object.values(VB_FUNCTIONS);
 
         const functionBody = `return (${processedExpr});`;
 
-        console.log("Code à exécuter:", functionBody);
+
 
         const result = new Function(...funcNames, functionBody)(...funcValues);
 
-        console.log("Résultat brut:", result);
+
 
         // AJOUT : Vérifier si le résultat est NaN et le remplacer par 0
         if (typeof result === 'number' && isNaN(result)) {
             console.warn("⚠️ Résultat NaN détecté, remplacement par 0");
-            console.log("═══════════════════════════════════════\n");
+
             return 0;
         }
 
-        console.log("Résultat final:", result);
-        console.log("═══════════════════════════════════════\n");
+
 
         return result;
     } catch (e: any) {

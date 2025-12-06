@@ -154,7 +154,7 @@ const Demande_Avance_Liste = () => {
                     }
                   })
                   .catch((err) => {
-                    console.log(err);
+
                     setDs([]);
                     setDsFields({});
                   });

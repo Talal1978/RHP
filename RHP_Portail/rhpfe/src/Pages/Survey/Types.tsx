@@ -21,6 +21,19 @@ export interface TQuestion {
   Erreur_Si: string;
   Erreur_Msg: string;
 }
+
+export interface TDbAnswer {
+    Cod_Reply: number;
+    Cod_Question: number;
+    Num_Sous_Question: string;
+    Reponses: string;
+    Note: number;
+    Coef: number;
+    Note_Totale: number;
+    Statut: string;
+    Paie_Calculee: string;
+}
+
 export interface TAnswerState {
   value: any;
   note: TNoteResult | null;

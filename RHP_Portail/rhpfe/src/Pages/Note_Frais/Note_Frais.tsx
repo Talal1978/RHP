@@ -184,7 +184,7 @@ const Note_Frais = () => {
           }
         })
         .catch((err) => {
-          console.log("Erreur ", err);
+
           setEntete(iniEntete);
           setDetail([iniDetail]);
           enteteRef.current = iniEntete;

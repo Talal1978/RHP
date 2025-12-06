@@ -27,7 +27,7 @@ export const getZoomApi = async (req: Request, res: Response) => {
     let rg = new RegExp(`\{${i}\}`, "gi");
     sqlStr = sqlStr.replace(rg, valeurs[i]?.trim());
   }
-  // if (numZoom === "MS067") console.log(sqlStr);
+
   const rsl = await lireSql(sqlStr);
   return res.send(rsl);
 };

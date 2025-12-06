@@ -61,10 +61,10 @@ io.on("connection", (socket) => {
     }
   );
   socket.on("disconnect", () => {
-    console.log("user disconnected", _Matricule);
+
   });
 });
 
 server.listen(VGLOBALES.PORT, async () => {
-  console.log(`Serveur démarré sur le posrt ${VGLOBALES.PORT}`);
+  console.log(`Serveur démarré sur le port ${VGLOBALES.PORT}`);
 });

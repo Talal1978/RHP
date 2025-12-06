@@ -318,16 +318,7 @@ const Demande_Pret = () => {
       (entete
         ? entete?.Statut === "" && entete?.Matricule === Agent?.Matricule
         : true);
-    console.log(
-      _canSave,
-      entete,
-      "statut",
-      entete?.Statut,
-      "Mat01",
-      entete?.Matricule,
-      "Mat02",
-      Agent?.Matricule
-    );
+
     setCanSave(_canSave);
     settbnMenu([
       {

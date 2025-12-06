@@ -133,6 +133,9 @@ select id_Societe, Den,isnull(Droits,'') Droits,convert(bit,case when ';'+Droits
         If CnExecuting("select count(*) from Controle_Users where Login_User!='" & Login_User_Text.Text & "' and Nom_User+Prenom_User='" & Nom_User_Text.Text & Prenom_User_Text.Text & "'").Fields(0).Value > 0 Then
             Return New savingResult With {.result = False, .message = "Nom et prénom accordés à un autre login"}
         End If
+        If CnExecuting("select count(*) from Controle_Users where Login_User!='" & Login_User_Text.Text & "' and isnull(Mail,'')='" & Mail_Text.Text & "'").Fields(0).Value > 0 Then
+            Return New savingResult With {.result = False, .message = "Mail accordé à un autre login"}
+        End If
         If is_AD_chk.Checked Then
             If ShowMessageBox("Voulez-vous appliquer les données récupérées de l'Active Directory?", "Active Directory", MessageBoxButtons.OKCancel, msgIcon.Question) = MsgBoxResult.Ok Then
                 If Not ApplyADInfo() Then Return New savingResult With {.result = False, .message = "Erreur Active Directory."}
@@ -437,6 +440,7 @@ select id_Societe, Den,isnull(Droits,'') Droits,convert(bit,case when ';'+Droits
 
 
                 Diviseur_First("Controle_Users", "Login_User", "Nom_User+ '  ' + Prenom_User", Login_User_Text)
+                Login_User_Text_Leave(Nothing, Nothing)
 
             End If
         Catch ex As Exception
@@ -456,7 +460,7 @@ select id_Societe, Den,isnull(Droits,'') Droits,convert(bit,case when ';'+Droits
 
 
                 Diviseur_Back("Controle_Users", "Login_User", "Nom_User+ '  ' + Prenom_User", Login_User_Text)
-
+                Login_User_Text_Leave(Nothing, Nothing)
             End If
         Catch ex As Exception
             ErrorMsg(ex)
@@ -474,7 +478,7 @@ select id_Societe, Den,isnull(Droits,'') Droits,convert(bit,case when ';'+Droits
 
 
                 Diviseur_Next("Controle_Users", "Login_User", "Nom_User+ '  ' + Prenom_User", Login_User_Text)
-
+                Login_User_Text_Leave(Nothing, Nothing)
             End If
         Catch ex As Exception
             ErrorMsg(ex)
@@ -492,7 +496,7 @@ select id_Societe, Den,isnull(Droits,'') Droits,convert(bit,case when ';'+Droits
                 End If
 
                 Diviseur_Last("Controle_Users", "Login_User", "Nom_User+ '  ' + Prenom_User", Login_User_Text)
-
+                Login_User_Text_Leave(Nothing, Nothing)
             End If
         Catch ex As Exception
             ErrorMsg(ex)

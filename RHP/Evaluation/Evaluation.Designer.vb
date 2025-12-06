@@ -58,6 +58,7 @@ Partial Class Evaluation
         Me.Valide_pb = New System.Windows.Forms.PictureBox()
         Me.Print_pb = New System.Windows.Forms.PictureBox()
         Me.lbl_lbl = New System.Windows.Forms.Label()
+        Me.pb_MinMax = New System.Windows.Forms.PictureBox()
         Me.pnl_Top.SuspendLayout()
         Me.eval_tblpnl.SuspendLayout()
         Me.Eval_info.SuspendLayout()
@@ -70,6 +71,7 @@ Partial Class Evaluation
         CType(Me.Save_pb, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.Valide_pb, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.Print_pb, System.ComponentModel.ISupportInitialize).BeginInit()
+        CType(Me.pb_MinMax, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SuspendLayout()
         '
         'pnl_Content
@@ -545,17 +547,19 @@ Partial Class Evaluation
         'ent_pnl
         '
         Me.ent_pnl.BackColor = System.Drawing.Color.FromArgb(CType(CType(208, Byte), Integer), CType(CType(231, Byte), Integer), CType(CType(239, Byte), Integer))
-        Me.ent_pnl.ColumnCount = 5
+        Me.ent_pnl.ColumnCount = 6
         Me.ent_pnl.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 40.0!))
         Me.ent_pnl.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 40.0!))
         Me.ent_pnl.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 40.0!))
         Me.ent_pnl.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100.0!))
         Me.ent_pnl.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 40.0!))
-        Me.ent_pnl.Controls.Add(Me.Close_pb, 4, 0)
+        Me.ent_pnl.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 40.0!))
+        Me.ent_pnl.Controls.Add(Me.pb_MinMax, 4, 0)
         Me.ent_pnl.Controls.Add(Me.Save_pb, 0, 0)
         Me.ent_pnl.Controls.Add(Me.Valide_pb, 1, 0)
         Me.ent_pnl.Controls.Add(Me.Print_pb, 2, 0)
         Me.ent_pnl.Controls.Add(Me.lbl_lbl, 3, 0)
+        Me.ent_pnl.Controls.Add(Me.Close_pb, 5, 0)
         Me.ent_pnl.Dock = System.Windows.Forms.DockStyle.Top
         Me.ent_pnl.Location = New System.Drawing.Point(2, 2)
         Me.ent_pnl.Margin = New System.Windows.Forms.Padding(4)
@@ -630,10 +634,24 @@ Partial Class Evaluation
         Me.lbl_lbl.Location = New System.Drawing.Point(124, 0)
         Me.lbl_lbl.Margin = New System.Windows.Forms.Padding(4, 0, 4, 0)
         Me.lbl_lbl.Name = "lbl_lbl"
-        Me.lbl_lbl.Size = New System.Drawing.Size(1082, 38)
+        Me.lbl_lbl.Size = New System.Drawing.Size(1042, 38)
         Me.lbl_lbl.TabIndex = 12
         Me.lbl_lbl.Text = "Evaluation"
         Me.lbl_lbl.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
+        '
+        'pb_MinMax
+        '
+        Me.pb_MinMax.Cursor = System.Windows.Forms.Cursors.Hand
+        Me.pb_MinMax.Dock = System.Windows.Forms.DockStyle.Fill
+        Me.pb_MinMax.Image = Global.RHP.My.Resources.Resources.btn_maximize
+        Me.pb_MinMax.InitialImage = Nothing
+        Me.pb_MinMax.Location = New System.Drawing.Point(1174, 4)
+        Me.pb_MinMax.Margin = New System.Windows.Forms.Padding(4)
+        Me.pb_MinMax.Name = "pb_MinMax"
+        Me.pb_MinMax.Size = New System.Drawing.Size(32, 30)
+        Me.pb_MinMax.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom
+        Me.pb_MinMax.TabIndex = 13
+        Me.pb_MinMax.TabStop = False
         '
         'Evaluation
         '
@@ -674,6 +692,7 @@ Partial Class Evaluation
         CType(Me.Save_pb, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.Valide_pb, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.Print_pb, System.ComponentModel.ISupportInitialize).EndInit()
+        CType(Me.pb_MinMax, System.ComponentModel.ISupportInitialize).EndInit()
         Me.ResumeLayout(False)
 
     End Sub
@@ -713,4 +732,5 @@ Partial Class Evaluation
     Friend WithEvents Label1 As Label
     Friend WithEvents Dat_Survey_lbl As LinkLabel
     Friend WithEvents Dat_Survey_txt As ud_TextBox
+    Friend WithEvents pb_MinMax As PictureBox
 End Class

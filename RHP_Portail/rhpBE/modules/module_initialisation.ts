@@ -82,9 +82,8 @@ export async function initialisationGlobale(theAgent: TAgent) {
 
       Zoom_Where1 =
         Zoom_Where1 + (MatriculeWhere ? `and (${MatriculeWhere})` : "");
-      let sqlStr = `select distinct ${Zoom_Cod} as Code,${Zoom_Lib} FROM ${Zoom_Tbl} where ${Zoom_Where1}  ${
-        Zoom_Order != "" ? `Order by ${Zoom_Order} ${ZoomSens}` : ""
-      }`;
+      let sqlStr = `select distinct ${Zoom_Cod} as Code,${Zoom_Lib} FROM ${Zoom_Tbl} where ${Zoom_Where1}  ${Zoom_Order != "" ? `Order by ${Zoom_Order} ${ZoomSens}` : ""
+        }`;
       sqlStr = await handleIdSoc(sqlStr, theAgent.id_Societe);
       Tbl_Controle_Def_Zoom.push({ numZoom: z["Num_Zoom"], sqlStr });
     });
@@ -112,7 +111,7 @@ export const initialisationSeveur = (): boolean => {
     VGLOBALES.UPLOADS_PATH = path.resolve(opath);
     return true;
   } catch (err) {
-    console.log("Erreur initialisation : ", err);
+    console.error("Erreur initialisation : ", err);
     throw new Error("Server initialization failed [VGLOBALES]");
   }
 };

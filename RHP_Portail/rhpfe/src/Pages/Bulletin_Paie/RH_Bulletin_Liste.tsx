@@ -132,7 +132,7 @@ const RH_Bulletin_Liste = () => {
                     }
                   })
                   .catch((err) => {
-                    console.log(err);
+
                     setDs([]);
                     setDsFields({});
                   });

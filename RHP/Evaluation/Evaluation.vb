@@ -68,7 +68,13 @@ Public Class Evaluation
     Private Sub LinkLabel2_LinkClicked(sender As Object, e As LinkLabelLinkClickedEventArgs) Handles Dat_Survey_lbl.LinkClicked
         Appel_Calender(Dat_Survey_txt, Me)
     End Sub
-
+    Private Sub pb_MinMax_Click(sender As Object, e As EventArgs) Handles pb_MinMax.Click
+        If Me.WindowState = FormWindowState.Maximized Then
+            Me.WindowState = FormWindowState.Minimized
+        Else
+            Me.WindowState = FormWindowState.Maximized
+        End If
+    End Sub
     Private Sub Close_pb_Click(sender As Object, e As EventArgs) Handles Close_pb.Click
         Me.Close()
     End Sub
@@ -1086,5 +1092,6 @@ Public Class Evaluation
 
         y += NoteLineHeight
     End Sub
+
 #End Region
 End Class

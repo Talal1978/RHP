@@ -58,9 +58,10 @@ import {
   isPaieEncours,
   releaseAccessibleApi,
 } from "../modules/module_access";
-import { surveyQuestions } from "../controlers/survey";
+import { surveyAnswers, surveyQuestions } from "../controlers/survey";
 import { ficheposte } from "../controlers/org_ficheposte";
 import { generateReport } from "../controlers/report";
+import { getEvaluationListe } from "../controlers/evaluation";
 const mainRooting = express.Router();
 const storage = multer.diskStorage({
   destination: async (req, file, cb) => {
@@ -111,6 +112,7 @@ mainRooting.post("/get_conge_droits", validate, get_conge_droits);
 mainRooting.post("/calcul_conge", validate, calcul_conge);
 
 mainRooting.get("/surveyQuestions", validate, surveyQuestions);
+mainRooting.get("/surveyAnswers", validate, surveyAnswers);
 
 mainRooting.post("/save_note_frais", validate, save_note_frais);
 mainRooting.post("/note_frais_liste", validate, noteFraisListe);
@@ -129,6 +131,7 @@ mainRooting.post("/readfile", validate, fileClass.readFile);
 mainRooting.post("/newFolder", validate, fileClass.newFolder);
 mainRooting.post("/savingaudio", validate, fileClass.uploadAudiBase64);
 mainRooting.post("/bulletin_liste", validate, bulletin_liste);
+mainRooting.post("/evaluation_liste", validate, getEvaluationListe);
 mainRooting.get("/ficheposte", validate, ficheposte);
 mainRooting.post(
   "/uploadfile",
@@ -137,6 +140,6 @@ mainRooting.post(
   fileClass.upload
 );
 async function testFunction() {
-  console.log("first");
+
   return await lireSql("select * from RH_Agent where Matricule='1'", []);
 }

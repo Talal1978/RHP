@@ -11,18 +11,19 @@ import {
 export const authentication = async (req: Request, res: Response) => {
   const { login, pwd } = req.query;
   const sqlStr = `declare @lg nvarchar(50)
-    set @lg=upper('${login}')
+    set @lg=upper(@login)
     select top 1 -1 id_User,id_Societe,Matricule, ltrim(rtrim(isnull(Nom_Agent,'') + ' ' + isnull(Prenom_Agent,''))) as Nom,isnull(Cod_Entite,'') as Cod_Entite, isnull(Cod_Poste,'') as Cod_Poste, Mail Login_User,
-    isnull(Droit_Paie,'false') as User_Actif, -1 as Cod_Profile, isnull(Droit_Paie,'false') as Profile_Actif , isnull(Mail,'') as Mail,convert(bit, case when estTeamLeader>0 then 'true' else 'false' end) as TeamLeader
+    isnull(Droit_Paie,'false') as User_Actif, -1 as Cod_Profile, isnull(Droit_Paie,'false') as Profile_Actif , isnull(Mail,'') as Mail,convert(bit, case when estTeamLeader>0 then 'true' else 'false' end) as TeamLeader, isnull(Typ_Role,'') as Typ_Role
     from Rh_Agent a
     outer apply (select count(*) as estTeamLeader from Sys_Org_Entite where Cod_Entite=isnull(a.Cod_Entite,'ui5465deu_è_è_çè') and Responsable=a.Matricule)o
+    outer apply (select top 1 Typ_Role from Controle_Users where isnull(Mail,'')=a.Mail)o
     where HashBytes('SHA1',upper(Mail))=HashBytes('SHA1',@lg) and Pw='${encrypt(
     pwd
   )}'`;
   const rsl = await lireSql(sqlStr, [
     { param: "login", sqlType: NVarChar, valeur: login },
   ]);
-
+  console.log(rsl.data);
   if (rsl.result && rsl.data.length > 0) {
     const myJwt = getToken(
       rsl.data[0].Cod_Profile,
@@ -36,7 +37,7 @@ export const authentication = async (req: Request, res: Response) => {
       rsl.data[0].id_Societe,
       rsl.data[0].TeamLeader,
       rsl.data[0].RacineHierarchique,
-      rsl.data[0].id_User
+      rsl.data[0].id_User,
     );
     await initialisationGlobale({
       codProfile: rsl.data[0].Cod_Profile,

@@ -53,7 +53,7 @@ export async function lireSql(
     }
 
     const data = result?.recordset?.length > 0 ? result.recordset : [];
-    // if (afficherSql) console.log(sqlStr, "params ", params, "Data ", data);
+
     return {
       result: true,
       data: data as any,
@@ -127,7 +127,7 @@ export const ecrireSql = async (args: {
         VALUES (${str4},'${login}',getdate());
    select top 1 * from ${tableName} where ${str5}`;
   let rsl = await lireSql(str, []);
-  if (!rsl.result) console.log(str);
+
   return rsl;
 };
 export const controleInjection = (champs: string) => {

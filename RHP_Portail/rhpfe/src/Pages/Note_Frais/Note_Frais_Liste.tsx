@@ -154,7 +154,7 @@ const Note_Frais_Liste = () => {
                     }
                   })
                   .catch((err) => {
-                    console.log(err);
+
                     setDs([]);
                     setDsFields({});
                   });

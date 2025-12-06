@@ -41,7 +41,7 @@ const Signature = (props: TSignature) => {
         }
       })
       .catch((err) => {
-        console.log(err);
+
         setSignataires([]);
       });
   }, [props.typ_document, props.valeur_index]);

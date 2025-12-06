@@ -60,7 +60,7 @@ const Demande_Avance = () => {
         }
       })
       .catch((err) => {
-        console.log("get_mnt_avances_encours", err);
+
         setInfo(initInfo);
       });
   }, [entete?.Matricule, currentNum]);

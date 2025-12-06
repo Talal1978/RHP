@@ -33,15 +33,13 @@ export async function demande_conge_liste(req: Request, res: Response) {
     ? toSqlDateFormat(Dat_Au)
     : toSqlDateFormat(new Date(2045, 11, 31));
   Statut = Statut || "";
-  let sqlStr = `select Num_Conge 'N° demande', ${
-    Matricule === theAgent.Matricule ? "Matricule,Nom, " : ""
-  }dbo.FindRubrique('Statut_Signature',Statut) as Statut, Dat_Deb_Conge as 'Du', Dat_Fin_Conge as 'Au', 
+  let sqlStr = `select Num_Conge 'N° demande', ${Matricule === theAgent.Matricule ? "Matricule,Nom, " : ""
+    }dbo.FindRubrique('Statut_Signature',Statut) as Statut, Dat_Deb_Conge as 'Du', Dat_Fin_Conge as 'Au', 
 Duree_Globale 'Durée totale', Repos_Hebdomadaire 'Repos hebdo.', 
-Jours_Feries 'Jours fériés', Duree_Conge 'Congé' ${
-    Cod_Entite === theAgent.Cod_Entite
+Jours_Feries 'Jours fériés', Duree_Conge 'Congé' ${Cod_Entite === theAgent.Cod_Entite
       ? ""
       : ", isnull(Lib_Entite,'') as 'Entité'"
-  }, Commentaire
+    }, Commentaire
  from RH_Conge_Suivi c
  outer apply (select Nom_Agent + ' ' +Prenom_Agent as Nom from RH_Agent where id_Societe=c.id_Societe and Matricule=c.Matricule) r
  outer apply (select Lib_Entite as Entité from Org_Entite where id_Societe=c.id_Societe and Cod_Entite=c.Cod_Entite) o
@@ -146,15 +144,7 @@ export async function save_demande_conge(req: Request, res: Response) {
     }
   }
   const detail = await Calcul(entete, Number(id_Societe));
-  console.log(
-    "id_Societe ",
-    id_Societe,
-    "entete ",
-    entete,
-    "detail ",
-    detail.length,
-    detail
-  );
+
   if (detail.length === 0) {
     return res.send({
       result: false,
@@ -193,7 +183,7 @@ export async function save_demande_conge(req: Request, res: Response) {
   );
   if (Sys_Conge_Check.result) {
     if (Sys_Conge_Check.data.length > 0) {
-      console.log(Sys_Conge_Check.data[0]["Num_Conge"]);
+
       return res.send({
         result: false,
         data:
@@ -309,8 +299,7 @@ async function Calcul(
   let nbfr = 0;
   let oDate: Date;
   const jrs = await lireSql(
-    `select * from dbo.Sys_JourFeries('${datDeb.toISOString()}', ${
-      Societe.id_Societe
+    `select * from dbo.Sys_JourFeries('${datDeb.toISOString()}', ${Societe.id_Societe
     })`
   );
   const TblJourFeries: {
