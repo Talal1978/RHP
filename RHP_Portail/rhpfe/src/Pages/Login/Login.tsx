@@ -21,7 +21,7 @@ import useAlert from "../../hooks/useAlert";
 export const Login = () => {
   const navigate = useNavigate();
   const [errorMsg, setErrorMsg] = useState("");
-  const [credention, setCredentials] = useState({ login: "talal.hamdaoui@gmail.com", password: "azer" });
+  const [credention, setCredentials] = useState({ login: "talal.hamdaoui@gmail.com", password: "Azerty@123" });
   const [showChangePwd, setShowChangePwd] = useState(false);
   const myAxiosGet = useAxiosGet();
   const myAxiosPost = useAxiosPost();

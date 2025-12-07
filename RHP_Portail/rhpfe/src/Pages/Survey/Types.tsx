@@ -1,6 +1,6 @@
-export type TQuestionType = "alpha"|"choix"|"cocher"|"date"|"dateTime"|"echelle"|"entier"|"grille_cases"|"grille_choix"|"grille_libre"|"heure"|"liste"|"numerique"|"oui_non"|"paragraph"|"vrai_faux"|"multiLine";
+export type TQuestionType = "alpha" | "choix" | "cocher" | "date" | "dateTime" | "echelle" | "entier" | "grille_cases" | "grille_choix" | "grille_libre" | "heure" | "liste" | "numerique" | "oui_non" | "paragraph" | "vrai_faux" | "multiLine";
 
-export type TModeScoring = "auto"|"multi_sum"|"multi_avg"|"multi_min"|"multi_max"|"manuel"|"func"|"na";
+export type TModeScoring = "auto" | "multi_sum" | "multi_avg" | "multi_min" | "multi_max" | "manuel" | "func" | "na";
 
 export type TNoteResult = { note: number; coef: number; note_totale: number; max_score?: number; min_score?: number; note_manuelle?: boolean; };
 
@@ -10,7 +10,7 @@ export interface TQuestion {
   Cod_Question: number;
   Question: string;
   Sous_Question: string;
-  Reponses_Possibles: string; 
+  Reponses_Possibles: string;
   Obligatoire: boolean;
   AvecNote: boolean;
   Mode_Scoring: TModeScoring;
@@ -23,15 +23,15 @@ export interface TQuestion {
 }
 
 export interface TDbAnswer {
-    Cod_Reply: number;
-    Cod_Question: number;
-    Num_Sous_Question: string;
-    Reponses: string;
-    Note: number;
-    Coef: number;
-    Note_Totale: number;
-    Statut: string;
-    Paie_Calculee: string;
+  Cod_Reply: number;
+  Cod_Question: number;
+  Num_Sous_Question: string;
+  Reponses: string;
+  Note: number;
+  Coef: number;
+  Note_Totale: number;
+  Statut: string;
+  Paie_Calculee: string;
 }
 
 export interface TAnswerState {
@@ -46,5 +46,9 @@ export interface TAnswerState {
 }
 
 export interface TAnswers {
-    [key: number]: TAnswerState;
+  [key: number]: TAnswerState;
 }
+
+export type ChildHandle = {
+  save: () => Promise<void>;
+};

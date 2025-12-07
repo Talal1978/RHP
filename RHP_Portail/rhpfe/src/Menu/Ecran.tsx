@@ -86,6 +86,9 @@ const Ecran = ({ style }: { style?: React.CSSProperties }) => {
       case "Evaluation_Liste":
         setEcran(<Evaluation_Liste />);
         break;
+      case "Evaluation":
+        setEcran(<Evaluation />);
+        break;
       default:
         setEcran(
           <div

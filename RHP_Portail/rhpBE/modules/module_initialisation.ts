@@ -149,6 +149,9 @@ export const initialisationSeveur = async (): Promise<boolean> => {
         const server =
           (await question("Enter SQL Server (e.g. .\\SQL2019): ")) ||
           ".\\SQL2019";
+        const db =
+          (await question("Enter le nom de la base de données RHP (default RHP): ")) ||
+          "RHP";
         const user = (await question("Enter SQL User (default sa): ")) || "sa";
         const pwd = await question("Enter SQL Password: ");
 
@@ -159,6 +162,7 @@ export const initialisationSeveur = async (): Promise<boolean> => {
           odbc: odbc,
           server: server,
           user: user,
+          db: db,
           pwd: encrypt(pwd),
         };
 
@@ -180,7 +184,7 @@ export const initialisationSeveur = async (): Promise<boolean> => {
     VGLOBALES.ODBC_SERVEUR = cnfJson.odbc;
     VGLOBALES.SQL_SERVER = cnfJson.server;
     VGLOBALES.SQL_USER = cnfJson.user;
-    VGLOBALES.SQL_DB = "RHP";
+    VGLOBALES.SQL_DB = cnfJson.db;
     VGLOBALES.SQL_PASSWORD = cnfJson.pwd;
     VGLOBALES.UPLOADS_PATH = path.resolve(opath);
     return true;

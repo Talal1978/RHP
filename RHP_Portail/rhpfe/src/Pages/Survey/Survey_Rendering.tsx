@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState, useRef, Dispatch, SetStateAction } from 'react';
+import { useCallback, useEffect, useMemo, useState, useRef, Dispatch, SetStateAction, useImperativeHandle, forwardRef } from 'react';
 import { Box, Typography } from "@mui/material";
 import UdValeurUnique from './Components/UdValeurUnique';
 import UdGrilleCases from './Components/UdGrilleCases';
@@ -6,9 +6,10 @@ import UdGrilleChoix from './Components/UdGrilleChoix';
 import UdGrilleLibre from './Components/UdGrilleLibre';
 import { colorBase } from '../../modules/module_general';
 import Loading from '../../components/Loading/Loading';
-import { TAnswers, TAnswerState, TDbAnswer, TNoteResult, TQuestion } from './Types';
-import useAxiosGet from '../../hooks/useAxiosGet';
+import { ChildHandle, TAnswers, TAnswerState, TDbAnswer, TNoteResult, TQuestion } from './Types';
+import useAxiosPost from '../../hooks/useAxiosPost';
 import { defaultValueMap, evaluateExpression, func_multi_avg, func_multi_max, func_multi_min, func_multi_sum, getValeur, safeNumber } from './Survey_Functions';
+import useAxiosGet from '../../hooks/useAxiosGet';
 
 const initialAnswerState: TAnswerState = {
     value: null,
@@ -51,14 +52,21 @@ interface TProps {
     evalue: string
     evaluateur: string
     typ_survey: 'E' | 'R' | 'F'
+    refChild: React.RefObject<ChildHandle>
 }
 
-const Survey_Rendering = ({ cod_survey, cod_reply, evalue, evaluateur, typ_survey }: TProps) => {
-    const myAxios = useAxiosGet();
+const Survey_Rendering = forwardRef<ChildHandle, TProps>(({ cod_survey, cod_reply, evalue, evaluateur, typ_survey, refChild }, _ref) => {
+    const myAxiosGet = useAxiosGet();
+    const myAxiosPost = useAxiosPost();
     const [questions, setQuestions] = useState<TQuestion[]>([]);
     const [answers, setAnswers] = useState<TAnswers>({});
     const [isLoading, setIsLoading] = useState(true);
     const questionsRef = useRef<TQuestion[]>([]);
+    useImperativeHandle(refChild, () => ({
+        save: async () => {
+            await saveAnswers();
+        },
+    }));
     useEffect(() => {
         questionsRef.current = questions;
     }, [questions]);
@@ -72,8 +80,8 @@ const Survey_Rendering = ({ cod_survey, cod_reply, evalue, evaluateur, typ_surve
             try {
                 // Fetch both questions and answers in parallel
                 const [rslQuestions, rslAnswers] = await Promise.all([
-                    myAxios({ apiStr: 'surveyQuestions', bdy: { cod_survey } }),
-                    myAxios({ apiStr: 'surveyAnswers', bdy: { cod_survey, cod_reply } }) // Assuming cod_reply or cod_survey needed here
+                    myAxiosGet({ apiStr: 'surveyQuestions', bdy: { cod_survey } }),
+                    myAxiosGet({ apiStr: 'surveyAnswers', bdy: { cod_survey, cod_reply } }) // Assuming cod_reply or cod_survey needed here
                 ]);
 
                 if (!isMounted) {
@@ -404,7 +412,7 @@ const Survey_Rendering = ({ cod_survey, cod_reply, evalue, evaluateur, typ_surve
     };
 
     const totalScore = useMemo(() => {
-        return questions.reduce((total: { noteTotal: number, coefTotal: number }, q) => {
+        return questions.reduce<{ noteTotal: number, coefTotal: number }>((total, q) => {
             const qState = answers[q.NumQuestion];
             if (qState && qState.isVisible && q.AvecNote) {
                 const noteTotal = safeNumber(qState.note?.note_totale, 0);
@@ -415,51 +423,72 @@ const Survey_Rendering = ({ cod_survey, cod_reply, evalue, evaluateur, typ_surve
         }, { noteTotal: 0, coefTotal: 0 });
     }, [answers, questions]);
 
-    if (isLoading) {
-        return <Loading />;
-    }
+    const saveAnswers = useCallback(async () => {
+        try {
+            const rsl = await myAxiosPost("surveyAnswersSave", {
+                cod_survey,
+                cod_reply,
+                answers,
+                evalue,
+                evaluateur,
+                typ_survey,
+                // VB Logic uses Cod_Evaluation_txt. Assuming cod_survey acts as reference or we send it as such.
+                cod_evaluation: cod_survey
+            });
+            console.log(rsl);
+        } catch (error) {
+            console.error('Error saving answers:', error);
+        }
+    }, [answers, cod_reply, cod_survey, evalue, evaluateur, typ_survey, myAxiosPost]);
+
+    if (isLoading) return <Loading />;
 
     return (
-        <div style={{ width: '100vw', minHeight: '100vh', backgroundColor: '#eef2f6', overflowY: 'auto' }}>
-            <div style={{
-                maxWidth: '1200px',
-                width: '95%',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'stretch',
-                justifyContent: 'flex-start',
-                margin: '20px auto',
-                backgroundColor: 'white',
-                padding: '30px',
-                borderRadius: '8px',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-            }}>
-                {questions && questions.length > 0 && questions[0].AvecNote && totalScore.coefTotal > 0 && (
-                    <Box sx={{ mt: 4, pt: 2, borderTop: '2px solid #ccc' }}>
-                        <Typography variant="h6" sx={{ color: colorBase.colorBase01, display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 10px' }}>
-                            <span>Note finale : <span style={{ fontWeight: 'bold', color: 'gray' }}>{(totalScore.noteTotal / totalScore.coefTotal).toFixed(2)}</span></span> <span>Coefficient: <span style={{ fontWeight: 'bold', color: 'gray' }}>{totalScore.coefTotal}</span></span> <span>Score global: <span style={{ fontWeight: 'bold', color: 'gray' }}>{totalScore.noteTotal.toFixed(2)}</span></span>
-                        </Typography>
+        <div style={{ width: '100%' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                {questions.length > 0 && (
+                    <Box sx={{ p: 2, bgcolor: '#f5f5f5', borderRadius: 1, display: 'flex', justifyContent: 'space-around', alignItems: 'center' }}>
+                        <Box sx={{ textAlign: 'center' }}>
+                            <Typography variant="subtitle1" sx={{ color: colorBase.colorBase01, fontWeight: 'bold' }}>Note finale</Typography>
+                            <Typography variant="h5" sx={{ color: 'text.primary', fontWeight: 'bold' }}>
+                                {(totalScore.coefTotal ? (totalScore.noteTotal / totalScore.coefTotal) : 0).toFixed(2)}
+                            </Typography>
+                        </Box>
+                        <Box sx={{ textAlign: 'center' }}>
+                            <Typography variant="subtitle1" sx={{ color: colorBase.colorBase01, fontWeight: 'bold' }}>Coefficient</Typography>
+                            <Typography variant="h5" sx={{ color: 'text.primary', fontWeight: 'bold' }}>
+                                {totalScore.coefTotal}
+                            </Typography>
+                        </Box>
+                        <Box sx={{ textAlign: 'center' }}>
+                            <Typography variant="subtitle1" sx={{ color: colorBase.colorBase01, fontWeight: 'bold' }}>Score global</Typography>
+                            <Typography variant="h5" sx={{ color: 'text.primary', fontWeight: 'bold' }}>
+                                {totalScore.noteTotal.toFixed(2)}
+                            </Typography>
+                        </Box>
                     </Box>
                 )}
 
-                {questions.map((q) => {
-                    const qState = answers[q.NumQuestion];
-                    if (!qState || !qState.isVisible) return null;
+                {
+                    questions.map((q) => {
+                        const qState = answers[q.NumQuestion];
+                        if (!qState || !qState.isVisible) return null;
 
-                    return (
-                        <Box key={q.NumQuestion} sx={{ mb: 2 }}>
-                            {QuestionRenderer(q)}
-                            {qState.hasError && (
-                                <Typography color="error" sx={{ ml: 2, mt: 0.5 }}>
-                                    {qState.errorMsg}
-                                </Typography>
-                            )}
-                        </Box>
-                    );
-                })}
-            </div>
-        </div>
+                        return (
+                            <Box key={q.NumQuestion} sx={{ mb: 2 }}>
+                                {QuestionRenderer(q)}
+                                {qState.hasError && (
+                                    <Typography color="error" sx={{ ml: 2, mt: 0.5 }}>
+                                        {qState.errorMsg}
+                                    </Typography>
+                                )}
+                            </Box>
+                        );
+                    })
+                }
+            </div >
+        </div >
     );
-};
+})
 
 export default Survey_Rendering;

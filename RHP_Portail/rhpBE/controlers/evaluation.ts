@@ -89,7 +89,7 @@ export const getEvaluationListe = async (req: Request, res: Response) => {
       Poste,
       CONVERT(bit, case isnull(Cod_Reply,'') when '' then 'false' else 'true' end) as 'Effectuée',
       dbo.FindRubrique('Statut_Signature',v.Statut) as 'Validation', 
-      Dat_Survey as 'Date'
+      Dat_Survey as 'Date', Cod_Reply,Cod_Survey
     from Sys_Evaluation_Liste l
     outer apply (
       select Membre as Statut 

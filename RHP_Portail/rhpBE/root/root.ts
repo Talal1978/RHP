@@ -59,7 +59,7 @@ import {
   isPaieEncours,
   releaseAccessibleApi,
 } from "../modules/module_access";
-import { surveyAnswers, surveyQuestions } from "../controlers/survey";
+import { surveyAnswers, surveyAnswersSave, surveyQuestions } from "../controlers/survey";
 import { ficheposte } from "../controlers/org_ficheposte";
 import { generateReport } from "../controlers/report";
 import { getEvaluationListe } from "../controlers/evaluation";
@@ -117,6 +117,7 @@ mainRooting.post("/calcul_conge", validate, calcul_conge);
 
 mainRooting.get("/surveyQuestions", validate, surveyQuestions);
 mainRooting.get("/surveyAnswers", validate, surveyAnswers);
+mainRooting.post("/surveyAnswersSave", validate, surveyAnswersSave);
 
 mainRooting.post("/save_note_frais", validate, save_note_frais);
 mainRooting.post("/note_frais_liste", validate, noteFraisListe);

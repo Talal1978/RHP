@@ -342,14 +342,17 @@ const Evaluation_Liste = () => {
                     onclick={({ colIndex, value, rowIndex }) => {
                         if (colIndex !== undefined && rowIndex !== undefined && ds[rowIndex]) {
                             const row = ds[rowIndex];
-                            navigate("/evaluation", {
+                            navigate("/myspace/Evaluation/Evaluation", {
                                 state: {
-                                    Cod_Evaluation: row["Evaluation"],
-                                    Description: row["Description"],
-                                    Evaluateur: row["Evaluateur"],
-                                    Nom_Evaluateur: row["Nom_evaluateur"],
-                                    Evalue: row["Matricule"],
-                                    Nom_Evalue: row["Nom"]
+                                    cod_evaluation: row["Evaluation"],
+                                    lib_evaluation: row["Description"],
+                                    evaluateur: row["Evaluateur"],
+                                    nom_evaluateur: row["Nom_evaluateur"],
+                                    evalue: row["Matricule"],
+                                    nom_evalue: row["Nom"],
+                                    cod_survey: row["Cod_Survey"],
+                                    cod_reply: row["Cod_Reply"],
+                                    typ_survey: "E"
                                 }
                             });
                         }
