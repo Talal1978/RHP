@@ -3,6 +3,7 @@ import { TAgent } from "../types";
 export const Num_Version = "2024.000.00";
 export const Connexion = "http://localhost:3500/api/";
 export let myJwt = "";
+
 export const setJwt = (jwtKey: string) => {
   myJwt = jwtKey;
 };

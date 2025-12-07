@@ -1,5 +1,5 @@
 import axios, { AxiosResponse } from "axios";
-import { Connexion, myJwt } from "../modules/module_general";
+import { Connexion, myJwt, setJwt } from "../modules/module_general";
 import { ObjetGenerique } from "../types";
 
 const useAxiosPost = () => {
@@ -25,6 +25,25 @@ const useAxiosPost = () => {
       });
       return response;
     } catch (err: any) {
+      if (axios.isAxiosError(err) && err.response?.status === 403) {
+        // Attempt refresh
+        try {
+          const refreshResponse = await axios.post(`${Connexion}refresh`, {}, { withCredentials: true });
+          if (refreshResponse.data && refreshResponse.data.accessToken) {
+            const { accessToken } = refreshResponse.data;
+            setJwt(accessToken);
+
+            // Retry original request
+            headers.authorization = `Bearer ${accessToken}`;
+            return await axios.post(`${Connexion}${apiStr}`, bdy, {
+              headers,
+              ...options,
+            });
+          }
+        } catch (refreshErr) {
+          console.error("Token refresh failed", refreshErr);
+        }
+      }
       console.error(apiStr, err);
       return { data: null, error: err, status: -1, headers: null };
     }

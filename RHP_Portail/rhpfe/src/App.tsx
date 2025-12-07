@@ -1,8 +1,5 @@
 import React, {
-  Dispatch,
-  SetStateAction,
   Suspense,
-  createContext,
   lazy,
   useMemo,
   useState,
@@ -12,20 +9,12 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFnsV3";
 import { fr } from "date-fns/locale/fr";
 import Loading from "./components/Loading/Loading";
-import { TMsgBox } from "./types";
+import { TAlert, TMsgBox } from "./types";
 import MsgBox from "./components/MsgBox/MsgBox";
 import Evaluation from "./Pages/Evaluation/Evaluation";
-export const parentCntX = createContext<{
-  msgProps: TMsgBox;
-  setMsgProps: Dispatch<SetStateAction<TMsgBox>>;
-  showMsgBox: boolean;
-  setShowMsgBox: Dispatch<SetStateAction<boolean>>;
-}>({
-  msgProps: { msg: "", open: false } as TMsgBox,
-  setMsgProps: () => {},
-  showMsgBox: false,
-  setShowMsgBox: () => {},
-});
+import { parentCntX } from "./Context/GlobalContext";
+import MyAlert from "./components/MyAlert/MyAlert";
+
 // Lazy load your components
 const Login = lazy(() =>
   import("./Pages/Login/Login").then((module) => ({ default: module.Login }))
@@ -43,12 +32,20 @@ const ReportViewer = lazy(() =>
 function App() {
   const [showMsgBox, setShowMsgBox] = useState(false);
   const [msgProps, setMsgProps] = useState<TMsgBox>({ msg: "" });
+  const [showAlert, setShowAlert] = useState(false);
+  const [alertProps, setAlertProps] = useState<TAlert>({ msg: "" });
+
   const contextValue = useMemo(() => ({
-    showMsgBox, 
-    setShowMsgBox, 
-    msgProps, 
-    setMsgProps
-  }), [showMsgBox, msgProps]);
+    showMsgBox,
+    setShowMsgBox,
+    msgProps,
+    setMsgProps,
+    showAlert,
+    setShowAlert,
+    alertProps,
+    setAlertProps
+  }), [showMsgBox, msgProps, showAlert, alertProps]);
+
   return (
     <parentCntX.Provider
       value={contextValue}
@@ -71,6 +68,7 @@ function App() {
         </BrowserRouter>
       </LocalizationProvider>
       <MsgBox {...msgProps} />
+      <MyAlert {...alertProps} />
     </parentCntX.Provider>
   );
 }

@@ -1,6 +1,6 @@
 import * as nodemailer from "nodemailer";
 import { Response, Request } from "express";
-import { VGLOBALES } from "./module_initialisation";
+import { VGLOBALES, loadSmtpConfig } from "./module_initialisation";
 
 export interface mailOptionsFormat {
   from: string;
@@ -11,13 +11,20 @@ export interface mailOptionsFormat {
   headers: {};
 }
 export const envoiMail = async (mailOptions: mailOptionsFormat) => {
-  const username = VGLOBALES.SMTP_USERNAME;
-  const password = VGLOBALES.SMTP_PASSWORD;
+  await loadSmtpConfig();
+  console.log("DEBUG: VGLOBALES SMTP:", {
+    HOST: VGLOBALES.SMTP_HOST,
+    PORT: VGLOBALES.SMTP_PORT,
+    SECURE: VGLOBALES.SMTP_PORT === 465,
+    USER: VGLOBALES.SMTP_USERNAME,
+  });
   const transporter = nodemailer.createTransport({
-    service: "gmail",
+    host: VGLOBALES.SMTP_HOST,
+    port: VGLOBALES.SMTP_PORT,
+    secure: VGLOBALES.SMTP_PORT === 465, // true for 465, false for other ports
     auth: {
-      user: username,
-      pass: password,
+      user: VGLOBALES.SMTP_USERNAME,
+      pass: VGLOBALES.SMTP_PASSWORD,
     },
   });
   let info = await transporter.sendMail(mailOptions);

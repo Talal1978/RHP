@@ -12,7 +12,7 @@ import msgbox_warning from "./img/msgbox_warning.png";
 import msgbox_question from "./img/msgbox_question.png";
 import msgbox_stop from "./img/msgbox_stop.png";
 import { cntX } from "../../Menu/MenuMain";
-import { parentCntX } from "../../App";
+import { parentCntX } from "../../Context/GlobalContext";
 
 const msgImg = {
   error: msgbox_error,
@@ -27,10 +27,10 @@ export default function MsgBox({
   msg,
   typMsg = "info",
   typReply = "OkOnly",
-  handleOk = async () => {},
-  handleCancel = async () => {},
-  handleNo = async () => {},
-  handleYes = async () => {},
+  handleOk = async () => { },
+  handleCancel = async () => { },
+  handleNo = async () => { },
+  handleYes = async () => { },
 }: TMsgBox) {
   const { showMsgBox, setShowMsgBox } = useContext(parentCntX);
   function handleClose() {

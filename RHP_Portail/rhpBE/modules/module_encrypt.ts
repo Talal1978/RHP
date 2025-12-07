@@ -12,10 +12,10 @@ function createKey(): Buffer {
   const saltBytes = Buffer.from(saltValue, "utf8");
   return crypto.pbkdf2Sync(
     password,
-    saltBytes,
+    saltBytes as any,
     passwordIterations,
     keySize / 8,
-    "sha1"
+    "sha1" as any
   );
 }
 
@@ -27,10 +27,10 @@ export const encrypt = (textOrig: any): string => {
 
   const cipher = crypto.createCipheriv(
     "aes-256-cbc",
-    keyBytes,
-    initVectorBytes
+    keyBytes as any,
+    initVectorBytes as any
   );
-  const encrypted = Buffer.concat([cipher.update(textBytes), cipher.final()]);
+  const encrypted = Buffer.concat([cipher.update(textBytes as any) as any, cipher.final() as any]);
   return encrypted.toString("base64");
 };
 
@@ -43,12 +43,12 @@ export const decrypt = (textCryp: any): string => {
 
     const decipher = crypto.createDecipheriv(
       "aes-256-cbc",
-      keyBytes,
-      initVectorBytes
+      keyBytes as any,
+      initVectorBytes as any
     );
     const decrypted = Buffer.concat([
-      decipher.update(textBytes),
-      decipher.final(),
+      decipher.update(textBytes as any) as any,
+      decipher.final() as any,
     ]);
     return decrypted.toString("utf8");
   } catch (err) {

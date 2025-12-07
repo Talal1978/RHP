@@ -4,10 +4,12 @@ import jwt from "jsonwebtoken";
 import { Server } from "socket.io";
 import cors from "cors-ts";
 import dotenv from "dotenv";
+import cookieParser from "cookie-parser";
 import mainRooting from "../root/root";
-import { VGLOBALES } from "../modules/module_initialisation";
+import { VGLOBALES, initialisationSeveur, initialisationGlobale } from "../modules/module_initialisation";
 import { TJwtSession } from "../modules/module_jwt";
 import { lireSql } from "../modules/module_sqlRW";
+import { decrypt } from "../modules/module_encrypt";
 dotenv.config();
 process.env.TZ = "Africa/Casablanca";
 export const myCors = {
@@ -33,6 +35,7 @@ export const app = express();
 const server = http.createServer(app);
 const io = new Server(server, { cors: myCors });
 app.use(cors<Request>(myCors));
+app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json()); // Middleware to parse JSON bodies
 app.use("/api", mainRooting);
@@ -65,6 +68,17 @@ io.on("connection", (socket) => {
   });
 });
 
-server.listen(VGLOBALES.PORT, async () => {
-  console.log(`Serveur démarré sur le port ${VGLOBALES.PORT}`);
-});
+const startServer = async () => {
+  try {
+    await initialisationGlobale();
+
+    server.listen(VGLOBALES.PORT, async () => {
+      console.log(`Serveur démarré sur le port ${VGLOBALES.PORT}`);
+    });
+  } catch (error) {
+    console.error("Failed to start server:", error);
+    process.exit(1);
+  }
+};
+
+startServer();

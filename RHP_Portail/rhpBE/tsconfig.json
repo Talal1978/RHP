@@ -7,9 +7,9 @@
       "esModuleInterop": true,
       "skipLibCheck": true,
       "forceConsistentCasingInFileNames": true,
+      "rootDir": ".",
       "types": ["node"],
       "typeRoots": ["./node_modules/@types", "./custom-types.d.ts"]
     },
-    "include": ["src/**/*"]
+    "include": ["src/**/*", "modules/**/*", "controlers/**/*", "root/**/*"]
   }
-  

@@ -12,8 +12,23 @@ export async function lireSql(
   afficherSql = false
 ) {
   const db = VGLOBALES.SQL_DB || "RHPS";
-  const connectionString = `Driver={SQL Server Native Client 11.0};Server=${VGLOBALES.SQL_SERVER};TrustServerCertificate=True;Database=${db};Uid=${VGLOBALES.SQL_USER};Pwd=${VGLOBALES.SQL_PASSWORD};encrypt=false;`;
-  const pool = new sql.ConnectionPool(connectionString);
+  // Parse server and instance if present (e.g. "localhost\SQL2019")
+  const serverParts = VGLOBALES.SQL_SERVER.split("\\");
+  const server = serverParts[0] === "." ? "localhost" : serverParts[0];
+  const instanceName = serverParts.length > 1 ? serverParts[1] : undefined;
+
+  const config = {
+    user: VGLOBALES.SQL_USER,
+    password: VGLOBALES.SQL_PASSWORD,
+    server: server,
+    database: db,
+    options: {
+      encrypt: false, // Use true for Azure, false for local dev usually
+      trustServerCertificate: true,
+      instanceName: instanceName,
+    },
+  };
+  const pool = new sql.ConnectionPool(config as any);
   try {
     const poolConnect = await pool.connect();
     if (afficherSql)

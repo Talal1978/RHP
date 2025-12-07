@@ -20,33 +20,11 @@ export const getToken = (
   TeamLeader: string,
   RacineHierarchique: string,
   id_User: string,
+  existingProcessId?: string,
 ) => {
-  const processId = String(Math.floor(Math.random() * 100000));
-  let stoken = "";
+  const processId = existingProcessId || String(Math.floor(Math.random() * 100000));
   const secret_key: jwt.Secret = VGLOBALES.JWT_KEY;
-  stoken = jwt.sign(
-    {
-      processId,
-      codProfile,
-      Login,
-      Typ_Role,
-      Cod_Poste,
-      Cod_Entite,
-      Matricule,
-      Nom,
-      Mail,
-      id_Societe,
-      TeamLeader,
-      RacineHierarchique,
-      id_User,
-    },
-    secret_key,
-    {
-      expiresIn: 60 * 60,
-    }
-  );
-
-  jwtSessions.push({
+  const payload = {
     processId,
     codProfile,
     Login,
@@ -60,9 +38,42 @@ export const getToken = (
     TeamLeader,
     RacineHierarchique,
     id_User,
-  });
-  return stoken;
+  };
+
+  const accessToken = jwt.sign(payload, secret_key, { expiresIn: "15m" });
+  const refreshToken = jwt.sign(payload, secret_key, { expiresIn: "7d" });
+
+  if (!existingProcessId) {
+    jwtSessions.push({
+      processId,
+      codProfile,
+      Login,
+      Typ_Role,
+      Cod_Poste,
+      Cod_Entite,
+      Matricule,
+      Nom,
+      Mail,
+      id_Societe,
+      TeamLeader,
+      RacineHierarchique,
+      id_User,
+    });
+  }
+
+  return { accessToken, refreshToken };
 };
+
+export const verifyRefreshToken = (token: string) => {
+  try {
+    const decoded = jwt.verify(token, VGLOBALES.JWT_KEY) as TJwtSession;
+    const session = jwtSessions.find(s => s.processId === decoded.processId);
+    if (!session) return null;
+    return decoded;
+  } catch (e) {
+    return null;
+  }
+}
 export const validate = (req: Request, res: Response, next: NextFunction) => {
   if (!req.headers.authorization)
     return res.status(403).send("1 RHP : Accès non authorisé");

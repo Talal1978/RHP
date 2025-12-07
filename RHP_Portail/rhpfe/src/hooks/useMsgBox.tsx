@@ -1,7 +1,7 @@
 import { useCallback, useContext, useEffect, useState } from "react";
 import { TMsgBox, TMsgBoxResult } from "../types";
 import { cntX } from "../Menu/MenuMain";
-import { parentCntX } from "../App";
+import { parentCntX } from "../Context/GlobalContext";
 
 export default function useMsgBox() {
   const { setMsgProps, setShowMsgBox, showMsgBox } = useContext(parentCntX);

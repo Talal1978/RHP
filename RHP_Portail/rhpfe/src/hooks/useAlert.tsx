@@ -1,9 +1,9 @@
 import { useContext } from "react";
 import { TAlert } from "../types";
-import { cntX } from "../Menu/MenuMain";
+import { parentCntX } from "../Context/GlobalContext";
 
 const useAlert = () => {
-  const { setShowAlert, setAlertProps } = useContext(cntX);
+  const { setShowAlert, setAlertProps } = useContext(parentCntX);
   return (props: TAlert) => {
     setAlertProps({ ...props });
     setShowAlert(true);

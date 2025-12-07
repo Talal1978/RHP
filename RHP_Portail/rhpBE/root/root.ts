@@ -2,7 +2,7 @@ import express from "express";
 import multer from "multer";
 import path from "path";
 import { validate } from "../modules/module_jwt";
-import { authentication } from "../controlers/authentication";
+import { authentication, getNewPwd, refreshToken, setPwd } from "../controlers/authentication";
 import { getZoomApi } from "../modules/module_zoom";
 import { findLibelleApi } from "../modules/module_findLibelle";
 import { getRubrique, listRubriques } from "../modules/module_rubrique";
@@ -18,6 +18,7 @@ import {
   delete_demande_avance,
   get_mnt_avances_encours,
 } from "../controlers/demande_avance";
+
 import {
   demande_pret_liste,
   get_demande_pret,
@@ -76,6 +77,9 @@ const upload = multer({ storage: storage });
 export default mainRooting;
 
 mainRooting.get("/auth", authentication);
+mainRooting.post("/refresh", refreshToken);
+mainRooting.post("/getNewPwd", getNewPwd);
+mainRooting.post("/setPwd", validate, setPwd);
 mainRooting.post("/zoom", validate, getZoomApi);
 mainRooting.post("/rubrique", getRubrique);
 mainRooting.get("/list_rubriques", listRubriques);

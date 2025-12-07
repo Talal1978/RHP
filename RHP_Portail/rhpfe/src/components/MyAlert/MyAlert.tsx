@@ -2,7 +2,7 @@ import { Alert, AlertTitle, Collapse, IconButton } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import { useContext, useEffect } from "react";
 import { TAlert } from "../../types";
-import { cntX } from "../../Menu/MenuMain";
+import { parentCntX } from "../../Context/GlobalContext";
 import "./myAlert.scss";
 import {
   CheckCircleOutlined,
@@ -11,7 +11,7 @@ import {
   WarningAmberOutlined,
 } from "@mui/icons-material";
 const MyAlert = ({ titre, msg, typMsg = "info", timeOut = -1 }: TAlert) => {
-  const { showAlert, setShowAlert } = useContext(cntX);
+  const { showAlert, setShowAlert } = useContext(parentCntX);
   useEffect(() => {
     if (showAlert) {
       setTimeout(() => setShowAlert(false), 3000);

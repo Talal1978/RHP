@@ -40,7 +40,7 @@ const Evaluation_Liste = () => {
     }, [JSON.stringify(criteres)]);
 
     const handleSearch = () => {
-        if (!criteres.Evalue && !criteres.Evaluateur) {
+        if (!criteres.Evalue && !criteres.Evaluateur && Agent.Typ_Role !== "Ops") {
             alert({
                 msg: "Veuillez renseigner l'évalué ou l'évaluateur.",
                 typMsg: "warning",
@@ -394,8 +394,8 @@ type TCriteres = {
 };
 
 const initialiserCriteres: TCriteres = {
-    Evaluateur: Agent.Typ_Role === "Agent" && Agent.TeamLeader ? Agent.Matricule : "",
-    Evalue: Agent.Typ_Role === "Agent" && !Agent.TeamLeader ? Agent.Matricule : "",
+    Evaluateur: Agent.TeamLeader ? Agent.Matricule : "",
+    Evalue: !Agent.TeamLeader ? Agent.Matricule : "",
     Cod_Entite: "",
     Cod_Grade: "",
     Cod_Evaluation: "",
