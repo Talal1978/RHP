@@ -52,10 +52,11 @@ interface TProps {
     evalue: string
     evaluateur: string
     typ_survey: 'E' | 'R' | 'F'
+    ref_evaluation: string
     refChild: React.RefObject<ChildHandle>
 }
 
-const Survey_Rendering = forwardRef<ChildHandle, TProps>(({ cod_survey, cod_reply, evalue, evaluateur, typ_survey, refChild }, _ref) => {
+const Survey_Rendering = forwardRef<ChildHandle, TProps>(({ cod_survey, cod_reply, evalue, evaluateur, typ_survey, ref_evaluation, refChild }, _ref) => {
     const myAxiosGet = useAxiosGet();
     const myAxiosPost = useAxiosPost();
     const [questions, setQuestions] = useState<TQuestion[]>([]);
@@ -64,7 +65,7 @@ const Survey_Rendering = forwardRef<ChildHandle, TProps>(({ cod_survey, cod_repl
     const questionsRef = useRef<TQuestion[]>([]);
     useImperativeHandle(refChild, () => ({
         save: async () => {
-            await saveAnswers();
+            return await saveAnswers();
         },
     }));
     useEffect(() => {
@@ -423,7 +424,7 @@ const Survey_Rendering = forwardRef<ChildHandle, TProps>(({ cod_survey, cod_repl
         }, { noteTotal: 0, coefTotal: 0 });
     }, [answers, questions]);
 
-    const saveAnswers = useCallback(async () => {
+    const saveAnswers = useCallback(async (): Promise<{ result: boolean, data: any[] }> => {
         try {
             const rsl = await myAxiosPost("surveyAnswersSave", {
                 cod_survey,
@@ -432,12 +433,15 @@ const Survey_Rendering = forwardRef<ChildHandle, TProps>(({ cod_survey, cod_repl
                 evalue,
                 evaluateur,
                 typ_survey,
-                // VB Logic uses Cod_Evaluation_txt. Assuming cod_survey acts as reference or we send it as such.
-                cod_evaluation: cod_survey
+                ref_evaluation
             });
-            console.log(rsl);
+            if (rsl.data) {
+                return rsl.data;
+            }
+            return { result: false, data: [] };
         } catch (error) {
             console.error('Error saving answers:', error);
+            return { result: false, data: [error] };
         }
     }, [answers, cod_reply, cod_survey, evalue, evaluateur, typ_survey, myAxiosPost]);
 
@@ -445,24 +449,24 @@ const Survey_Rendering = forwardRef<ChildHandle, TProps>(({ cod_survey, cod_repl
 
     return (
         <div style={{ width: '100%' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
                 {questions.length > 0 && (
-                    <Box sx={{ p: 2, bgcolor: '#f5f5f5', borderRadius: 1, display: 'flex', justifyContent: 'space-around', alignItems: 'center' }}>
+                    <Box sx={{ p: 2, bgcolor: 'var(--bg-input)', color: 'var(--fore-color-base-01)', borderRadius: 1, display: 'flex', justifyContent: 'space-around', alignItems: 'center', width: '100%', border: '1px solid #e0e0e0', mb: '10px' }}>
                         <Box sx={{ textAlign: 'center' }}>
                             <Typography variant="subtitle1" sx={{ color: colorBase.colorBase01, fontWeight: 'bold' }}>Note finale</Typography>
-                            <Typography variant="h5" sx={{ color: 'text.primary', fontWeight: 'bold' }}>
+                            <Typography variant="h5" sx={{ color: 'var(--fore-color-base-01)', fontWeight: 'bold' }}>
                                 {(totalScore.coefTotal ? (totalScore.noteTotal / totalScore.coefTotal) : 0).toFixed(2)}
                             </Typography>
                         </Box>
                         <Box sx={{ textAlign: 'center' }}>
                             <Typography variant="subtitle1" sx={{ color: colorBase.colorBase01, fontWeight: 'bold' }}>Coefficient</Typography>
-                            <Typography variant="h5" sx={{ color: 'text.primary', fontWeight: 'bold' }}>
+                            <Typography variant="h5" sx={{ color: 'var(--fore-color-base-01)', fontWeight: 'bold' }}>
                                 {totalScore.coefTotal}
                             </Typography>
                         </Box>
                         <Box sx={{ textAlign: 'center' }}>
                             <Typography variant="subtitle1" sx={{ color: colorBase.colorBase01, fontWeight: 'bold' }}>Score global</Typography>
-                            <Typography variant="h5" sx={{ color: 'text.primary', fontWeight: 'bold' }}>
+                            <Typography variant="h5" sx={{ color: 'var(--fore-color-base-01)', fontWeight: 'bold' }}>
                                 {totalScore.noteTotal.toFixed(2)}
                             </Typography>
                         </Box>
@@ -475,7 +479,7 @@ const Survey_Rendering = forwardRef<ChildHandle, TProps>(({ cod_survey, cod_repl
                         if (!qState || !qState.isVisible) return null;
 
                         return (
-                            <Box key={q.NumQuestion} sx={{ mb: 2 }}>
+                            <Box key={q.NumQuestion} sx={{ mb: 0 }}>
                                 {QuestionRenderer(q)}
                                 {qState.hasError && (
                                     <Typography color="error" sx={{ ml: 2, mt: 0.5 }}>

@@ -5,6 +5,7 @@
   width: 100%; /* Set the width of the table to fill its container */
   table-layout: auto; /* Default value, can be omitted */
   border-collapse: collapse; /* Optional, for styling */
+  background-color: variables.$bgInput !important; // Fix for Paper background in dark mode
   .grille {
     .th {
       .tr {
@@ -42,6 +43,8 @@
         white-space: nowrap;
         text-overflow: ellipsis;
         //font-size: medium !important;
+        background-color: variables.$bgInput;
+        color: variables.$foreColorBase01;
       }
     }
   }

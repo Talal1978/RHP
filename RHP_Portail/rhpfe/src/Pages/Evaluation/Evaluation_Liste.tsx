@@ -68,7 +68,7 @@ const Evaluation_Liste = () => {
                                 position: "sticky",
                                 left: 0,
                                 zIndex: 1,
-                                backgroundColor: "background.paper",
+                                backgroundColor: "var(--bg-input)",
                             },
                         },
                         ...dt.data.fields,
@@ -82,7 +82,7 @@ const Evaluation_Liste = () => {
                             }
                         });
                     };
-
+                    hideColumns(["Cod_Survey", "Cod_Reply"])
                     // Optimisation d'affichage
                     if (criteres.Cod_Evaluation) {
                         hideColumns(["Evaluation", "Description"]);
@@ -308,16 +308,6 @@ const Evaluation_Liste = () => {
                         startIcon={<CloudSyncOutlined />}
                         onClick={handleSearch}
                     />
-                    <Bouton
-                        iconOnly={isXs || isSm}
-                        variant={isXs || isSm ? "contained" : "outlined"}
-                        sx={{ flexGrow: 1 }}
-                        label="Imprimer"
-                        startIcon={<PrintOutlined />}
-                        onClick={() => {
-                            // Logic for printing if needed
-                        }}
-                    />
                 </div>
             </GroupBox>
 
@@ -360,11 +350,11 @@ const Evaluation_Liste = () => {
                     sx={{
                         // Sticky column styles
                         "& .cl0": {
-                            cursor: "pointer",
+                            cursor: "pointer !important",
                             position: "sticky",
                             left: 0,
                             zIndex: 1,
-                            backgroundColor: "background.paper",
+                            backgroundColor: "var(--bg-input)",
                             boxShadow: "2px 0 5px -2px rgba(0,0,0,0.1)",
                         },
                         // Sticky header styles (targeting first th effectively)
@@ -372,7 +362,7 @@ const Evaluation_Liste = () => {
                             position: "sticky",
                             left: 0,
                             zIndex: 3, // Higher index for header
-                            backgroundColor: "background.paper",
+                            backgroundColor: "var(--bg-input)",
                             boxShadow: "2px 0 5px -2px rgba(0,0,0,0.1)",
                         }
                     }}

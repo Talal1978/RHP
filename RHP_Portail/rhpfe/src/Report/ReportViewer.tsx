@@ -38,22 +38,26 @@ export const ReportViewer = () => {
         { responseType: "blob" }
       )
         .then((response) => {
-          setWithPassword(response.headers["autres"] || "");
-          if (response.headers["autres"]) {
-            msgBox({
-              titre: "Mot de passe",
-              msg:
-                "Ce document est protégé par ce mot de passe : " +
-                response.headers["autres"],
-              typMsg: "info",
-              typReply: "OkOnly",
-              handleOk: async () => {
-                await telecharger(response.data, "Blob", "Test.pdf");
-              },
-            });
+          if (response.headers) {
+            setWithPassword(response.headers["autres"] || "");
+            if (response.headers["autres"]) {
+              msgBox({
+                titre: "Mot de passe",
+                msg:
+                  "Ce document est protégé par ce mot de passe : " +
+                  response.headers["autres"],
+                typMsg: "info",
+                typReply: "OkOnly",
+                handleOk: async () => {
+                  await telecharger(response.data, "Blob", "Test.pdf");
+                },
+              });
+            } else {
+              const url = window.URL.createObjectURL(response.data);
+              setRptUrl(url);
+            }
           } else {
-            const url = window.URL.createObjectURL(response.data);
-            setRptUrl(url);
+            throw (response as any).error || "Erreur inconnue lors de la récupération du rapport";
           }
         })
         .catch((err) => {

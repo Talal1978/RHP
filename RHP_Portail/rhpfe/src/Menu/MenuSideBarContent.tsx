@@ -151,8 +151,15 @@ const MenuSideBarContent = () => {
                   {childs.map((ecr, indx) => (
                     <ListItemButton
                       key={ecr.name_ecran + indx}
-                      style={{ backgroundColor: "#f1ffff" }}
-                      sx={{ pl: 7 }}
+                      // Removed hardcoded background color
+                      sx={{
+                        pl: 7,
+                        backgroundColor: "var(--bg-input)", // or transparent/"background.paper"
+                        color: "var(--title-color)",
+                        '&:hover': {
+                          backgroundColor: "var(--color-base-03)", // Highlight color
+                        }
+                      }}
                       onClick={() =>
                         handleOpenEcran(ecr.name_ecran, ecr.text_ecran)
                       }
@@ -160,11 +167,12 @@ const MenuSideBarContent = () => {
                       <ListItemIcon>
                         <GetMenuIcon
                           name_ecran={ecr.img || ""}
-                          sx={{ color: "gray" }}
+                          sx={{ color: "inherit" }}
                         />
                       </ListItemIcon>
                       <ListItemText
                         primary={ecr.text_ecran}
+                        className="subMenuItems"
                         sx={{
                           fontSize: { xs: "0.7em", sm: "0.8em", md: "1em" },
                         }}

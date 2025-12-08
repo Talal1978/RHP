@@ -54,7 +54,7 @@ export const surveyAnswersSave = async (req: Request, res: Response) => {
     const userLogin = "System"; // TODO: Get from req.user context
 
     // 1. Validation (Matched partially, trusting frontend mostly)
-    if (!cod_survey) return res.send({ result: false, message: "Code évaluation vide." });
+    if (!cod_survey) return res.send({ result: false, data: ["Code évaluation vide."] });
 
     // Generate Flg_Maj (Batch ID)
     const flg_maj = new Date().getTime(); // Simple unique ID for this batch

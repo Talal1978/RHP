@@ -1,6 +1,8 @@
 import { Dispatch, SetStateAction, createContext } from "react";
 import { TAlert, TMsgBox } from "../types";
 
+export type ThemeMode = 'light' | 'dark';
+
 export const parentCntX = createContext<{
     msgProps: TMsgBox;
     setMsgProps: Dispatch<SetStateAction<TMsgBox>>;
@@ -10,6 +12,8 @@ export const parentCntX = createContext<{
     setAlertProps: Dispatch<SetStateAction<TAlert>>;
     showAlert: boolean;
     setShowAlert: Dispatch<SetStateAction<boolean>>;
+    themeMode: ThemeMode;
+    toggleTheme: () => void;
 }>({
     msgProps: { msg: "", open: false } as TMsgBox,
     setMsgProps: () => { },
@@ -19,4 +23,6 @@ export const parentCntX = createContext<{
     setAlertProps: () => { },
     showAlert: false,
     setShowAlert: () => { },
+    themeMode: 'light',
+    toggleTheme: () => { },
 });

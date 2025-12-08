@@ -50,5 +50,5 @@ export interface TAnswers {
 }
 
 export type ChildHandle = {
-  save: () => Promise<void>;
+  save: () => Promise<{ result: boolean, data: any[] }>;
 };

@@ -96,16 +96,15 @@ export const generateReport = async (req: Request, res: Response) => {
     [{ param: "Cod_Report", sqlType: NVarChar, valeur: report }]
   );
   let withPwd = false;
-  if (rpt.result) withPwd = rpt.data[0].withPassword;
+  if (rpt.result && rpt.data && rpt.data.length > 0) withPwd = rpt.data[0].withPassword;
   const rptPwd = Math.floor(Math.random() * 10000);
   const { SQL_USER, SQL_PASSWORD, SQL_DB } = VGLOBALES;
   await getOdbcInfo();
   const filename = `${report}_${makeid(6)}.pdf`;
   const fileFullName = path.resolve(process.cwd(), "tmp", filename);
   const crystalExe = path.resolve(process.cwd(), "tools/CRExport/crexport.exe");
-  const cmdString: string = ` ${crystalExe} -r "${PATH_REPORT}/${report}.rpt" -u "${SQL_USER}" -pw "${SQL_PASSWORD}" -o "${ODBC_SERVEUR}" -db "${SQL_DB}"  -f "${fileFullName}" -p "${params}" -v "${values}" ${
-    withPwd ? `-reportPwd ${rptPwd}` : ""
-  }`;
+  const cmdString: string = ` ${crystalExe} -r "${PATH_REPORT}/${report}.rpt" -u "${SQL_USER}" -pw "${SQL_PASSWORD}" -o "${ODBC_SERVEUR}" -db "${SQL_DB}"  -f "${fileFullName}" -p "${params}" -v "${values}" ${withPwd ? `-reportPwd ${rptPwd}` : ""
+    }`;
   res.setHeader("Autres", withPwd ? rptPwd : "");
   res.setHeader("Access-Control-Expose-Headers", "Autres");
   exec(cmdString, (err) => {

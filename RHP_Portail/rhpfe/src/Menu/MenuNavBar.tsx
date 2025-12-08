@@ -13,11 +13,14 @@ import MenuProfile from "./MenuProfile";
 import { useNavigate, useParams } from "react-router-dom";
 import "./mainmenu.scss";
 import { socket } from "../socket";
+import ThemeToggle from "../components/ThemeToggle/ThemeToggle";
+import { parentCntX } from "../Context/GlobalContext";
 
 export default function MenuNavBar() {
   const navigate = useNavigate();
   const [nbSignature, setNbsignature] = useState(0);
   const { isOpen, setIsOpen } = useContext(cntX);
+  const { themeMode } = useContext(parentCntX);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const { titre } = useParams();
   useEffect(() => {
@@ -44,6 +47,8 @@ export default function MenuNavBar() {
           </IconButton>
           <Typography>{titre}</Typography>
           <Box sx={{ flexGrow: 1 }} />
+
+          <ThemeToggle />
 
           <Box sx={{ md: "flex" }}>
             <IconButton
@@ -73,10 +78,10 @@ export default function MenuNavBar() {
           </Box>
           <Avatar
             alt="Remy Sharp"
-            src={`${process.env.PUBLIC_URL}/logoRHPBlanc.png`}
+            src={`${process.env.PUBLIC_URL}/${themeMode === 'light' ? 'logoRHPBlanc.png' : 'logoRHPBlanc.png'}`}
             sx={{ ml: 2 }}
             onClick={(event: React.MouseEvent<HTMLElement>) => {
-              navigate("/test")
+              navigate("/myspace")
             }}
           />
         </Toolbar>

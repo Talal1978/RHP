@@ -22,7 +22,7 @@ $warningColor: #e65100;
   left: 50%;
   min-width: 50%;
   width: auto;
-  position: absolute;
+  position: fixed;
   z-index: 999999999;
   padding: 1em;
   transition: opacity 0.5s;
@@ -54,6 +54,9 @@ $warningColor: #e65100;
     &::after {
       background-color: $warningColor;
     }
+    .MuiSvgIcon-root {
+      color: $warningColor !important;
+    }
   }
 
   &.error {
@@ -62,6 +65,9 @@ $warningColor: #e65100;
 
     &::after {
       background-color: $errorColor;
+    }
+    .MuiSvgIcon-root {
+      color: $errorColor !important;
     }
   }
 
@@ -72,6 +78,9 @@ $warningColor: #e65100;
     &::after {
       background-color: $infoColor;
     }
+    .MuiSvgIcon-root {
+      color: $infoColor !important;
+    }
   }
 
   &.success {
@@ -80,6 +89,9 @@ $warningColor: #e65100;
 
     &::after {
       background-color: $successColor;
+    }
+    .MuiSvgIcon-root {
+      color: $successColor !important;
     }
   }
 }

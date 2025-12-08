@@ -7,11 +7,11 @@
   height: 100vh;
 
   background-image: linear-gradient(
-    #ffffff,
+    variables.$gradientStart,
     variables.$colorBase01,
     variables.$colorBase02,
     variables.$colorBase01,
-    #ffffff
+    variables.$gradientEnd
   );
   display: flex;
   justify-content: center;
@@ -21,7 +21,7 @@
     padding: 1em;
     width: clamp(22rem, 24rem, 24rem);
     height: 36rem;
-    background-color: #fff;
+    background-color: variables.$bgInput;
     border-radius: 10px;
     display: flex;
     flex-direction: column;
@@ -65,6 +65,19 @@
     .bouton,
     .textBox {
       width: 90%;
+      // Fix for MUI TextField colors in Dark Mode
+      & .MuiInputBase-input {
+        color: variables.$foreColorBase01 !important;
+      }
+      & .MuiInputLabel-root {
+        color: variables.$foreColorBase01 !important;
+      }
+      & .MuiInput-underline:before {
+        border-bottom-color: variables.$foreColorBase01 !important;
+      }
+      & .MuiInput-underline:hover:not(.Mui-disabled):before {
+        border-bottom-color: variables.$colorBase02 !important;
+      }
     }
   }
 }

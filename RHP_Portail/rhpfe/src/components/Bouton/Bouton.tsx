@@ -1,5 +1,4 @@
 import { Button, ButtonProps } from "@mui/material";
-import { colorBase } from "../../modules/module_general";
 
 interface myProps extends Omit<ButtonProps, "sx"> {
   label: string;
@@ -22,53 +21,53 @@ const Bouton = ({
       sx={{
         ...sx,
         minWidth: !iconOnly ? "64px" : "0",
-        width: !iconOnly ? "auto" || sx.width : "3.5em",
-        height: !iconOnly ? "auto" || sx.height : "3.5em",
+        width: !iconOnly ? "auto" : "3.5em",
+        height: !iconOnly ? "auto" : "3.5em",
         color:
           props.variant === "outlined"
             ? props.color === "error"
-              ? colorBase.colorBase03
-              : colorBase.colorBase01
-            : "#ffffff",
+              ? "var(--color-base-03)"
+              : "var(--color-base-01)"
+            : "#ffffff", // Keep white text for filled buttons
 
-        border: `3px solid ${
-          disabled
-            ? "gray"
-            : props.color === "error"
-            ? colorBase.colorBase03
-            : colorBase.colorBase01
-        }`,
+        border: `3px solid ${disabled
+          ? "gray"
+          : props.color === "error"
+            ? "var(--color-base-03)"
+            : "var(--color-base-01)"
+          }`,
         fontWeight: "bold",
         bgcolor:
           props.variant === "outlined"
-            ? colorBase.bgColorBase01
+            ? "transparent" // "var(--bg-color-base-01)" causing white box? Use transparent for outlined.
             : props.color === "error"
-            ? colorBase.colorBase03
-            : colorBase.colorBase01,
+              ? "var(--color-base-03)"
+              : "var(--color-base-01)",
         padding: { xs: !iconOnly ? "0.2em" : "0em" },
-        "& svg": {
+        "& .MuiButton-startIcon .MuiSvgIcon-root, & .MuiButton-endIcon .MuiSvgIcon-root, & .MuiSvgIcon-root": {
           width: iconOnly ? "1.8em" : "1.3em",
           height: iconOnly ? "1.8em" : "1.3em",
+          color: "inherit !important",
+          fill: "currentColor",
         },
         "& span": { padding: !iconOnly ? "3px" : "0px" },
-        "& .css-1d6wzja-MuiButton-startIcon": {
+        "& .MuiButton-startIcon": {
           marginRight: !iconOnly ? "8px" : "0",
           marginLeft: !iconOnly ? "-4px" : "0",
         },
         "&:hover": {
           bgcolor:
             props.variant === "outlined"
-              ? colorBase.bgColorBase01
+              ? "var(--bg-color-base-01)"
               : props.color === "error"
-              ? colorBase.colorBase03
-              : colorBase.colorBase02,
-          border: `3px solid ${
-            props.color === "error"
-              ? colorBase.colorBase03
-              : colorBase.colorBase02
-          }`,
+                ? "var(--color-base-03)"
+                : "var(--color-base-02)",
+          border: `3px solid ${props.color === "error"
+            ? "var(--color-base-03)"
+            : "var(--color-base-02)"
+            }`,
           color:
-            props.variant === "outlined" ? colorBase.colorBase02 : "#ffffff",
+            props.variant === "outlined" ? "var(--color-base-02)" : "#ffffff",
         },
       }}
     >

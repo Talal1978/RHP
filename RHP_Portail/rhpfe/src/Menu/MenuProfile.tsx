@@ -1,8 +1,10 @@
 import { DrawOutlined, HistoryEduOutlined, Logout, LockResetOutlined } from "@mui/icons-material";
 import { Badge, ListItemIcon, Menu, MenuItem } from "@mui/material";
-import { useCallback, useState } from "react";
+import { useCallback, useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ChangePasswordModal from "../Pages/Login/ChangePasswordModal";
+import { parentCntX } from "../Context/GlobalContext";
+import { Moon, Sun } from "lucide-react";
 
 const MenuProfile = ({
   anchorEl,
@@ -14,7 +16,9 @@ const MenuProfile = ({
   nbSignature?: number;
 }) => {
   const navigate = useNavigate();
+  const { themeMode, toggleTheme } = useContext(parentCntX);
   const open = Boolean(anchorEl);
+  // ... existing code ...
   const [showChangePwd, setShowChangePwd] = useState(false);
   const handleClose = useCallback(() => {
     setAnchorEl(null);
@@ -88,6 +92,19 @@ const MenuProfile = ({
             <LockResetOutlined fontSize="small" />
           </ListItemIcon>
           Changer mot de passe
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
+            // Keep menu open for toggle or close? Usually toggles might close menu.
+            // But for a switch it might be annoying. Let's close for now as per other items.
+            // actually, let's just toggle.
+            toggleTheme();
+          }}
+        >
+          <ListItemIcon>
+            {themeMode === 'light' ? <Moon size={20} /> : <Sun size={20} />}
+          </ListItemIcon>
+          Mode {themeMode === 'light' ? 'Sombre' : 'Clair'}
         </MenuItem>
         <MenuItem onClick={handleClose}>
           <ListItemIcon>

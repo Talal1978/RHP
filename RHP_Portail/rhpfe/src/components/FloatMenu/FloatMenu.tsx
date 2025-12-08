@@ -33,6 +33,8 @@ export const FloatMenu = ({ btnMenus }: { btnMenus: TMenuBtn[] }) => {
             filter: "drop-shadow(0px 2px 8px rgba(0,0,0,0.32))",
             mt: -11,
             ml: -1,
+            bgcolor: "var(--bg-input)",
+            color: "var(--fore-color-base-01)",
 
             "&::after": {
               content: '""',
@@ -42,7 +44,7 @@ export const FloatMenu = ({ btnMenus }: { btnMenus: TMenuBtn[] }) => {
               right: 14,
               width: 10,
               height: 10,
-              bgcolor: "background.paper",
+              bgcolor: "var(--bg-input)",
               transform: "translateY(-50%) rotate(45deg)",
               zIndex: -1,
             },

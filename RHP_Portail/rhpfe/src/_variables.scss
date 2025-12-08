@@ -1,14 +1,85 @@
 // _variables.scss
-$colorBase01: #3899b9;
-$colorBase02: #5eb975;
-$colorBase03: #dae7ec; //$colorBase03
-$colorBase04: #e6f4f1;
-$foreColorBase01: #382424;
-$bgColorBase01: #fafafa;
+
+:root {
+  --color-base-01: #3899b9;
+  --color-base-02: #5eb975;
+  --color-base-03: #dae7ec;
+  --color-base-04: #e6f4f1;
+  --fore-color-base-01: #382424;
+  --bg-color-base-01: #fafafa;
+  --bg-input: #ffffff;
+  --shadow-color: rgba(0, 0, 0, 0.1);
+  --gradient-start: #ffffff;
+  --gradient-end: #ffffff;
+  --bg-home: #fafafa;
+  --title-color: #3899b9;
+  --chip-bg: #dae7ec;
+}
+
+body.dark-mode {
+  --color-base-01: #4ab3d6; // Lighter/Brighter blue for dark mode contrast
+  --color-base-02: #70d68a; // Lighter green
+  --color-base-03: #2c3e50; // Darker accent background
+  --color-base-04: #1a252f; // Very dark background usually
+  --fore-color-base-01: #ecf0f1; // Light text
+  --bg-color-base-01: #121212; // Dark background
+  --bg-input: #2d2d2d;
+  --shadow-color: rgba(255, 255, 255, 0.1);
+  --gradient-start: #121212;
+  --gradient-end: #1a252f;
+  --bg-home: #2D2D2D;
+  --title-color: #4ab3d6; 
+  --chip-bg: #2c3e50;
+
+  // Global MUI Overrides for Dark Mode
+  .MuiInputBase-input,
+  .MuiTab-root,
+  .MuiTypography-root,
+  .MuiSvgIcon-root,
+  .MuiSelect-select,
+  .MuiSelect-icon {
+    color: var(--fore-color-base-01) !important;
+  }
+  
+  // Title differentiation
+  .MuiInputLabel-root,
+  .MuiTypography-h1, .MuiTypography-h2, .MuiTypography-h3, 
+  .MuiTypography-h4, .MuiTypography-h5, .MuiTypography-h6,
+  .titre, .title {
+      color: var(--title-color) !important;
+  }
+  
+  // Specific fix for input underlines in dark mode
+  .MuiInput-underline:before {
+    border-bottom-color: var(--fore-color-base-01) !important;
+  }
+  .MuiInput-underline:hover:not(.Mui-disabled):before {
+    border-bottom-color: var(--color-base-02) !important;
+  }
+}
+
+// SCSS Variables mapping to CSS Variables
+$colorBase01: var(--color-base-01);
+$colorBase02: var(--color-base-02);
+$colorBase03: var(--color-base-03);
+$colorBase04: var(--color-base-04);
+$foreColorBase01: var(--fore-color-base-01);
+$bgColorBase01: var(--bg-color-base-01);
+$bgInput: var(--bg-input);
+$gradientStart: var(--gradient-start);
+$gradientEnd: var(--gradient-end);
+$bgHome: var(--bg-home);
+$titleColor: var(--title-color);
+$chipBg: var(--chip-bg);
+
 $positionFloating: clamp(1em, 3em, 5vh);
+
 body {
   background-color: $bgColorBase01;
+  color: $foreColorBase01;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
+
 .unselectable {
   -webkit-user-select: none; /* Safari */
   -moz-user-select: none; /* Firefox */
@@ -16,6 +87,7 @@ body {
   user-select: none; /* Non-prefixed version, currently supported by Chrome, Edge, Opera, and Firefox */
   //cursor: pointer;
 }
+
 /* The entire scrollbar */
 ::-webkit-scrollbar {
   width: 12px; /* Adjust the width of the vertical scrollbar */
@@ -30,14 +102,20 @@ body {
 
 /* The handle (thumb) of the scrollbar */
 ::-webkit-scrollbar-thumb {
-  background: #d0e7ef; /* The handle color */
+  background: #d0e7ef; /* The handle color - Consider making this a variable too if needed */
   border-radius: 2px; /* Rounded corners on the handle */
   cursor: pointer;
+}
+body.dark-mode ::-webkit-scrollbar-thumb {
+  background: #4a5a6a;
 }
 
 /* Handle on hover */
 ::-webkit-scrollbar-thumb:hover {
-  background: #d0e7ef; /* Darker handle color on hover */
+  background: #b0c7cf; /* Darker handle color on hover */
+}
+body.dark-mode ::-webkit-scrollbar-thumb:hover {
+  background: #6a7a8a;
 }
 
 @keyframes vibrate {

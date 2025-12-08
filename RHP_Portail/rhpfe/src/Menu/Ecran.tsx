@@ -98,6 +98,7 @@ const Ecran = ({ style }: { style?: React.CSSProperties }) => {
               display: "flex",
               justifyContent: "center",
               alignItems: "center",
+              backgroundColor: "var(--bg-home)",
             }}
           >
             <img

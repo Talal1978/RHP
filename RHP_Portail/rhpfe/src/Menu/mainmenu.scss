@@ -79,4 +79,10 @@ $sidebar-breakpoint01: 1000px;
       background-color: variables.$colorBase02;
     }
   }
+
+  .subMenuItems {
+    .MuiTypography-root {
+      color: var(--title-color) !important;
+    }
+  }
 }

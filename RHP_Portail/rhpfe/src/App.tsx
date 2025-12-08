@@ -30,10 +30,32 @@ const ReportViewer = lazy(() =>
 
 // Define a fallback component for Suspense
 function App() {
+  /* Theme Management */
+  const [themeMode, setThemeMode] = useState<"light" | "dark">(() => {
+    const savedTheme = localStorage.getItem("themeMode");
+    return (savedTheme as "light" | "dark") || "light";
+  });
+
   const [showMsgBox, setShowMsgBox] = useState(false);
   const [msgProps, setMsgProps] = useState<TMsgBox>({ msg: "" });
   const [showAlert, setShowAlert] = useState(false);
   const [alertProps, setAlertProps] = useState<TAlert>({ msg: "" });
+
+  const toggleTheme = () => {
+    setThemeMode((prev) => {
+      const newMode = prev === "light" ? "dark" : "light";
+      localStorage.setItem("themeMode", newMode);
+      return newMode;
+    });
+  };
+
+  useMemo(() => {
+    if (themeMode === "dark") {
+      document.body.classList.add("dark-mode");
+    } else {
+      document.body.classList.remove("dark-mode");
+    }
+  }, [themeMode]);
 
   const contextValue = useMemo(() => ({
     showMsgBox,
@@ -43,8 +65,10 @@ function App() {
     showAlert,
     setShowAlert,
     alertProps,
-    setAlertProps
-  }), [showMsgBox, msgProps, showAlert, alertProps]);
+    setAlertProps,
+    themeMode,
+    toggleTheme
+  }), [showMsgBox, msgProps, showAlert, alertProps, themeMode]);
 
   return (
     <parentCntX.Provider
