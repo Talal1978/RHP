@@ -4,14 +4,15 @@ import { colorBase } from "../../modules/module_general";
 import Bouton from "../../components/Bouton/Bouton";
 import useAxiosPost from "../../hooks/useAxiosPost";
 import { Agent } from "../../modules/module_general";
-import { Visibility, VisibilityOff } from "@mui/icons-material";
+import { Visibility, VisibilityOff, Close } from "@mui/icons-material";
 
 interface ChangePasswordModalProps {
     open: boolean;
+    onClose?: () => void;
     onSuccess: () => void;
 }
 
-const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ open, onSuccess }) => {
+const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ open, onClose, onSuccess }) => {
     const [pwd, setPwd] = useState("");
     const [confirmPwd, setConfirmPwd] = useState("");
     const [strength, setStrength] = useState(0);
@@ -69,7 +70,20 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ open, onSucce
 
     return (
         <Dialog open={open} maxWidth="sm" fullWidth>
-            <DialogTitle>Changer votre mot de passe</DialogTitle>
+            <DialogTitle sx={{ m: 0, p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                Changer votre mot de passe
+                {onClose ? (
+                    <IconButton
+                        aria-label="close"
+                        onClick={onClose}
+                        sx={{
+                            color: (theme) => theme.palette.grey[500],
+                        }}
+                    >
+                        <Close />
+                    </IconButton>
+                ) : null}
+            </DialogTitle>
             <DialogContent>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
                     <TextField

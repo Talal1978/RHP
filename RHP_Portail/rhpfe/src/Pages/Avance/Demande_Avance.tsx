@@ -45,6 +45,11 @@ const Demande_Avance = () => {
     Process_Id: string;
   }>({ canModify: true, Taken_By_User: "", Process_Id: "" });
   const [currentNum, setCurrentNum] = useState(num);
+  useEffect(() => {
+    console.log("num", num);
+    setCurrentNum(num);
+    setAccessible({ canModify: true, Taken_By_User: "", Process_Id: "" });
+  }, [num]);
   const [entete, setEntete] = useState<TEntete>(iniEntete);
   const [canSave, setCanSave] = useState(false);
   const enteteRef = useRef<TEntete>();
@@ -89,18 +94,21 @@ const Demande_Avance = () => {
           setEntete(iniEntete);
           enteteRef.current = iniEntete;
         });
+    } else {
+      setEntete(iniEntete);
+      enteteRef.current = iniEntete;
     }
     if (canSave) {
       if (currentNum !== "" && currentNum !== "new") {
         await myAxios("check_accessible", {
-          nameEcran: "Demande_Avance",
+          nameEcran: "RH_Demande_Avance",
           idEcran: currentNum,
         }).then((dt) => {
           setAccessible(dt.data);
         });
       } else {
         await myAxios("release_accessible", {
-          nameEcran: "Demande_Avance",
+          nameEcran: "RH_Demande_Avance",
           idEcran: currentNum,
         });
       }
@@ -113,7 +121,7 @@ const Demande_Avance = () => {
     return () => {
       if (currentNum !== "" && currentNum !== "new") {
         myAxios("release_accessible", {
-          nameEcran: "Demande_Avance",
+          nameEcran: "RH_Demande_Avance",
           idEcran: currentNum,
         });
       }
@@ -215,9 +223,14 @@ const Demande_Avance = () => {
       )
         return;
     }
-    setCurrentNum("");
-    setEntete(iniEntete);
-  }, [entete]);
+    if (currentNum !== "" && currentNum !== "new") {
+      await myAxios("release_accessible", {
+        nameEcran: "RH_Demande_Avance",
+        idEcran: currentNum,
+      });
+    }
+    navigate(`/myspace/RH_Demande_Avance/Demande d'avance/new`);
+  }, [entete, currentNum]);
   const SoumettreEnSignature = useCallback(async () => {
     if (!currentNum) return;
     if (entete.Statut === "" || entete.Statut === "NSS") {
@@ -349,6 +362,7 @@ const Demande_Avance = () => {
         libelle: "Supprimer",
         action: Supprimer,
         icon: <DeleteOutline />,
+        color: "error.main",
       },
       {
         name: "Imprimer",

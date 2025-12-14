@@ -67,6 +67,10 @@ const Note_Frais = () => {
     Process_Id: string;
   }>({ canModify: true, Taken_By_User: "", Process_Id: "" });
   const [currentNum, setCurrentNum] = useState(num);
+  useEffect(() => {
+    setCurrentNum(num);
+    setAccessible({ canModify: true, Taken_By_User: "", Process_Id: "" });
+  }, [num]);
   const [entete, setEntete] = useState<TEntete>(iniEntete);
   const [canSave, setCanSave] = useState(false);
   const [detail, setDetail] = useState<TDetail[]>([iniDetail]);
@@ -167,7 +171,7 @@ const Note_Frais = () => {
   useEffect(() => {
     setNatureFrais(listRubriques("Typ_Frais"));
   }, []);
-  const Request = useCallback(async () => {
+  const loadData = useCallback(async () => {
     if (currentNum !== "" && currentNum !== "new") {
       await myAxios("get_note_frais", { num_nf: currentNum })
         .then((dt) => {
@@ -184,7 +188,6 @@ const Note_Frais = () => {
           }
         })
         .catch((err) => {
-
           setEntete(iniEntete);
           setDetail([iniDetail]);
           enteteRef.current = iniEntete;
@@ -194,6 +197,9 @@ const Note_Frais = () => {
       setEntete(iniEntete);
       setDetail([iniDetail]);
     }
+  }, [currentNum]);
+
+  const manageAccess = useCallback(async () => {
     if (canSave) {
       if (currentNum !== "" && currentNum !== "new") {
         await myAxios("check_accessible", {
@@ -212,7 +218,7 @@ const Note_Frais = () => {
   }, [currentNum, canSave]);
 
   useEffect(() => {
-    Request();
+    loadData();
     setSignatureProps({ typ_document: "NF", valeur_index: currentNum || "" });
     return () => {
       if (currentNum !== "" && currentNum !== "new") {
@@ -222,7 +228,11 @@ const Note_Frais = () => {
         });
       }
     };
-  }, [Request]);
+  }, [loadData]);
+
+  useEffect(() => {
+    manageAccess();
+  }, [manageAccess]);
   function onChange(obj: {
     rowIndex: number;
     columnName: string;
@@ -320,13 +330,19 @@ const Note_Frais = () => {
         if (numN !== currentNum) {
           setCurrentNum(numN);
         } else {
-          await Request();
+          await loadData();
         }
         alert({
           titre: "Enregistrer",
           msg: "Enegistré avce succès",
           typMsg: "success",
           timeOut: -1,
+        });
+      } else {
+        alert({
+          titre: "Erreur",
+          msg: rslSave.data.message || "Erreur lors de l'enregistrement",
+          typMsg: "error",
         });
       }
     },
@@ -358,8 +374,14 @@ const Note_Frais = () => {
       )
         return;
     }
-    setCurrentNum("");
-  }, [entete, detail]);
+    if (currentNum !== "" && currentNum !== "new") {
+      await myAxios("release_accessible", {
+        nameEcran: "Note_Frais",
+        idEcran: currentNum,
+      });
+    }
+    navigate("/myspace/Note_Frais/Note de frais/new");
+  }, [entete, detail, currentNum]);
   const SoumettreEnSignature = useCallback(async () => {
     if (!currentNum) return;
     if (entete.Statut === "" || entete.Statut === "NSS") {
@@ -491,6 +513,7 @@ const Note_Frais = () => {
         libelle: "Supprimer",
         action: Supprimer,
         icon: <DeleteOutline />,
+        color: "error.main",
       },
       {
         name: "Imprimer",

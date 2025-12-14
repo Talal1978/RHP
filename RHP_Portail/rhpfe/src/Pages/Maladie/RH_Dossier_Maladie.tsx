@@ -52,6 +52,10 @@ const RH_Dossier_Maladie = () => {
     Process_Id: string;
   }>({ canModify: true, Taken_By_User: "", Process_Id: "" });
   const [currentNum, setCurrentNum] = useState(num);
+  useEffect(() => {
+    setCurrentNum(num);
+    setAccessible({ canModify: true, Taken_By_User: "", Process_Id: "" });
+  }, [num]);
   const [entete, setEntete] = useState<TEntete>(iniEntete);
   const [canSave, setCanSave] = useState(false);
   const enteteRef = useRef<TEntete>();
@@ -82,6 +86,9 @@ const RH_Dossier_Maladie = () => {
           setEntete(iniEntete);
           enteteRef.current = iniEntete;
         });
+    } else {
+      setEntete(iniEntete);
+      enteteRef.current = iniEntete;
     }
     if (canSave) {
       if (currentNum !== "" && currentNum !== "new") {
@@ -220,8 +227,11 @@ const RH_Dossier_Maladie = () => {
       )
         return;
     }
-    setCurrentNum("");
-    setEntete(iniEntete);
+    await myAxios("release_accessible", {
+      nameEcran: "RH_Dossier_Maladie",
+      idEcran: currentNum,
+    });
+    navigate(`/myspace/RH_Dossier_Maladie/Dossier de maladie/new`);
   }, [entete]);
   const SoumettreEnSignature = useCallback(async () => {
     if (!currentNum) return;
@@ -354,6 +364,7 @@ const RH_Dossier_Maladie = () => {
         libelle: "Supprimer",
         action: Supprimer,
         icon: <DeleteOutline />,
+        color: "error.main",
       },
       {
         name: "Imprimer",
@@ -362,8 +373,8 @@ const RH_Dossier_Maladie = () => {
         action: () =>
           navigate("/viewer", {
             state: {
-              reportName: "DemandePret",
-              params: { NumDemandePret: currentNum },
+              reportName: "DossierMaladie",
+              params: { NumDossierMaladie: currentNum },
             } as TReport,
           }),
         icon: <PrintOutlined />,
@@ -586,7 +597,7 @@ const RH_Dossier_Maladie = () => {
                   {` ${Arrondi(
                     (entete?.Mnt_Engage ?? 0) > 0
                       ? (entete?.Mnt_Remboursement ?? 0) /
-                          (entete!.Mnt_Engage ?? 1)
+                      (entete!.Mnt_Engage ?? 1)
                       : 0,
                     2
                   )}%`}

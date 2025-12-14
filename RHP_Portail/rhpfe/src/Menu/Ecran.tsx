@@ -52,13 +52,13 @@ const Ecran = ({ style }: { style?: React.CSSProperties }) => {
       case "Note_Frais":
         setEcran(<Note_Frais />);
         break;
-      case "Demande_Avance":
+      case "RH_Demande_Avance":
         setEcran(<Demande_Avance />);
         break;
       case "RH_Demande_Avance_Liste":
         setEcran(<Demande_Avance_Liste />);
         break;
-      case "Demande_Pret":
+      case "RH_Demande_Pret":
         setEcran(<Demande_Pret />);
         break;
       case "RH_Demande_Pret_Liste":
@@ -93,8 +93,12 @@ const Ecran = ({ style }: { style?: React.CSSProperties }) => {
         setEcran(
           <div
             style={{
-              height: "80dvh",
+              height: "100dvh",
               width: "100dvw",
+              position: "fixed",
+              top: 0,
+              left: 0,
+              zIndex: 50,
               display: "flex",
               justifyContent: "center",
               alignItems: "center",
@@ -104,7 +108,7 @@ const Ecran = ({ style }: { style?: React.CSSProperties }) => {
             <img
               src={`${process.env.PUBLIC_URL}/logo.png`}
               alt="Rh-P"
-              style={{ maxWidth: "50vw" }}
+              style={{ maxWidth: "50vw", height: "100%", objectFit: "contain" }}
             />
           </div>
         );

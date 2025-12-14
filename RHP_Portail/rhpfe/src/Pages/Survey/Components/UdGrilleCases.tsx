@@ -118,7 +118,7 @@ const UdGrilleCases = ({
         paddingRight: { xs: 0, sm: "2px" },
         minHeight: { xs: "2em", sm: "auto" }
       }}>
-        <Box sx={{ bgcolor: "var(--bg-input)", color: colorBase.colorBase01, width: "100%", height: "100%", display: "flex", justifyContent: "center", alignItems: "center", fontWeight: "bold", fontSize: "1.2em" }}>
+        <Box sx={{ bgcolor: { xs: colorBase.colorBase01, sm: "var(--bg-input)" }, color: { xs: "white", sm: colorBase.colorBase01 }, width: "100%", height: "100%", display: "flex", justifyContent: "center", alignItems: "center", fontWeight: "bold", fontSize: "1.2em" }}>
           {numQuestion}
         </Box>
       </Box>
@@ -147,7 +147,7 @@ const UdGrilleCases = ({
             <TableBody>
               {rowsTexts.map((text, rowIndex) => (
                 <TableRow key={rowIndex} hover>
-                  <TableCell component="th" scope="row" sx={{ fontWeight: 500, color: colorBase.foreColorBase01 }}>
+                  <TableCell component="th" scope="row" sx={{ fontWeight: 500, color: 'var(--fore-color-base-01)' }}>
                     {rowsTexts.length === 1 ? <Typography sx={{ color: colorBase.colorBase01, marginRight: '10px', fontWeight: 500 }}>
                       {text} {Obligatoire && <span style={{ color: "red" }}>(*)</span>}
                     </Typography> : text}

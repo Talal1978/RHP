@@ -18,26 +18,29 @@ export const isAccessible = async (
   nameEcran: string,
   idEcran: string,
   username: string,
-  processId: string
+  processId: string,
+  id_Societe: string
 ) => {
-  let sqlStr = `declare @nameEcran nvarchar(50),@equiv nvarchar(50), @idEcran nvarchar(50),@login nvarchar(50), @processId int,@Taken_By_User nvarchar(50), @currentProcessId int
+  let sqlStr = `declare @nameEcran nvarchar(50),@equiv nvarchar(50), @idEcran nvarchar(50),@login nvarchar(50), @processId int,@Taken_By_User nvarchar(50), @currentProcessId int,@idSoc int
     set @nameEcran='${nameEcran}'
     set @idEcran ='${IsNull(idEcran, "")}'
     set @processId ='${processId}'
     set @login ='${username}'
+    set @idSoc ='${id_Societe}'
     select top 1 @currentProcessId= Process_Id, @Taken_By_User= Taken_By_User
     from Controle_Access a
     where Name_Ecran=@nameEcran and [Value]=@idEcran 
     if (@currentProcessId is null and isnull(@idEcran,'')!='' and isnull(@idEcran,'')!='undefined')
     begin
-    insert into Controle_Access ( Name_Ecran, Value, Taken_By_User, Taken_By_Machine, IP, Process_Id, Date_Deb)
-    values (@nameEcran,@idEcran,@login,'portail','',@processId,getdate())
+    insert into Controle_Access ( Name_Ecran,id_Societe, Value, Taken_By_User, Taken_By_Machine, IP, Process_Id, Date_Deb)
+    values (@nameEcran,@idSoc,@idEcran,@login,'portail','',@processId,getdate())
     select convert(bit,'true') as canModify, @login as Taken_By_User,@processId as Process_Id
     end
     else
     begin
     select convert(bit, case when @currentProcessId=@processId and @Taken_By_User=@login then 'true' when isnull(@idEcran,'')='' then 'true' else 'false' end) as canModify,@Taken_By_User as Taken_By_User,@currentProcessId as Process_Id
     end`;
+  console.log(sqlStr);
   let rsl = await lireSql(sqlStr, []);
   return rsl.data[0];
 };
@@ -45,7 +48,8 @@ export const releaseAccessible = async (
   nameEcran: string,
   idEcran: string,
   username: string,
-  processId: string
+  processId: string,
+  id_Societe: string
 ) => {
   let activeSessions =
     VGLOBALES.ACTIVE_PROCESSES.length > 0
@@ -56,7 +60,7 @@ export const releaseAccessible = async (
     set @login ='${username}'
     delete from Controle_Access
     where ((Name_Ecran= case when isnull(@nameEcran,'')!='' then @nameEcran else [Name_Ecran] end and [Value]=case when isnull(@idEcran,'')!='' then @idEcran else [Value] end and Process_Id=@processId and Taken_By_User=@login)
-     ${activeSessions ? ` or ( Process_Id not in (${activeSessions}))` : ""} )
+     ${activeSessions ? ` and ( Process_Id in (${activeSessions}))` : ""} ) and id_Societe=${id_Societe}
  
     `;
   let rsl = await lireSql(sqlStr, [
@@ -69,28 +73,31 @@ export const releaseAccessibleApi = async (req: Request, res: Response) => {
   let { nameEcran, idEcran } = req.body;
   let username = req.params.Login || "";
   let processId = req.params.processId || "0";
+  const id_Societe = req.params.id_Societe
   return res.send(
-    await releaseAccessible(nameEcran, idEcran, username, processId)
+    await releaseAccessible(nameEcran, idEcran, username, processId, id_Societe)
   );
 };
 export const checkAccessible = async (req: Request, res: Response) => {
   let { nameEcran, idEcran } = req.body;
   let username = req.params.Login || "";
+  const id_Societe = req.params.id_Societe
   let processId = req.params.processId || "0";
-  await releaseAccessible("", "", username, processId);
+  await releaseAccessible("", "", username, processId, id_Societe);
   return res.send(
     await isAccessible(
       nameEcran,
       IsNull(idEcran, "") || "",
       username,
-      processId
+      processId, id_Societe
     )
   );
 };
 export const logout = async (req: Request, res: Response) => {
   let username = req.params.Login || "";
   let processId = req.params.processId || "0";
-  await releaseAccessible("", "", username, processId).then(() => {
+  const id_Societe = req.params.id_Societe
+  await releaseAccessible("", "", username, processId, id_Societe).then(() => {
     //deconnexion(processId);
     // res.redirect("/login");
   });

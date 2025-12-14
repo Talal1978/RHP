@@ -342,7 +342,8 @@ const Evaluation_Liste = () => {
                                     nom_evalue: row["Nom"],
                                     cod_survey: row["Cod_Survey"],
                                     cod_reply: row["Cod_Reply"],
-                                    typ_survey: "E"
+                                    typ_survey: "E",
+                                    statut: row["Statut"]
                                 }
                             });
                         }

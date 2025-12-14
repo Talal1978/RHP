@@ -34,6 +34,7 @@ export type TMenuBtn = {
   action: () => void;
   disabled: boolean;
   visible?: "visible" | "none";
+  color?: string;
 };
 export type TSignature = {
   typ_document: string;

@@ -29,6 +29,8 @@ Partial Class Evaluation
         Me.pnl_Top = New System.Windows.Forms.Panel()
         Me.eval_tblpnl = New System.Windows.Forms.TableLayoutPanel()
         Me.Eval_info = New System.Windows.Forms.Panel()
+        Me.Cod_Reply_txt = New RHP.ud_TextBox()
+        Me.Label4 = New System.Windows.Forms.Label()
         Me.Dat_Survey_lbl = New System.Windows.Forms.LinkLabel()
         Me.Dat_Survey_txt = New RHP.ud_TextBox()
         Me.LinkLabel1 = New System.Windows.Forms.LinkLabel()
@@ -53,12 +55,12 @@ Partial Class Evaluation
         Me.Pnl_Bottom = New System.Windows.Forms.Panel()
         Me.Lib_Survey_lbl = New System.Windows.Forms.Label()
         Me.ent_pnl = New System.Windows.Forms.TableLayoutPanel()
-        Me.Close_pb = New System.Windows.Forms.PictureBox()
+        Me.pb_MinMax = New System.Windows.Forms.PictureBox()
         Me.Save_pb = New System.Windows.Forms.PictureBox()
         Me.Valide_pb = New System.Windows.Forms.PictureBox()
         Me.Print_pb = New System.Windows.Forms.PictureBox()
         Me.lbl_lbl = New System.Windows.Forms.Label()
-        Me.pb_MinMax = New System.Windows.Forms.PictureBox()
+        Me.Close_pb = New System.Windows.Forms.PictureBox()
         Me.pnl_Top.SuspendLayout()
         Me.eval_tblpnl.SuspendLayout()
         Me.Eval_info.SuspendLayout()
@@ -67,11 +69,11 @@ Partial Class Evaluation
         Me.TableLayoutPanel3.SuspendLayout()
         Me.TableLayoutPanel2.SuspendLayout()
         Me.ent_pnl.SuspendLayout()
-        CType(Me.Close_pb, System.ComponentModel.ISupportInitialize).BeginInit()
+        CType(Me.pb_MinMax, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.Save_pb, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.Valide_pb, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.Print_pb, System.ComponentModel.ISupportInitialize).BeginInit()
-        CType(Me.pb_MinMax, System.ComponentModel.ISupportInitialize).BeginInit()
+        CType(Me.Close_pb, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SuspendLayout()
         '
         'pnl_Content
@@ -149,6 +151,8 @@ Partial Class Evaluation
         '
         'Eval_info
         '
+        Me.Eval_info.Controls.Add(Me.Cod_Reply_txt)
+        Me.Eval_info.Controls.Add(Me.Label4)
         Me.Eval_info.Controls.Add(Me.Dat_Survey_lbl)
         Me.Eval_info.Controls.Add(Me.Dat_Survey_txt)
         Me.Eval_info.Controls.Add(Me.LinkLabel1)
@@ -166,6 +170,37 @@ Partial Class Evaluation
         Me.Eval_info.Name = "Eval_info"
         Me.Eval_info.Size = New System.Drawing.Size(1007, 121)
         Me.Eval_info.TabIndex = 250
+        '
+        'Cod_Reply_txt
+        '
+        Me.Cod_Reply_txt.AccessibleDescription = "A"
+        Me.Cod_Reply_txt.CharacterCasing = System.Windows.Forms.CharacterCasing.Normal
+        Me.Cod_Reply_txt.ContextMenuStrip = Nothing
+        Me.Cod_Reply_txt.Font = New System.Drawing.Font("Century Gothic", 8.25!)
+        Me.Cod_Reply_txt.Location = New System.Drawing.Point(906, 48)
+        Me.Cod_Reply_txt.Margin = New System.Windows.Forms.Padding(8, 6, 8, 6)
+        Me.Cod_Reply_txt.MaxLength = 32767
+        Me.Cod_Reply_txt.Multiline = False
+        Me.Cod_Reply_txt.Name = "Cod_Reply_txt"
+        Me.Cod_Reply_txt.Padding = New System.Windows.Forms.Padding(1, 0, 1, 0)
+        Me.Cod_Reply_txt.PasswordChar = "" & Global.Microsoft.VisualBasic.ChrW(0)
+        Me.Cod_Reply_txt.ReadOnly = True
+        Me.Cod_Reply_txt.ScrollBars = System.Windows.Forms.ScrollBars.None
+        Me.Cod_Reply_txt.SelectionStart = 0
+        Me.Cod_Reply_txt.Size = New System.Drawing.Size(95, 26)
+        Me.Cod_Reply_txt.TabIndex = 253
+        Me.Cod_Reply_txt.TabStop = False
+        Me.Cod_Reply_txt.TextAlign = System.Windows.Forms.HorizontalAlignment.Left
+        Me.Cod_Reply_txt.UseSystemPasswordChar = False
+        '
+        'Label4
+        '
+        Me.Label4.AutoSize = True
+        Me.Label4.Location = New System.Drawing.Point(795, 51)
+        Me.Label4.Name = "Label4"
+        Me.Label4.Size = New System.Drawing.Size(107, 19)
+        Me.Label4.TabIndex = 252
+        Me.Label4.Text = "Code réponse"
         '
         'Dat_Survey_lbl
         '
@@ -569,19 +604,19 @@ Partial Class Evaluation
         Me.ent_pnl.Size = New System.Drawing.Size(1250, 38)
         Me.ent_pnl.TabIndex = 8
         '
-        'Close_pb
+        'pb_MinMax
         '
-        Me.Close_pb.Cursor = System.Windows.Forms.Cursors.Hand
-        Me.Close_pb.Dock = System.Windows.Forms.DockStyle.Fill
-        Me.Close_pb.Image = Global.RHP.My.Resources.Resources.btn_close
-        Me.Close_pb.InitialImage = Nothing
-        Me.Close_pb.Location = New System.Drawing.Point(1214, 4)
-        Me.Close_pb.Margin = New System.Windows.Forms.Padding(4)
-        Me.Close_pb.Name = "Close_pb"
-        Me.Close_pb.Size = New System.Drawing.Size(32, 30)
-        Me.Close_pb.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom
-        Me.Close_pb.TabIndex = 11
-        Me.Close_pb.TabStop = False
+        Me.pb_MinMax.Cursor = System.Windows.Forms.Cursors.Hand
+        Me.pb_MinMax.Dock = System.Windows.Forms.DockStyle.Fill
+        Me.pb_MinMax.Image = Global.RHP.My.Resources.Resources.btn_maximize
+        Me.pb_MinMax.InitialImage = Nothing
+        Me.pb_MinMax.Location = New System.Drawing.Point(1174, 4)
+        Me.pb_MinMax.Margin = New System.Windows.Forms.Padding(4)
+        Me.pb_MinMax.Name = "pb_MinMax"
+        Me.pb_MinMax.Size = New System.Drawing.Size(32, 30)
+        Me.pb_MinMax.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom
+        Me.pb_MinMax.TabIndex = 13
+        Me.pb_MinMax.TabStop = False
         '
         'Save_pb
         '
@@ -639,19 +674,19 @@ Partial Class Evaluation
         Me.lbl_lbl.Text = "Evaluation"
         Me.lbl_lbl.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
         '
-        'pb_MinMax
+        'Close_pb
         '
-        Me.pb_MinMax.Cursor = System.Windows.Forms.Cursors.Hand
-        Me.pb_MinMax.Dock = System.Windows.Forms.DockStyle.Fill
-        Me.pb_MinMax.Image = Global.RHP.My.Resources.Resources.btn_maximize
-        Me.pb_MinMax.InitialImage = Nothing
-        Me.pb_MinMax.Location = New System.Drawing.Point(1174, 4)
-        Me.pb_MinMax.Margin = New System.Windows.Forms.Padding(4)
-        Me.pb_MinMax.Name = "pb_MinMax"
-        Me.pb_MinMax.Size = New System.Drawing.Size(32, 30)
-        Me.pb_MinMax.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom
-        Me.pb_MinMax.TabIndex = 13
-        Me.pb_MinMax.TabStop = False
+        Me.Close_pb.Cursor = System.Windows.Forms.Cursors.Hand
+        Me.Close_pb.Dock = System.Windows.Forms.DockStyle.Fill
+        Me.Close_pb.Image = Global.RHP.My.Resources.Resources.btn_close
+        Me.Close_pb.InitialImage = Nothing
+        Me.Close_pb.Location = New System.Drawing.Point(1214, 4)
+        Me.Close_pb.Margin = New System.Windows.Forms.Padding(4)
+        Me.Close_pb.Name = "Close_pb"
+        Me.Close_pb.Size = New System.Drawing.Size(32, 30)
+        Me.Close_pb.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom
+        Me.Close_pb.TabIndex = 11
+        Me.Close_pb.TabStop = False
         '
         'Evaluation
         '
@@ -688,11 +723,11 @@ Partial Class Evaluation
         Me.TableLayoutPanel2.ResumeLayout(False)
         Me.TableLayoutPanel2.PerformLayout()
         Me.ent_pnl.ResumeLayout(False)
-        CType(Me.Close_pb, System.ComponentModel.ISupportInitialize).EndInit()
+        CType(Me.pb_MinMax, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.Save_pb, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.Valide_pb, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.Print_pb, System.ComponentModel.ISupportInitialize).EndInit()
-        CType(Me.pb_MinMax, System.ComponentModel.ISupportInitialize).EndInit()
+        CType(Me.Close_pb, System.ComponentModel.ISupportInitialize).EndInit()
         Me.ResumeLayout(False)
 
     End Sub
@@ -733,4 +768,6 @@ Partial Class Evaluation
     Friend WithEvents Dat_Survey_lbl As LinkLabel
     Friend WithEvents Dat_Survey_txt As ud_TextBox
     Friend WithEvents pb_MinMax As PictureBox
+    Friend WithEvents Cod_Reply_txt As ud_TextBox
+    Friend WithEvents Label4 As Label
 End Class

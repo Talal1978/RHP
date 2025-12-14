@@ -166,7 +166,7 @@ const Demande_Avance_Liste = () => {
               sx={{ flexGrow: 1 }}
               startIcon={<NoteAddOutlined />}
               onClick={() => {
-                navigate(`../myspace/Demande_Avance/Demande d'avance/new`);
+                navigate(`../myspace/RH_Demande_Avance/Demande d'avance/new`);
               }}
             />
           </div>
@@ -196,7 +196,7 @@ const Demande_Avance_Liste = () => {
           className="laGrille"
           onclick={({ colIndex, value }) => {
             if (colIndex === 1) {
-              navigate(`../myspace/Demande_Avance/Demande d'avance/${value}`);
+              navigate(`../myspace/RH_Demande_Avance/Demande d'avance/${value}`);
             }
           }}
           sx={{

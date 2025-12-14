@@ -155,7 +155,7 @@ const UdValeurUnique = ({
         paddingRight: { xs: 0, sm: "2px" },
         minHeight: { xs: "2em", sm: "auto" }
       }}>
-        <Box sx={{ bgcolor: "var(--bg-input)", color: colorBase.colorBase01, width: "100%", height: "100%", display: "flex", justifyContent: "center", alignItems: "center", fontWeight: "bold", fontSize: "1.2em" }}>
+        <Box sx={{ bgcolor: { xs: colorBase.colorBase01, sm: "var(--bg-input)" }, color: { xs: "white", sm: colorBase.colorBase01 }, width: "100%", height: "100%", display: "flex", justifyContent: "center", alignItems: "center", fontWeight: "bold", fontSize: "1.2em" }}>
           {numQuestion}
         </Box>
       </Box>

@@ -166,7 +166,7 @@ const Demande_Pret_Liste = () => {
               sx={{ flexGrow: 1 }}
               startIcon={<NoteAddOutlined />}
               onClick={() => {
-                navigate(`../myspace/Demande_Pret/Demande de prêt/new`);
+                navigate(`../myspace/RH_Demande_Pret/Demande de prêt/new`);
               }}
             />
           </div>
@@ -196,7 +196,7 @@ const Demande_Pret_Liste = () => {
           className="laGrille"
           onclick={({ colIndex, value }) => {
             if (colIndex === 0) {
-              navigate(`../myspace/Demande_Pret/Demande de prêt/${value}`);
+              navigate(`../myspace/RH_Demande_Pret/Demande de prêt/${value}`);
             }
           }}
           sx={{

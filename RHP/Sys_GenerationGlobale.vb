@@ -9,6 +9,15 @@ Public Class Sys_GenerationGlobale
     Dim WithEvents oTimer As New System.Windows.Forms.Timer
     Dim strState As String = ""
     Dim workerThread As Thread
+    Class STD_Btn
+        Sub New()
+
+        End Sub
+        Public Name As String
+        Public tooltip As String
+        Public Text As String
+        Public Tag As String
+    End Class
     Sub ListControlGereSecurity(ByVal frm As Object, ByVal oForm As String)
 
         Try
@@ -71,24 +80,7 @@ Public Class Sys_GenerationGlobale
 
         rs.Update()
         rs.Close()
-        '   End If
-        '   If c.GetType.Name = "DataGridView" Then
-        'For Each a As DataGridViewColumn In CType(c, DataGridView).Columns
-        'rs.Open("Select * From Controle_Menu_Avance where Name_Ecran='" & c.FindForm.Name & "' and name_Controle='" & a.Name & "'", cn, 2, 2)
-        'If CnExecuting("Select count(*) from Controle_Menu_Avance where Name_Ecran='" & c.FindForm.Name & "' and name_Controle='" & a.Name & "'").Fields(0).Value = 0 Then
-        ' rs.AddNew()
-        ' Else
-        ' rs.Update()
-        ' End If
-        ' rs("Name_Ecran").Value = c.FindForm.Name
-        ' rs("Name_Controle").Value = a.Name
-        ' rs("Text_Controle").Value = a.HeaderText
-        ' rs("Typ_Controle").Value = c.Name
-        ' rs("Typ_Security").Value = a.Tag
-        ' rs.Update()
-        ' rs.Close()
-        ' Next
-        '    End If
+
 
         If c.GetType.Name = "LinkLabel" Or c.GetType.Name = "Label" Then
             rs3.Open("select * from Controle_Def_Label where Name_Ecran='" & oform & "' and Name_Label='" & c.Name & "'", cn, 2, 2)
@@ -202,6 +194,20 @@ Public Class Sys_GenerationGlobale
                         'Insertion des Contrôles Child de Chaque Form
 
                         ListControlGereSecurity(Frm, Frm.Name)
+
+                        'Insertion des buttons des écrans
+                        Dim tbl As DataTable = DATA_READER_GRD($"select * from Controle_Def_Ecran_Button where Name_Ecran='{Frm.Name}' and isnull(Typ_Security,'')!=''")
+                        With tbl
+                            For i = 0 To .Rows.Count - 1
+                                Dim btn As New STD_Btn
+                                btn.Name = .Rows(i)("Cod_Button")
+                                btn.Text = .Rows(i)("Lib_Button")
+                                btn.tooltip = btn.Text
+                                btn.Tag = .Rows(i)("Typ_Security")
+                                SavingControles(btn, Frm.Name, btn.Text)
+                            Next
+                        End With
+
                         If Frm IsNot Nothing Then
                             Frm.Dispose()
                         End If

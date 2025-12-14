@@ -25,14 +25,12 @@ export async function noteFraisListe(req: Request, res: Response) {
     ? toSqlDateFormat(Dat_Au)
     : toSqlDateFormat(new Date(2045, 11, 31));
   Statut = Statut || "";
-  let sqlStr = `SELECT  Num_NF as 'N° Note de frais', ${
-    Matricule === theAgent.Matricule ? "Matricule,Nom, " : ""
-  } isnull(Lib_NF,'') as Libellé, dbo.FindRubrique('Statut_Signature',Statut) as Statut, Dat_NF as 'Date', Mnt_NF as 'Montant' 
-   ${
-     Cod_Entite === theAgent.Cod_Entite
-       ? ""
-       : ", isnull(Lib_Entite,'') as 'Entité'"
-   }
+  let sqlStr = `SELECT  Num_NF as 'N° Note de frais', ${Matricule === theAgent.Matricule ? "Matricule,Nom, " : ""
+    } isnull(Lib_NF,'') as Libellé, dbo.FindRubrique('Statut_Signature',Statut) as Statut, Dat_NF as 'Date', Mnt_NF as 'Montant' 
+   ${Cod_Entite === theAgent.Cod_Entite
+      ? ""
+      : ", isnull(Lib_Entite,'') as 'Entité'"
+    }
   FROM Rh_Note_Frais v
    outer apply (select Nom_Agent + ' ' +Prenom_Agent as Nom, Cod_Entite from RH_Agent where id_Societe=v.id_Societe and Matricule=v.Matricule) r
     outer apply (select Lib_Entite from Org_Entite where id_Societe=v.id_Societe and Cod_Entite=r.Cod_Entite) e
@@ -76,6 +74,7 @@ export async function get_note_frais(req: Request, res: Response) {
 }
 export async function save_note_frais(req: Request, res: Response) {
   const { entete: _entete, detail } = req.body;
+  console.log("save_note_frais", _entete, detail);
   const { id_Societe, Matricule } = req.params;
   let { Num_NF, ...entete } = _entete;
   if (!Num_NF || Num_NF === "") {
@@ -96,22 +95,36 @@ export async function save_note_frais(req: Request, res: Response) {
   });
   if (rsEnt.result) {
     const flgMaj = Math.floor(Math.random() * 10000);
+    let detailOk = true;
+    let detailError: any = null;
+
     for (const d of detail) {
-      await ecrireSql({
+      const rsDet = await ecrireSql({
         tableName: "RH_Note_Frais_Detail",
         fields: { ...d, id_Societe, Num_NF, Flag_Maj: flgMaj },
         joinFields: ["Num_NF", "id_Societe", "RowId"],
         excludeFields: ["RowId"],
         login: Matricule,
       });
+      if (!rsDet.result) {
+        detailOk = false;
+        detailError = rsDet.sort; // Capture error
+        console.error("Detail Save Error:", rsDet);
+        break;
+      }
     }
-    await lireSql(
-      `delete from RH_Note_Frais_Detail where id_Societe=${id_Societe} and Num_NF='${Num_NF}' and Flag_Maj!=${flgMaj}`,
-      []
-    );
-    if (entete.Statut === "SS")
-      await sousmettre_signature("NF", Num_NF, id_Societe, Matricule);
-    return res.send(rsEnt);
+
+    if (detailOk) {
+      await lireSql(
+        `delete from RH_Note_Frais_Detail where id_Societe=${id_Societe} and Num_NF='${Num_NF}' and Flag_Maj!=${flgMaj}`,
+        []
+      );
+      if (entete.Statut === "SS")
+        await sousmettre_signature("NF", Num_NF, id_Societe, Matricule);
+      return res.send(rsEnt);
+    } else {
+      return res.send({ result: false, message: "Error saving details", error: detailError });
+    }
   }
 }
 export async function delete_note_frais(req: Request, res: Response) {

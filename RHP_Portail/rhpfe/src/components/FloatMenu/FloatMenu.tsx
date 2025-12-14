@@ -56,8 +56,8 @@ export const FloatMenu = ({ btnMenus }: { btnMenus: TMenuBtn[] }) => {
         {btnMenus
           .filter((btn) => btn?.visible !== "none")
           .map((btn, ind) => (
-            <MenuItem onClick={btn.action} key={ind} disabled={btn.disabled}>
-              <ListItemIcon>{btn.icon}</ListItemIcon>
+            <MenuItem onClick={btn.action} key={ind} disabled={btn.disabled} sx={{ color: btn.color }}>
+              <ListItemIcon sx={{ color: btn.color }}>{btn.icon}</ListItemIcon>
               {btn.libelle}
             </MenuItem>
           ))}

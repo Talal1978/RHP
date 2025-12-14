@@ -424,12 +424,93 @@ const Survey_Rendering = forwardRef<ChildHandle, TProps>(({ cod_survey, cod_repl
         }, { noteTotal: 0, coefTotal: 0 });
     }, [answers, questions]);
 
+    const validateSurvey = useCallback((): { isValid: boolean, newAnswers: TAnswers } => {
+        let isValid = true;
+        let newAnswers = { ...answers };
+        let firstErrorQNum = -1;
+
+        questionsRef.current.forEach(q => {
+            const qState = newAnswers[q.NumQuestion];
+            if (!qState || !qState.isVisible) return;
+
+            // 1. Check for existing errors
+            if (qState.hasError) {
+                isValid = false;
+                if (firstErrorQNum === -1) firstErrorQNum = q.NumQuestion;
+            }
+
+            // 2. Check for mandatory fields
+            if (qState.isMandatory) {
+                let isFilled = false;
+                const val = qState.value;
+
+                if (['grille_cases', 'grille_choix', 'echelle', 'cocher', 'choix', 'oui_non', 'vrai_faux'].includes(q.Typ_Reponse)) {
+                    // checks for arrays
+                    if (Array.isArray(val) && val.length > 0) {
+                        const hasContent = (v: any): boolean => {
+                            if (Array.isArray(v)) return v.some(hasContent);
+                            return v === true || v === 1 || v === "1" || (typeof v === 'string' && v.trim().length > 0) || (typeof v === 'number' && v !== 0);
+                        };
+                        isFilled = hasContent(val);
+                    }
+                } else {
+                    // Simple values
+                    if (val !== null && val !== undefined && val !== '') {
+                        if (typeof val === 'string') {
+                            isFilled = val.trim().length > 0;
+                        } else if (typeof val === 'number') {
+                            // 0 is a valid number usually, but for "choix" or "ids" maybe not?
+                            // numeric/entier: 0 is valid.
+                            // date: default is '01/01/1900' -> consider empty?
+                            if (['date', 'dateTime', 'heure'].includes(q.Typ_Reponse)) {
+                                isFilled = val !== defaultValueMap[q.Typ_Reponse];
+                            } else {
+                                isFilled = true;
+                            }
+                        } else {
+                            isFilled = true;
+                        }
+                    }
+                }
+
+                if (!isFilled) {
+                    isValid = false;
+                    newAnswers[q.NumQuestion] = {
+                        ...qState,
+                        hasError: true,
+                        errorMsg: 'Ce champ est obligatoire'
+                    };
+                    if (firstErrorQNum === -1) firstErrorQNum = q.NumQuestion;
+                }
+            }
+        });
+
+        return { isValid, newAnswers };
+    }, [answers, questionsRef]); // removed answers dependency to avoid loop if used in effect, but saveAnswers is manual.
+
     const saveAnswers = useCallback(async (): Promise<{ result: boolean, data: any[] }> => {
+        // Validation
+        const { isValid, newAnswers } = validateSurvey();
+
+        if (!isValid) {
+            setAnswers(newAnswers);
+            return { result: false, data: ["Veuillez corriger les erreurs et remplir les champs obligatoires avant d'enregistrer."] };
+        }
+
+        // Filter out invisible answers
+        const visibleAnswers: TAnswers = {};
+        Object.keys(answers).forEach(key => {
+            const qNum = parseInt(key);
+            if (answers[qNum]?.isVisible) {
+                visibleAnswers[qNum] = answers[qNum];
+            }
+        });
+
         try {
             const rsl = await myAxiosPost("surveyAnswersSave", {
                 cod_survey,
                 cod_reply,
-                answers,
+                answers: visibleAnswers,
                 evalue,
                 evaluateur,
                 typ_survey,
@@ -443,7 +524,7 @@ const Survey_Rendering = forwardRef<ChildHandle, TProps>(({ cod_survey, cod_repl
             console.error('Error saving answers:', error);
             return { result: false, data: [error] };
         }
-    }, [answers, cod_reply, cod_survey, evalue, evaluateur, typ_survey, myAxiosPost]);
+    }, [answers, cod_reply, cod_survey, evalue, evaluateur, typ_survey, myAxiosPost, ref_evaluation, validateSurvey]);
 
     if (isLoading) return <Loading />;
 
@@ -482,9 +563,9 @@ const Survey_Rendering = forwardRef<ChildHandle, TProps>(({ cod_survey, cod_repl
                             <Box key={q.NumQuestion} sx={{ mb: 0 }}>
                                 {QuestionRenderer(q)}
                                 {qState.hasError && (
-                                    <Typography color="error" sx={{ ml: 2, mt: 0.5 }}>
+                                    <div style={{ marginLeft: '16px', marginTop: '4px', color: 'red' }}>
                                         {qState.errorMsg}
-                                    </Typography>
+                                    </div>
                                 )}
                             </Box>
                         );

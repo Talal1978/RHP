@@ -26,7 +26,6 @@ export const authentication = async (req: Request, res: Response) => {
   const rsl = await lireSql(sqlStr, [
     { param: "login", sqlType: NVarChar, valeur: login },
   ]);
-  console.log(rsl.data);
   if (rsl.result && rsl.data.length > 0) {
     const myJwt = getToken(
       rsl.data[0].Cod_Profile,
@@ -118,15 +117,12 @@ export const refreshToken = async (req: Request, res: Response) => {
 export const getNewPwd = async (req: Request, res: Response) => {
   try {
     const { login } = req.body;
-    console.log("getNewPwd called for:", login);
     let sqlStr = `select top 1 ltrim(rtrim(isnull(Nom_Agent,'')+' '+ isnull(Prenom_Agent,''))) as Nom, Mail from RH_Agent where isnull(Mail,'')=@login`;
     const result = await lireSql(sqlStr, [
       { param: "login", sqlType: NVarChar, valeur: login },
     ]);
-    console.log("User lookup result:", result);
 
     if (!result.result || result.data.length === 0) {
-      console.error("User not found or SQL error");
       return res.send({ result: false, data: "User not found" });
     }
 
@@ -164,12 +160,9 @@ export const getNewPwd = async (req: Request, res: Response) => {
       html: `Bonjour ${userData.Nom}<BR/>Vous avez réinitialisé votre mot de passe<BR/>Ci-après votre nouveau mot de pass : <b>${password}</b>.`,
       headers: {},
     };
-    console.log("Sending email with options:", mailOptions);
     let info = await envoiMail(mailOptions);
-    console.log("Email sent info:", info);
     return res.send({ result: info.accepted.length > 0, data: info.accepted });
   } catch (err) {
-    console.error("Error in getNewPwd:", err);
     return res.send({ result: false, data: err });
   }
 };

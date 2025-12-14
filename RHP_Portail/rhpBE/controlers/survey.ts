@@ -42,18 +42,11 @@ where Cod_Survey=@cod_survey and Cod_Reply=@cod_reply`;
 };
 
 export const surveyAnswersSave = async (req: Request, res: Response) => {
-    // VB Logic Matches:
-    // 1. Validation
-    // 2. Header Upsert (Survey_Reply)
-    // 3. Detail Upsert/Replace (Survey_Reply_Detail) based on Flg_Maj
-
-    const { cod_survey, cod_reply, answers, evalue, evaluateur, cod_evaluation } = req.body;
+    const { cod_survey, cod_reply, answers, evalue, evaluateur, ref_evaluation } = req.body;
     // Note: User snippet usually gets idSoc from params or user context.
-    const idSoc = req.params.id_Societe || req.body.id_Societe || 1;
+    const idSoc = req.params.id_Societe || 1;
 
-    const userLogin = "System"; // TODO: Get from req.user context
-
-    // 1. Validation (Matched partially, trusting frontend mostly)
+    const login = req.params.login || "System";
     if (!cod_survey) return res.send({ result: false, data: ["Code évaluation vide."] });
 
     // Generate Flg_Maj (Batch ID)
@@ -64,7 +57,7 @@ export const surveyAnswersSave = async (req: Request, res: Response) => {
     let currentCodReply = cod_reply;
     if (!currentCodReply) currentCodReply = 0;
 
-    let checkSql = `select Cod_Reply, isnull(Paie_Calculee,0) as Paie_Calculee from Survey_Reply where Cod_Reply=@cod_reply and id_Societe=@idSoc`;
+    let checkSql = `select Cod_Reply, convert(bit,isnull(Paie_Calculee,0)) as Paie_Calculee from Survey_Reply where Cod_Reply=@cod_reply and id_Societe=@idSoc`;
 
     let exists = false;
 
@@ -75,7 +68,7 @@ export const surveyAnswersSave = async (req: Request, res: Response) => {
         ]);
         if (rslCheck.result && rslCheck.data.length > 0) {
             exists = true;
-            if (rslCheck.data[0].Paie_Calculee) return res.send({ result: false, message: "Cette évaluation concerne une paie déjà calculée." });
+            if (rslCheck.data[0].Paie_Calculee) return res.send({ result: false, data: ["Cette évaluation concerne une paie déjà calculée."] });
         }
     }
 
@@ -89,17 +82,17 @@ export const surveyAnswersSave = async (req: Request, res: Response) => {
         const rslHeader = await lireSql(headerSql, [
             { param: "idSoc", sqlType: Int, valeur: idSoc },
             { param: "cod_survey", sqlType: NVarChar, valeur: cod_survey },
-            { param: "login", sqlType: NVarChar, valeur: userLogin },
+            { param: "login", sqlType: NVarChar, valeur: login },
             { param: "evaluateur", sqlType: NVarChar, valeur: evaluateur },
             { param: "evalue", sqlType: NVarChar, valeur: evalue },
-            { param: "cod_evaluation", sqlType: NVarChar, valeur: cod_evaluation },
+            { param: "ref_evaluation", sqlType: NVarChar, valeur: ref_evaluation },
             { param: "flg_maj", sqlType: NVarChar, valeur: flg_maj.toString() }
         ]);
 
         if (rslHeader.result && rslHeader.data.length > 0) {
             currentCodReply = rslHeader.data[0].NewId;
         } else {
-            return res.send({ result: false, message: "Erreur création header." });
+            return res.send({ result: false, data: [rslHeader.sort] });
         }
 
     } else {
@@ -112,8 +105,8 @@ export const surveyAnswersSave = async (req: Request, res: Response) => {
         await lireSql(headerSql, [
             { param: "evaluateur", sqlType: NVarChar, valeur: evaluateur },
             { param: "evalue", sqlType: NVarChar, valeur: evalue },
-            { param: "cod_evaluation", sqlType: NVarChar, valeur: cod_evaluation },
-            { param: "login", sqlType: NVarChar, valeur: userLogin },
+            { param: "ref_evaluation", sqlType: NVarChar, valeur: ref_evaluation },
+            { param: "login", sqlType: NVarChar, valeur: login },
             { param: "flg_maj", sqlType: NVarChar, valeur: flg_maj.toString() },
             { param: "cod_reply", sqlType: Int, valeur: currentCodReply }
         ]);
@@ -131,8 +124,9 @@ export const surveyAnswersSave = async (req: Request, res: Response) => {
         { param: "idSoc", sqlType: Int, valeur: idSoc }
     ]);
     const questionsList = rslQsts2.data || [];
-
     let rang = 0;
+    console.log(questionsList)
+    const insertPromises: Promise<any>[] = [];
 
     for (const qDef of questionsList) {
         const qNum = qDef.NumQuestion;
@@ -170,12 +164,12 @@ export const surveyAnswersSave = async (req: Request, res: Response) => {
                 if (decoded) valeurReponse = decoded;
             }
 
-            const sqlIns = `insert into Survey_Reply_Detail (Cod_Reply, Cod_Question, Question, Obligatoire, Typ_Reponse, Num_Sous_Question, Reponses, Valeur_Reponse, Note, Coef, Note_Totale, Statut, Rang, Flg_Maj)
-             values (@cod_reply, @cod_question, @question, @obligatoire, @typ_reponse, @num_sous, @reponses, @valeur_reponse, @note, @coef, @note_totale, 'S', @rang, @flg_maj)`;
+            const sqlIns = `insert into Survey_Reply_Detail (Cod_Reply, Cod_Question, Question, Obligatoire, Typ_Reponse, Num_Sous_Question, Reponses, Valeur_Reponse, Note, Coef, Note_Totale, Rang, Flg_Maj)
+             values (@cod_reply, @cod_question, @question, @obligatoire, @typ_reponse, @num_sous, @reponses, @valeur_reponse, @note, @coef, @note_totale, @rang, @flg_maj)`;
 
-            await lireSql(sqlIns, [
+            insertPromises.push(lireSql(sqlIns, [
                 { param: "cod_reply", sqlType: Int, valeur: currentCodReply },
-                { param: "cod_question", sqlType: NVarChar, valeur: qDef.Cod_Question },
+                { param: "cod_question", sqlType: NVarChar, valeur: String(qDef.RowId) },
                 { param: "question", sqlType: NVarChar, valeur: qDef.Question },
                 { param: "obligatoire", sqlType: NVarChar, valeur: qDef.Obligatoire ? "true" : "false" },
                 { param: "typ_reponse", sqlType: NVarChar, valeur: qDef.Typ_Reponse },
@@ -187,8 +181,24 @@ export const surveyAnswersSave = async (req: Request, res: Response) => {
                 { param: "note_totale", sqlType: Int, valeur: noteData.note_totale || 0 },
                 { param: "rang", sqlType: Int, valeur: rang++ },
                 { param: "flg_maj", sqlType: NVarChar, valeur: flg_maj.toString() }
-            ]);
+            ], true).then((res) => {
+                if (!res.result) {
+                    console.error(`INSERT ERROR [Q:${qDef.RowId} Sub:${row.num}]:`, res.sort);
+                }
+                return res;
+            }));
         }
+    }
+
+    try {
+        const results = await Promise.all(insertPromises);
+        const allSuccess = results.every(r => r.result);
+
+        if (!allSuccess) {
+            return res.send({ result: false, data: ["Erreur lors de l'enregistrement de certaines réponses."] });
+        }
+    } catch (error) {
+        return res.send({ result: false, data: [error] });
     }
 
     return res.send({ result: true, data: [{ Cod_Reply: currentCodReply }] });

@@ -36,8 +36,8 @@ const GrilleCell = ({
       : typ?.dataType === "smalldatetime" ||
         typ?.dataType === "datetime" ||
         typ?.dataType === "bit"
-      ? "center"
-      : "left";
+        ? "center"
+        : "left";
   const composant = () => {
     if (typ?.typeColonne === "Image") {
       return <img src={row[col]} alt={row[col]} />;
@@ -113,8 +113,7 @@ const GrilleCell = ({
       }
     } else if (
       typ?.typeColonne === "Combo" &&
-      typ.dataSource &&
-      typ?.dataSource?.length !== 0
+      typ.dataSource
     ) {
       if (editMode && !typ.readOnly) {
         return (

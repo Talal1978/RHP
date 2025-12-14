@@ -45,6 +45,10 @@ const Demande_Pret = () => {
     Process_Id: string;
   }>({ canModify: true, Taken_By_User: "", Process_Id: "" });
   const [currentNum, setCurrentNum] = useState(num);
+  useEffect(() => {
+    setCurrentNum(num)
+    setAccessible({ canModify: true, Taken_By_User: "", Process_Id: "" });
+  }, [num]);
   const [entete, setEntete] = useState<TEntete>(iniEntete);
   const [canSave, setCanSave] = useState(false);
   const enteteRef = useRef<TEntete>();
@@ -88,18 +92,21 @@ const Demande_Pret = () => {
           setEntete(iniEntete);
           enteteRef.current = iniEntete;
         });
+    } else {
+      setEntete(iniEntete);
+      enteteRef.current = iniEntete;
     }
     if (canSave) {
       if (currentNum !== "" && currentNum !== "new") {
         await myAxios("check_accessible", {
-          nameEcran: "Demande_Pret",
+          nameEcran: "RH_Demande_Pret",
           idEcran: currentNum,
         }).then((dt) => {
           setAccessible(dt.data);
         });
       } else {
         await myAxios("release_accessible", {
-          nameEcran: "Demande_Pret",
+          nameEcran: "RH_Demande_Pret",
           idEcran: currentNum,
         });
       }
@@ -112,7 +119,7 @@ const Demande_Pret = () => {
     return () => {
       if (currentNum !== "" && currentNum !== "new") {
         myAxios("release_accessible", {
-          nameEcran: "Demande_Pret",
+          nameEcran: "RH_Demande_Pret",
           idEcran: currentNum,
         });
       }
@@ -214,8 +221,11 @@ const Demande_Pret = () => {
       )
         return;
     }
-    setCurrentNum("");
-    setEntete(iniEntete);
+    await myAxios("release_accessible", {
+      nameEcran: "RH_Demande_Pret",
+      idEcran: currentNum,
+    });
+    navigate(`/myspace/RH_Demande_Pret/Demande de prêt/new`);
   }, [entete]);
   const SoumettreEnSignature = useCallback(async () => {
     if (!currentNum) return;
@@ -349,6 +359,7 @@ const Demande_Pret = () => {
         libelle: "Supprimer",
         action: Supprimer,
         icon: <DeleteOutline />,
+        color: "error.main",
       },
       {
         name: "Imprimer",

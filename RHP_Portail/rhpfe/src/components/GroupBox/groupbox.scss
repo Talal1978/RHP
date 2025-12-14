@@ -3,7 +3,7 @@
   .chip {
     min-width: 15em !important;
     background-color: variables.$chipBg;
-    color: #ffffff;
+    color: variables.$foreColorBase01;
     margin-bottom: 1em;
     z-index: 10;
     @media (max-width: 600px) {

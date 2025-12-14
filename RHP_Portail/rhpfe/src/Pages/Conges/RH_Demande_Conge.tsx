@@ -56,6 +56,10 @@ const RH_Demande_Conge = () => {
     Process_Id: string;
   }>({ canModify: true, Taken_By_User: "", Process_Id: "" });
   const [currentNum, setCurrentNum] = useState(num);
+  useEffect(() => {
+    setCurrentNum(num);
+    setAccessible({ canModify: true, Taken_By_User: "", Process_Id: "" });
+  }, [num]);
   const [entete, setEntete] = useState<TEntete>(iniEntete);
   const [ligne, setLigne] = useState<TLigDemande[]>([]);
   const [calculerConge, setCalculerConge] = useState(true);
@@ -374,9 +378,11 @@ const RH_Demande_Conge = () => {
       )
         return;
     }
-    setCurrentNum("");
-    setEntete(iniEntete);
-    setDroitsConge(iniConge);
+    await myAxios("release_accessible", {
+      nameEcran: "RH_Demande_Conge",
+      idEcran: currentNum,
+    });
+    navigate(`/myspace/RH_Demande_Conge/Demande de congé/new`);
   }, [entete]);
   const SoumettreEnSignature = useCallback(async () => {
     if (!currentNum) return;
@@ -509,6 +515,7 @@ const RH_Demande_Conge = () => {
         libelle: "Supprimer",
         action: Supprimer,
         icon: <DeleteOutline />,
+        color: "error.main",
       },
       {
         name: "Imprimer",
@@ -731,30 +738,33 @@ const RH_Demande_Conge = () => {
                 style={{ width: "90%" }}
               />
             </Grid>
-
-            <Box
-              sx={{
-                margin: "auto",
-                padding: "5px",
-                width: {
-                  xs: "96vw",
-                  sm: "96vw",
-                  md: "80vw",
-                },
-                overflow: "scroll",
-              }}
-            >
-              <Grille
-                readonly={true}
-                dataSource={ligne}
-                Colonnes={Colonnes}
-                className="laGrille"
-
-              />
-            </Box>
           </Grid>
+
         </>
       </GroupBox>
+      <Box
+        sx={{
+          margin: "auto",
+          padding: "5px",
+          width: {
+            xs: "96vw",
+            sm: "96vw",
+            md: "80vw",
+          },
+          overflow: "scroll",
+        }}
+      >
+        <Grille
+          readonly={true}
+          dataSource={ligne}
+          Colonnes={Colonnes}
+          className="laGrille"
+
+        />
+      </Box>
+
+
+
     </>
   );
 };

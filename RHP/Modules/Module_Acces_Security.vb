@@ -104,6 +104,27 @@
                                 Enabling(c, False)
                             End If
                     End Select
+                ElseIf f.Parent IsNot Nothing Then
+                    c = GetControlByName(nRows(i)("Name_Controle"), f)
+                    If c IsNot Nothing Then
+                        Select Case TypSecurity
+                            Case "NC"
+                                Enabling(c, DroitModify And Not Societe.Mis_Sml)
+                            Case "SC"
+                                If Not CBool(nRows(i)("Visible")) Then
+                                    c.visible = False
+                                ElseIf Not CBool(nRows(i)("Actif")) Then
+                                    Enabling(c, False)
+                                    c.visible = True
+                                ElseIf DroitModify Then
+                                    c.visible = True
+                                    Enabling(c, Not Societe.Mis_Sml)
+                                Else
+                                    c.visible = True
+                                    Enabling(c, False)
+                                End If
+                        End Select
+                    End If
                 End If
             Next
         End With

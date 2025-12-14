@@ -88,6 +88,7 @@ Public Class Evaluation
         CodSurvey = FindLibelle("Cod_Survey", "Cod_Evaluation", Cod_Evaluation_txt.Text, "Evaluation")
         Lib_Survey_lbl.Text = CodSurvey & " : " & FindLibelle("Lib_Survey", "Cod_Survey", CodSurvey, "Survey").ToString.ToUpper
         CodReponse = CnExecuting("select isnull((select Top 1 Cod_Reply from Survey_Reply where Cod_Survey='" & CodSurvey & "' and Evaluateur='" & Evaluateur_txt.Text & "' and Evalue='" & Evalue_txt.Text & "' and id_Societe=" & Societe.id_Societe & "),-1)").Fields(0).Value
+        Cod_Reply_txt.Text = If(CodReponse > 0, CodReponse, "")
         Preambule_rtb.Rtf = FindLibelle("Preambule", "Cod_Survey", CodSurvey, "Survey")
         Dat_Survey_txt.Text = FindLibelle("Dat_Survey", "Cod_Reply", CodReponse, "Survey_Reply")
         Preambule_rtb.Visible = (Preambule_rtb.Text.Trim <> "")

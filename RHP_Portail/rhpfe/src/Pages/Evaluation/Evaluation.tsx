@@ -1,13 +1,15 @@
-import { useCallback, useContext, useEffect, useRef } from 'react'
-import { Typography, Paper, Grid, Box } from '@mui/material';
+import { useCallback, useContext, useEffect, useRef, useState } from 'react'
+import { Typography, Paper, Grid, Box, Chip } from '@mui/material';
 import Survey_Rendering from '../Survey/Survey_Rendering'
-import { colorBase } from '../../modules/module_general';
+import { colorBase, Agent } from '../../modules/module_general';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { cntX } from '../../Menu/MenuMain';
-import { DrawOutlined, PrintOutlined, SaveAsOutlined } from '@mui/icons-material';
+import { DrawOutlined, PrintOutlined, SaveAsOutlined, VisibilityOff } from '@mui/icons-material';
 import { ChildHandle } from '../Survey/Types';
 import useAlert from '../../hooks/useAlert';
 import { TReport } from '../../Report/ReportViewer';
+import useMsgBox from '../../hooks/useMsgBox';
+import useAxiosPost from '../../hooks/useAxiosPost';
 
 type TState = {
   cod_survey: string;
@@ -19,6 +21,7 @@ type TState = {
   evaluateur: string;
   nom_evaluateur: string;
   typ_survey: "E";
+  statut: string;
 }
 
 const Evaluation = () => {
@@ -26,21 +29,90 @@ const Evaluation = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const alert = useAlert();
+  const msgBox = useMsgBox();
+  const myAxios = useAxiosPost();
   const { settbnMenu, setSignatureProps, setShowSignature } = useContext(cntX);
 
   const state = location.state as TState;
+  const { cod_survey, cod_evaluation, lib_evaluation, cod_reply, evalue, nom_evalue, evaluateur, nom_evaluateur, typ_survey, statut } = state || {} as any;
+
+  const [isAccessible, setAccessible] = useState<{
+    canModify: boolean;
+    Taken_By_User: string;
+    Process_Id: string;
+  }>({ canModify: true, Taken_By_User: "", Process_Id: "" });
+  const [canSave, setCanSave] = useState(false);
+
+  const Request = useCallback(async () => {
+    if (canSave) {
+      if (cod_reply) {
+        await myAxios("check_accessible", {
+          nameEcran: "Evaluation",
+          idEcran: String(cod_reply),
+        }).then((dt) => {
+          setAccessible(dt.data);
+        });
+      } else {
+        await myAxios("release_accessible", {
+          nameEcran: "Evaluation",
+          idEcran: String(cod_reply),
+        });
+      }
+    }
+  }, [cod_reply, canSave]);
 
   useEffect(() => {
+    setAccessible({ canModify: true, Taken_By_User: "", Process_Id: "" });
     if (!state) {
       navigate('/myspace/Evaluation_Liste/Consultation des évaluations');
     }
-  }, [state, navigate]);
-
-
-
-  const { cod_survey, cod_evaluation, lib_evaluation, cod_reply, evalue, nom_evalue, evaluateur, nom_evaluateur, typ_survey } = state || {} as any;
+    // Request is called via dependencies when canSave changes, or we can call it here if needed, 
+    // but in Demande_Avance it's called via useEffect which calls Request.
+    // However, we need to ensure Request runs.
+    Request();
+    return () => {
+      if (cod_reply) {
+        myAxios("release_accessible", {
+          nameEcran: "Evaluation",
+          idEcran: cod_reply,
+        });
+      }
+    };
+  }, [state, navigate, Request, cod_reply]);
 
   const Enregistrer = useCallback(async () => {
+    if (["SG", "RJ", "SP", "VA"].includes(statut || "")) {
+      await msgBox({
+        titre: "Enregistrer",
+        msg: "Document traité. Modification impossible.",
+        typMsg: "error",
+        typReply: "OkOnly",
+        async handleOk() {
+          return;
+        },
+      });
+      return;
+    }
+    if (!isAccessible.canModify) {
+      await msgBox({
+        titre: "Enregistrer",
+        msg: "Document verrouillé par " + isAccessible.Taken_By_User,
+        typMsg: "error",
+        typReply: "OkOnly"
+      });
+      return;
+    }
+
+    if (evaluateur !== Agent?.Matricule) {
+      await msgBox({
+        titre: "Enregistrer",
+        msg: "Vous ne pouvez pas modifier cette évaluation.",
+        typMsg: "error",
+        typReply: "OkOnly"
+      });
+      return;
+    }
+
     if (myRef.current) {
       const rsl = await myRef.current.save();
       console.log(rsl);
@@ -54,28 +126,52 @@ const Evaluation = () => {
       } else {
         alert({
           titre: "Enregistrement",
-          msg:  rsl.data && rsl.data.length > 0 ? rsl.data[0] : "Enregistrement echoué",
+          msg: rsl.data && rsl.data.length > 0 ? rsl.data[0] : "Enregistrement echoué",
           typMsg: "error",
           timeOut: 3000,
         });
       }
     }
-  }, [alert]);
+  }, [alert, statut, isAccessible]);
+
+  async function NonAccessible() {
+    await msgBox({
+      titre: "Document utilisé",
+      msg: "Document utilisé par: " + isAccessible.Taken_By_User,
+      typMsg: "warning",
+      typReply: "OkOnly",
+    });
+  }
 
   const Imprimer = useCallback(() => {
     window.print();
   }, []);
 
   const SoumettreEnSignature = useCallback(() => {
-    setSignatureProps({ typ_document: "EV", valeur_index: cod_evaluation });
+    setSignatureProps({ typ_document: "EV", valeur_index: String(cod_reply) });
     setShowSignature(true);
-  }, [setSignatureProps, setShowSignature, cod_evaluation]);
+  }, [setSignatureProps, setShowSignature, cod_reply]);
 
   useEffect(() => {
+    const _canSave =
+      isAccessible.canModify &&
+      (statut === "" || statut === "NSS" || statut === undefined) &&
+      (evaluateur === Agent?.Matricule);
+
+    setCanSave(_canSave);
+
     settbnMenu([
       {
-        name: "Enregistrer",
+        name: "Accessible",
         disabled: false,
+        libelle: "Accessible",
+        action: NonAccessible,
+        icon: <VisibilityOff />,
+        visible: !isAccessible?.canModify ? "visible" : "none",
+      },
+      {
+        name: "Enregistrer",
+        disabled: !_canSave,
         libelle: "Enregistrer",
         action: Enregistrer,
         icon: <SaveAsOutlined />,
@@ -99,7 +195,7 @@ const Evaluation = () => {
     return () => {
       settbnMenu([]);
     };
-  }, [settbnMenu, Enregistrer, Imprimer, SoumettreEnSignature]);
+  }, [settbnMenu, Enregistrer, Imprimer, SoumettreEnSignature, isAccessible, statut, evaluateur, canSave]);
 
   if (!state) return null;
 
@@ -132,6 +228,40 @@ const Evaluation = () => {
       </style>
       <Typography variant="h4" sx={{ textAlign: 'center', mb: 2, fontWeight: 'bold', color: colorBase.colorBase01 }}>
         Évaluation
+        {(() => {
+          let label = "";
+          let color: "default" | "primary" | "secondary" | "error" | "info" | "success" | "warning" = "default";
+          switch (statut) {
+            case "VA":
+              label = "Validé";
+              color = "success";
+              break;
+            case "NSS":
+              label = "Soumettre en signature";
+              color = "default";
+              break;
+            case "SS":
+              label = "Soumis en signature";
+              color = "warning";
+              break;
+            case "SG":
+              label = "Signé";
+              color = "success";
+              break;
+            case "RJ":
+              label = "Rejeté";
+              color = "error";
+              break;
+            case "SP":
+              label = "Signé partiellement";
+              color = "info";
+              break;
+            default:
+              label = statut || "Brouillon";
+          }
+          if (label) return <Chip label={label} color={color} sx={{ ml: 2, verticalAlign: 'middle', fontWeight: 'bold' }} />;
+          return null;
+        })()}
       </Typography>
 
       <Box sx={{
