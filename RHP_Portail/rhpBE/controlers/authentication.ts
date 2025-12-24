@@ -1,7 +1,7 @@
 import { Response, Request } from "express";
 import { encrypt } from "../modules/module_encrypt";
-import { lireSql } from "../modules/module_sqlRW";
-import { NVarChar, VarBinary } from "mssql";
+import { lireSql, controleInjection } from "../modules/module_sqlRW";
+import { NVarChar } from "mssql";
 import { getToken } from "../modules/module_jwt";
 import { envoiMail } from "../modules/module_sendMail";
 import {
@@ -11,7 +11,8 @@ import {
 import { verifyRefreshToken } from "../modules/module_jwt";
 
 export const authentication = async (req: Request, res: Response) => {
-  const { login, pwd } = req.query;
+  const { login, pwd } = req.query as { login: string, pwd: string };
+  if (controleInjection(login).result === false) return res.send({ result: false, message: "Injection détectée" });
   const sqlStr = `declare @lg nvarchar(50)
     set @lg=upper(@login)
     select top 1 -1 id_User,id_Societe,Matricule, ltrim(rtrim(isnull(Nom_Agent,'') + ' ' + isnull(Prenom_Agent,''))) as Nom,isnull(Cod_Entite,'') as Cod_Entite, isnull(Cod_Poste,'') as Cod_Poste, Mail Login_User,
@@ -140,7 +141,7 @@ export const getNewPwd = async (req: Request, res: Response) => {
       Mail: string;
     }
     let userData = result.data[0] as userDataFormat;
-    console.log("User found:", userData);
+
 
     sqlStr = `update RH_Agent set is_Temp ='true', PW='${encrypt(
       password

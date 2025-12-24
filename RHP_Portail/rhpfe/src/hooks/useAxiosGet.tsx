@@ -1,8 +1,9 @@
 import axios from "axios";
+import { useCallback } from "react";
 import { Connexion, myJwt, setJwt } from "../modules/module_general";
 
 const useAxiosGet = () => {
-  const myAxios = async ({
+  const myAxios = useCallback(async ({
     apiStr,
     bdy,
     hdr,
@@ -58,13 +59,20 @@ const useAxiosGet = () => {
           }
         } catch (refreshErr) {
           console.error("Token refresh failed", refreshErr);
+          window.location.href = "/";
         }
       }
+
+      // Connection cut / Network Error detection
+      if (!err.response || err.code === "ERR_NETWORK") {
+        window.location.href = "/";
+      }
+
       if (axios.isAxiosError(err) && err.response?.status === 500) {
       }
     }
     return { data: "", status: -1 };
-  };
+  }, []);
   return myAxios;
 };
 

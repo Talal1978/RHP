@@ -63,6 +63,13 @@ import { surveyAnswers, surveyAnswersSave, surveyQuestions } from "../controlers
 import { ficheposte } from "../controlers/org_ficheposte";
 import { generateReport } from "../controlers/report";
 import { getEvaluationListe } from "../controlers/evaluation";
+import { getOrganigramme, getPoste } from "../controlers/organization";
+import {
+  get_recrutement_demande,
+  save_recrutement_demande,
+  delete_recrutement_demande,
+  get_recrutement_demande_liste
+} from "../controlers/recrutement";
 const mainRooting = express.Router();
 const storage = multer.diskStorage({
   destination: async (req, file, cb) => {
@@ -81,7 +88,8 @@ mainRooting.post("/refresh", refreshToken);
 mainRooting.post("/getNewPwd", getNewPwd);
 mainRooting.post("/setPwd", validate, setPwd);
 mainRooting.post("/zoom", validate, getZoomApi);
-mainRooting.post("/rubrique", getRubrique);
+mainRooting.post("/rubrique", validate, getRubrique);
+mainRooting.get("/rubrique", validate, getRubrique);
 mainRooting.get("/list_rubriques", listRubriques);
 mainRooting.post("/signer", validate, signer);
 mainRooting.get("/get_signataires", validate, get_signataires);
@@ -136,7 +144,14 @@ mainRooting.post("/readfile", validate, fileClass.readFile);
 mainRooting.post("/newFolder", validate, fileClass.newFolder);
 mainRooting.post("/savingaudio", validate, fileClass.uploadAudiBase64);
 mainRooting.post("/bulletin_liste", validate, bulletin_liste);
+
+mainRooting.post("/get_organigramme", validate, getOrganigramme);
+mainRooting.post("/getPoste", validate, getPoste);
 mainRooting.post("/evaluation_liste", validate, getEvaluationListe);
+mainRooting.post("/get_recrutement_demande", validate, get_recrutement_demande);
+mainRooting.post("/save_recrutement_demande", validate, save_recrutement_demande);
+mainRooting.post("/delete_recrutement_demande", validate, delete_recrutement_demande);
+mainRooting.post("/get_recrutement_demande_liste", validate, get_recrutement_demande_liste);
 mainRooting.get("/ficheposte", validate, ficheposte);
 mainRooting.post(
   "/uploadfile",

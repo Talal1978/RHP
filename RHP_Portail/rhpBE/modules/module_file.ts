@@ -1,6 +1,6 @@
 import { Response, NextFunction, Request } from "express";
 import { ecrireSql, lireSql } from "./module_sqlRW";
-import path, { join } from "node:path";
+import path from "node:path";
 import { BigInt, NVarChar } from "mssql";
 import fs from "fs";
 import { toSqlDateFormat } from "./module_format";

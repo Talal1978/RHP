@@ -65,6 +65,7 @@ const TextZoom = ({
           sx={{
             "& .MuiInputBase-input": {
               fontSize: { xs: "1rem", sm: "1rem" },
+              ...style
             },
             "& .MuiInputLabel-root": {
               fontSize: { xs: "1rem", sm: "1rem" },

@@ -1,10 +1,14 @@
 import { Request, Response } from "express";
 import { estDate, toSqlDateFormat } from "../modules/module_format";
-import { ecrireSql, lireSql } from "../modules/module_sqlRW";
+import { ecrireSql, lireSql, controleInjection } from "../modules/module_sqlRW";
 import { NVarChar, SmallDateTime } from "mssql";
 import { sousmettre_signature } from "../modules/module_workflow";
 export async function noteFraisListe(req: Request, res: Response) {
   let { Matricule, Cod_Entite, Statut, Dat_Du, Dat_Au } = req.body;
+  if (controleInjection(Matricule).result === false) return res.send({ result: false, message: "Injection détectée dans Matricule" });
+  if (controleInjection(Cod_Entite).result === false) return res.send({ result: false, message: "Injection détectée dans Entité" });
+  if (controleInjection(Statut).result === false) return res.send({ result: false, message: "Injection détectée dans Statut" });
+
   const { processId, ...theAgent } = req.params;
   const TblRef = "RH_Note_Frais";
   let idSoc = theAgent?.id_Societe || "3068";
@@ -74,7 +78,7 @@ export async function get_note_frais(req: Request, res: Response) {
 }
 export async function save_note_frais(req: Request, res: Response) {
   const { entete: _entete, detail } = req.body;
-  console.log("save_note_frais", _entete, detail);
+
   const { id_Societe, Matricule } = req.params;
   let { Num_NF, ...entete } = _entete;
   if (!Num_NF || Num_NF === "") {

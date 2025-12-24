@@ -54,9 +54,10 @@ interface TProps {
     typ_survey: 'E' | 'R' | 'F'
     ref_evaluation: string
     refChild: React.RefObject<ChildHandle>
+    readOnly?: boolean
 }
 
-const Survey_Rendering = forwardRef<ChildHandle, TProps>(({ cod_survey, cod_reply, evalue, evaluateur, typ_survey, ref_evaluation, refChild }, _ref) => {
+const Survey_Rendering = forwardRef<ChildHandle, TProps>(({ cod_survey, cod_reply, evalue, evaluateur, typ_survey, ref_evaluation, refChild, readOnly = false }, _ref) => {
     const myAxiosGet = useAxiosGet();
     const myAxiosPost = useAxiosPost();
     const [questions, setQuestions] = useState<TQuestion[]>([]);
@@ -266,6 +267,44 @@ const Survey_Rendering = forwardRef<ChildHandle, TProps>(({ cod_survey, cod_repl
                     }
                 };
 
+                // Logic to clear validation error if field is now valid
+                const qState = updatedAnswers[qNum];
+                if (qState.hasError && qState.errorMsg === 'Ce champ est obligatoire') {
+                    let isFilled = false;
+                    const val = newValue;
+                    if (['grille_cases', 'grille_choix', 'echelle', 'cocher', 'choix', 'oui_non', 'vrai_faux'].includes(currentQ.Typ_Reponse)) {
+                        if (Array.isArray(val) && val.length > 0) {
+                            const hasContent = (v: any): boolean => {
+                                if (Array.isArray(v)) return v.some(hasContent);
+                                return v === true || v === 1 || v === "1" || (typeof v === 'string' && v.trim().length > 0) || (typeof v === 'number' && v !== 0);
+                            };
+                            isFilled = hasContent(val);
+                        }
+                    } else {
+                        if (val !== null && val !== undefined && val !== '') {
+                            if (typeof val === 'string') {
+                                isFilled = val.trim().length > 0;
+                            } else if (typeof val === 'number') {
+                                if (['date', 'dateTime', 'heure'].includes(currentQ.Typ_Reponse)) {
+                                    isFilled = val !== defaultValueMap[currentQ.Typ_Reponse];
+                                } else {
+                                    isFilled = true;
+                                }
+                            } else {
+                                isFilled = true;
+                            }
+                        }
+                    }
+
+                    if (isFilled) {
+                        updatedAnswers[qNum] = {
+                            ...qState,
+                            hasError: false,
+                            errorMsg: ''
+                        };
+                    }
+                }
+
                 const reEvaluatedAnswers: TAnswers = { ...updatedAnswers };
                 hasChanged = false;
                 questionsRef.current.forEach(q => {
@@ -318,7 +357,7 @@ const Survey_Rendering = forwardRef<ChildHandle, TProps>(({ cod_survey, cod_repl
                 return prevAnswers;
             }
         });
-    }, []); // CORRECTION: Dépendances vides car on utilise questionsRef
+    }, [evalue, evaluateur, typ_survey]);
 
 
     const QuestionRenderer = (q: TQuestion) => {
@@ -331,6 +370,7 @@ const Survey_Rendering = forwardRef<ChildHandle, TProps>(({ cod_survey, cod_repl
             note: qState.note,
             colonnes: q.Reponses_Possibles,
             valeurInitiale: qState.value,
+            readOnly: readOnly,
             onValueChange: (value: any) => handleValueChange(q.NumQuestion, value),
             handleNoteManuelle: (numQuestion: number, note: TNoteResult) => {
                 setAnswers(prevAnswers => ({
@@ -443,6 +483,7 @@ const Survey_Rendering = forwardRef<ChildHandle, TProps>(({ cod_survey, cod_repl
             if (qState.isMandatory) {
                 let isFilled = false;
                 const val = qState.value;
+
 
                 if (['grille_cases', 'grille_choix', 'echelle', 'cocher', 'choix', 'oui_non', 'vrai_faux'].includes(q.Typ_Reponse)) {
                     // checks for arrays

@@ -1,10 +1,14 @@
 import { Request, Response } from "express";
 import { estDate, toSqlDateFormat } from "../modules/module_format";
-import { ecrireSql, lireSql } from "../modules/module_sqlRW";
+import { ecrireSql, lireSql, controleInjection } from "../modules/module_sqlRW";
 import { NVarChar, SmallDateTime } from "mssql";
 import { sousmettre_signature } from "../modules/module_workflow";
 export async function demande_avance_liste(req: Request, res: Response) {
   let { Matricule, Cod_Entite, Statut, Dat_Du, Dat_Au } = req.body;
+  if (controleInjection(Matricule).result === false) return res.send({ result: false, message: "Injection détectée dans Matricule" });
+  if (controleInjection(Cod_Entite).result === false) return res.send({ result: false, message: "Injection détectée dans Entité" });
+  if (controleInjection(Statut).result === false) return res.send({ result: false, message: "Injection détectée dans Statut" });
+
   const { processId, ...theAgent } = req.params;
   const TblRef = "RH_Paie_Avance";
   let idSoc = theAgent?.id_Societe || "3068";
@@ -25,15 +29,13 @@ export async function demande_avance_liste(req: Request, res: Response) {
     ? toSqlDateFormat(Dat_Au)
     : toSqlDateFormat(new Date(2045, 11, 31));
   Statut = Statut || "";
-  let sqlStr = `SELECT  case when isnull(Num_List_Avance,'')!='' then 'Saisie massive' else 'Demande' end as [Type],Num_Avance as 'N° demande', ${
-    Matricule === theAgent.Matricule ? "Matricule,Nom, " : ""
-  } dbo.FindRubrique('Statut_Signature',Statut) as Statut, Dat_Demande as 'Date', Montant_Avance as 'Montant demandé', Reglement 'Réglement', Commentaire, 
+  let sqlStr = `SELECT  case when isnull(Num_List_Avance,'')!='' then 'Saisie massive' else 'Demande' end as [Type],Num_Avance as 'N° demande', ${Matricule === theAgent.Matricule ? "Matricule,Nom, " : ""
+    } dbo.FindRubrique('Statut_Signature',Statut) as Statut, Dat_Demande as 'Date', Montant_Avance as 'Montant demandé', Reglement 'Réglement', Commentaire, 
 Traite as 'Traité', Paie_Calculee as 'Paie calculée',isnull(Num_List_Avance,'') as 'N° liste' 
-   ${
-     Cod_Entite === theAgent.Cod_Entite
-       ? ""
-       : ", isnull(Lib_Entite,'') as 'Entité'"
-   }
+   ${Cod_Entite === theAgent.Cod_Entite
+      ? ""
+      : ", isnull(Lib_Entite,'') as 'Entité'"
+    }
   FROM RH_Paie_Avance v
    outer apply (select Nom_Agent + ' ' +Prenom_Agent as Nom, Cod_Entite from RH_Agent where id_Societe=v.id_Societe and Matricule=v.Matricule) r
     outer apply (select Lib_Entite from Org_Entite where id_Societe=v.id_Societe and Cod_Entite=r.Cod_Entite) e

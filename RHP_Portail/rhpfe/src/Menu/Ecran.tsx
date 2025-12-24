@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { cntX } from "./MenuMain";
 import { FloatMenu } from "../components/FloatMenu/FloatMenu";
 import Signature from "../Pages/Workflow/Signature";
+import Org_Poste from "../Pages/Org_Poste/Org_Poste";
 const Note_Frais = lazy(() => import("../Pages/Note_Frais/Note_Frais"));
 const Demande_Avance = lazy(() => import("../Pages/Avance/Demande_Avance"));
 const Demande_Pret = lazy(() => import("../Pages/Pret/Demande_Pret"));
@@ -34,6 +35,10 @@ const Evaluation_Liste = lazy(
 );
 const Evaluation = lazy(() => import("../Pages/Evaluation/Evaluation"));
 const RH_Demande_Conge = lazy(() => import("../Pages/Conges/RH_Demande_Conge"));
+const Organigramme = lazy(() => import("../Pages/Organigramme/Organigramme"));
+const Recrutement_Demande = lazy(() => import("../Pages/Recrutement/Recrutement_Demande"));
+const Recrutement_Demande_Liste = lazy(() => import("../Pages/Recrutement/Recrutement_Demande_Liste"));
+
 const Ecran = ({ style }: { style?: React.CSSProperties }) => {
   const { tbnMenu, settbnMenu, showSignature, signatureProps } =
     useContext(cntX);
@@ -88,6 +93,18 @@ const Ecran = ({ style }: { style?: React.CSSProperties }) => {
         break;
       case "Evaluation":
         setEcran(<Evaluation />);
+        break;
+      case "Org_Organigramme":
+        setEcran(<Organigramme />);
+        break;
+      case "Org_Poste":
+        setEcran(<Org_Poste />);
+        break;
+      case "Recrutement_Demande":
+        setEcran(<Recrutement_Demande />);
+        break;
+      case "Recrutement_Demande_Liste":
+        setEcran(<Recrutement_Demande_Liste />);
         break;
       default:
         setEcran(

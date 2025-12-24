@@ -82,7 +82,7 @@ const Evaluation_Liste = () => {
                             }
                         });
                     };
-                    hideColumns(["Cod_Survey", "Cod_Reply"])
+                    hideColumns(["Cod_Survey", "Cod_Reply", "Statut_Reponse"])
                     // Optimisation d'affichage
                     if (criteres.Cod_Evaluation) {
                         hideColumns(["Evaluation", "Description"]);
@@ -337,13 +337,13 @@ const Evaluation_Liste = () => {
                                     cod_evaluation: row["Evaluation"],
                                     lib_evaluation: row["Description"],
                                     evaluateur: row["Evaluateur"],
-                                    nom_evaluateur: row["Nom_evaluateur"],
+                                    nom_evaluateur: row["Nom évaluateur"],
                                     evalue: row["Matricule"],
                                     nom_evalue: row["Nom"],
                                     cod_survey: row["Cod_Survey"],
-                                    cod_reply: row["Cod_Reply"],
+                                    cod_reply: row["Cod_Reply"] || "",
                                     typ_survey: "E",
-                                    statut: row["Statut"]
+                                    statut: row["Statut_Reponse"]
                                 }
                             });
                         }

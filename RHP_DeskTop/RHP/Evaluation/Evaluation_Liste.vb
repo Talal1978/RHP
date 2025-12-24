@@ -170,8 +170,8 @@ outer apply (select Cod_Reply, Statut, Paie_Calculee, Dat_Survey from Survey_Rep
                 End If
                 f.Request()
                 If theUser.Login.ToUpper() <> "ADMIN" And theUser.Matricule <> f.Evaluateur_txt.Text Then
-                        f.Save_pb.Enabled = False
-                    End If
+                    f.Save_pb.Enabled = False
+                End If
                 f.Show()
             End If
         End With

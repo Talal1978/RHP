@@ -6,10 +6,10 @@ import cors from "cors-ts";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import mainRooting from "../root/root";
-import { VGLOBALES, initialisationSeveur, initialisationGlobale } from "../modules/module_initialisation";
+import { VGLOBALES, initialisationGlobale } from "../modules/module_initialisation";
 import { TJwtSession } from "../modules/module_jwt";
 import { lireSql } from "../modules/module_sqlRW";
-import { decrypt } from "../modules/module_encrypt";
+
 dotenv.config();
 process.env.TZ = "Africa/Casablanca";
 export const myCors = {

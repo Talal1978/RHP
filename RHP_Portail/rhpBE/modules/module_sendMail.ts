@@ -12,12 +12,7 @@ export interface mailOptionsFormat {
 }
 export const envoiMail = async (mailOptions: mailOptionsFormat) => {
   await loadSmtpConfig();
-  console.log("DEBUG: VGLOBALES SMTP:", {
-    HOST: VGLOBALES.SMTP_HOST,
-    PORT: VGLOBALES.SMTP_PORT,
-    SECURE: VGLOBALES.SMTP_PORT === 465,
-    USER: VGLOBALES.SMTP_USERNAME,
-  });
+
   const transporter = nodemailer.createTransport({
     host: VGLOBALES.SMTP_HOST,
     port: VGLOBALES.SMTP_PORT,

@@ -42,8 +42,15 @@ const useAxiosPost = () => {
           }
         } catch (refreshErr) {
           console.error("Token refresh failed", refreshErr);
+          window.location.href = "/";
         }
       }
+
+      // Connection cut / Network Error detection
+      if (!err.response || err.code === "ERR_NETWORK") {
+        window.location.href = "/";
+      }
+
       console.error(apiStr, err);
       return { data: null, error: err, status: -1, headers: null };
     }

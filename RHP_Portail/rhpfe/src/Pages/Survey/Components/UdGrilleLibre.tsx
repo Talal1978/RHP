@@ -10,6 +10,7 @@ import { useDeepCompareEffect } from "../../../hooks/useDeepCompareEffect";
 import { TInputType } from "../../../types";
 import { TModeScoring, TNoteResult } from "../Types";
 import { safeNumber } from "../Survey_Functions";
+import { parse, isValid } from "date-fns";
 
 // Marqueurs de colonne basés sur le code VB
 type TColMark = "[C]" | "[O]" | "[E]" | "[D]" | "[N]" | "[T]" | "TEXT_DEFAULT";
@@ -77,8 +78,12 @@ const UdGrilleLibre = ({
     const handleManualNoteChange = (value: any) => {
         if (!note?.note_manuelle) return;
         const newNote = safeNumber(value, 0);
-        const safeMaxScore = safeNumber(note?.max_score, 100000000);
-        handleNoteManuelle && handleNoteManuelle(numQuestion, { note: Math.min(newNote, safeMaxScore), coef: note?.coef || 1, note_totale: Math.min(newNote, safeMaxScore) * (note?.coef || 1), max_score: safeMaxScore });
+        let safeMaxScore = safeNumber(note?.max_score, 0);
+        if (safeMaxScore === 0) safeMaxScore = 100000000;
+
+        const cappedNote = Math.min(newNote, safeMaxScore);
+
+        handleNoteManuelle && handleNoteManuelle(numQuestion, { ...note, note: cappedNote, coef: note?.coef || 1, note_totale: cappedNote * (note?.coef || 1), max_score: note?.max_score });
     };
 
     // 1. Parsing des colonnes
@@ -136,7 +141,23 @@ const UdGrilleLibre = ({
     // 2. Data State Management
     const initialGridData = useMemo(() => {
         if (valeurInitiale && valeurInitiale.length > 0) {
-            return valeurInitiale;
+            // FIX: Parse dates if needed
+            return valeurInitiale.map(row =>
+                row.map((cell: any, colIndex: number) => {
+                    if (parsedColumns[colIndex] && parsedColumns[colIndex].colMark === '[D]') {
+                        if (cell && typeof cell === 'string') {
+                            // Try to parse ISO or standard formats
+                            // 1. Try simple Date constructor (ISO)
+                            let d = new Date(cell);
+                            if (!isNaN(d.getTime())) return d;
+                            // 2. Try dd/MM/yyyy
+                            d = parse(cell, 'dd/MM/yyyy', new Date());
+                            if (isValid(d)) return d;
+                        }
+                    }
+                    return cell;
+                })
+            );
         }
         return Array.from({ length: rowCount }, () =>
             parsedColumns.map(col => (col.colMark === '[O]' || col.colMark === '[C]') ? false : '')
@@ -305,16 +326,35 @@ const UdGrilleLibre = ({
 export default UdGrilleLibre;
 
 // Composant Auxiliaire pour l'affichage de la note
-const NoteField = ({ label, value, readonly, onChange = () => { } }: any) => (
-    <Grid container spacing={1} alignItems="center">
-        <Grid xs={6}><Typography sx={{ color: colorBase.colorBase01, fontSize: "0.8em" }}>{label}</Typography></Grid>
-        <Grid xs={6}>
-            <TextBox nomControle="nt" label="" type="number" valeur={Arrondi(value, 2)} readonly={readonly} onchange={onChange} style={{ width: "100%" }} sx={{ "& .MuiInputBase-input": { textAlign: "center", fontWeight: "bold", fontSize: "1em", padding: "0", backgroundColor: readonly ? 'var(--chip-bg)' : "var(--bg-input)", color: "var(--fore-color-base-01)" } }} />
-        </Grid>
-    </Grid>
-);
+const NoteField = ({ label, value, readonly, onChange = () => { } }: any) => {
+    const [localValue, setLocalValue] = useState(String(value !== null && value !== undefined ? Arrondi(value, 2) : ""));
 
-// ✅ FIX 3: CellRenderer reçoit cellValue en prop au lieu d'utiliser un state local
+    useEffect(() => {
+        const currentNum = parseFloat(localValue);
+        const newNum = value !== null && value !== undefined ? Arrondi(value, 2) : 0;
+        if (isNaN(currentNum) || currentNum !== newNum) {
+            setLocalValue(String(newNum));
+        }
+    }, [value]);
+
+    const handleChange = (v: string) => {
+        setLocalValue(v);
+        const num = parseFloat(v);
+        if (!isNaN(num)) {
+            onChange(num);
+        }
+    };
+
+    return (
+        <Grid container spacing={1} alignItems="center">
+            <Grid xs={6}><Typography sx={{ color: colorBase.colorBase01, fontSize: "0.8em" }}>{label}</Typography></Grid>
+            <Grid xs={6}>
+                <TextBox nomControle="nt" label="" type="number" valeur={localValue} readonly={readonly} onchange={(_n: string, v: string) => handleChange(v)} style={{ width: "100%" }} sx={{ "& .MuiInputBase-input": { textAlign: "center", fontWeight: "bold", fontSize: "1em", padding: "0", backgroundColor: readonly ? 'var(--chip-bg)' : "var(--bg-input)", color: "var(--fore-color-base-01)" } }} />
+            </Grid>
+        </Grid>
+    );
+};
+
 const CellRenderer = ({
     rowIndex,
     colIndex,
@@ -328,7 +368,8 @@ const CellRenderer = ({
     handleGridChange: any,
     cellValue: any // ← Ajout de cette prop
 }) => {
-    const isChecked = typeof cellValue === 'boolean' ? cellValue : false;
+    // FIX: Gestion plus robuste des booléens (string "true"/"1", number 1)
+    const isChecked = cellValue === true || cellValue === "true" || cellValue === 1 || cellValue === "1";
 
     const commonSx = {
         "& .MuiInputBase-input": {
@@ -354,6 +395,8 @@ const CellRenderer = ({
                 >
                     <Radio
                         checked={isChecked}
+                        // FIX: pointerEvents none pour laisser le click passer au Box parent
+                        sx={{ pointerEvents: 'none' }}
                         icon={<RadioButtonUnchecked sx={{ color: '#ccc', fontSize: '1.2em' }} />}
                         checkedIcon={<RadioButtonChecked sx={{ color: colorBase.colorBase01, fontSize: '1.2em' }} />}
                     />
@@ -367,6 +410,8 @@ const CellRenderer = ({
                 >
                     <Checkbox
                         checked={isChecked}
+                        // FIX: pointerEvents none pour laisser le click passer au Box parent
+                        sx={{ pointerEvents: 'none' }}
                         icon={<CheckBoxOutlineBlank sx={{ color: '#ccc', fontSize: '1.2em' }} />}
                         checkedIcon={<CheckBoxOutlined sx={{ color: colorBase.colorBase01, fontSize: '1.2em' }} />}
                     />

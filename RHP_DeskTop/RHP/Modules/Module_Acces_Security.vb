@@ -55,7 +55,16 @@
         Dim obtn = Ecran.GererAccessibilite()
         If CnExecuting("Select count(*) from Controle_Access where id_Societe='" & Societe.id_Societe & "' and  Name_Ecran='" & Ecran.Name & "' and value='" & Code & "'").Fields(0).Value > 0 Then
             Dim Taken_By_User As String = FindLibelle("Taken_By_User", "Name_Ecran+value", Ecran.Name & Code, "Controle_Access")
-            Dim UserName As String = FindLibelle("Nom_User + ' ' + Prenom_User", "id_User", Taken_By_User, "Controle_Users")
+            Dim UserName As String = ""
+            If estEmail(Taken_By_User) Then
+                UserName = FindLibelle("Nom_User + ' ' + Prenom_User", "Mail", Taken_By_User, "Controle_Users")
+            End If
+            If UserName = "" And estEmail(Taken_By_User) Then
+                UserName = FindLibelle("Nom_Agent + ' ' + Prenom_Agent", "Mail", Taken_By_User, "Rh_Agent")
+            End If
+            If UserName = "" Then
+                UserName = FindLibelle("Nom_User + ' ' + Prenom_User", "id_User", Taken_By_User, "Controle_Users")
+            End If
             With obtn
                 .Visible = True
                 .Text = "En cours de Modification par " & UserName
@@ -280,7 +289,7 @@
         End If
     End Sub
     Sub Check_Accessible(ByVal Ecran_Name As String, ByVal Value As String)
-        CnExecuting("delete from Controle_Access where Process_Id not in (select hostprocess from sys.sysprocesses where isnumeric(hostprocess)=1)")
+        '    CnExecuting("delete from Controle_Access where Process_Id not in (select hostprocess from sys.sysprocesses )")
         If Value <> "" And CnExecuting("Select count(*) from Controle_Access where Name_Ecran='" & Ecran_Name & "' and value='" & Value & "'").Fields(0).Value = 0 Then
             CnExecuting("insert into Controle_Access (Name_Ecran, Value,id_Societe, Taken_By_User, Taken_By_Machine, IP, Process_Id, Date_Deb) values ('" & Ecran_Name & "','" & Value & "'," & Societe.id_Societe & ",'" & theUser.id_User & "','" & My.Computer.Name & "','','" & ProcessId & "',getdate())")
         End If

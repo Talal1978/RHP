@@ -4,7 +4,7 @@ import React, {
   useMemo,
   useState,
 } from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useParams } from "react-router-dom";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFnsV3";
 import { fr } from "date-fns/locale/fr";
@@ -27,8 +27,12 @@ const ReportViewer = lazy(() =>
     default: module.ReportViewer,
   }))
 );
+const Org_Poste = lazy(() =>
+  import("./Pages/Org_Poste/Org_Poste").then((module) => ({
+    default: module.default,
+  }))
+);
 
-// Define a fallback component for Suspense
 function App() {
   /* Theme Management */
   const [themeMode, setThemeMode] = useState<"light" | "dark">(() => {

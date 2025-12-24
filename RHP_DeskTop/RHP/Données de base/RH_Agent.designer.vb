@@ -2700,7 +2700,7 @@ Partial Class RH_Agent
         Me.Grade_.Font = New System.Drawing.Font("Century Gothic", 8.25!)
         Me.Grade_.ForeColor = System.Drawing.Color.FromArgb(CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer))
         Me.Grade_.LinkColor = System.Drawing.Color.FromArgb(CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer))
-        Me.Grade_.Location = New System.Drawing.Point(40, 32)
+        Me.Grade_.Location = New System.Drawing.Point(43, 33)
         Me.Grade_.Margin = New System.Windows.Forms.Padding(4, 0, 4, 0)
         Me.Grade_.Name = "Grade_"
         Me.Grade_.Size = New System.Drawing.Size(54, 19)
@@ -2757,7 +2757,7 @@ Partial Class RH_Agent
         Me.Poste_.Font = New System.Drawing.Font("Century Gothic", 8.25!)
         Me.Poste_.ForeColor = System.Drawing.Color.FromArgb(CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer))
         Me.Poste_.LinkColor = System.Drawing.Color.FromArgb(CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer))
-        Me.Poste_.Location = New System.Drawing.Point(48, 64)
+        Me.Poste_.Location = New System.Drawing.Point(52, 63)
         Me.Poste_.Margin = New System.Windows.Forms.Padding(4, 0, 4, 0)
         Me.Poste_.Name = "Poste_"
         Me.Poste_.Size = New System.Drawing.Size(45, 19)

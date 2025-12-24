@@ -1,7 +1,7 @@
 import sql from "mssql";
 import { VGLOBALES } from "./module_initialisation";
 import { TColonneCollection } from "../src/types";
-import { estDate, formatDateFR, toSqlDateFormat } from "./module_format";
+import { checkDateFormat, estDate, formatDateFR } from "./module_format";
 export async function lireSql(
   sqlStr: string,
   params: {
@@ -145,8 +145,22 @@ export const ecrireSql = async (args: {
 
   return rsl;
 };
-export const controleInjection = (champs: string) => {
-  return /\b(eval)\b|\b(set)\b|\b(alter)\b|\b(create)\b|\b(drop)\b|\b(update)\b|\b(delete)\b|\b(truncate)\b/gi.test(
-    champs
-  );
+export const controleInjection = (
+  champs: string | undefined | null
+): { result: boolean; sqlExpression?: string; message?: string } => {
+  if (!champs) return { result: true, sqlExpression: "" };
+  // Nettoyage des commentaires
+  const cleaned = String(champs)
+    .replace(/\/\*.*?\*\//gs, '')
+    .replace(/--.*?(\n|$)/g, '')
+    .replace(/\s+/g, ' ')
+
+  // Blacklist stricte
+  const blackList = /\b(eval|set|alter|create|drop|update|delete|truncate|grant|union|openrowset|opendatasource|execute|exec|bulk|backup|restore|shutdown|kill|waitfor|xp\w+|sp\w+|fn_\w+)\b/i;
+
+  if (blackList.test(cleaned)) {
+    return { result: false, message: 'Champs contient des mots SQL interdits.' };
+  }
+
+  return { result: true, sqlExpression: cleaned.trim() };
 };

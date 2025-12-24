@@ -2,10 +2,9 @@ import { Request, Response } from "express";
 import {
   checkDateFormat,
   estDate,
-  formatDateFR,
   toSqlDateFormat,
 } from "../modules/module_format";
-import { ecrireSql, lireSql } from "../modules/module_sqlRW";
+import { ecrireSql, lireSql, controleInjection } from "../modules/module_sqlRW";
 import { Int, NVarChar, SmallDateTime } from "mssql";
 import { sousmettre_signature } from "../modules/module_workflow";
 import { Societes, TSociete } from "../src/types";
@@ -13,6 +12,10 @@ import { getParam, IsNull } from "../modules/module_general";
 import { format } from "date-fns";
 export async function demande_conge_liste(req: Request, res: Response) {
   let { Matricule, Cod_Entite, Statut, Dat_Du, Dat_Au } = req.body;
+  if (controleInjection(Matricule).result === false) return res.send({ result: false, message: "Injection détectée dans Matricule" });
+  if (controleInjection(Cod_Entite).result === false) return res.send({ result: false, message: "Injection détectée dans Entité" });
+  if (controleInjection(Statut).result === false) return res.send({ result: false, message: "Injection détectée dans Statut" });
+
   const { processId, ...theAgent } = req.params;
   const TblRef = "RH_Conge_Suivi";
   let idSoc = theAgent?.id_Societe || "3068";

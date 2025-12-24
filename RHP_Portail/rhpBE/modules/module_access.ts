@@ -40,7 +40,7 @@ export const isAccessible = async (
     begin
     select convert(bit, case when @currentProcessId=@processId and @Taken_By_User=@login then 'true' when isnull(@idEcran,'')='' then 'true' else 'false' end) as canModify,@Taken_By_User as Taken_By_User,@currentProcessId as Process_Id
     end`;
-  console.log(sqlStr);
+
   let rsl = await lireSql(sqlStr, []);
   return rsl.data[0];
 };

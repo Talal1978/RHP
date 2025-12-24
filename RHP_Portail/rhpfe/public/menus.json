@@ -16,7 +16,7 @@
     "img": "PersonOutline"
   },
   {
-    "name_ecran": "Org_FichePoste",
+    "name_ecran": "Org_Poste",
     "text_ecran": "Fiche de poste",
     "typ_ecran": "ECR",
     "parent": "orga",

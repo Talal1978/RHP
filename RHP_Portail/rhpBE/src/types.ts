@@ -1,4 +1,4 @@
-import { Socket } from "socket.io";
+
 
 export type TAgent = {
   codProfile: string;

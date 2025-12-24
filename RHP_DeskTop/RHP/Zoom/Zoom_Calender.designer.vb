@@ -34,9 +34,9 @@ Partial Class Zoom_Calender
         '
         'MonthCalendar1
         '
-        Me.MonthCalendar1.Dock = System.Windows.Forms.DockStyle.Fill
         Me.MonthCalendar1.ForeColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
-        Me.MonthCalendar1.Location = New System.Drawing.Point(1, 27)
+        Me.MonthCalendar1.Location = New System.Drawing.Point(0, 26)
+        Me.MonthCalendar1.Margin = New System.Windows.Forms.Padding(0)
         Me.MonthCalendar1.Name = "MonthCalendar1"
         Me.MonthCalendar1.TabIndex = 8
         '
@@ -50,11 +50,11 @@ Partial Class Zoom_Calender
         Me.entete_pnl.Controls.Add(Me.Close_pb, 2, 0)
         Me.entete_pnl.Controls.Add(Me.Effacer_pb, 0, 0)
         Me.entete_pnl.Dock = System.Windows.Forms.DockStyle.Top
-        Me.entete_pnl.Location = New System.Drawing.Point(1, 1)
+        Me.entete_pnl.Location = New System.Drawing.Point(0, 0)
         Me.entete_pnl.Name = "entete_pnl"
         Me.entete_pnl.RowCount = 1
         Me.entete_pnl.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100.0!))
-        Me.entete_pnl.Size = New System.Drawing.Size(261, 26)
+        Me.entete_pnl.Size = New System.Drawing.Size(227, 26)
         Me.entete_pnl.TabIndex = 11
         '
         'Close_pb
@@ -62,7 +62,7 @@ Partial Class Zoom_Calender
         Me.Close_pb.Cursor = System.Windows.Forms.Cursors.Hand
         Me.Close_pb.Image = Global.RHP.My.Resources.Resources.btn_close_w
         Me.Close_pb.InitialImage = Nothing
-        Me.Close_pb.Location = New System.Drawing.Point(234, 3)
+        Me.Close_pb.Location = New System.Drawing.Point(200, 3)
         Me.Close_pb.Name = "Close_pb"
         Me.Close_pb.Size = New System.Drawing.Size(24, 20)
         Me.Close_pb.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom
@@ -84,14 +84,15 @@ Partial Class Zoom_Calender
         'Zoom_Calender
         '
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None
+        Me.AutoSize = True
+        Me.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink
         Me.BackColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
-        Me.ClientSize = New System.Drawing.Size(263, 232)
+        Me.ClientSize = New System.Drawing.Size(10, 10)
         Me.Controls.Add(Me.MonthCalendar1)
         Me.Controls.Add(Me.entete_pnl)
         Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None
         Me.MinimizeBox = False
         Me.Name = "Zoom_Calender"
-        Me.Padding = New System.Windows.Forms.Padding(1)
         Me.ShowIcon = False
         Me.ShowInTaskbar = False
         Me.Text = "Calendrier"

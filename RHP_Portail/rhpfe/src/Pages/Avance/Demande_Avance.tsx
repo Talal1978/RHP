@@ -46,7 +46,7 @@ const Demande_Avance = () => {
   }>({ canModify: true, Taken_By_User: "", Process_Id: "" });
   const [currentNum, setCurrentNum] = useState(num);
   useEffect(() => {
-    console.log("num", num);
+
     setCurrentNum(num);
     setAccessible({ canModify: true, Taken_By_User: "", Process_Id: "" });
   }, [num]);

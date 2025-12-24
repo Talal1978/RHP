@@ -19,6 +19,7 @@ export async function sousmettre_signature(
 }
 export async function get_signataires(req: Request, res: Response) {
   const { Typ_Document, Valeur_Index } = req.query;
+
   const { id_Societe } = req.params;
   const rsl = await lireSql(
     `select  Statut, Typ_Signature,Operande_Signature, Dans_Ordre, e.Num_Ligne, 

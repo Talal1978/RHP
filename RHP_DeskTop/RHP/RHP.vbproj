@@ -687,6 +687,18 @@
     <Compile Include="customUI\Wait.vb">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="Descipline\RH_Discipline.Designer.vb">
+      <DependentUpon>RH_Discipline.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Descipline\RH_Discipline.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Descipline\RH_Discipline_Liste.designer.vb">
+      <DependentUpon>RH_Discipline_Liste.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Descipline\RH_Discipline_Liste.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Documents\Demande de remboursement Assurances\RH_Dossier_Maladie_Liste.designer.vb">
       <DependentUpon>RH_Dossier_Maladie_Liste.vb</DependentUpon>
     </Compile>
@@ -1789,6 +1801,18 @@
     <Compile Include="Données de base\RH_Agent.vb">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="Avancement\RH_Avancement.Designer.vb">
+      <DependentUpon>RH_Avancement.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Avancement\RH_Avancement.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Avancement\RH_Avancement_Liste.designer.vb">
+      <DependentUpon>RH_Avancement_Liste.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Avancement\RH_Avancement_Liste.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Modules\Module_Initialisation.vb" />
     <Compile Include="Sys_GenerationGlobale.designer.vb">
       <DependentUpon>Sys_GenerationGlobale.vb</DependentUpon>
@@ -1971,6 +1995,12 @@
     <EmbeddedResource Include="Auth\Login.resx">
       <DependentUpon>Login.vb</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Avancement\RH_Avancement.resx">
+      <DependentUpon>RH_Avancement.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Avancement\RH_Avancement_Liste.resx">
+      <DependentUpon>RH_Avancement_Liste.vb</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="customUI\MessageBox\ud_InputBox.resx">
       <DependentUpon>ud_InputBox.vb</DependentUpon>
       <SubType>Designer</SubType>
@@ -2023,6 +2053,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="customUI\Wait.resx">
       <DependentUpon>Wait.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Descipline\RH_Discipline.resx">
+      <DependentUpon>RH_Discipline.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Descipline\RH_Discipline_Liste.resx">
+      <DependentUpon>RH_Discipline_Liste.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Documents\Demande de remboursement Assurances\RH_Dossier_Maladie_Liste.resx">
       <DependentUpon>RH_Dossier_Maladie_Liste.vb</DependentUpon>

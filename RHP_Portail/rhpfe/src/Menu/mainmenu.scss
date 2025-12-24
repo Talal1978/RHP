@@ -9,6 +9,7 @@ $sidebar-breakpoint01: 1000px;
   left: 0;
   width: 100vw;
   height: 100%;
+  overflow: auto;
   .menuNavBar {
     width: 100%;
     height: $navbar-height;

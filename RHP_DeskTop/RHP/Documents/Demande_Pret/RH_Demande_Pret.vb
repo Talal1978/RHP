@@ -294,5 +294,9 @@ values ('RH_Pret_Demande','Num_Demande_Pret','" & Num_Demande_Pret_txt.Text & "'
         Request()
         Return True
     End Function
+
+    Private Sub Montant_Pret_txt_KeyPress(sender As Object, e As EventArgs) Handles Montant_Deamnde_Pret_txt.KeyPress
+
+    End Sub
 #End Region
 End Class

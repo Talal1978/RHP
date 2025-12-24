@@ -1,19 +1,20 @@
+
 import { Request, Response } from 'express';
 import { lireSql } from "../modules/module_sqlRW";
-import { Int, NVarChar, VarBinary } from "mssql";
+import { Int, NVarChar } from "mssql";
 
 
 export const surveyQuestions = async (req: Request, res: Response) => {
     const { cod_survey } = req.query;
     const { id_Societe } = req.params;
-    const qst_sql = `select row_number () over(order by Rang asc) as NumQuestion, isnull(Typ_Reponse,'') as Typ_Reponse,RowId as Cod_Question, isnull(Question,'') as Question ,isnull(Sous_Question,'') as Sous_Question,
-isnull(Reponses_Possibles,'') as Reponses_Possibles,convert(bit,case when isnull(Obligatoire_Si,'')<>'' then 'false' else isnull(Obligatoire,'false') end) as Obligatoire, 
-isnull(AvecNote,'false') as AvecNote,isnull(Mode_Scoring,'na') as Mode_Scoring, isnull(Max_Score,0) as Max_Score, isnull(Func_Scoring,'') as Func_Scoring , isnull(Coef,1) as Coef, isnull(Obligatoire_Si,'') as Obligatoire_Si,
-isnull(Erreur_Si,'') as Erreur_Si, isnull(Erreur_Msg,'') as Erreur_Msg
+    const qst_sql = `select row_number() over(order by Rang asc) as NumQuestion, isnull(Typ_Reponse, '') as Typ_Reponse, RowId as Cod_Question, isnull(Question, '') as Question, isnull(Sous_Question, '') as Sous_Question,
+    isnull(Reponses_Possibles, '') as Reponses_Possibles, convert(bit,case when isnull(Obligatoire_Si, '') <> '' then 'false' else isnull(Obligatoire, 'false') end) as Obligatoire,
+    isnull(AvecNote, 'false') as AvecNote, isnull(Mode_Scoring, 'na') as Mode_Scoring, isnull(Max_Score, 0) as Max_Score, isnull(Func_Scoring, '') as Func_Scoring, isnull(Coef, 1) as Coef, isnull(Obligatoire_Si, '') as Obligatoire_Si,
+    isnull(Erreur_Si, '') as Erreur_Si, isnull(Erreur_Msg, '') as Erreur_Msg
 from Survey_Detail d
-outer apply (select top 1 AvecNote from Survey s where s.Cod_Survey=d.Cod_Survey)q
-where Cod_Survey=@cod_survey and id_Societe=@idSoc
-order by isnull(Rang,0)`;
+outer apply(select top 1 AvecNote from Survey s where s.Cod_Survey = d.Cod_Survey)q
+where Cod_Survey = @cod_survey and id_Societe = @idSoc
+order by isnull(Rang, 0)`;
     const rsl = await lireSql(
         qst_sql,
         [{ param: "cod_survey", sqlType: NVarChar, valeur: cod_survey },
@@ -25,11 +26,11 @@ order by isnull(Rang,0)`;
 export const surveyAnswers = async (req: Request, res: Response) => {
     const { cod_survey, cod_reply } = req.query;
     const { id_Societe } = req.params;
-    const ans_sql = `SELECT  Cod_Reply, Cod_Question, isnull(Num_Sous_Question,'0') as Num_Sous_Question, 
-isnull(Reponses,'') as Reponses, isnull(Note,0) as Note, isnull(Coef,1) as Coef, isnull(Note_Totale,0) as Note_Totale, isnull(Statut,'') as Statut, isnull(Paie_Calculee,'false') as Paie_Calculee
+    const ans_sql = `SELECT  Cod_Reply, Cod_Question, isnull(Num_Sous_Question, '0') as Num_Sous_Question,
+    isnull(Reponses, '') as Reponses, isnull(Note, 0) as Note, isnull(Coef, 1) as Coef, isnull(Note_Totale, 0) as Note_Totale, isnull(Statut, '') as Statut, isnull(Paie_Calculee, 'false') as Paie_Calculee
 FROM Survey_Reply_Detail d
-outer apply (select Statut, Paie_Calculee, Cod_Survey from Survey_Reply where Cod_Reply=d.Cod_Reply and id_Societe=@idSoc)e
-where Cod_Survey=@cod_survey and Cod_Reply=@cod_reply`;
+outer apply(select Statut, Paie_Calculee, Cod_Survey from Survey_Reply where Cod_Reply = d.Cod_Reply and id_Societe = @idSoc)e
+where Cod_Survey = @cod_survey and Cod_Reply = @cod_reply`;
     const rsl = await lireSql(
         ans_sql,
         [{ param: "cod_survey", sqlType: NVarChar, valeur: cod_survey },
@@ -50,34 +51,41 @@ export const surveyAnswersSave = async (req: Request, res: Response) => {
     if (!cod_survey) return res.send({ result: false, data: ["Code évaluation vide."] });
 
     // Generate Flg_Maj (Batch ID)
-    const flg_maj = new Date().getTime(); // Simple unique ID for this batch
+    const flg_maj = Math.floor(Math.random() * 2147483647); // Random positive 32-bit integer
 
     // 2. Header Handling
     // Check existence
-    let currentCodReply = cod_reply;
-    if (!currentCodReply) currentCodReply = 0;
+    let currentCodReply = 0;
 
-    let checkSql = `select Cod_Reply, convert(bit,isnull(Paie_Calculee,0)) as Paie_Calculee from Survey_Reply where Cod_Reply=@cod_reply and id_Societe=@idSoc`;
+    // Use Composite Key (Ref_Evaluation + Evalue + Evaluateur)
+    let checkSql = `select Cod_Reply, convert(bit, isnull(Paie_Calculee, 0)) as Paie_Calculee 
+                    from Survey_Reply 
+                    where Ref_Evaluation = @ref_evaluation 
+                      and Evalue = @evalue 
+                      and Evaluateur = @evaluateur 
+                      and id_Societe = @idSoc`;
 
     let exists = false;
 
-    if (currentCodReply > 0) {
-        const rslCheck = await lireSql(checkSql, [
-            { param: "cod_reply", sqlType: Int, valeur: currentCodReply },
-            { param: "idSoc", sqlType: Int, valeur: idSoc }
-        ]);
-        if (rslCheck.result && rslCheck.data.length > 0) {
-            exists = true;
-            if (rslCheck.data[0].Paie_Calculee) return res.send({ result: false, data: ["Cette évaluation concerne une paie déjà calculée."] });
-        }
+    const rslCheck = await lireSql(checkSql, [
+        { param: "ref_evaluation", sqlType: NVarChar, valeur: ref_evaluation },
+        { param: "evalue", sqlType: NVarChar, valeur: evalue },
+        { param: "evaluateur", sqlType: NVarChar, valeur: evaluateur },
+        { param: "idSoc", sqlType: Int, valeur: idSoc }
+    ]);
+
+    if (rslCheck.result && rslCheck.data.length > 0) {
+        exists = true;
+        currentCodReply = rslCheck.data[0].Cod_Reply;
+        if (rslCheck.data[0].Paie_Calculee) return res.send({ result: false, data: ["Cette évaluation concerne une paie déjà calculée."] });
     }
 
     let headerSql = "";
     if (!exists) {
         // INSERT
-        headerSql = `insert into Survey_Reply (id_Societe, Cod_Survey, Dat_Crea, Created_By, Evaluateur, Typ_Evalue, Evalue, Ref_Evaluation, Statut, Note, Coef, Note_Totale, Dat_Survey, Dat_Modif, Modified_By, Flg_Maj)
-        values (@idSoc, @cod_survey, getdate(), @login, @evaluateur, 'E', @evalue, @cod_evaluation, 'S', 0, 1, 0, getdate(), getdate(), @login, @flg_maj);
-        SELECT SCOPE_IDENTITY() as NewId;`;
+        headerSql = `insert into Survey_Reply(id_Societe, Cod_Survey, Dat_Crea, Created_By, Evaluateur, Typ_Evalue, Evalue, Ref_Evaluation, Statut, Note, Coef, Note_Totale, Dat_Survey, Dat_Modif, Modified_By, Flg_Maj)
+values(@idSoc, @cod_survey, getdate(), @login, @evaluateur, 'E', @evalue, @ref_evaluation, '', 0, 1, 0, getdate(), getdate(), @login, @flg_maj);
+        SELECT SCOPE_IDENTITY() as NewId; `;
 
         const rslHeader = await lireSql(headerSql, [
             { param: "idSoc", sqlType: Int, valeur: idSoc },
@@ -97,10 +105,10 @@ export const surveyAnswersSave = async (req: Request, res: Response) => {
 
     } else {
         // UPDATE
-        headerSql = `update Survey_Reply set 
-            Evaluateur=@evaluateur, Typ_Evalue='E', Evalue=@evalue, Ref_Evaluation=@cod_evaluation, Statut='S',
-            Dat_Modif=getdate(), Modified_By=@login, Flg_Maj=@flg_maj
-            where Cod_Reply=@cod_reply`;
+        headerSql = `update Survey_Reply set
+Evaluateur = @evaluateur, Typ_Evalue = 'E', Evalue = @evalue, Ref_Evaluation = @ref_evaluation, Statut = '',
+    Dat_Modif = getdate(), Modified_By = @login, Flg_Maj = @flg_maj
+            where Cod_Reply = @cod_reply`;
 
         await lireSql(headerSql, [
             { param: "evaluateur", sqlType: NVarChar, valeur: evaluateur },
@@ -112,20 +120,20 @@ export const surveyAnswersSave = async (req: Request, res: Response) => {
         ]);
     }
 
-    const deleteSql = `delete from Survey_Reply_Detail where Cod_Reply=@cod_reply and isnull(Flg_Maj,0) <> @flg_maj`;
+    const deleteSql = `delete from Survey_Reply_Detail where Cod_Reply = @cod_reply and isnull(Flg_Maj, 0) <> @flg_maj`;
     await lireSql(deleteSql, [
         { param: "cod_reply", sqlType: Int, valeur: currentCodReply },
         { param: "flg_maj", sqlType: NVarChar, valeur: flg_maj.toString() }
     ]);
 
-    const qstSql2 = `select row_number () over(order by Rang asc) as NumQuestion, * from Survey_Detail d where Cod_Survey=@cod_survey and id_Societe=@idSoc order by isnull(Rang,0)`;
+    const qstSql2 = `select row_number() over(order by Rang asc) as NumQuestion, * from Survey_Detail d where Cod_Survey = @cod_survey and id_Societe = @idSoc order by isnull(Rang, 0)`;
     const rslQsts2 = await lireSql(qstSql2, [
         { param: "cod_survey", sqlType: NVarChar, valeur: cod_survey },
         { param: "idSoc", sqlType: Int, valeur: idSoc }
     ]);
     const questionsList = rslQsts2.data || [];
     let rang = 0;
-    console.log(questionsList)
+
     const insertPromises: Promise<any>[] = [];
 
     for (const qDef of questionsList) {
@@ -164,8 +172,8 @@ export const surveyAnswersSave = async (req: Request, res: Response) => {
                 if (decoded) valeurReponse = decoded;
             }
 
-            const sqlIns = `insert into Survey_Reply_Detail (Cod_Reply, Cod_Question, Question, Obligatoire, Typ_Reponse, Num_Sous_Question, Reponses, Valeur_Reponse, Note, Coef, Note_Totale, Rang, Flg_Maj)
-             values (@cod_reply, @cod_question, @question, @obligatoire, @typ_reponse, @num_sous, @reponses, @valeur_reponse, @note, @coef, @note_totale, @rang, @flg_maj)`;
+            const sqlIns = `insert into Survey_Reply_Detail(Cod_Reply, Cod_Question, Question, Obligatoire, Typ_Reponse, Num_Sous_Question, Reponses, Valeur_Reponse, Note, Coef, Note_Totale, Rang, Flg_Maj)
+values(@cod_reply, @cod_question, @question, @obligatoire, @typ_reponse, @num_sous, @reponses, @valeur_reponse, @note, @coef, @note_totale, @rang, @flg_maj)`;
 
             insertPromises.push(lireSql(sqlIns, [
                 { param: "cod_reply", sqlType: Int, valeur: currentCodReply },
@@ -183,7 +191,7 @@ export const surveyAnswersSave = async (req: Request, res: Response) => {
                 { param: "flg_maj", sqlType: NVarChar, valeur: flg_maj.toString() }
             ], true).then((res) => {
                 if (!res.result) {
-                    console.error(`INSERT ERROR [Q:${qDef.RowId} Sub:${row.num}]:`, res.sort);
+                    console.error(`INSERT ERROR[Q:${qDef.RowId} Sub:${row.num}]: `, res.sort);
                 }
                 return res;
             }));

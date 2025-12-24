@@ -41,7 +41,7 @@ function TextBox({
         className="textZoom"
         id={nomControle}
         label={label}
-        value={valeur}
+        value={valeur ?? ""}
         variant="standard"
         type={type}
         style={{

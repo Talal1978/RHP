@@ -35,50 +35,42 @@ const Evaluation = () => {
 
   const state = location.state as TState;
   const { cod_survey, cod_evaluation, lib_evaluation, cod_reply, evalue, nom_evalue, evaluateur, nom_evaluateur, typ_survey, statut } = state || {} as any;
+  const evaluationKey = `${cod_evaluation}_${evalue}_${evaluateur}`;
 
   const [isAccessible, setAccessible] = useState<{
     canModify: boolean;
     Taken_By_User: string;
     Process_Id: string;
   }>({ canModify: true, Taken_By_User: "", Process_Id: "" });
-  const [canSave, setCanSave] = useState(false);
 
-  const Request = useCallback(async () => {
-    if (canSave) {
-      if (cod_reply) {
-        await myAxios("check_accessible", {
-          nameEcran: "Evaluation",
-          idEcran: String(cod_reply),
-        }).then((dt) => {
-          setAccessible(dt.data);
-        });
-      } else {
-        await myAxios("release_accessible", {
-          nameEcran: "Evaluation",
-          idEcran: String(cod_reply),
-        });
-      }
-    }
-  }, [cod_reply, canSave]);
+
+  const isBusinessValid = (statut === "" || statut === "NSS" || statut === undefined) &&
+    (evaluateur === Agent?.Matricule || evalue === Agent?.Matricule);
+
+  const isValidForSave = isBusinessValid && isAccessible.canModify;
 
   useEffect(() => {
-    setAccessible({ canModify: true, Taken_By_User: "", Process_Id: "" });
     if (!state) {
       navigate('/myspace/Evaluation_Liste/Consultation des évaluations');
+      return;
     }
-    // Request is called via dependencies when canSave changes, or we can call it here if needed, 
-    // but in Demande_Avance it's called via useEffect which calls Request.
-    // However, we need to ensure Request runs.
-    Request();
-    return () => {
-      if (cod_reply) {
+
+    if (isBusinessValid && evaluationKey) {
+      myAxios("check_accessible", {
+        nameEcran: "Evaluation",
+        idEcran: evaluationKey,
+      }).then((dt) => {
+        setAccessible(dt.data);
+      });
+
+      return () => {
         myAxios("release_accessible", {
           nameEcran: "Evaluation",
-          idEcran: cod_reply,
+          idEcran: evaluationKey,
         });
-      }
-    };
-  }, [state, navigate, Request, cod_reply]);
+      };
+    }
+  }, [navigate, evaluationKey, isBusinessValid]);
 
   const Enregistrer = useCallback(async () => {
     if (["SG", "RJ", "SP", "VA"].includes(statut || "")) {
@@ -103,7 +95,7 @@ const Evaluation = () => {
       return;
     }
 
-    if (evaluateur !== Agent?.Matricule) {
+    if (evaluateur !== Agent?.Matricule && evalue !== Agent?.Matricule) {
       await msgBox({
         titre: "Enregistrer",
         msg: "Vous ne pouvez pas modifier cette évaluation.",
@@ -115,7 +107,6 @@ const Evaluation = () => {
 
     if (myRef.current) {
       const rsl = await myRef.current.save();
-      console.log(rsl);
       if (rsl.result) {
         alert({
           titre: "Enregistrement",
@@ -126,7 +117,7 @@ const Evaluation = () => {
       } else {
         alert({
           titre: "Enregistrement",
-          msg: rsl.data && rsl.data.length > 0 ? rsl.data[0] : "Enregistrement echoué",
+          msg: rsl.data && rsl.data.length > 0 ? (typeof rsl.data[0] === 'object' ? JSON.stringify(rsl.data[0]) : String(rsl.data[0])) : "Enregistrement echoué" + rsl.data.sort,
           typMsg: "error",
           timeOut: 3000,
         });
@@ -148,18 +139,11 @@ const Evaluation = () => {
   }, []);
 
   const SoumettreEnSignature = useCallback(() => {
-    setSignatureProps({ typ_document: "EV", valeur_index: String(cod_reply) });
+    setSignatureProps({ typ_document: "EV", valeur_index: evaluationKey });
     setShowSignature(true);
-  }, [setSignatureProps, setShowSignature, cod_reply]);
+  }, [setSignatureProps, setShowSignature, evaluationKey]);
 
   useEffect(() => {
-    const _canSave =
-      isAccessible.canModify &&
-      (statut === "" || statut === "NSS" || statut === undefined) &&
-      (evaluateur === Agent?.Matricule);
-
-    setCanSave(_canSave);
-
     settbnMenu([
       {
         name: "Accessible",
@@ -171,7 +155,7 @@ const Evaluation = () => {
       },
       {
         name: "Enregistrer",
-        disabled: !_canSave,
+        disabled: !isValidForSave,
         libelle: "Enregistrer",
         action: Enregistrer,
         icon: <SaveAsOutlined />,
@@ -195,7 +179,7 @@ const Evaluation = () => {
     return () => {
       settbnMenu([]);
     };
-  }, [settbnMenu, Enregistrer, Imprimer, SoumettreEnSignature, isAccessible, statut, evaluateur, canSave]);
+  }, [settbnMenu, Enregistrer, Imprimer, SoumettreEnSignature, isAccessible, isValidForSave]);
 
   if (!state) return null;
 
@@ -279,7 +263,7 @@ const Evaluation = () => {
                 Evaluation
               </Typography>
               <Typography variant="body1">
-                {cod_evaluation} {lib_evaluation}
+                {String(cod_evaluation)} {String(lib_evaluation)}
               </Typography>
             </Box>
           </Grid>
@@ -289,7 +273,7 @@ const Evaluation = () => {
                 Évaluateur
               </Typography>
               <Typography variant="body1">
-                {evaluateur} {nom_evaluateur}
+                {String(evaluateur)} {String(nom_evaluateur)}
               </Typography>
             </Box>
           </Grid>
@@ -299,7 +283,7 @@ const Evaluation = () => {
                 Evalué
               </Typography>
               <Typography variant="body1">
-                {evalue} {nom_evalue}
+                {String(evalue)} {String(nom_evalue)}
               </Typography>
             </Box>
           </Grid>
@@ -309,7 +293,7 @@ const Evaluation = () => {
                 Formulaire
               </Typography>
               <Typography variant="body1">
-                {cod_survey}
+                {String(cod_survey)}
               </Typography>
             </Box>
           </Grid>
@@ -319,13 +303,13 @@ const Evaluation = () => {
                 Réponses
               </Typography>
               <Typography variant="body1">
-                {cod_reply}
+                {String(cod_reply)}
               </Typography>
             </Box>
           </Grid>
         </Grid>
       </Box>
-      <Survey_Rendering refChild={myRef} ref_evaluation={cod_evaluation} cod_survey={cod_survey} cod_reply={cod_reply} evalue={evalue} evaluateur={evaluateur} typ_survey={typ_survey} />
+      <Survey_Rendering refChild={myRef} ref_evaluation={cod_evaluation} cod_survey={cod_survey} cod_reply={cod_reply} evalue={evalue} evaluateur={evaluateur} typ_survey={typ_survey} readOnly={!isValidForSave} />
     </div>
   )
 }

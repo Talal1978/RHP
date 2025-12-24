@@ -18,7 +18,6 @@ Public Class Evaluation
     Sub miseAjourBtnValidationSignature(statut As String)
         Dim gereWrkf As Boolean = estGereEnSignature("EV")
         Dim controlToRemove As Control = ent_pnl.GetControlFromPosition(1, 0)
-
         If gereWrkf Then
             If TypeOf controlToRemove IsNot mybtn_Signature Then
                 Dim Dv As DataView = Tbl_Workflow_ParamDocuments.DefaultView
@@ -65,6 +64,9 @@ Public Class Evaluation
     End Sub
 
 #End Region
+    Private Sub RH_Demande_Conge_FormClosing(sender As Object, e As FormClosingEventArgs) Handles Me.FormClosing
+        CnExecuting("delete from Controle_Access where Name_Ecran='" & Me.Name & "' and value='" & Code & "' and Process_Id= " & ProcessId)
+    End Sub
     Private Sub LinkLabel2_LinkClicked(sender As Object, e As LinkLabelLinkClickedEventArgs) Handles Dat_Survey_lbl.LinkClicked
         Appel_Calender(Dat_Survey_txt, Me)
     End Sub
@@ -81,7 +83,9 @@ Public Class Evaluation
     Private Sub Evaluation_Load(sender As Object, e As EventArgs) Handles Me.Load
         If Not EstDate(Dat_Survey_txt.Text) Then Dat_Survey_txt.Text = Now.ToShortDateString
     End Sub
+    Dim Code As String
     Sub Request()
+
         Dim statut As String = ""
         Save_pb.Enabled = True
         Paie_Calculee = False
@@ -92,6 +96,7 @@ Public Class Evaluation
         Preambule_rtb.Rtf = FindLibelle("Preambule", "Cod_Survey", CodSurvey, "Survey")
         Dat_Survey_txt.Text = FindLibelle("Dat_Survey", "Cod_Reply", CodReponse, "Survey_Reply")
         Preambule_rtb.Visible = (Preambule_rtb.Text.Trim <> "")
+
         If CodSurvey <> "" Then
             Tbl_Question = Generate_QuestionnaireNew(CodSurvey, pnl_Content, CodReponse, Evalue_txt.Text, Evaluateur_txt.Text, "E")
         Else
@@ -103,6 +108,7 @@ Public Class Evaluation
             Paie_Calcule = Module_Generateur_Survey.Paie_Calcule
             Save_pb.Visible = (statut = "")
         End If
+
         miseAjourBtnValidationSignature(statut)
         Recalcul()
         pnl_note.Visible = afficherLesNotes
@@ -110,7 +116,13 @@ Public Class Evaluation
             Dim fisrtCtr = If(.Controls.Count > 0, .Controls(.Controls.Count - 1), Nothing)
             If fisrtCtr IsNot Nothing Then pnl_Content.ScrollControlIntoView(fisrtCtr)
         End With
+        CnExecuting("delete from Controle_Access where Name_Ecran='" & Me.Name & "' and value='" & Code & "' and Process_Id= " & ProcessId)
 
+        DroitAcces(Me, DroitModify_Fiche(Cod_Evaluation_txt.Text & "_" & Evalue_txt.Text & "_" & Evaluateur_txt.Text, Me))
+        If (statut = "") Then
+            Code = Cod_Evaluation_txt.Text & "_" & Evalue_txt.Text & "_" & Evaluateur_txt.Text
+            Check_Accessible(Me.Name, Code)
+        End If
     End Sub
     Private Sub Cloture_pb_Click(sender As Object, e As EventArgs) Handles Valide_pb.Click
         Dim resp As savingResult = Saving("VA")

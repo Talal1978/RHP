@@ -60,8 +60,9 @@ outer apply (select Statut, Paie_Calculee from Survey_Reply where Cod_Reply=d.Co
 where Cod_Reply=" & CodReply)
         With Tbl_Question
             For i = 0 To .Rows.Count - 1
-                Try
-                    Dim repDic As New Dictionary(Of String, String)
+                '       Try
+        
+                Dim repDic As New Dictionary(Of String, String)
                     Dim nrw() As DataRow = Tbl_Reponse.Select("Cod_Reply=" & CodReply & " and Cod_Question=" & .Rows(i)("Cod_Question"))
                     Dim colonnes As String = .Rows(i)("Reponses_Possibles")
                     Dim lignes As String = .Rows(i)("Sous_Question")
@@ -107,12 +108,12 @@ where Cod_Reply=" & CodReply)
                         dictQ.Add(ud, ud.repDic)
                     End If
 
-                Catch ex As Exception
-                    MsgBox("ERREUR à la question " & .Rows(i)("NumQuestion") & vbCrLf &
-               "Message: " & ex.Message & vbCrLf &
-               "Type: " & ex.GetType().ToString() & vbCrLf &
-               "StackTrace: " & ex.StackTrace)
-                End Try
+                '       Catch ex As Exception
+                '    MsgBox("ERREUR à la question " & .Rows(i)("NumQuestion") & vbCrLf &
+                '   "Message: " & ex.Message & vbCrLf &
+                '    "Type: " & ex.GetType().ToString() & vbCrLf &
+                '    "StackTrace: " & ex.StackTrace)
+                '     '     End Try
             Next
         End With
         Dim _pnl_top As New Panel

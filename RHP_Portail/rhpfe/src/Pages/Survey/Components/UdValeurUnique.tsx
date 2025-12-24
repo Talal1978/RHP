@@ -21,6 +21,7 @@ interface TProps {
   handleNoteManuelle?: (numQuestion: number, note: TNoteResult) => void;
   onValueChange?: (value: any) => void;
   onRecalculateParent?: () => void;
+  readOnly?: boolean;
 }
 
 const UdValeurUnique = ({
@@ -35,6 +36,7 @@ const UdValeurUnique = ({
   colonnes,
   valeurInitiale,
   onValueChange,
+  readOnly = false,
 }: TProps) => {
   const [inputValue, setInputValue] = useState(valeurInitiale ?? "");
   // CORRECTION: useRef pour éviter la boucle infinie
@@ -49,10 +51,10 @@ const UdValeurUnique = ({
     }
   }, [inputValue]);
 
-  const handleValueChange = (value: any) => setInputValue(value);
-  const handleDateChange = (name: string, date: Date | null) => setInputValue(date);
+  const handleValueChange = (value: any) => !readOnly && setInputValue(value);
+  const handleDateChange = (name: string, date: Date | null) => !readOnly && setInputValue(date);
   const handleManualNoteChange = (value: any) => {
-    if (!note?.note_manuelle) return;
+    if (!note?.note_manuelle || readOnly) return;
     const newNote = safeNumber(value, 0);
     const safeMaxScore = safeNumber(note?.max_score, 100000000);
     handleNoteManuelle && handleNoteManuelle(numQuestion, { ...note, note: Math.min(newNote, safeMaxScore), coef: (note?.coef || 1), note_totale: Math.min(newNote, safeMaxScore) * (note?.coef || 1), max_score: safeMaxScore });
@@ -60,13 +62,13 @@ const UdValeurUnique = ({
 
   const InputComponent = useMemo(() => {
     const commonSx = {
-      "& .MuiInputBase-input": { backgroundColor: 'var(--bg-input) !important', padding: '5px 10px', color: 'var(--fore-color-base-01) !important' },
-      "& .MuiSelect-select": { backgroundColor: 'var(--bg-input) !important', color: 'var(--fore-color-base-01) !important' }
+      "& .MuiInputBase-input": { backgroundColor: readOnly ? "var(--chip-bg)" : 'var(--bg-input) !important', padding: '5px 10px', color: 'var(--fore-color-base-01) !important' },
+      "& .MuiSelect-select": { backgroundColor: readOnly ? "var(--chip-bg)" : 'var(--bg-input) !important', color: 'var(--fore-color-base-01) !important' }
     };
     const numericSx = {
       ...commonSx,
       "& .MuiInputBase-input": {
-        backgroundColor: 'var(--bg-input) !important',
+        backgroundColor: readOnly ? "var(--chip-bg)" : 'var(--bg-input) !important',
         padding: '5px 10px',
         textAlign: 'right',
         color: 'var(--fore-color-base-01) !important'
@@ -82,14 +84,15 @@ const UdValeurUnique = ({
             style={{ width: `${Math.min(Math.max(3, inputValue.length + 4), 32)}ch`, minWidth: "100px" }}
             sx={numericSx}
             label=""
+            readonly={readOnly}
             type={Typ_Reponse === "numerique" ? "number" : "integer"}
             nomControle={`reponse_${Typ_Reponse}`}
           />
         );
       case "alpha":
-        return <TextBox valeur={inputValue} onchange={(n, v) => handleValueChange(v)} style={{ width: "100%" }} sx={commonSx} label="" type="text" nomControle="reponse_alpha" />;
+        return <TextBox valeur={inputValue} onchange={(n, v) => handleValueChange(v)} style={{ width: "100%" }} readonly={readOnly} sx={commonSx} label="" type="text" nomControle="reponse_alpha" />;
       case "multiLine":
-        return <TextBox valeur={inputValue} onchange={(n, v) => handleValueChange(v)} label="" type="text" style={{ width: "100%" }} sx={commonSx} nomControle="reponse_multiline" multiline={true} rows={4} />;
+        return <TextBox valeur={inputValue} onchange={(n, v) => handleValueChange(v)} label="" type="text" style={{ width: "100%" }} readonly={readOnly} sx={commonSx} nomControle="reponse_multiline" multiline={true} rows={4} />;
       case "date":
       case "dateTime":
       case "heure":
@@ -98,13 +101,13 @@ const UdValeurUnique = ({
             nomControle="reponse_date"
             label=""
             valeur={inputValue}
-            onchange={handleDateChange}
-            onClear={() => handleDateChange("reponse_date", null)}
+            onchange={readOnly ? (() => { }) : handleDateChange}
+            onClear={() => !readOnly && handleDateChange("reponse_date", null)}
             sx={{
               width: "100%",
               maxWidth: "180px",
               "& .MuiFormControl-root": { width: "100%" },
-              "& input": { fontSize: "1em", textAlign: "center", backgroundColor: 'var(--bg-input) !important', color: 'var(--fore-color-base-01) !important' },
+              "& input": { fontSize: "1em", textAlign: "center", backgroundColor: readOnly ? "var(--chip-bg) !important" : 'var(--bg-input) !important', color: 'var(--fore-color-base-01) !important' },
             }}
           />
         );
@@ -116,7 +119,8 @@ const UdValeurUnique = ({
             onChange={(e: SelectChangeEvent) => handleValueChange(e.target.value)}
             variant="standard"
             displayEmpty
-            sx={{ ...commonSx, width: "100%", borderBottom: `1px solid gray`, backgroundColor: 'var(--bg-input) !important' }}
+            readOnly={readOnly}
+            sx={{ ...commonSx, width: "100%", borderBottom: `1px solid gray`, backgroundColor: readOnly ? "var(--chip-bg) !important" : 'var(--bg-input) !important' }}
           >
             <MenuItem value="" disabled><em>Sélectionnez...</em></MenuItem>
             {options.map((option, index) => (
@@ -125,9 +129,9 @@ const UdValeurUnique = ({
           </Select>
         );
       default:
-        return <TextBox valeur={inputValue} onchange={(n, v) => handleValueChange(v)} style={{ width: "100%" }} sx={commonSx} label="" type="text" nomControle="reponse_defaut" />;
+        return <TextBox valeur={inputValue} onchange={(n, v) => handleValueChange(v)} style={{ width: "100%" }} readonly={readOnly} sx={commonSx} label="" type="text" nomControle="reponse_defaut" />;
     }
-  }, [Typ_Reponse, inputValue, colonnes]);
+  }, [Typ_Reponse, inputValue, colonnes, readOnly]);
 
   return (
     <Box
@@ -197,7 +201,7 @@ const UdValeurUnique = ({
         }}>
           {(note) && (
             <>
-              <NoteField label="Note" value={note?.note} readonly={!note?.note_manuelle} onChange={handleManualNoteChange} />
+              <NoteField label="Note" value={note?.note} readonly={!note?.note_manuelle || readOnly} onChange={handleManualNoteChange} />
               <NoteField label="Coef." value={note?.coef} readonly={true} />
               <NoteField label="Total" value={note?.note_totale} readonly={true} />
             </>

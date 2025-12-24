@@ -131,7 +131,7 @@ Public Class ud_valeur_unique
         Grd.Item(0, 0).Value = laquestion & IIf(Obligatoire, " (*)", "")
         If Grd.ColumnCount > 1 Then
             Grd.Columns(1).DefaultCellStyle.BackColor = Color.WhiteSmoke
-            Grd.Item(1, 0).Value = repDic("0")
+            Grd.Item(1, 0).Value = parsing(repDic("0"), Typ_Reponse)
             oW = Grd.Columns(0).Width + Grd.Columns(1).Width
         Else
             oW = Grd.Columns(0).Width
@@ -144,6 +144,31 @@ Public Class ud_valeur_unique
         AddHandler Grd.CellValueChanged, AddressOf Grd_CellValueChanged
 
     End Sub
+    Function parsing(valeur, Typ_reponse) As Object
+        If Typ_reponse = "numerique" Then
+            valeur = valeur.Replace(".", ",")
+            If IsNumeric(valeur) Then
+                Return CDbl(valeur)
+            Else
+                Return 0
+            End If
+        ElseIf Typ_reponse = "entier" Then
+            valeur = valeur.Replace(".", ",")
+            If IsNumeric(valeur) Then
+                Return CInt(valeur)
+            Else
+                Return 0
+            End If
+        ElseIf Typ_reponse = "date" Then
+            If EstDate(valeur) Then
+                Return CDate(valeur)
+            Else
+                Return DBNull.Value
+            End If
+        Else
+            Return valeur
+        End If
+    End Function
     Private Sub Grd_SelectionChanged(sender As Object, e As EventArgs) Handles Grd.SelectionChanged
         Grd.ClearSelection()
     End Sub
@@ -153,8 +178,8 @@ Public Class ud_valeur_unique
             Dim note_totale As Double = 0
             Dim valeurParDefaut = If("entier;numerique".Split(";").Contains(Typ_Reponse), 0, "''")
             If funcScoring <> "" Then
-                Dim noteFunc = Module_Generateur_Survey.myVBS.Eval($"Func_Survey_{codQuestion}({IsNull(Grd.Item(1, 0).Value, valeurParDefaut)})")
-            If IsNumeric(noteFunc) Then laNote = Math.Round(CDbl(noteFunc), 2)
+                Dim noteFunc = Module_Generateur_Survey.myVBS.Eval($"Func_Survey_{codQuestion}(""{IsNull(Grd.Item(1, 0).Value, valeurParDefaut)}"")")
+                If IsNumeric(noteFunc) Then laNote = Math.Round(CDbl(noteFunc), 2)
             End If
             note_txt.Text = laNote
             note_totale = Math.Round(If(IsNumeric(coef), coef * laNote, laNote), 2)

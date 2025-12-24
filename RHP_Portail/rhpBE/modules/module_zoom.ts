@@ -4,15 +4,15 @@ import { Tbl_Controle_Def_Zoom } from "./module_initialisation";
 import { IsNull } from "./module_general";
 export const getZoomApi = async (req: Request, res: Response) => {
   let { numZoom, condition, valeurs } = req.body;
-  if (controleInjection(condition)) {
+  if (controleInjection(condition).result === false) {
     res.send({ result: false, data: ["Expression interdite"] });
     return;
   }
-  if (controleInjection(numZoom)) {
+  if (controleInjection(numZoom).result === false) {
     res.send({ result: false, data: ["Expression interdite"] });
     return;
   }
-  if (controleInjection(valeurs)) {
+  if (controleInjection(valeurs).result === false) {
     res.send({ result: false, data: ["Expression interdite"] });
     return;
   }
