@@ -32,6 +32,14 @@
     "img": "Schema"
   },
   {
+    "name_ecran": "RH_Avancement_Timeline",
+    "text_ecran": "Chronologie de carrière",
+    "typ_ecran": "ECR",
+    "parent": "orga",
+    "rang": 4,
+    "img": "Timeline"
+  },
+  {
     "name_ecran": "MesDemandes",
     "text_ecran": "Demandes et documents",
     "typ_ecran": "MNU",
@@ -144,19 +152,27 @@
     "img": "PersonPin"
   },
   {
-    "name_ecran": "Agenda",
-    "text_ecran": "Agenda",
-    "typ_ecran": "ECR",
-    "parent": "",
-    "rang": 6,
-    "img": "EventAvailable"
-  },
-  {
     "name_ecran": "DiverseEditions",
     "text_ecran": "Diverses éditions",
     "typ_ecran": "ECR",
     "parent": "",
     "rang": 7,
     "img": "Topic"
+  },
+  {
+    "name_ecran": "Discipline_fdr",
+    "text_ecran": "Discipline",
+    "typ_ecran": "MNU",
+    "parent": "",
+    "rang": 8,
+    "img": "FolderSpecial"
+  },
+  {
+    "name_ecran": "RH_Discipline_Liste",
+    "text_ecran": "Sanctions disciplinaires",
+    "typ_ecran": "ECR",
+    "parent": "Discipline_fdr",
+    "rang": 1,
+    "img": "NoteAlt"
   }
 ] }

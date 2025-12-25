@@ -1,9 +1,7 @@
 import {
   TextField,
   TextFieldProps,
-  ThemeProvider,
   Typography,
-  createTheme,
 } from "@mui/material";
 import {
   DragIndicatorOutlined,
@@ -58,36 +56,34 @@ const TextZoom = ({
       }}
       className="textZoomContainer"
     >
-      <ThemeProvider theme={theme}>
-        <TextField
-          className="textZoom"
-          style={{ flexGrow: 1 }}
-          sx={{
-            "& .MuiInputBase-input": {
-              fontSize: { xs: "1rem", sm: "1rem" },
-              ...style
-            },
-            "& .MuiInputLabel-root": {
-              fontSize: { xs: "1rem", sm: "1rem" },
-            },
-          }}
-          id={nomControle}
-          label={label}
-          value={findlibelle ? libelleText : valeur}
-          helperText={findlibelle ? valeur : ""}
-          variant="standard"
-          FormHelperTextProps={{
-            style: { fontSize: "0.9rem" },
-          }}
-          InputLabelProps={{
-            style: styleLabel,
-          }}
-          InputProps={{
-            readOnly: true,
-          }}
-          onChange={(e) => { }}
-        />
-      </ThemeProvider>
+      <TextField
+        className="textZoom"
+        style={{ flexGrow: 1 }}
+        sx={{
+          "& .MuiInputBase-input": {
+            fontSize: { xs: "1rem", sm: "1rem" },
+            ...style
+          },
+          "& .MuiInputLabel-root": {
+            fontSize: { xs: "1rem", sm: "1rem" },
+          },
+        }}
+        id={nomControle}
+        label={label}
+        value={findlibelle ? libelleText : valeur}
+        helperText={findlibelle ? valeur : ""}
+        variant="standard"
+        FormHelperTextProps={{
+          style: { fontSize: "0.9rem" },
+        }}
+        InputLabelProps={{
+          style: styleLabel,
+        }}
+        InputProps={{
+          readOnly: true,
+        }}
+        onChange={(e) => { }}
+      />
       {!readonly && (
         <div
           className="zoomIcon"
@@ -138,28 +134,4 @@ const TextZoom = ({
     </div>
   );
 };
-const theme = createTheme({
-  components: {
-    MuiOutlinedInput: {
-      // For outlined variant
-      styleOverrides: {
-        notchedOutline: {
-          "&:focus": {
-            borderColor: colorBase.colorBase02,
-          },
-        },
-      },
-    },
-    MuiInput: {
-      // For standard variant
-      styleOverrides: {
-        underline: {
-          "&:after": {
-            borderBottomColor: colorBase.colorBase02,
-          },
-        },
-      },
-    },
-  },
-});
 export default TextZoom;

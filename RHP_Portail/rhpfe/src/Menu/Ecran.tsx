@@ -38,6 +38,10 @@ const RH_Demande_Conge = lazy(() => import("../Pages/Conges/RH_Demande_Conge"));
 const Organigramme = lazy(() => import("../Pages/Organigramme/Organigramme"));
 const Recrutement_Demande = lazy(() => import("../Pages/Recrutement/Recrutement_Demande"));
 const Recrutement_Demande_Liste = lazy(() => import("../Pages/Recrutement/Recrutement_Demande_Liste"));
+const RH_Avancement_Timeline = lazy(() => import("../Pages/Avancement/RH_Avancement_Timeline"));
+const RH_Discipline_Liste = lazy(() => import("../Pages/Discipline/RH_Discipline_Liste"));
+const RH_Discipline = lazy(() => import("../Pages/Discipline/RH_Discipline"));
+const DiverseEditions = lazy(() => import("../Pages/Editions/DiverseEditions"));
 
 const Ecran = ({ style }: { style?: React.CSSProperties }) => {
   const { tbnMenu, settbnMenu, showSignature, signatureProps } =
@@ -105,6 +109,18 @@ const Ecran = ({ style }: { style?: React.CSSProperties }) => {
         break;
       case "Recrutement_Demande_Liste":
         setEcran(<Recrutement_Demande_Liste />);
+        break;
+      case "RH_Avancement_Timeline":
+        setEcran(<RH_Avancement_Timeline />);
+        break;
+      case "RH_Discipline_Liste":
+        setEcran(<RH_Discipline_Liste />);
+        break;
+      case "RH_Discipline":
+        setEcran(<RH_Discipline />);
+        break;
+      case "DiverseEditions":
+        setEcran(<DiverseEditions />);
         break;
       default:
         setEcran(

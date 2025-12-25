@@ -70,6 +70,10 @@ import {
   delete_recrutement_demande,
   get_recrutement_demande_liste
 } from "../controlers/recrutement";
+import { get_avancement_timeline } from "../controlers/rh_avancement";
+import { get_agenda } from "../controlers/agenda";
+import { discipline_liste, get_discipline } from "../controlers/discipline";
+import { get_diverse_editions } from "../controlers/editions";
 const mainRooting = express.Router();
 const storage = multer.diskStorage({
   destination: async (req, file, cb) => {
@@ -152,6 +156,10 @@ mainRooting.post("/get_recrutement_demande", validate, get_recrutement_demande);
 mainRooting.post("/save_recrutement_demande", validate, save_recrutement_demande);
 mainRooting.post("/delete_recrutement_demande", validate, delete_recrutement_demande);
 mainRooting.post("/get_recrutement_demande_liste", validate, get_recrutement_demande_liste);
+mainRooting.post("/get_avancement_timeline", validate, get_avancement_timeline);
+mainRooting.post("/get_agenda", validate, get_agenda);
+mainRooting.post("/discipline_liste", validate, discipline_liste);
+mainRooting.post("/get_discipline", validate, get_discipline);
 mainRooting.get("/ficheposte", validate, ficheposte);
 mainRooting.post(
   "/uploadfile",
@@ -159,6 +167,7 @@ mainRooting.post(
   validate,
   fileClass.upload
 );
+mainRooting.post("/get_diverse_editions", validate, get_diverse_editions);
 async function testFunction() {
 
   return await lireSql("select * from RH_Agent where Matricule='1'", []);

@@ -9,6 +9,20 @@ Public Class RH_Avancement_Timeline
         flpTimeline.Controls.Clear()
 
         Dim sql As String = "SELECT " &
+                            "GETDATE() as Dat_Effet, " &
+                            "P.Lib_Poste AS Nouveau_Poste, " &
+                            "G.Lib_Grade AS Nouveau_Grade, " &
+                            "E.Lib_Entite AS Nouvelle_Entite, " &
+                            "'' as Motif, '' as Mission," &
+                            "'ACTUEL' as Type_Avancement, '' as Cod_Avancement " &
+                            "FROM RH_Agent A " &
+                            "LEFT JOIN Org_Poste P ON A.Cod_Poste = P.Cod_Poste AND A.id_Societe = P.id_Societe " &
+                            "LEFT JOIN Org_Grade G ON A.Cod_Grade = G.Cod_Grade AND A.id_Societe = G.id_Societe " &
+                            "LEFT JOIN Org_Entite E ON A.Cod_Entite = E.Cod_Entite AND A.id_Societe = E.id_Societe " &
+                            "WHERE A.Matricule = '" & Matricule_txt.Text & "' " &
+                            "AND A.id_Societe = " & Societe.id_Societe & " " &
+                            "UNION ALL " &
+                            "SELECT " &
                             "A.Dat_Effet, " &
                             "P.Lib_Poste AS Nouveau_Poste, " &
                             "G.Lib_Grade AS Nouveau_Grade, " &
@@ -22,10 +36,10 @@ Public Class RH_Avancement_Timeline
                             "WHERE A.Matricule = '" & Matricule_txt.Text & "' " &
                             "AND A.id_Societe = " & Societe.id_Societe & " " &
                             "AND A.Statut IN ('VA', 'SG') " &
-                            "ORDER BY A.Dat_Effet DESC"
+                            "ORDER BY Dat_Effet DESC"
 
         Dim rs As Recordset = CnExecuting(sql)
-        
+
         If rs.EOF Then
             Dim lbl As New Label()
             lbl.Text = "Aucun historique trouvé."
@@ -39,9 +53,20 @@ Public Class RH_Avancement_Timeline
 
         Do While Not rs.EOF
             Dim item As New UC_Timeline_Item()
-            
+            Dim typeAvRaw As String = IsNull(rs("Type_Avancement").Value, "")
+
             Dim dt As Date = If(IsDBNull(rs("Dat_Effet").Value), Now, CDate(rs("Dat_Effet").Value))
-            item.DateText = dt.ToString("dd MMM yyyy")
+
+            If typeAvRaw = "ACTUEL" Then
+                item.DateText = "Aujourd'hui"
+                item.Tags = "#Actuel"
+            Else
+                item.DateText = dt.ToString("dd MMM yyyy")
+                ' Determine Tags based on Type_Avancement
+                Dim typeAv As String = FindRubriques("Avancement", typeAvRaw)
+                If typeAv = "" Then typeAv = "Avancement"
+                item.Tags = "#" & typeAv
+            End If
 
             item.JobTitle = IsNull(rs("Nouveau_Poste").Value, "Poste inconnu").ToUpper
 
@@ -52,21 +77,19 @@ Public Class RH_Avancement_Timeline
             Dim mission = IsNull(rs("Mission").Value, "").ToUpper
             item.Mission = If(mission.Length > 180, Gauche(mission, 180) + "...", mission)
             item.Motif = IsNull(rs("Motif").Value, "")
-            ' Determine Tags based on Type_Avancement or Motif
-            Dim typeAv As String = FindRubriques("Avancement", IsNull(rs("Type_Avancement").Value, ""))
-            If typeAv = "" Then typeAv = "Avancement"
-            item.Tags = "#" & typeAv
 
             Dim codeAv As String = IsNull(rs("Cod_Avancement").Value, "")
             item.Code = codeAv
 
             ' Handle Click to open details
-            AddHandler item.CodeClicked, Sub(s, args)
-                                             Dim f As New RH_Avancement
-                                             f.Cod_Avancement_txt.Text = codeAv
-                                             f.Request()
-                                             newShowEcran(f, True)
-                                         End Sub
+            If typeAvRaw <> "ACTUEL" Then
+                AddHandler item.CodeClicked, Sub(s, args)
+                                                 Dim f As New RH_Avancement
+                                                 f.Cod_Avancement_txt.Text = codeAv
+                                                 f.Request()
+                                                 newShowEcran(f, True)
+                                             End Sub
+            End If
 
             item.Width = flpTimeline.Width - 30 ' Full width with some padding
             flpTimeline.Controls.Add(item)

@@ -26,11 +26,13 @@ import useMsgBox from "../../hooks/useMsgBox";
 import useAlert from "../../hooks/useAlert";
 import { cntX } from "../../Menu/MenuMain";
 import TextBox from "../../components/TextBox/TextBox";
+import CalendarZoom from "../../components/Calendar/CalendarZoom";
 import TextZoom from "../../components/TextZoom/TextZoom";
 import { Agent, colorBase } from "../../modules/module_general";
+import { parseRtfToText } from "../../modules/module_formats";
 import useCombo from "../../hooks/useCombo";
 import GroupBox from "../../components/GroupBox/GroupBox";
-import { RTFParser } from "rtf-parser";
+
 
 interface IEntete {
     Num_DR: string;
@@ -62,6 +64,7 @@ interface IEntete {
     Narratif: string;
     Motif_DR: string;
     Statut: string;
+    Nom?: string;
     [key: string]: any;
 }
 
@@ -99,23 +102,15 @@ const defaultEntete: IEntete = {
 
 const Recrutement_Demande = () => {
     const myAxios = useAxiosPost();
-    const msg = useMsgBox();
-    const alert = useAlert();
+    const { settbnMenu, isSmall } = useContext(cntX);
+    const msgbox = useMsgBox();
     const { num } = useParams();
     const [entete, setEntete] = useState<IEntete>(defaultEntete);
     const [tabIndex, setTabIndex] = useState(0);
     const [newCompetence, setNewCompetence] = useState("");
     const [narratifDisplay, setNarratifDisplay] = useState("");
 
-    // Helper to strip RTF tags for display
-    const stripRTF = (rtf: string) => {
-        if (!rtf) return "";
-        // Basic RTF stripping 
-        return rtf
-            .replace(/\\par[d]?\s*/g, "\n") // Newlines
-            .replace(/\{\\*?\\[^{}]+}|[{}]|\\\n?[A-Za-z]+\n?(?:-?\d+)?[ ]?/g, "") // Tags and braces
-            .trim();
-    };
+
 
     const toRTF = (text: string) => {
         if (!text) return "";
@@ -123,6 +118,8 @@ const Recrutement_Demande = () => {
         const withNewlines = escaped.replace(/\n/g, '\\par\n');
         return `{\\rtf1\\ansi\\ansicpg1252\\deff0\\nouicompat\\deflang1036{\\fonttbl{\\f0\\fnil\\fcharset0 Calibri;}}\n{\\*\\generator Riched20 10.0.19041}\\viewkind4\\uc1\n\\pard\\sa200\\sl276\\slmult1\\f0\\fs22\\lang12 ${withNewlines}\\par\n}`;
     };
+
+
 
     useEffect(() => {
         if (!entete.Narratif) {
@@ -133,18 +130,19 @@ const Recrutement_Demande = () => {
             setNarratifDisplay(entete.Narratif);
             return;
         }
-        setNarratifDisplay(stripRTF(entete.Narratif));
+
+        setNarratifDisplay(parseRtfToText(entete.Narratif));
     }, [entete.Narratif]);
 
     // Combos
     const niveauCombo = useCombo("Niveau");
     const motifCombo = useCombo("Motif_DR");
+    const domaines_competences = useCombo("domaines_competences");
 
     const isLocked = entete.Statut === "VA" || entete.Statut === "SS" || entete.Statut === "SG" || entete.Statut === "RJ";
     const canSave = !isLocked;
 
     // Menu logic
-    const { settbnMenu, isSmall } = useContext(cntX);
 
     useEffect(() => {
         settbnMenu([
@@ -203,8 +201,8 @@ const Recrutement_Demande = () => {
         if (!matricule) return;
         myAxios("rh_agent", { Matricule: matricule })
             .then(res => {
-                if (res.data && res.data.length > 0) {
-                    const agt = res.data[0];
+                if (res.data.result && res.data.data?.agent?.length > 0) {
+                    const agt = res.data.data.agent[0];
                     setEntete(prev => ({
                         ...prev,
                         Matricule: matricule,
@@ -222,9 +220,13 @@ const Recrutement_Demande = () => {
         myAxios("get_recrutement_demande", { Num_DR: numDR })
             .then((res) => {
                 if (res.data.result && res.data.data.length > 0) {
-                    setEntete(res.data.data[0]);
+                    const d = res.data.data[0];
+                    if (d.Dat_DR) d.Dat_DR = d.Dat_DR.split("T")[0];
+                    if (d.Duree_Du) d.Duree_Du = d.Duree_Du.split("T")[0];
+                    if (d.Duree_Au) d.Duree_Au = d.Duree_Au.split("T")[0];
+                    setEntete(d);
                 } else {
-                    msg({ msg: "Demande introuvable", typMsg: "warning", typReply: "OkOnly" });
+                    msgbox({ msg: "Demande introuvable", typMsg: "warning", typReply: "OkOnly" });
                     // Optional: Reset or keep as new
                 }
             });
@@ -239,13 +241,13 @@ const Recrutement_Demande = () => {
                     setEntete(prev => ({ ...prev, Num_DR: res.data.data, Statut: statut !== "" ? statut : prev.Statut }));
                     alert({ msg: res.data.message || "Enregistré avec succès", typMsg: "success" });
                 } else {
-                    msg({ msg: res.data.message || "Erreur lors de l'enregistrement", typMsg: "error", typReply: "OkOnly" });
+                    msgbox({ msg: res.data.message || "Erreur lors de l'enregistrement", typMsg: "error", typReply: "OkOnly" });
                 }
             });
     };
 
     const deleteDemande = () => {
-        msg({
+        msgbox({
             msg: "Êtes-vous sûr de vouloir supprimer cette demande ?",
             typMsg: "question",
             typReply: "YesNoCancel"
@@ -258,7 +260,7 @@ const Recrutement_Demande = () => {
                             setEntete(defaultEntete);
                             loadAgentInfo(Agent.Matricule);
                         } else {
-                            msg({ msg: res.data.message || "Erreur lors de la suppression", typMsg: "error", typReply: "OkOnly" });
+                            msgbox({ msg: res.data.message || "Erreur lors de la suppression", typMsg: "error", typReply: "OkOnly" });
                         }
                     });
             }
@@ -284,7 +286,7 @@ const Recrutement_Demande = () => {
     const addCompetence = () => {
         if (!newCompetence.trim()) return;
         if (competencesList.some(c => c.name.toLowerCase() === newCompetence.trim().toLowerCase())) {
-            msg({ msg: "Compétence déjà présente", typMsg: "warning", typReply: "OkOnly" });
+            msgbox({ msg: "Compétence déjà présente", typMsg: "warning", typReply: "OkOnly" });
             return;
         }
         const updated = [...competencesList, { name: newCompetence.trim(), rating: 1 }];
@@ -309,7 +311,7 @@ const Recrutement_Demande = () => {
 
     const loadCompetencesFromPoste = () => {
         if (!entete.Cod_Poste_DR) {
-            msg({ msg: "Veuillez sélectionner un poste demandé d'abord", typMsg: "warning", typReply: "OkOnly" });
+            msgbox({ msg: "Veuillez sélectionner un poste demandé d'abord", typMsg: "warning", typReply: "OkOnly" });
             return;
         }
         myAxios("getPoste", { cod_poste: entete.Cod_Poste_DR })
@@ -361,20 +363,73 @@ const Recrutement_Demande = () => {
                         nomControle="Num_DR"
                         label="N° Demande"
                         valeur={entete.Num_DR}
-                        onchange={(_, val) => loadDemande(val)}
+                        onchange={(_: any, val: any) => loadDemande(val)}
                     />
                 </Grid>
                 <Grid item xs={12} sm={3}>
-                    <TextBox nomControle="Dat_DR" label="Date Demande" valeur={entete.Dat_DR} type="date" onchange={handleChange} readonly={isLocked} />
+                    <CalendarZoom
+                        nomControle="Dat_DR"
+                        label="Date Demande"
+                        valeur={entete.Dat_DR}
+                        onchange={(nom: string, val: Date) => {
+                            if (val) {
+                                // Convert Date to YYYY-MM-DD string
+                                const offset = val.getTimezoneOffset();
+                                const date = new Date(val.getTime() - (offset * 60 * 1000));
+                                const dateStr = date.toISOString().split('T')[0];
+                                handleChange(nom, dateStr);
+                            }
+                        }}
+                        readOnly={isLocked}
+                    />
                 </Grid>
                 <Grid item xs={12} sm={3} sx={{ display: "flex", alignItems: "flex-end" }}>
-                    <Typography variant="subtitle1" sx={{ fontWeight: 'bold', color: colorBase.colorBase01 }}>
-                        Statut: {entete.Statut || "Brouillon"}
+                    <Typography variant="subtitle1" sx={{ fontWeight: 'bold', color: colorBase.colorBase01, display: 'flex', alignItems: 'center' }}>
+                        Statut:
+                        {(() => {
+                            let label = "";
+                            let color: "default" | "primary" | "secondary" | "error" | "info" | "success" | "warning" = "default";
+                            switch (entete.Statut) {
+                                case "VA":
+                                    label = "Validé";
+                                    color = "success";
+                                    break;
+                                case "SS":
+                                    label = "Soumis en signature";
+                                    color = "warning";
+                                    break;
+                                case "SG":
+                                    label = "Signé";
+                                    color = "success";
+                                    break;
+                                case "RJ":
+                                    label = "Rejeté";
+                                    color = "error";
+                                    break;
+                                default:
+                                    label = entete.Statut || "Brouillon";
+                            }
+                            return <Chip
+                                label={label}
+                                color={color}
+                                size="small"
+                                variant={color === "default" ? "outlined" : "filled"}
+                                sx={{
+                                    ml: 1,
+                                    verticalAlign: 'middle',
+                                }}
+                            />;
+                        })()}
                     </Typography>
                 </Grid>
 
                 <Grid item xs={12}>
-                    <Divider sx={{ my: 1 }}><Chip label="Demandeur" /></Divider>
+                    <Divider sx={{ my: 1 }}>
+                        <Chip
+                            label="Demandeur"
+                            variant="outlined"
+                        />
+                    </Divider>
                 </Grid>
 
                 <Grid item xs={12} sm={4}>
@@ -383,7 +438,12 @@ const Recrutement_Demande = () => {
                         nomControle="Matricule"
                         label="Matricule"
                         valeur={entete.Matricule}
-                        onchange={(_, val) => { handleChange("Matricule", val); loadAgentInfo(val); }}
+                        findlibelle={{
+                            champs: "Nom_Agent+ ' ' +Prenom_Agent",
+                            code: "Matricule",
+                            tblName: "RH_Agent",
+                        }}
+                        onchange={(_: any, val: any) => { handleChange("Matricule", val); loadAgentInfo(val); }}
                         readonly={entete.Num_DR !== ""}
                     />
                 </Grid>
@@ -391,19 +451,33 @@ const Recrutement_Demande = () => {
                     <TextBox nomControle="Titre" label="Titre" valeur={entete.Titre} readonly />
                 </Grid>
                 <Grid item xs={12} sm={4}>
-                    <TextBox nomControle="Cod_Entite" label="Entité" valeur={entete.Cod_Entite} readonly />
+                    <TextBox nomControle="Cod_Entite"
+                        label="Entité" valeur={entete.Cod_Entite} readonly
+                        findlibelle={{
+                            champs: "Lib_Entite",
+                            code: "Cod_Entite",
+                            tblName: "Org_Entite",
+                        }} />
                 </Grid>
 
                 <Grid item xs={12}>
-                    <Divider sx={{ my: 1 }} />
-                    <Tabs value={tabIndex} onChange={(_, v) => setTabIndex(v)} indicatorColor="primary" textColor="primary">
-                        <Tab label="Description du Poste" />
-                        <Tab label="Profil Recherché" />
-                        <Tab label="Narratif & Motif" />
-                    </Tabs>
+                    {!isSmall && (
+                        <>
+                            <Divider sx={{ my: 1 }} />
+                            <Tabs value={tabIndex} onChange={(_, v) => setTabIndex(v)} sx={{ mb: 1, borderBottom: 1, borderColor: "divider", width: "100%" }}>
+                                <Tab label="Description du Poste" />
+                                <Tab label="Profil Recherché" />
+                                <Tab label="Narratif & Motif" />
+                            </Tabs>
+                        </>
+                    )}
                 </Grid>
 
-                {tabIndex === 0 && (
+                <GroupBox
+                    label="Description du Poste"
+                    showTitre={isSmall}
+                    display={tabIndex === 0 || isSmall ? undefined : "none"}
+                >
                     <Grid item xs={12} container spacing={2}>
                         <Grid item xs={12} sm={6}>
                             <TextBox nomControle="Titre_DR" label="Intitulé du poste demandé" valeur={entete.Titre_DR} onchange={handleChange} readonly={isLocked} />
@@ -449,9 +523,13 @@ const Recrutement_Demande = () => {
                             <TextBox nomControle="Buget_Salaire" label="Budget Salaire (Est.)" type="number" valeur={entete.Buget_Salaire} onchange={handleChange} readonly={isLocked} />
                         </Grid>
                     </Grid>
-                )}
+                </GroupBox>
 
-                {tabIndex === 1 && (
+                <GroupBox
+                    label="Profil Recherché"
+                    showTitre={isSmall}
+                    display={tabIndex === 1 || isSmall ? undefined : "none"}
+                >
                     <Grid item xs={12} container spacing={2}>
                         <Grid item xs={12} sm={6}>
                             <FormControl component="fieldset">
@@ -532,7 +610,7 @@ const Recrutement_Demande = () => {
                             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1, p: 1, border: '1px dashed #ccc', borderRadius: 1 }}>
                                 {competencesList.map((c, i) => (
                                     <Box key={i} sx={{ display: 'flex', alignItems: 'center', bgcolor: 'action.hover', borderRadius: 4, px: 2, py: 0.5, gap: 1 }}>
-                                        <Typography variant="body2">{c.name}</Typography>
+                                        <Typography variant="body2">{domaines_competences.find((d) => d.value === c.name)?.label || c.name}</Typography>
                                         <Rating
                                             value={c.rating}
                                             precision={0.5}
@@ -546,9 +624,13 @@ const Recrutement_Demande = () => {
                             </Box>
                         </Grid>
                     </Grid>
-                )}
+                </GroupBox>
 
-                {tabIndex === 2 && (
+                <GroupBox
+                    label="Narratif & Motif"
+                    showTitre={isSmall}
+                    display={tabIndex === 2 || isSmall ? undefined : "none"}
+                >
                     <Grid item xs={12} container spacing={2}>
                         <Grid item xs={12} sm={6}>
                             <TextField
@@ -580,10 +662,11 @@ const Recrutement_Demande = () => {
                                     handleChange(name, toRTF(val));
                                 }}
                                 readonly={isLocked}
+                                fullWidth
                             />
                         </Grid>
                     </Grid>
-                )}
+                </GroupBox>
             </Grid>
         </GroupBox>
     );

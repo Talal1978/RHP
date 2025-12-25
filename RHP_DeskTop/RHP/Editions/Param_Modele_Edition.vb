@@ -51,6 +51,7 @@ Public Class Param_Modele_Edition
         Nom_Report_Text.Text = FindLibelle("Nom_Report", "Cod_Report", Cod_Report_Text.Text, "Param_Mod_Edition")
         withPassword_chk.Checked = FindLibelle("withPassword", "Cod_Report", Cod_Report_Text.Text, "Param_Mod_Edition")
         parSociete_chk.Checked = FindLibelle("parSociete", "Cod_Report", Cod_Report_Text.Text, "Param_Mod_Edition")
+        Portail_chk.Checked = FindLibelle("Portail", "Cod_Report", Cod_Report_Text.Text, "Param_Mod_Edition")
         Typ_Modele_Edition_cbo.SelectedValue = FindLibelle("Typ_Modele_Edition", "Cod_Report", Cod_Report_Text.Text, "Param_Mod_Edition")
         Dim Cod_Sql = "Select  * From Param_Mod_Edition_Criteres where Cod_Report='" & Cod_Report_Text.Text & "'"
         Dim Tbl = DATA_READER_GRD(Cod_Sql)
@@ -200,6 +201,7 @@ Cod_Report_Text.Text.Contains("&") = True Then
         rs("Nom_Report").Value = Nom_Report_Text.Text
         rs("Typ_Pie").Value = TypPie
         rs("parSociete").Value = parSociete_chk.Checked
+        rs("Portail").Value = Portail_chk.Checked
         rs("withPassword").Value = withPassword_chk.Checked
         rs("Typ_Modele_Edition").Value = Typ_Modele_Edition_cbo.SelectedValue
         rs("Modified_By").Value = theUser.Login

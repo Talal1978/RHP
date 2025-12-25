@@ -3,8 +3,6 @@ import {
   InputLabel,
   MenuItem,
   Select,
-  ThemeProvider,
-  createTheme,
 } from "@mui/material";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { IsNull, colorBase, getRandomKey } from "../../modules/module_general";
@@ -61,71 +59,46 @@ function ComboBox({
     }
   }, [numZoom, rubrique]);
   return (
-    <ThemeProvider theme={theme}>
-      <FormControl
+    <FormControl
+      variant="standard"
+      className="comboBoxContainer"
+      style={style}
+    >
+      <InputLabel id="demo-simple-select-standard-label" style={styleLabel}>
+        {label}
+      </InputLabel>
+      <Select
+        sx={{ fontSize: { xs: "1rem", sm: "1rem" } }}
+        className="comboBox"
+        labelId="demo-simple-select-standard-label"
         variant="standard"
-        className="comboBoxContainer"
-        style={style}
+        id={nomControle}
+        value={
+          dataSource.find((t) => t[champs?.[0]] === valeur) ? valeur : ""
+        }
+        onChange={(event) => {
+          if (Boolean(onchange)) onchange(nomControle, event.target.value);
+        }}
+        inputProps={{ readOnly: readOnly }}
+        slotProps={{}}
       >
-        <InputLabel id="demo-simple-select-standard-label" style={styleLabel}>
-          {label}
-        </InputLabel>
-        <Select
-          sx={{ fontSize: { xs: "1rem", sm: "1rem" } }}
-          className="comboBox"
-          labelId="demo-simple-select-standard-label"
-          variant="standard"
-          id={nomControle}
-          value={
-            dataSource.find((t) => t[champs?.[0]] === valeur) ? valeur : ""
-          }
-          onChange={(event) => {
-            if (Boolean(onchange)) onchange(nomControle, event.target.value);
-          }}
-          inputProps={{ readOnly: readOnly }}
-          slotProps={{}}
-        >
-          {champs.length >= 2 &&
-            dataSource.map((k, ind) => {
-              return (
-                <MenuItem key={ind} value={k[champs?.[0]]}>
-                  <em>{k[champs?.[1]]}</em>
-                </MenuItem>
-              );
-            })}
-        </Select>
-        <CloseIcon
-          onClick={() => {
-            if (!readOnly) onchange(nomControle, "");
-          }}
-          className="clearIcon"
-        />
-      </FormControl>
-    </ThemeProvider>
+        {champs.length >= 2 &&
+          dataSource.map((k, ind) => {
+            return (
+              <MenuItem key={ind} value={k[champs?.[0]]}>
+                <em>{k[champs?.[1]]}</em>
+              </MenuItem>
+            );
+          })}
+      </Select>
+      <CloseIcon
+        onClick={() => {
+          if (!readOnly) onchange(nomControle, "");
+        }}
+        className="clearIcon"
+      />
+    </FormControl>
   );
 }
-const theme = createTheme({
-  components: {
-    MuiOutlinedInput: {
-      // For outlined variant
-      styleOverrides: {
-        notchedOutline: {
-          "&:focus": {
-            borderColor: colorBase.colorBase02,
-          },
-        },
-      },
-    },
-    MuiInput: {
-      // For standard variant
-      styleOverrides: {
-        underline: {
-          "&:after": {
-            borderBottomColor: colorBase.colorBase02,
-          },
-        },
-      },
-    },
-  },
-});
+
 export default ComboBox;

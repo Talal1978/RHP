@@ -14,6 +14,8 @@ import MsgBox from "./components/MsgBox/MsgBox";
 import Evaluation from "./Pages/Evaluation/Evaluation";
 import { parentCntX } from "./Context/GlobalContext";
 import MyAlert from "./components/MyAlert/MyAlert";
+import { ThemeProvider, createTheme } from "@mui/material";
+import { colorBase } from "./modules/module_general";
 
 // Lazy load your components
 const Login = lazy(() =>
@@ -39,6 +41,32 @@ function App() {
     const savedTheme = localStorage.getItem("themeMode");
     return (savedTheme as "light" | "dark") || "light";
   });
+
+  const theme = useMemo(() => createTheme({
+    palette: {
+      mode: themeMode,
+    },
+    components: {
+      MuiChip: {
+        styleOverrides: {
+          root: ({ theme }) => ({
+            fontWeight: "bold",
+            ...(theme.palette.mode === "dark" ? {
+              color: "#fff",
+              borderColor: "rgba(255, 255, 255, 0.5)",
+              backgroundColor: "rgba(255, 255, 255, 0.05)",
+            } : {
+              color: colorBase.colorBase01,
+              borderColor: colorBase.colorBase01,
+            })
+          }),
+          outlined: ({ theme }) => ({
+            borderColor: theme.palette.mode === "dark" ? "rgba(255, 255, 255, 0.5)" : colorBase.colorBase01,
+          })
+        }
+      }
+    }
+  }), [themeMode]);
 
   const [showMsgBox, setShowMsgBox] = useState(false);
   const [msgProps, setMsgProps] = useState<TMsgBox>({ msg: "" });
@@ -78,23 +106,25 @@ function App() {
     <parentCntX.Provider
       value={contextValue}
     >
-      <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={fr}>
-        <BrowserRouter>
-          <Suspense fallback={<Loading />}>
-            <Routes>
-              <Route path="/" element={<Login />} />
-              <Route path="/test" element={<Evaluation />} />
-              <Route
-                path="/myspace/:ecran/:titre/:num?"
-                element={<MenuMain />}
-              />
-              <Route path="/myspace" element={<MenuMain />} />
-              <Route path="viewer/:pdfURL?" element={<ReportViewer />} />
-              <Route path="users/:id" element={<Login />} />
-            </Routes>
-          </Suspense>
-        </BrowserRouter>
-      </LocalizationProvider>
+      <ThemeProvider theme={theme}>
+        <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={fr}>
+          <BrowserRouter>
+            <Suspense fallback={<Loading />}>
+              <Routes>
+                <Route path="/" element={<Login />} />
+                <Route path="/test" element={<Evaluation />} />
+                <Route
+                  path="/myspace/:ecran/:titre/:num?"
+                  element={<MenuMain />}
+                />
+                <Route path="/myspace" element={<MenuMain />} />
+                <Route path="viewer/:pdfURL?" element={<ReportViewer />} />
+                <Route path="users/:id" element={<Login />} />
+              </Routes>
+            </Suspense>
+          </BrowserRouter>
+        </LocalizationProvider>
+      </ThemeProvider>
       <MsgBox {...msgProps} />
       <MyAlert {...alertProps} />
     </parentCntX.Provider>

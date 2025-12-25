@@ -12,7 +12,12 @@ export async function get_recrutement_demande(req: Request, res: Response) {
     if (controleInjection(Num_DR).result === false) return res.send({ result: false, message: "Injection détectée dans Num_DR" });
     if (controleInjection(id_Societe).result === false) return res.send({ result: false, message: "Injection détectée dans id_Societe" });
 
-    const sqlStr = `SELECT * FROM Recrutement_Demande WHERE Num_DR = @Num_DR AND id_Societe = @id_Societe`;
+    const sqlStr = `
+        SELECT v.*, r.Nom 
+        FROM Recrutement_Demande v
+        OUTER APPLY (SELECT Nom_Agent + ' ' + Prenom_Agent as Nom FROM RH_Agent WHERE id_Societe=v.id_Societe AND Matricule=v.Matricule) r
+        WHERE v.Num_DR = @Num_DR AND v.id_Societe = @id_Societe
+    `;
 
     const rsl = await lireSql(sqlStr, [
         { param: "Num_DR", sqlType: NVarChar, valeur: Num_DR },
