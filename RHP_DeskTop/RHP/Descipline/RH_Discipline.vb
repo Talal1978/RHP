@@ -156,6 +156,9 @@ Public Class RH_Discipline
             If Not EstDate(Dat_Faute_txt.Text) Then
                 Return New savingResult With {.result = False, .message = "Date de la faute invalide"}
             End If
+            If Not EstDate(Dat_Decision_txt.Text) Then
+                Return New savingResult With {.result = False, .message = "La date de décision n'est pas valide."}
+            End If
             If EstDate(Dat_Entree_txt.Text) Then
                 If CDate(Dat_Entree_txt.Text) > CDate(Dat_Faute_txt.Text) OrElse CDate(Dat_Entree_txt.Text) > CDate(Dat_Decision_txt.Text) Then
                     Return New savingResult With {.result = False, .message = "La date d'effet et la date de décision ne peuvent pas être antérieures à la date d'entrée."}

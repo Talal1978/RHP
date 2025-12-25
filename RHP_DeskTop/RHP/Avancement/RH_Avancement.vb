@@ -117,16 +117,14 @@ Class RH_Avancement
         Dim Sql As String = "SELECT Nom_Agent, Prenom_Agent, Cod_Poste, Cod_Grade, Titre, Cod_Entite,Dat_Entree FROM RH_Agent WHERE Matricule='" & Matricule_txt.Text & "' AND id_Societe=" & Societe.id_Societe
         Dim Tbl As DataTable = DATA_READER_GRD(Sql)
         If Tbl.Rows.Count > 0 Then
-            If Cod_Avancement_txt.Text = "" Then
-                Ancien_Poste_txt.Text = IsNull(Tbl.Rows(0)("Cod_Poste"), "")
-                Ancien_Grade_txt.Text = IsNull(Tbl.Rows(0)("Cod_Grade"), "")
-                Ancien_Titre_txt.Text = IsNull(Tbl.Rows(0)("Titre"), "")
-                Ancienne_Entite_txt.Text = IsNull(Tbl.Rows(0)("Cod_Entite"), "")
-                Nouveau_Poste_txt.Text = IsNull(Tbl.Rows(0)("Cod_Poste"), "")
-                Nouveau_Grade_txt.Text = IsNull(Tbl.Rows(0)("Cod_Grade"), "")
-                Nouveau_Titre_txt.Text = IsNull(Tbl.Rows(0)("Titre"), "")
-                Nouvelle_Entite_txt.Text = IsNull(Tbl.Rows(0)("Cod_Entite"), "")
-            End If
+            Ancien_Poste_txt.Text = IsNull(Tbl.Rows(0)("Cod_Poste"), "")
+            Ancien_Grade_txt.Text = IsNull(Tbl.Rows(0)("Cod_Grade"), "")
+            Ancien_Titre_txt.Text = IsNull(Tbl.Rows(0)("Titre"), "")
+            Ancienne_Entite_txt.Text = IsNull(Tbl.Rows(0)("Cod_Entite"), "")
+            Nouveau_Poste_txt.Text = IsNull(Tbl.Rows(0)("Cod_Poste"), "")
+            Nouveau_Grade_txt.Text = IsNull(Tbl.Rows(0)("Cod_Grade"), "")
+            Nouveau_Titre_txt.Text = IsNull(Tbl.Rows(0)("Titre"), "")
+            Nouvelle_Entite_txt.Text = IsNull(Tbl.Rows(0)("Cod_Entite"), "")
         ElseIf Matricule_txt.Text.Trim = "" Then
             Ancien_Poste_txt.Text = ""
             Lib_Ancien_Poste_txt.Text = ""
@@ -200,12 +198,37 @@ Class RH_Avancement
                     Return New savingResult With {.result = False, .message = "La date d'effet et la date de décision ne peuvent pas être antérieures à la date d'entrée."}
                 End If
             End If
+            If Not EstDate(Dat_Decision_txt.Text) Then
+                Return New savingResult With {.result = False, .message = "La date de décision n'est pas valide."}
+            End If
+            If Not EstDate(Dat_Effet_txt.Text) Then
+                Return New savingResult With {.result = False, .message = "La date d'effet n'est pas valide."}
+            End If
+            If CnExecuting("select count(*) from RH_Avancement where Matricule='" & Matricule_txt.Text & "' and Cod_Avancement<>'" & Cod_Avancement_txt.Text & "' and isnull(Statut,'')='' and id_Societe=" & Societe.id_Societe).Fields(0).Value > 0 Then
+                Return New savingResult With {.result = False, .message = "Un autre avancement existe déjà pour cet agent non encore validé."}
+            End If
+            If CnExecuting("select count(*) from RH_Avancement where Matricule='" & Matricule_txt.Text & "' and Cod_Avancement<>'" & Cod_Avancement_txt.Text & "' and Dat_Effet>'" & Dat_Effet_txt.Text & "' and id_Societe=" & Societe.id_Societe).Fields(0).Value > 0 Then
+                Return New savingResult With {.result = False, .message = "Un autre avancement existe déjà pour cet agent postérieur à celui-ci."}
+            End If
+            If CnExecuting("select count(*) from Org_Poste where Cod_Poste='" & Nouveau_Poste_txt.Text & "' and Cod_Grade='" & Nouveau_Grade_txt.Text & "' and id_Societe=" & Societe.id_Societe).Fields(0).Value = 0 Then
+                Return New savingResult With {.result = False, .message = "Incohérence entre le poste et le grade."}
+            End If
+            If Nouveau_Grade_txt.Text = Ancien_Grade_txt.Text And Nouveau_Poste_txt.Text = Ancien_Poste_txt.Text And Nouveau_Titre_txt.Text = Ancien_Titre_txt.Text And Nouvelle_Entite_txt.Text = Ancienne_Entite_txt.Text Then
+                Return New savingResult With {.result = False, .message = "Aucun changement n'a été effectué sur la position de l'agent."}
+            End If
+            Dim rangAncienGrade As Integer = CInt(FindLibelle("Niveau", "Cod_Grade", Ancien_Grade_txt.Text, "Org_Grade"))
+            Dim rangNouveauGrade As Integer = CInt(FindLibelle("Niveau", "Cod_Grade", Nouveau_Grade_txt.Text, "Org_Grade"))
+            If rangAncienGrade <> 0 And rangNouveauGrade <> 0 Then
+                If rangNouveauGrade > rangAncienGrade Then
+                    Return New savingResult With {.result = False, .message = "Le nouveau grade ne peut pas être inférieur à l'ancien grade."}
+                End If
+            End If
             Dim CodAvancement As String = Cod_Avancement_txt.Text
 
             ' Code Generation if empty
             If CodAvancement = "" Then
                 Dim Cp As New ADODB.Recordset
-                Cp = CnExecuting("select isnull(max(convert(int,right(Cod_Avancement,6))),0) from RH_Avancement where id_Societe=" & Societe.id_Societe & " and year(Dat_Crea)=" & Now.Year)
+                Cp = CnExecuting("Select isnull(max(convert(int,right(Cod_Avancement,6))),0) from RH_Avancement where id_Societe=" & Societe.id_Societe & " And year(Dat_Crea)=" & Now.Year)
                 If Not Cp.EOF Then
                     CodAvancement = "UG" & Societe.id_Societe & "-" & CDate(Dat_Decision_txt.Text).Year & Droite("000000" & CInt(Cp.Fields(0).Value + 1), 6)
                 Else
@@ -214,7 +237,7 @@ Class RH_Avancement
             End If
 
             Dim rs As New ADODB.Recordset
-            rs.Open("select * from RH_Avancement where Cod_Avancement='" & CodAvancement & "' and id_Societe=" & Societe.id_Societe, cn, 2, 2)
+            rs.Open("Select * from RH_Avancement where Cod_Avancement='" & CodAvancement & "' and id_Societe=" & Societe.id_Societe, cn, 2, 2)
 
             If rs.EOF Then
                 rs.AddNew()
@@ -252,16 +275,6 @@ Class RH_Avancement
                 Cod_Avancement_txt.Text = CodAvancement
             Else
                 Request()
-            End If
-            If statut = "VA" Then
-                ' Update Agent
-                Dim sqlUpd As String = "UPDATE RH_Agent SET " &
-                                   "Cod_Poste='" & Nouveau_Poste_txt.Text & "', " &
-                                   "Cod_Grade='" & Nouveau_Grade_txt.Text & "', " &
-                                   "Titre='" & Nouveau_Titre_txt.Text & "', " &
-                                   "Cod_Entite='" & Nouvelle_Entite_txt.Text & "' " &
-                                   "WHERE Matricule='" & Matricule_txt.Text & "' AND id_Societe=" & Societe.id_Societe
-                CnExecuting(sqlUpd)
             End If
 
             Return New savingResult With {.result = True, .message = "Enregistrement effectué avec succès."}

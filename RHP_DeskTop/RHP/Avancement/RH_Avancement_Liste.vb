@@ -96,4 +96,27 @@ Public Class RH_Avancement_Liste
             End If
         End With
     End Sub
+
+    Private Sub Avancement_GRD_MouseDown(sender As Object, e As MouseEventArgs) Handles Avancement_GRD.MouseDown
+        If e.Button = MouseButtons.Right Then
+            Dim hti = Avancement_GRD.HitTest(e.X, e.Y)
+            If hti.RowIndex >= 0 Then
+                Avancement_GRD.ClearSelection()
+                Avancement_GRD.Rows(hti.RowIndex).Selected = True
+                
+                Dim mnu As ContextMenuStrip = Avancement_GRD.ContextMenuStrip
+                Dim item As ToolStripItem = mnu.Items.Add("Voir Timeline Carrière")
+                AddHandler item.Click, AddressOf ShowTimeline
+            End If
+        End If
+    End Sub
+
+    Private Sub ShowTimeline(sender As Object, e As EventArgs)
+        If Avancement_GRD.SelectedRows.Count = 0 Then Return
+        Dim matricule As String = Avancement_GRD.SelectedRows(0).Cells("Matricule").Value.ToString()
+
+        Dim f As New RH_Avancement_Timeline
+        f.Matricule_txt.Text = matricule
+        newShowEcran(f, True)
+    End Sub
 End Class

@@ -1813,6 +1813,18 @@
     <Compile Include="Avancement\RH_Avancement_Liste.vb">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="Avancement\RH_Avancement_Timeline.Designer.vb">
+      <DependentUpon>RH_Avancement_Timeline.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Avancement\RH_Avancement_Timeline.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Avancement\UC_Timeline_Item.Designer.vb">
+      <DependentUpon>UC_Timeline_Item.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Avancement\UC_Timeline_Item.vb">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Include="Modules\Module_Initialisation.vb" />
     <Compile Include="Sys_GenerationGlobale.designer.vb">
       <DependentUpon>Sys_GenerationGlobale.vb</DependentUpon>
@@ -2000,6 +2012,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Avancement\RH_Avancement_Liste.resx">
       <DependentUpon>RH_Avancement_Liste.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Avancement\RH_Avancement_Timeline.resx">
+      <DependentUpon>RH_Avancement_Timeline.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Avancement\UC_Timeline_Item.resx">
+      <DependentUpon>UC_Timeline_Item.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="customUI\MessageBox\ud_InputBox.resx">
       <DependentUpon>ud_InputBox.vb</DependentUpon>
