@@ -1,4 +1,4 @@
-﻿Public Class Admin_Variable_Globale
+﻿Public Class Admin_connectionString
     Private Sub Param_Pie_Load(ByVal sender As Object, ByVal e As System.EventArgs) Handles Me.Load
         Request()
     End Sub
@@ -10,7 +10,7 @@
     Sub Request()
         Dim Cod_Sql As String
 
-        Cod_Sql = "SELECT  Nom_Var as 'Variable', Description  FROM Controle_Variable_Globale "
+        Cod_Sql = "SELECT  Nom_Var as 'Variable', Description  FROM Controle_connectionString "
         Cod_Sql = Cod_Sql & " where Description like '%" & Description_Text.Text & "%'"
         GRD(Cod_Sql, Var_Grd)
 

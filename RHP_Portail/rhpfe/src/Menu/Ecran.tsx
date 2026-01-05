@@ -42,6 +42,11 @@ const RH_Avancement_Timeline = lazy(() => import("../Pages/Avancement/RH_Avancem
 const RH_Discipline_Liste = lazy(() => import("../Pages/Discipline/RH_Discipline_Liste"));
 const RH_Discipline = lazy(() => import("../Pages/Discipline/RH_Discipline"));
 const DiverseEditions = lazy(() => import("../Pages/Editions/DiverseEditions"));
+const Demande_Doc_Administratif_Liste = lazy(() => import("../Pages/Demande_Doc_Administratif/Demande_Doc_Administratif_Liste"));
+const Demande_Doc_Administratif = lazy(() => import("../Pages/Demande_Doc_Administratif/Demande_Doc_Administratif"));
+const RH_Declaration_AT = lazy(() => import("../Pages/Accident_Travail/RH_Declaration_AT"));
+const RH_Declaration_AT_Liste = lazy(() => import("../Pages/Accident_Travail/RH_Declaration_AT_Liste"));
+const Dashboard = lazy(() => import("../Pages/Dashboard/Dashboard"));
 
 const Ecran = ({ style }: { style?: React.CSSProperties }) => {
   const { tbnMenu, settbnMenu, showSignature, signatureProps } =
@@ -121,6 +126,21 @@ const Ecran = ({ style }: { style?: React.CSSProperties }) => {
         break;
       case "DiverseEditions":
         setEcran(<DiverseEditions />);
+        break;
+      case "Demande_Doc_Administratif_Liste":
+        setEcran(<Demande_Doc_Administratif_Liste />);
+        break;
+      case "Demande_Doc_Administratif":
+        setEcran(<Demande_Doc_Administratif />);
+        break;
+      case "RH_Declaration_AT":
+        setEcran(<RH_Declaration_AT />);
+        break;
+      case "RH_Declaration_AT_Liste":
+        setEcran(<RH_Declaration_AT_Liste />);
+        break;
+      case "Dashboard":
+        setEcran(<Dashboard />);
         break;
       default:
         setEcran(

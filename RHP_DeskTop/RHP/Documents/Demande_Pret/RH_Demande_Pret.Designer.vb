@@ -483,7 +483,7 @@ Partial Class RH_Demande_Pret
         Me.LinkLabel3.Size = New System.Drawing.Size(99, 19)
         Me.LinkLabel3.TabIndex = 249
         Me.LinkLabel3.TabStop = True
-        Me.LinkLabel3.Tag = "SC"
+        Me.LinkLabel3.Tag = "SN"
         Me.LinkLabel3.Text = "N° demande"
         Me.LinkLabel3.VisitedLinkColor = System.Drawing.Color.FromArgb(CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer))
         '
@@ -824,7 +824,7 @@ Partial Class RH_Demande_Pret
         Me.Controls.Add(Me.Panel1)
         Me.Font = New System.Drawing.Font("Century Gothic", 8.25!)
         Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None
-        Me.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
+        Me.Margin = New System.Windows.Forms.Padding(4)
         Me.Name = "RH_Demande_Pret"
         Me.Tag = "ECR"
         Me.Text = "Demande de prêt"

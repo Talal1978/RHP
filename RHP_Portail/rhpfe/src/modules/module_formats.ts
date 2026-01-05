@@ -40,6 +40,14 @@ export const formatDateFR = (obj: any, ShowTime: boolean = false) => {
     return obj;
   }
 };
+export const formatDateForInput = (obj: any) => {
+  if (isValid(obj)) {
+    return format(obj, "yyyy-MM-dd");
+  } else if (estDate(new Date(obj))) {
+    return format(new Date(obj), "yyyy-MM-dd");
+  }
+  return "";
+};
 export const toSqlDateFormat = (dat: any, ShowTime?: boolean) => {
   let mydat = estDate(dat)
     ? format(dat, "MM-dd-yyyy" + (ShowTime ? " HH:mm" : ""))

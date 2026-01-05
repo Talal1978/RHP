@@ -1,5 +1,5 @@
-﻿<Global.Microsoft.VisualBasic.CompilerServices.DesignerGenerated()>
-Partial Class RH_Demande_Pret_Liste
+<Global.Microsoft.VisualBasic.CompilerServices.DesignerGenerated()>
+Partial Class RH_Declaration_AT_Liste
     Inherits Ecran
 
     'Form rEmplace la méthode Dispose pour nettoyer la liste des composants.
@@ -23,29 +23,26 @@ Partial Class RH_Demande_Pret_Liste
     <System.Diagnostics.DebuggerStepThrough()>
     Private Sub InitializeComponent()
         Me.components = New System.ComponentModel.Container()
-        Dim DataGridViewCellStyle4 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
-        Dim DataGridViewCellStyle5 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
-        Dim DataGridViewCellStyle6 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
+        Dim DataGridViewCellStyle1 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
+        Dim DataGridViewCellStyle2 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
+        Dim DataGridViewCellStyle3 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
         Me.Ges_Pie_Clt_GRD = New RHP.ud_Grd()
-        Me.Personnal_pnl = New System.Windows.Forms.TableLayoutPanel()
         Me.ButtonX1 = New DevComponents.DotNetBar.ButtonX()
         Me.ButtonX2 = New DevComponents.DotNetBar.ButtonX()
         Me.Code_Client_Facture = New System.Windows.Forms.LinkLabel()
         Me.Cod_Entite_txt = New RHP.ud_TextBox()
         Me.Dat_Debut = New RHP.ud_TextBox()
         Me.Dat_Fin = New RHP.ud_TextBox()
-        Me.Statut_Avance = New RHP.ud_ComboBox()
+        Me.Statut_AT = New RHP.ud_ComboBox()
         Me.LinkLabel15 = New System.Windows.Forms.LinkLabel()
         Me.LinkLabel4 = New System.Windows.Forms.LinkLabel()
         Me.LinkLabel6 = New System.Windows.Forms.LinkLabel()
-        Me.LinkLabel12 = New System.Windows.Forms.LinkLabel()
         Me.SEL_CRT_GROUP = New System.Windows.Forms.GroupBox()
         Me.Matricule_txt = New RHP.ud_TextBox()
         Me.Lib_Entite_txt = New RHP.ud_TextBox()
         Me.Nom_Agent_Text = New RHP.ud_TextBox()
         Me.Matricule_ = New System.Windows.Forms.LinkLabel()
         CType(Me.Ges_Pie_Clt_GRD, System.ComponentModel.ISupportInitialize).BeginInit()
-        Me.Personnal_pnl.SuspendLayout()
         Me.SEL_CRT_GROUP.SuspendLayout()
         Me.SuspendLayout()
         '
@@ -59,52 +56,38 @@ Partial Class RH_Demande_Pret_Liste
         Me.Ges_Pie_Clt_GRD.BackgroundColor = System.Drawing.Color.FromArgb(CType(CType(250, Byte), Integer), CType(CType(250, Byte), Integer), CType(CType(250, Byte), Integer))
         Me.Ges_Pie_Clt_GRD.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D
         Me.Ges_Pie_Clt_GRD.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.[Single]
-        DataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter
-        DataGridViewCellStyle4.BackColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
-        DataGridViewCellStyle4.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        DataGridViewCellStyle4.ForeColor = System.Drawing.Color.White
-        DataGridViewCellStyle4.Padding = New System.Windows.Forms.Padding(5)
-        DataGridViewCellStyle4.SelectionBackColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
-        DataGridViewCellStyle4.SelectionForeColor = System.Drawing.Color.White
-        DataGridViewCellStyle4.WrapMode = System.Windows.Forms.DataGridViewTriState.[True]
-        Me.Ges_Pie_Clt_GRD.ColumnHeadersDefaultCellStyle = DataGridViewCellStyle4
+        DataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter
+        DataGridViewCellStyle1.BackColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
+        DataGridViewCellStyle1.Font = New System.Drawing.Font("Century Gothic", 8.25!)
+        DataGridViewCellStyle1.ForeColor = System.Drawing.Color.White
+        DataGridViewCellStyle1.Padding = New System.Windows.Forms.Padding(5)
+        DataGridViewCellStyle1.SelectionBackColor = System.Drawing.Color.White
+        DataGridViewCellStyle1.SelectionForeColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
+        DataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.[True]
+        Me.Ges_Pie_Clt_GRD.ColumnHeadersDefaultCellStyle = DataGridViewCellStyle1
         Me.Ges_Pie_Clt_GRD.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize
-        DataGridViewCellStyle5.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft
-        DataGridViewCellStyle5.BackColor = System.Drawing.SystemColors.Window
-        DataGridViewCellStyle5.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        DataGridViewCellStyle5.ForeColor = System.Drawing.SystemColors.ControlText
-        DataGridViewCellStyle5.SelectionBackColor = System.Drawing.Color.FromArgb(CType(CType(94, Byte), Integer), CType(CType(185, Byte), Integer), CType(CType(117, Byte), Integer))
-        DataGridViewCellStyle5.SelectionForeColor = System.Drawing.SystemColors.HighlightText
-        DataGridViewCellStyle5.WrapMode = System.Windows.Forms.DataGridViewTriState.[False]
-        Me.Ges_Pie_Clt_GRD.DefaultCellStyle = DataGridViewCellStyle5
+        DataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft
+        DataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window
+        DataGridViewCellStyle2.Font = New System.Drawing.Font("Century Gothic", 8.25!)
+        DataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.ControlText
+        DataGridViewCellStyle2.SelectionBackColor = System.Drawing.Color.FromArgb(CType(CType(94, Byte), Integer), CType(CType(185, Byte), Integer), CType(CType(117, Byte), Integer))
+        DataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText
+        DataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.[False]
+        Me.Ges_Pie_Clt_GRD.DefaultCellStyle = DataGridViewCellStyle2
         Me.Ges_Pie_Clt_GRD.Dock = System.Windows.Forms.DockStyle.Fill
         Me.Ges_Pie_Clt_GRD.EnableHeadersVisualStyles = False
         Me.Ges_Pie_Clt_GRD.GridColor = System.Drawing.Color.FromArgb(CType(CType(208, Byte), Integer), CType(CType(215, Byte), Integer), CType(CType(229, Byte), Integer))
-        Me.Ges_Pie_Clt_GRD.Location = New System.Drawing.Point(0, 157)
+        Me.Ges_Pie_Clt_GRD.Location = New System.Drawing.Point(0, 158)
         Me.Ges_Pie_Clt_GRD.Margin = New System.Windows.Forms.Padding(3, 4, 3, 4)
         Me.Ges_Pie_Clt_GRD.Name = "Ges_Pie_Clt_GRD"
         Me.Ges_Pie_Clt_GRD.ReadOnly = True
         Me.Ges_Pie_Clt_GRD.RowHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.[Single]
-        DataGridViewCellStyle6.BackColor = System.Drawing.Color.FromArgb(CType(CType(169, Byte), Integer), CType(CType(210, Byte), Integer), CType(CType(224, Byte), Integer))
-        DataGridViewCellStyle6.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        Me.Ges_Pie_Clt_GRD.RowHeadersDefaultCellStyle = DataGridViewCellStyle6
+        DataGridViewCellStyle3.BackColor = System.Drawing.Color.FromArgb(CType(CType(169, Byte), Integer), CType(CType(210, Byte), Integer), CType(CType(224, Byte), Integer))
+        DataGridViewCellStyle3.Font = New System.Drawing.Font("Century Gothic", 8.25!)
+        Me.Ges_Pie_Clt_GRD.RowHeadersDefaultCellStyle = DataGridViewCellStyle3
         Me.Ges_Pie_Clt_GRD.RowHeadersWidth = 51
-        Me.Ges_Pie_Clt_GRD.Size = New System.Drawing.Size(1520, 627)
+        Me.Ges_Pie_Clt_GRD.Size = New System.Drawing.Size(1520, 626)
         Me.Ges_Pie_Clt_GRD.TabIndex = 2
-        '
-        'Personnal_pnl
-        '
-        Me.Personnal_pnl.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-        Me.Personnal_pnl.ColumnCount = 2
-        Me.Personnal_pnl.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50.0!))
-        Me.Personnal_pnl.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50.0!))
-        Me.Personnal_pnl.Controls.Add(Me.ButtonX1, 0, 0)
-        Me.Personnal_pnl.Location = New System.Drawing.Point(0, 0)
-        Me.Personnal_pnl.Name = "Personnal_pnl"
-        Me.Personnal_pnl.RowCount = 1
-        Me.Personnal_pnl.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20.0!))
-        Me.Personnal_pnl.Size = New System.Drawing.Size(200, 100)
-        Me.Personnal_pnl.TabIndex = 0
         '
         'ButtonX1
         '
@@ -133,7 +116,7 @@ Partial Class RH_Demande_Pret_Liste
         Me.Code_Client_Facture.AutoSize = True
         Me.Code_Client_Facture.ForeColor = System.Drawing.Color.FromArgb(CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer))
         Me.Code_Client_Facture.LinkColor = System.Drawing.Color.FromArgb(CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer))
-        Me.Code_Client_Facture.Location = New System.Drawing.Point(293, 78)
+        Me.Code_Client_Facture.Location = New System.Drawing.Point(340, 76)
         Me.Code_Client_Facture.Name = "Code_Client_Facture"
         Me.Code_Client_Facture.Size = New System.Drawing.Size(48, 19)
         Me.Code_Client_Facture.TabIndex = 0
@@ -145,7 +128,7 @@ Partial Class RH_Demande_Pret_Liste
         '
         Me.Cod_Entite_txt.CharacterCasing = System.Windows.Forms.CharacterCasing.Normal
         Me.Cod_Entite_txt.ContextMenuStrip = Nothing
-        Me.Cod_Entite_txt.Location = New System.Drawing.Point(335, 76)
+        Me.Cod_Entite_txt.Location = New System.Drawing.Point(392, 74)
         Me.Cod_Entite_txt.Margin = New System.Windows.Forms.Padding(3, 4, 3, 4)
         Me.Cod_Entite_txt.MaxLength = 32767
         Me.Cod_Entite_txt.Multiline = False
@@ -164,7 +147,7 @@ Partial Class RH_Demande_Pret_Liste
         '
         Me.Dat_Debut.CharacterCasing = System.Windows.Forms.CharacterCasing.Normal
         Me.Dat_Debut.ContextMenuStrip = Nothing
-        Me.Dat_Debut.Location = New System.Drawing.Point(114, 111)
+        Me.Dat_Debut.Location = New System.Drawing.Point(117, 109)
         Me.Dat_Debut.Margin = New System.Windows.Forms.Padding(3, 4, 3, 4)
         Me.Dat_Debut.MaxLength = 32767
         Me.Dat_Debut.Multiline = False
@@ -174,7 +157,7 @@ Partial Class RH_Demande_Pret_Liste
         Me.Dat_Debut.ReadOnly = True
         Me.Dat_Debut.ScrollBars = System.Windows.Forms.ScrollBars.None
         Me.Dat_Debut.SelectionStart = 0
-        Me.Dat_Debut.Size = New System.Drawing.Size(170, 26)
+        Me.Dat_Debut.Size = New System.Drawing.Size(121, 26)
         Me.Dat_Debut.TabIndex = 200
         Me.Dat_Debut.TextAlign = System.Windows.Forms.HorizontalAlignment.Left
         Me.Dat_Debut.UseSystemPasswordChar = False
@@ -183,7 +166,7 @@ Partial Class RH_Demande_Pret_Liste
         '
         Me.Dat_Fin.CharacterCasing = System.Windows.Forms.CharacterCasing.Normal
         Me.Dat_Fin.ContextMenuStrip = Nothing
-        Me.Dat_Fin.Location = New System.Drawing.Point(335, 109)
+        Me.Dat_Fin.Location = New System.Drawing.Point(392, 107)
         Me.Dat_Fin.Margin = New System.Windows.Forms.Padding(3, 4, 3, 4)
         Me.Dat_Fin.MaxLength = 32767
         Me.Dat_Fin.Multiline = False
@@ -193,25 +176,25 @@ Partial Class RH_Demande_Pret_Liste
         Me.Dat_Fin.ReadOnly = True
         Me.Dat_Fin.ScrollBars = System.Windows.Forms.ScrollBars.None
         Me.Dat_Fin.SelectionStart = 0
-        Me.Dat_Fin.Size = New System.Drawing.Size(170, 26)
+        Me.Dat_Fin.Size = New System.Drawing.Size(121, 26)
         Me.Dat_Fin.TabIndex = 200
         Me.Dat_Fin.TextAlign = System.Windows.Forms.HorizontalAlignment.Left
         Me.Dat_Fin.UseSystemPasswordChar = False
         '
-        'Statut_Avance
+        'Statut_AT
         '
-        Me.Statut_Avance.DataSource = Nothing
-        Me.Statut_Avance.DisplayMember = ""
-        Me.Statut_Avance.DroppedDown = False
-        Me.Statut_Avance.Location = New System.Drawing.Point(114, 77)
-        Me.Statut_Avance.Margin = New System.Windows.Forms.Padding(3, 4, 3, 4)
-        Me.Statut_Avance.Name = "Statut_Avance"
-        Me.Statut_Avance.SelectedIndex = -1
-        Me.Statut_Avance.SelectedItem = Nothing
-        Me.Statut_Avance.SelectedValue = Nothing
-        Me.Statut_Avance.Size = New System.Drawing.Size(170, 26)
-        Me.Statut_Avance.TabIndex = 16
-        Me.Statut_Avance.ValueMember = ""
+        Me.Statut_AT.DataSource = Nothing
+        Me.Statut_AT.DisplayMember = ""
+        Me.Statut_AT.DroppedDown = False
+        Me.Statut_AT.Location = New System.Drawing.Point(117, 75)
+        Me.Statut_AT.Margin = New System.Windows.Forms.Padding(3, 4, 3, 4)
+        Me.Statut_AT.Name = "Statut_AT"
+        Me.Statut_AT.SelectedIndex = -1
+        Me.Statut_AT.SelectedItem = Nothing
+        Me.Statut_AT.SelectedValue = Nothing
+        Me.Statut_AT.Size = New System.Drawing.Size(170, 26)
+        Me.Statut_AT.TabIndex = 16
+        Me.Statut_AT.ValueMember = ""
         '
         'LinkLabel15
         '
@@ -219,7 +202,7 @@ Partial Class RH_Demande_Pret_Liste
         Me.LinkLabel15.AutoSize = True
         Me.LinkLabel15.ForeColor = System.Drawing.Color.FromArgb(CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer))
         Me.LinkLabel15.LinkColor = System.Drawing.Color.FromArgb(CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer))
-        Me.LinkLabel15.Location = New System.Drawing.Point(52, 78)
+        Me.LinkLabel15.Location = New System.Drawing.Point(63, 79)
         Me.LinkLabel15.Name = "LinkLabel15"
         Me.LinkLabel15.Size = New System.Drawing.Size(50, 19)
         Me.LinkLabel15.TabIndex = 9
@@ -233,7 +216,7 @@ Partial Class RH_Demande_Pret_Liste
         Me.LinkLabel4.AutoSize = True
         Me.LinkLabel4.ForeColor = System.Drawing.Color.FromArgb(CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer))
         Me.LinkLabel4.LinkColor = System.Drawing.Color.FromArgb(CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer))
-        Me.LinkLabel4.Location = New System.Drawing.Point(70, 111)
+        Me.LinkLabel4.Location = New System.Drawing.Point(86, 113)
         Me.LinkLabel4.Name = "LinkLabel4"
         Me.LinkLabel4.Size = New System.Drawing.Size(28, 19)
         Me.LinkLabel4.TabIndex = 4
@@ -247,24 +230,13 @@ Partial Class RH_Demande_Pret_Liste
         Me.LinkLabel6.AutoSize = True
         Me.LinkLabel6.ForeColor = System.Drawing.Color.FromArgb(CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer))
         Me.LinkLabel6.LinkColor = System.Drawing.Color.FromArgb(CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer))
-        Me.LinkLabel6.Location = New System.Drawing.Point(309, 112)
+        Me.LinkLabel6.Location = New System.Drawing.Point(366, 110)
         Me.LinkLabel6.Name = "LinkLabel6"
         Me.LinkLabel6.Size = New System.Drawing.Size(27, 19)
         Me.LinkLabel6.TabIndex = 8
         Me.LinkLabel6.TabStop = True
         Me.LinkLabel6.Tag = ""
         Me.LinkLabel6.Text = "Au"
-        '
-        'LinkLabel12
-        '
-        Me.LinkLabel12.AutoSize = True
-        Me.LinkLabel12.Location = New System.Drawing.Point(1125, 203)
-        Me.LinkLabel12.Name = "LinkLabel12"
-        Me.LinkLabel12.Size = New System.Drawing.Size(85, 19)
-        Me.LinkLabel12.TabIndex = 28
-        Me.LinkLabel12.TabStop = True
-        Me.LinkLabel12.Tag = "Validé par:"
-        Me.LinkLabel12.Text = "Validé par:"
         '
         'SEL_CRT_GROUP
         '
@@ -273,11 +245,10 @@ Partial Class RH_Demande_Pret_Liste
         Me.SEL_CRT_GROUP.Controls.Add(Me.Lib_Entite_txt)
         Me.SEL_CRT_GROUP.Controls.Add(Me.Nom_Agent_Text)
         Me.SEL_CRT_GROUP.Controls.Add(Me.Matricule_)
-        Me.SEL_CRT_GROUP.Controls.Add(Me.LinkLabel12)
         Me.SEL_CRT_GROUP.Controls.Add(Me.LinkLabel6)
         Me.SEL_CRT_GROUP.Controls.Add(Me.LinkLabel4)
         Me.SEL_CRT_GROUP.Controls.Add(Me.LinkLabel15)
-        Me.SEL_CRT_GROUP.Controls.Add(Me.Statut_Avance)
+        Me.SEL_CRT_GROUP.Controls.Add(Me.Statut_AT)
         Me.SEL_CRT_GROUP.Controls.Add(Me.Dat_Fin)
         Me.SEL_CRT_GROUP.Controls.Add(Me.Dat_Debut)
         Me.SEL_CRT_GROUP.Controls.Add(Me.Cod_Entite_txt)
@@ -287,7 +258,7 @@ Partial Class RH_Demande_Pret_Liste
         Me.SEL_CRT_GROUP.Margin = New System.Windows.Forms.Padding(3, 4, 3, 4)
         Me.SEL_CRT_GROUP.Name = "SEL_CRT_GROUP"
         Me.SEL_CRT_GROUP.Padding = New System.Windows.Forms.Padding(3, 4, 3, 4)
-        Me.SEL_CRT_GROUP.Size = New System.Drawing.Size(1520, 157)
+        Me.SEL_CRT_GROUP.Size = New System.Drawing.Size(1520, 158)
         Me.SEL_CRT_GROUP.TabIndex = 0
         Me.SEL_CRT_GROUP.TabStop = False
         Me.SEL_CRT_GROUP.Tag = ""
@@ -298,7 +269,7 @@ Partial Class RH_Demande_Pret_Liste
         Me.Matricule_txt.AccessibleDescription = "A"
         Me.Matricule_txt.CharacterCasing = System.Windows.Forms.CharacterCasing.Normal
         Me.Matricule_txt.ContextMenuStrip = Nothing
-        Me.Matricule_txt.Location = New System.Drawing.Point(114, 43)
+        Me.Matricule_txt.Location = New System.Drawing.Point(117, 40)
         Me.Matricule_txt.Margin = New System.Windows.Forms.Padding(3, 4, 3, 4)
         Me.Matricule_txt.MaxLength = 32767
         Me.Matricule_txt.Multiline = False
@@ -319,7 +290,7 @@ Partial Class RH_Demande_Pret_Liste
         Me.Lib_Entite_txt.AccessibleDescription = "A"
         Me.Lib_Entite_txt.CharacterCasing = System.Windows.Forms.CharacterCasing.Normal
         Me.Lib_Entite_txt.ContextMenuStrip = Nothing
-        Me.Lib_Entite_txt.Location = New System.Drawing.Point(511, 76)
+        Me.Lib_Entite_txt.Location = New System.Drawing.Point(568, 74)
         Me.Lib_Entite_txt.Margin = New System.Windows.Forms.Padding(3, 4, 3, 4)
         Me.Lib_Entite_txt.MaxLength = 32767
         Me.Lib_Entite_txt.Multiline = False
@@ -339,7 +310,7 @@ Partial Class RH_Demande_Pret_Liste
         Me.Nom_Agent_Text.AccessibleDescription = "A"
         Me.Nom_Agent_Text.CharacterCasing = System.Windows.Forms.CharacterCasing.Normal
         Me.Nom_Agent_Text.ContextMenuStrip = Nothing
-        Me.Nom_Agent_Text.Location = New System.Drawing.Point(237, 43)
+        Me.Nom_Agent_Text.Location = New System.Drawing.Point(240, 40)
         Me.Nom_Agent_Text.Margin = New System.Windows.Forms.Padding(3, 4, 3, 4)
         Me.Nom_Agent_Text.MaxLength = 32767
         Me.Nom_Agent_Text.Multiline = False
@@ -349,7 +320,7 @@ Partial Class RH_Demande_Pret_Liste
         Me.Nom_Agent_Text.ReadOnly = True
         Me.Nom_Agent_Text.ScrollBars = System.Windows.Forms.ScrollBars.None
         Me.Nom_Agent_Text.SelectionStart = 0
-        Me.Nom_Agent_Text.Size = New System.Drawing.Size(689, 26)
+        Me.Nom_Agent_Text.Size = New System.Drawing.Size(744, 26)
         Me.Nom_Agent_Text.TabIndex = 226
         Me.Nom_Agent_Text.TextAlign = System.Windows.Forms.HorizontalAlignment.Left
         Me.Nom_Agent_Text.UseSystemPasswordChar = False
@@ -360,7 +331,7 @@ Partial Class RH_Demande_Pret_Liste
         Me.Matricule_.AutoSize = True
         Me.Matricule_.ForeColor = System.Drawing.Color.FromArgb(CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer))
         Me.Matricule_.LinkColor = System.Drawing.Color.FromArgb(CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer))
-        Me.Matricule_.Location = New System.Drawing.Point(34, 43)
+        Me.Matricule_.Location = New System.Drawing.Point(40, 43)
         Me.Matricule_.Name = "Matricule_"
         Me.Matricule_.Size = New System.Drawing.Size(74, 19)
         Me.Matricule_.TabIndex = 225
@@ -368,10 +339,11 @@ Partial Class RH_Demande_Pret_Liste
         Me.Matricule_.Tag = "SC"
         Me.Matricule_.Text = "Matricule"
         '
-        'RH_Demande_Pret_Liste
+        'RH_Declaration_AT_Liste
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(8.0!, 19.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
+        Me.BackColor = System.Drawing.Color.FromArgb(CType(CType(250, Byte), Integer), CType(CType(250, Byte), Integer), CType(CType(250, Byte), Integer))
         Me.ClientSize = New System.Drawing.Size(1520, 784)
         Me.Controls.Add(Me.Ges_Pie_Clt_GRD)
         Me.Controls.Add(Me.SEL_CRT_GROUP)
@@ -379,17 +351,15 @@ Partial Class RH_Demande_Pret_Liste
         Me.Font = New System.Drawing.Font("Century Gothic", 8.25!)
         Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None
         Me.Margin = New System.Windows.Forms.Padding(3, 4, 3, 4)
-        Me.Name = "RH_Demande_Pret_Liste"
+        Me.Name = "RH_Declaration_AT_Liste"
         Me.Tag = "ECR"
-        Me.Text = "Liste des demandes de prêt"
+        Me.Text = "Liste des Déclarations Accidents de Travail"
         CType(Me.Ges_Pie_Clt_GRD, System.ComponentModel.ISupportInitialize).EndInit()
-        Me.Personnal_pnl.ResumeLayout(False)
         Me.SEL_CRT_GROUP.ResumeLayout(False)
         Me.SEL_CRT_GROUP.PerformLayout()
         Me.ResumeLayout(False)
 
     End Sub
-    Friend WithEvents Personnal_pnl As System.Windows.Forms.TableLayoutPanel
     Friend WithEvents ButtonX1 As DevComponents.DotNetBar.ButtonX
     Friend WithEvents ButtonX2 As DevComponents.DotNetBar.ButtonX
     Friend WithEvents Ges_Pie_Clt_GRD As ud_Grd
@@ -397,11 +367,10 @@ Partial Class RH_Demande_Pret_Liste
     Friend WithEvents Cod_Entite_txt As ud_TextBox
     Friend WithEvents Dat_Debut As ud_TextBox
     Friend WithEvents Dat_Fin As ud_TextBox
-    Friend WithEvents Statut_Avance As ud_ComboBox
+    Friend WithEvents Statut_AT As ud_ComboBox
     Friend WithEvents LinkLabel15 As LinkLabel
     Friend WithEvents LinkLabel4 As LinkLabel
     Friend WithEvents LinkLabel6 As LinkLabel
-    Friend WithEvents LinkLabel12 As LinkLabel
     Friend WithEvents SEL_CRT_GROUP As GroupBox
     Friend WithEvents Matricule_txt As ud_TextBox
     Friend WithEvents Nom_Agent_Text As ud_TextBox

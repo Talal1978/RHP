@@ -1,5 +1,5 @@
 ﻿<Global.Microsoft.VisualBasic.CompilerServices.DesignerGenerated()> _
-Partial Class Admin_Variable_Globale
+Partial Class Admin_connectionString
     Inherits Ecran
 
     'Form rEmplace la méthode Dispose pour nettoyer la liste des composants.
@@ -142,7 +142,7 @@ Partial Class Admin_Variable_Globale
         Me.TableLayoutPanel2.Size = New System.Drawing.Size(902, 33)
         Me.TableLayoutPanel2.TabIndex = 79
         '
-        'Admin_Variable_Globale
+        'Admin_connectionString
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(96.0!, 96.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi
@@ -151,7 +151,7 @@ Partial Class Admin_Variable_Globale
         Me.Controls.Add(Me.TableLayoutPanel2)
         Me.DoubleBuffered = True
         Me.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        Me.Name = "Admin_Variable_Globale"
+        Me.Name = "Admin_connectionString"
         Me.Tag = "ECR"
         Me.Text = "Variables globales"
         Me.Personnal_pnl.ResumeLayout(False)

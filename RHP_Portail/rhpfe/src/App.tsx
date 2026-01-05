@@ -4,7 +4,7 @@ import React, {
   useMemo,
   useState,
 } from "react";
-import { BrowserRouter, Routes, Route, useParams } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useParams, Navigate } from "react-router-dom";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFnsV3";
 import { fr } from "date-fns/locale/fr";
@@ -117,7 +117,7 @@ function App() {
                   path="/myspace/:ecran/:titre/:num?"
                   element={<MenuMain />}
                 />
-                <Route path="/myspace" element={<MenuMain />} />
+                <Route path="/myspace" element={<Navigate to="/myspace/Dashboard/Tableau de bord" replace />} />
                 <Route path="viewer/:pdfURL?" element={<ReportViewer />} />
                 <Route path="users/:id" element={<Login />} />
               </Routes>

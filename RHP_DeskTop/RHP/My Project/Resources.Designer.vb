@@ -163,6 +163,16 @@ Namespace My.Resources
         '''<summary>
         '''  Recherche une ressource localisée de type System.Drawing.Bitmap.
         '''</summary>
+        Friend ReadOnly Property btn_accepter() As System.Drawing.Bitmap
+            Get
+                Dim obj As Object = ResourceManager.GetObject("btn_accepter", resourceCulture)
+                Return CType(obj,System.Drawing.Bitmap)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  Recherche une ressource localisée de type System.Drawing.Bitmap.
+        '''</summary>
         Friend ReadOnly Property btn_add() As System.Drawing.Bitmap
             Get
                 Dim obj As Object = ResourceManager.GetObject("btn_add", resourceCulture)
@@ -1076,6 +1086,16 @@ Namespace My.Resources
         Friend ReadOnly Property btn_refresh() As System.Drawing.Bitmap
             Get
                 Dim obj As Object = ResourceManager.GetObject("btn_refresh", resourceCulture)
+                Return CType(obj,System.Drawing.Bitmap)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  Recherche une ressource localisée de type System.Drawing.Bitmap.
+        '''</summary>
+        Friend ReadOnly Property btn_rejeter() As System.Drawing.Bitmap
+            Get
+                Dim obj As Object = ResourceManager.GetObject("btn_rejeter", resourceCulture)
                 Return CType(obj,System.Drawing.Bitmap)
             End Get
         End Property
@@ -2796,6 +2816,16 @@ Namespace My.Resources
         Friend ReadOnly Property spinner3_greenie() As System.Drawing.Bitmap
             Get
                 Dim obj As Object = ResourceManager.GetObject("spinner3_greenie", resourceCulture)
+                Return CType(obj,System.Drawing.Bitmap)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  Recherche une ressource localisée de type System.Drawing.Bitmap.
+        '''</summary>
+        Friend ReadOnly Property stamp_cloture() As System.Drawing.Bitmap
+            Get
+                Dim obj As Object = ResourceManager.GetObject("stamp_cloture", resourceCulture)
                 Return CType(obj,System.Drawing.Bitmap)
             End Get
         End Property

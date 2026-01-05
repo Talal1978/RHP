@@ -41,7 +41,7 @@ const Signature = (props: TSignature) => {
         }
       })
       .catch((err) => {
-
+        console.error("get_signataires error:", err);
         setSignataires([]);
       });
   }, [props.typ_document, props.valeur_index]);
@@ -99,9 +99,9 @@ const Signature = (props: TSignature) => {
                       )}
                     </React.Fragment>
                     {v?.Decision === "" &&
-                    (String(v?.Signataire || "")?.toUpperCase() ===
-                      (Agent?.Matricule || "").toUpperCase() ||
-                      String(v?.Signataire || "")?.toUpperCase() ===
+                      (String(v?.Signataire || "")?.toUpperCase() ===
+                        (Agent?.Matricule || "").toUpperCase() ||
+                        String(v?.Signataire || "")?.toUpperCase() ===
                         (Agent?.Login || "").toUpperCase()) ? (
                       <Btn_Signataires RowId={v?.RowId} />
                     ) : (
@@ -118,7 +118,7 @@ const Signature = (props: TSignature) => {
                     >
                       <div className="signature_ordre">
                         {String(v?.Operande_Signature || "").toUpperCase() ===
-                        "OU" ? (
+                          "OU" ? (
                           "Ou"
                         ) : v?.Dans_Ordre ? (
                           <KeyboardDoubleArrowDownOutlined />

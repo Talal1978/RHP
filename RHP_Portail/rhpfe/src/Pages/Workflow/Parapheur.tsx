@@ -107,17 +107,17 @@ const Parapheur = () => {
         dataSource={data.ds}
         Colonnes={data.dsFields}
         className="laGrille"
-        onclick={({ colIndex, rowIndex, value }) => {
-          if (rowIndex !== undefined && rowIndex != null && colIndex === 2) {
+        onclick={({ colName, row }) => {
+          if (row && (colName === "Référence" || colName === "Type de documents")) {
             navigate(
-              `../myspace/${data.ds[rowIndex]["Name_Ecran"]}/${data.ds[rowIndex]["Type de documents"]}/${value}`
+              `/myspace/${row["Name_Ecran"]}/${encodeURIComponent(row["Type de documents"])}/${encodeURIComponent(row["Référence"])}`
             );
             return;
           }
-          if (rowIndex !== undefined && rowIndex != null && colIndex === 0) {
+          if (row && colName === "signature") {
             setSignatureProps({
-              typ_document: data.ds[rowIndex]["Typ_Document"],
-              valeur_index: data.ds[rowIndex]["Référence"],
+              typ_document: row["Typ_Document"],
+              valeur_index: row["Référence"],
             });
             setShowSignature(true);
             return;

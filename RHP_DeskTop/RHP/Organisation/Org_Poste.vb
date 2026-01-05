@@ -49,7 +49,7 @@ Public Class Org_Poste
         TachesAttributions_lv.Tag = ""
         Dim SqlStr As String = $"SELECT Cod_Poste, Lib_Poste, Cod_Grade, Soft_Skills, Domaines_Competence, 
                             Background_Academique, nb_Annees_Experience, Mission, TachesAttributions,Responsabilites,
-                            Dependance_Hierarchique, Dependance_fonctionnelle
+                            Dependance_Hierarchique, Dependance_fonctionnelle, Dependance_03, Dependance_04, Dependance_05
 FROM     Org_Poste
 where Cod_Poste='{Cod_Poste_txt.Text}' and id_Societe=" & Societe.id_Societe
         Dim Tbl As DataTable = DATA_READER_GRD(SqlStr)
@@ -64,6 +64,9 @@ where Cod_Poste='{Cod_Poste_txt.Text}' and id_Societe=" & Societe.id_Societe
                 nb_Annees_Experience.Value = IsNull(.Rows(0).Item("nb_Annees_Experience"), 0)
                 Dependance_Hierarchique_txt.Text = IsNull(.Rows(0).Item("Dependance_Hierarchique"), "")
                 Dependance_fonctionnelle_txt.Text = IsNull(.Rows(0).Item("Dependance_fonctionnelle"), "")
+                Dependance_03_txt.Text = IsNull(.Rows(0).Item("Dependance_03"), "")
+                Dependance_04_txt.Text = IsNull(.Rows(0).Item("Dependance_04"), "")
+                Dependance_05_txt.Text = IsNull(.Rows(0).Item("Dependance_05"), "")
                 TachesAttributions_lv.Tag = IsNull(.Rows(0).Item("TachesAttributions"), "")
                 Responsabilites_lv.Tag = IsNull(.Rows(0).Item("Responsabilites"), "")
                 Mission_txt.Text = IsNull(.Rows(0).Item("Mission"), "")
@@ -195,6 +198,9 @@ where Cod_Poste='{Cod_Poste_txt.Text}' and id_Societe=" & Societe.id_Societe
             rs("nb_Annees_Experience").Value = nb_Annees_Experience.Value
             rs("Dependance_Hierarchique").Value = Dependance_Hierarchique_txt.Text
             rs("Dependance_fonctionnelle").Value = Dependance_fonctionnelle_txt.Text
+            rs("Dependance_03").Value = Dependance_03_txt.Text
+            rs("Dependance_04").Value = Dependance_04_txt.Text
+            rs("Dependance_05").Value = Dependance_05_txt.Text
             rs("Domaines_Competence").Value = Domaines_Competence_Pnl.Text
             rs("Mission").Value = Mission_txt.Text
             rs("TachesAttributions").Value = TachesAttributions_lv.Tag
@@ -317,6 +323,15 @@ select 'RH_Dossier_Maladie' as Tbl,count(*) from CVTheque where Cod_Poste='{0}' 
     End Sub
     Private Sub Dependance_Hierarchique_txt_TextChanged(sender As Object, e As EventArgs) Handles Dependance_Hierarchique_txt.TextChanged
         Lib_Dependance_Hierarchique_txt.Text = FindLibelle("Lib_Poste", "Cod_Poste", Dependance_Hierarchique_txt.Text, "Org_Poste")
+    End Sub
+    Private Sub Dependance_03_txt_TextChanged(sender As Object, e As EventArgs) Handles Dependance_03_txt.TextChanged
+        Lib_Dependance_03_txt.Text = FindLibelle("Lib_Poste", "Cod_Poste", Dependance_03_txt.Text, "Org_Poste")
+    End Sub
+    Private Sub Dependance_04_txt_TextChanged(sender As Object, e As EventArgs) Handles Dependance_04_txt.TextChanged
+        Lib_Dependance_04_txt.Text = FindLibelle("Lib_Poste", "Cod_Poste", Dependance_04_txt.Text, "Org_Poste")
+    End Sub
+    Private Sub Dependance_05_txt_TextChanged(sender As Object, e As EventArgs) Handles Dependance_05_txt.TextChanged
+        Lib_Dependance_05_txt.Text = FindLibelle("Lib_Poste", "Cod_Poste", Dependance_05_txt.Text, "Org_Poste")
     End Sub
 #Region "Competence"
     Private Sub Comptence_Pnl_MouseDoubleClick(sender As Panel, e As MouseEventArgs) Handles Domaines_Competence_Pnl.MouseDoubleClick
@@ -589,6 +604,15 @@ select 'RH_Dossier_Maladie' as Tbl,count(*) from CVTheque where Cod_Poste='{0}' 
                 .Tag &= IIf(IsNull(.Tag, "") = "", "", ";") & .Items(i).Text
             Next
         End With
+    End Sub
+    Private Sub LinkLabel2_LinkClicked(sender As Object, e As LinkLabelLinkClickedEventArgs) Handles LinkLabel2.LinkClicked
+        Appel_Zoom1("MS016", Dependance_03_txt, Me)
+    End Sub
+    Private Sub LinkLabel3_LinkClicked(sender As Object, e As LinkLabelLinkClickedEventArgs) Handles LinkLabel3.LinkClicked
+        Appel_Zoom1("MS016", Dependance_04_txt, Me)
+    End Sub
+    Private Sub LinkLabel4_LinkClicked(sender As Object, e As LinkLabelLinkClickedEventArgs) Handles LinkLabel4.LinkClicked
+        Appel_Zoom1("MS016", Dependance_05_txt, Me)
     End Sub
 #Region "Responsabilités"
     Private Sub resp_edit_btn_Click(sender As Object, e As EventArgs) Handles resp_edit_btn.Click

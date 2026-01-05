@@ -40,6 +40,8 @@ import {
   StarBorder,
   ExpandLess,
   ExpandMore,
+  MedicalServices,
+  SpaceDashboard,
 } from "@mui/icons-material";
 import { Fragment, useContext, useEffect, useState } from "react";
 import { cntX } from "./MenuMain";
@@ -71,6 +73,8 @@ const menusIcon: MenuIcons = {
   EventAvailable: EventAvailable,
   Topic: Topic,
   ChevronRight: ChevronRight,
+  MedicalServices: MedicalServices,
+  SpaceDashboard: SpaceDashboard,
 };
 const GetMenuIcon = ({
   name_ecran,

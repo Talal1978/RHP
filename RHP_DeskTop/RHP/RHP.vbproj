@@ -699,6 +699,18 @@
     <Compile Include="Descipline\RH_Discipline_Liste.vb">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="Documents\Demande_Doc_Administratif\Demande_Doc_Admin.Designer.vb">
+      <DependentUpon>Demande_Doc_Admin.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Documents\Demande_Doc_Administratif\Demande_Doc_Admin.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Documents\Demande_Doc_Administratif\Demande_Doc_Admin_Liste.Designer.vb">
+      <DependentUpon>Demande_Doc_Admin_Liste.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Documents\Demande_Doc_Administratif\Demande_Doc_Admin_Liste.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Documents\Demande de remboursement Assurances\RH_Dossier_Maladie_Liste.designer.vb">
       <DependentUpon>RH_Dossier_Maladie_Liste.vb</DependentUpon>
     </Compile>
@@ -722,6 +734,18 @@
       <DependentUpon>RH_Demande_Pret_Liste.vb</DependentUpon>
     </Compile>
     <Compile Include="Documents\Demande_Pret\RH_Demande_Pret_Liste.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Documents\Accident_Travail\RH_Declaration_AT_Liste.designer.vb">
+      <DependentUpon>RH_Declaration_AT_Liste.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Documents\Accident_Travail\RH_Declaration_AT_Liste.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Documents\Accident_Travail\RH_Declaration_AT.designer.vb">
+      <DependentUpon>RH_Declaration_AT.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Documents\Accident_Travail\RH_Declaration_AT.vb">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Documents\Note de frais\Note_Frais.Designer.vb">
@@ -2078,6 +2102,12 @@
     <EmbeddedResource Include="Descipline\RH_Discipline_Liste.resx">
       <DependentUpon>RH_Discipline_Liste.vb</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Documents\Accident_Travail\RH_Declaration_AT.resx">
+      <DependentUpon>RH_Declaration_AT.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Documents\Accident_Travail\RH_Declaration_AT_Liste.resx">
+      <DependentUpon>RH_Declaration_AT_Liste.vb</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Documents\Demande de remboursement Assurances\RH_Dossier_Maladie_Liste.resx">
       <DependentUpon>RH_Dossier_Maladie_Liste.vb</DependentUpon>
     </EmbeddedResource>
@@ -2086,6 +2116,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Compta\Ctb_Compta_Caisse_Banque.resx">
       <DependentUpon>Ctb_Compta_Caisse_Banque.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Documents\Demande_Doc_Administratif\Demande_Doc_Admin.resx">
+      <DependentUpon>Demande_Doc_Admin.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Documents\Demande_Doc_Administratif\Demande_Doc_Admin_Liste.resx">
+      <DependentUpon>Demande_Doc_Admin_Liste.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Documents\Demande_Pret\RH_Demande_Pret_Liste.resx">
       <DependentUpon>RH_Demande_Pret_Liste.vb</DependentUpon>
@@ -2988,6 +3024,9 @@
     <None Include="Resources\btn_python.png" />
     <None Include="Resources\btn_python_w.png" />
     <None Include="Resources\ud_Pyhton.png" />
+    <None Include="Resources\btn_accepter.png" />
+    <None Include="Resources\btn_rejeter.png" />
+    <None Include="Resources\stamp_cloture.png" />
     <Content Include="rhp.ico" />
     <None Include="app.config" />
     <None Include="My Project\app.manifest">

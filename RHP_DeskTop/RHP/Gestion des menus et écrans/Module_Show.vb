@@ -274,6 +274,12 @@ suite:
                 With Z
                     If ecr.dictButtons.ContainsKey("Save_D") Then
                         .LecteureSeule = Not (ecr.dictButtons("Save_D").Enabled And ecr.dictButtons("Save_D").Visible)
+                        Try
+                            If ecr.GetType().GetProperty("AllowUploadInReadOnly") IsNot Nothing Then
+                                .EnableUploadInReadOnly = ecr.GetType().GetProperty("AllowUploadInReadOnly").GetValue(ecr, Nothing)
+                            End If
+                        Catch ex As Exception
+                        End Try
                     End If
                     .NameEcran = ecr.Name
                     .Text = "Pièces Jointes"

@@ -1,5 +1,13 @@
 {"menus":[
   {
+    "name_ecran": "Dashboard",
+    "text_ecran": "Tableau de bord",
+    "typ_ecran": "ECR",
+    "parent": "",
+    "rang": 0,
+    "img": "SpaceDashboard"
+  },
+  {
     "name_ecran": "orga",
     "text_ecran": "Données organisation",
     "typ_ecran": "MNU",
@@ -86,6 +94,22 @@
     "parent": "MesDemandes",
     "rang": 5,
     "img": "Commute"
+  },
+  {
+    "name_ecran": "MesDeclarationsAT",
+    "text_ecran": "Déclarations d'accidents de travail",
+    "typ_ecran": "MNU",
+    "parent": "",
+    "rang": 6,
+    "img": "MedicalServices"
+  },
+  {
+    "name_ecran": "RH_Declaration_AT_Liste",
+    "text_ecran": "Accidents de travail",
+    "typ_ecran": "ECR",
+    "parent": "MesDeclarationsAT",
+    "rang": 7,
+    "img": "MedicalServices"
   },
   {
     "name_ecran": "mesConsultations",

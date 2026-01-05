@@ -136,11 +136,27 @@ const Ged = (props: TGed) => {
           responseType: "blob",
         });
         if (response.status === 209) {
+          let msg = "Erreur inconnue";
+          if (response.data instanceof Blob) {
+            try {
+              const txt = await response.data.text();
+              const json = JSON.parse(txt);
+              msg = json.message || json.erreur || json.data || msg;
+            } catch (e) {
+              msg = "Impossible de lire le message d'erreur";
+            }
+          } else if (response.data) {
+            msg = response.data.message || response.data.erreur || response.data.data || msg;
+            if (response.data.details) {
+              msg += `\nPath: ${response.data.details.path}`;
+              msg += `\nDir: ${response.data.details.configuredDir}`;
+              msg += `\nFiles: ${JSON.stringify(response.data.details.filesInDir)}`;
+            }
+          }
+
           alert({
-            msg: `${response.data.erreur} :
-                    ${filealias}
-                    `,
-            timeOut: 2000,
+            msg: `${msg}`,
+            timeOut: 20000,
             titre: "Erreur",
             typMsg: "error",
           });
@@ -223,7 +239,7 @@ const Ged = (props: TGed) => {
         newDocs.filter(
           (dc) =>
             dc.FD_Alias!.toLowerCase().trim() ===
-              String(doc.newName).toLowerCase().trim() && dc.FD_id !== doc.FD_id
+            String(doc.newName).toLowerCase().trim() && dc.FD_id !== doc.FD_id
         ).length > 0
       ) {
         alert({
@@ -292,24 +308,24 @@ const Ged = (props: TGed) => {
           </div>
           {(getCurrentDir() === 0 ||
             allDocs.find((dc) => dc.FD_id === getCurrentDir())?.Ecriture) && (
-            <>
-              <div
-                className="ajouterPJ"
-                onClick={() => inputFileDialog?.current?.click()}
-              >
-                <NoteAddOutlined />
-                <input
-                  type="file"
-                  onChange={openFileDialog}
-                  ref={inputFileDialog}
-                  style={{ display: "none" }}
-                />
-              </div>
-              <div className="ajouterPJ" onClick={newFolder}>
-                <CreateNewFolderOutlined />
-              </div>
-            </>
-          )}
+              <>
+                <div
+                  className="ajouterPJ"
+                  onClick={() => inputFileDialog?.current?.click()}
+                >
+                  <NoteAddOutlined />
+                  <input
+                    type="file"
+                    onChange={openFileDialog}
+                    ref={inputFileDialog}
+                    style={{ display: "none" }}
+                  />
+                </div>
+                <div className="ajouterPJ" onClick={newFolder}>
+                  <CreateNewFolderOutlined />
+                </div>
+              </>
+            )}
         </div>
         <List className="listeDoc">
           {selectedDocs.map((doc: TDoc, i) => {
@@ -439,9 +455,8 @@ const Ged = (props: TGed) => {
                       }}
                       primary={doc.FD_Alias}
                       secondary={
-                        <span className="detailDoc">{`${
-                          doc.Nom_Created_By
-                        } -  ${formatDateFR(doc.Date_Modif, true)}`}</span>
+                        <span className="detailDoc">{`${doc.Nom_Created_By ? doc.Nom_Created_By + " - " : ""}
+                          ${formatDateFR(doc.Date_Modif, true)}`}</span>
                       }
                       onClick={() =>
                         handleDoc(doc.Typ!, doc.FD_id!, doc.FD_Alias!)

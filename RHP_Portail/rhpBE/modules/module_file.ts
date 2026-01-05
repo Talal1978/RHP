@@ -166,8 +166,32 @@ export default class fileClass {
     filename = filename.replace(/ /g, "_");
     const cheminUploads = VGLOBALES.UPLOADS_PATH;
     let file_name = path.resolve(cheminUploads, String(filename));
+    console.log("Download Request:", {
+      queryFilename: req.query.filename,
+      processedFilename: filename,
+      uploadsPath: cheminUploads,
+      resolvedPath: file_name,
+      exists: fs.existsSync(file_name)
+    });
+
     if (!fs.existsSync(file_name)) {
-      return res.status(209).send({ erreur: `Le fichier n'existe pas.` });
+      let files: string[] = [];
+      try {
+        if (fs.existsSync(cheminUploads)) {
+          files = fs.readdirSync(cheminUploads);
+        } else {
+          files = ["Uploads dir does not exist"];
+        }
+      } catch (e: any) { files = ["Error reading dir: " + e.message]; }
+
+      return res.status(209).send({
+        erreur: `Le fichier n'existe pas.`,
+        details: {
+          path: file_name,
+          configuredDir: cheminUploads,
+          filesInDir: files.slice(0, 10) // Limit to 10
+        }
+      });
     } else {
       return res.status(200).download(file_name);
     }

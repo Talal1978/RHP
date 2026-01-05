@@ -179,14 +179,22 @@ export const initialisationSeveur = async (): Promise<boolean> => {
     if (!cnfJson.pwd) throw new Error("Password missing in config");
 
     cnfJson.pwd = decrypt(cnfJson.pwd);
-    const opath = "E:/Dev/Mobile/RayOneMobile/RayOneBE/tools/uploads"; //cnfJson.path;
+    // const opath = "E:/Dev/Mobile/RayOneMobile/RayOneBE/tools/uploads"; //cnfJson.path;
     VGLOBALES.PORT = cnfJson.port;
     VGLOBALES.ODBC_SERVEUR = cnfJson.odbc;
     VGLOBALES.SQL_SERVER = cnfJson.server;
     VGLOBALES.SQL_USER = cnfJson.user;
     VGLOBALES.SQL_DB = cnfJson.db;
     VGLOBALES.SQL_PASSWORD = cnfJson.pwd;
-    VGLOBALES.UPLOADS_PATH = path.resolve(opath);
+    const opath = process.env.UPLOAD_PATH || "talal";
+    if (fs.existsSync(opath)) {
+      VGLOBALES.UPLOADS_PATH = path.resolve(opath);
+    } else {
+      VGLOBALES.UPLOADS_PATH = path.resolve(opath, process.cwd());
+      if (!fs.existsSync(VGLOBALES.UPLOADS_PATH)) {
+        fs.mkdirSync(VGLOBALES.UPLOADS_PATH, { recursive: true });
+      }
+    }
     return true;
   } catch (err) {
     console.error("Erreur initialisation : ", err);

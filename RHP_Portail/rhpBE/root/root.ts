@@ -74,6 +74,14 @@ import { get_avancement_timeline } from "../controlers/rh_avancement";
 import { get_agenda } from "../controlers/agenda";
 import { discipline_liste, get_discipline } from "../controlers/discipline";
 import { get_diverse_editions } from "../controlers/editions";
+import {
+  demandeDocAdminListe,
+  get_demande_doc_admin,
+  save_demande_doc_admin,
+  delete_demande_doc_admin,
+} from "../controlers/demande_doc_admin";
+import { declarationATListe, get_declaration_at } from "../controlers/declaration_at";
+import { getDashboardData } from "../controlers/dashboard";
 const mainRooting = express.Router();
 const storage = multer.diskStorage({
   destination: async (req, file, cb) => {
@@ -168,6 +176,16 @@ mainRooting.post(
   fileClass.upload
 );
 mainRooting.post("/get_diverse_editions", validate, get_diverse_editions);
+
+mainRooting.post("/demande_doc_admin_liste", validate, demandeDocAdminListe);
+mainRooting.post("/get_demande_doc_admin", validate, get_demande_doc_admin);
+mainRooting.post("/save_demande_doc_admin", validate, save_demande_doc_admin);
+mainRooting.post("/delete_demande_doc_admin", validate, delete_demande_doc_admin);
+
+mainRooting.post("/declarationATListe", validate, declarationATListe);
+mainRooting.post("/get_declaration_at", validate, get_declaration_at);
+mainRooting.post("/dashboard", validate, getDashboardData);
+
 async function testFunction() {
 
   return await lireSql("select * from RH_Agent where Matricule='1'", []);

@@ -3,7 +3,7 @@ import {
   CheckBoxOutlined,
 } from "@mui/icons-material";
 import { TGrilleCell, cntx } from "./Grille";
-import { formatDateFR } from "../../modules/module_formats";
+import { formatDateForInput, formatDateFR } from "../../modules/module_formats";
 import { useContext, useRef } from "react";
 
 const GrilleCell = ({
@@ -59,7 +59,7 @@ const GrilleCell = ({
                   valeur: e.target.value,
                 });
             }}
-            value={formatDateFR(row[col])}
+            value={formatDateForInput(row[col])}
             placeholder="dd/mm/yy"
             style={{
               width: "100%",

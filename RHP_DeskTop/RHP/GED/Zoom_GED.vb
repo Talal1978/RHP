@@ -4,6 +4,7 @@ Imports DevComponents.AdvTree
 Public Class Zoom_GED
     Dim ValeurFD_id As String = ""
     Friend LecteureSeule As Boolean = False
+    Public EnableUploadInReadOnly As Boolean = False
     Friend NameEcran As String = ""
     Friend IndexEcran As String = ""
     Friend valeurIndex As String = ""
@@ -37,7 +38,7 @@ Public Class Zoom_GED
         With Mnu0
             .Text = "Ajouter un nouveau dossier"
             .Image = My.Resources.fdr_0
-            .Enabled = Not LecteureSeule
+            .Enabled = Not LecteureSeule Or EnableUploadInReadOnly
             AddHandler .Click, AddressOf AddFdr
         End With
         With Mnu1
@@ -53,7 +54,7 @@ Public Class Zoom_GED
             AddHandler .Click, AddressOf Supprimer
         End With
         With Mnu3
-            .Enabled = Not LecteureSeule
+            .Enabled = Not LecteureSeule Or EnableUploadInReadOnly
             .Text = "Ajouer un fichier"
             .Image = My.Resources.Roll_forward
             AddHandler .Click, AddressOf AddFile
@@ -110,10 +111,10 @@ Public Class Zoom_GED
         With Lv
             .ContextMenuStrip = oCotextM
             .ListViewItemSorter = lvwColumnSorter
-            .AllowDrop = Not LecteureSeule
+            .AllowDrop = Not LecteureSeule Or EnableUploadInReadOnly
         End With
-        NouveauDossierToolStripMenuItem.Enabled = Not LecteureSeule
-        AjouterUnFichierToolStripMenuItem.Enabled = Not LecteureSeule
+        NouveauDossierToolStripMenuItem.Enabled = Not LecteureSeule Or EnableUploadInReadOnly
+        AjouterUnFichierToolStripMenuItem.Enabled = Not LecteureSeule Or EnableUploadInReadOnly
         RenommerToolStripMenuItem.Enabled = Not LecteureSeule
         SupprimerToolStripMenuItem.Enabled = Not LecteureSeule
 
@@ -125,11 +126,11 @@ Public Class Zoom_GED
         Dim nrw() As DataRow = DATA_READER_GRD("exec Sys_GED_Droits '" & itm.Name & "'").Select("id_USer=" & theUser.id_User)
         If nrw.Length = 0 Then Return
         With oCotextM
-            .Items(0).Enabled = getDroit(FdrParent, "W") And Not LecteureSeule
+            .Items(0).Enabled = getDroit(FdrParent, "W") And (Not LecteureSeule Or EnableUploadInReadOnly)
             .Items(1).Enabled = .Items(0).Enabled
             .Items(3).Enabled = getDroit(itm.Name, "R")
-            .Items(4).Enabled = getDroit(itm.Name, "W") And Not LecteureSeule
-            .Items(5).Enabled = .Items(4).Enabled
+            .Items(4).Enabled = getDroit(itm.Name, "W") And (Not LecteureSeule Or EnableUploadInReadOnly)
+            .Items(5).Enabled = getDroit(itm.Name, "W") And Not LecteureSeule
             .Items(6).Enabled = .Items(4).Enabled
         End With
     End Sub
@@ -167,7 +168,7 @@ Public Class Zoom_GED
         End Select
     End Sub
     Sub AddFdr()
-        If LecteureSeule Then Return
+        If LecteureSeule And Not EnableUploadInReadOnly Then Return
         Dim rnd As Long = theUser.id_User & Now.Year & Now.Month & Now.Day & Now.Hour & Now.Minute & Now.Millisecond
         Dim itm As New ListViewItem
         Dim oNo As New Node
@@ -220,7 +221,7 @@ Public Class Zoom_GED
         Return Trv.FindNodeByName(FileId).FullPath.Replace(";", "\")
     End Function
     Sub AddFile()
-        If LecteureSeule Then Return
+        If LecteureSeule And Not EnableUploadInReadOnly Then Return
         Dim iconForFile As Icon = SystemIcons.WinLogo
         Dim OpenFileDialog As New OpenFileDialog
         OpenFileDialog.InitialDirectory = importPath
@@ -234,7 +235,7 @@ Public Class Zoom_GED
         End If
     End Sub
     Sub AjouterFicher(FileName)
-        If LecteureSeule Then Return
+        If LecteureSeule And Not EnableUploadInReadOnly Then Return
         Try
             Dim Info As New IO.FileInfo(FileName)
             Dim nrw() As DataRow = Tbl.Select("FD_Alias='" & Info.Name & "' and Parent_Dir=" & FdrParent)
@@ -592,7 +593,7 @@ select * from Tbl"
     End Function
 
     Private Sub NouveauDossierToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles NouveauDossierToolStripMenuItem.Click
-        If LecteureSeule Then Return
+        If LecteureSeule And Not EnableUploadInReadOnly Then Return
         Try
             Dim rnd As Long = theUser.id_User & Now.Year & Now.Month & Now.Day & Now.Hour & Now.Minute & Now.Millisecond
             Dim itm As New ListViewItem
@@ -695,11 +696,11 @@ select * from Tbl"
         Return itm
     End Function
     Private Sub AjouterUnFichierToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles AjouterUnFichierToolStripMenuItem.Click
-        If LecteureSeule Then Return
+        If LecteureSeule And Not EnableUploadInReadOnly Then Return
         AddFile()
     End Sub
     Private Sub Trv_AfterNodeDrop(sender As Object, e As TreeDragDropEventArgs) Handles Trv.AfterNodeDrop
-        If LecteureSeule Then Return
+        If LecteureSeule And Not EnableUploadInReadOnly Then Return
         If e.Node Is Nothing Then Return
         Dim rs As New ADODB.Recordset
         rs.Open("select  *  from Param_GED where FD_id='" & e.Node.Name & "' and id_Societe=" & Societe.id_Societe, cn, 2, 2)
@@ -726,11 +727,11 @@ select * from Tbl"
     End Sub
 #Region "Drag"
     Private Sub Lv_DragEnter(sender As Object, e As DragEventArgs) Handles Lv.DragEnter
-        If LecteureSeule Then Return
+        If LecteureSeule And Not EnableUploadInReadOnly Then Return
         e.Effect = DragDropEffects.Move
     End Sub
     Private Sub Lv_ItemDrag(sender As Object, e As ItemDragEventArgs) Handles Lv.ItemDrag
-        If LecteureSeule Then Return
+        If LecteureSeule And Not EnableUploadInReadOnly Then Return
         Try
             Lv.DoDragDrop(Lv.SelectedItems, DragDropEffects.Move)
         Catch ex As Exception
@@ -738,7 +739,7 @@ select * from Tbl"
         End Try
     End Sub
     Private Sub Lv_DragDrop(sender As Object, e As DragEventArgs) Handles Lv.DragDrop
-        If LecteureSeule Then Return
+        If LecteureSeule And Not EnableUploadInReadOnly Then Return
         Try
             If Not getDroit(FdrParent, "W") Then
                 ShowMessageBox("Vous n'avez pas le droit d'écriture sur ce dossier", Me.Text, MessageBoxButtons.OK, msgIcon.Stop)

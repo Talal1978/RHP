@@ -27,6 +27,15 @@ Partial Class Org_Poste
         Me.poste_ = New System.Windows.Forms.LinkLabel()
         Me.Lib_Poste_txt = New RHP.ud_TextBox()
         Me.Panel1 = New System.Windows.Forms.Panel()
+        Me.LinkLabel4 = New System.Windows.Forms.LinkLabel()
+        Me.Dependance_05_txt = New RHP.ud_TextBox()
+        Me.Lib_Dependance_05_txt = New RHP.ud_TextBox()
+        Me.LinkLabel3 = New System.Windows.Forms.LinkLabel()
+        Me.Dependance_04_txt = New RHP.ud_TextBox()
+        Me.Lib_Dependance_04_txt = New RHP.ud_TextBox()
+        Me.LinkLabel2 = New System.Windows.Forms.LinkLabel()
+        Me.Dependance_03_txt = New RHP.ud_TextBox()
+        Me.Lib_Dependance_03_txt = New RHP.ud_TextBox()
         Me.Label2 = New System.Windows.Forms.Label()
         Me.Mission_txt = New RHP.ud_TextBox()
         Me.LinkLabel1 = New System.Windows.Forms.LinkLabel()
@@ -70,6 +79,7 @@ Partial Class Org_Poste
         Me.resp_add_btn = New RHP.ud_button()
         Me.resp_add_new_btn = New RHP.ud_button()
         Me.techicalSkills = New System.Windows.Forms.TabPage()
+        Me.SoftSkills = New System.Windows.Forms.TabPage()
         Me.Panel1.SuspendLayout()
         CType(Me.nb_Annees_Experience, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SoftSkills_Grp.SuspendLayout()
@@ -84,6 +94,7 @@ Partial Class Org_Poste
         Me.GroupBox2.SuspendLayout()
         Me.Panel3.SuspendLayout()
         Me.techicalSkills.SuspendLayout()
+        Me.SoftSkills.SuspendLayout()
         Me.SuspendLayout()
         '
         'Domaines_Competence_Pnl
@@ -128,7 +139,7 @@ Partial Class Org_Poste
         Me.poste_.Font = New System.Drawing.Font("Century Gothic", 8.25!)
         Me.poste_.ForeColor = System.Drawing.Color.FromArgb(CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer))
         Me.poste_.LinkColor = System.Drawing.Color.FromArgb(CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer))
-        Me.poste_.Location = New System.Drawing.Point(48, 47)
+        Me.poste_.Location = New System.Drawing.Point(53, 47)
         Me.poste_.Margin = New System.Windows.Forms.Padding(4, 0, 4, 0)
         Me.poste_.Name = "poste_"
         Me.poste_.Size = New System.Drawing.Size(45, 19)
@@ -160,6 +171,15 @@ Partial Class Org_Poste
         '
         'Panel1
         '
+        Me.Panel1.Controls.Add(Me.LinkLabel4)
+        Me.Panel1.Controls.Add(Me.Dependance_05_txt)
+        Me.Panel1.Controls.Add(Me.Lib_Dependance_05_txt)
+        Me.Panel1.Controls.Add(Me.LinkLabel3)
+        Me.Panel1.Controls.Add(Me.Dependance_04_txt)
+        Me.Panel1.Controls.Add(Me.Lib_Dependance_04_txt)
+        Me.Panel1.Controls.Add(Me.LinkLabel2)
+        Me.Panel1.Controls.Add(Me.Dependance_03_txt)
+        Me.Panel1.Controls.Add(Me.Lib_Dependance_03_txt)
         Me.Panel1.Controls.Add(Me.Label2)
         Me.Panel1.Controls.Add(Me.Mission_txt)
         Me.Panel1.Controls.Add(Me.LinkLabel1)
@@ -181,8 +201,185 @@ Partial Class Org_Poste
         Me.Panel1.Dock = System.Windows.Forms.DockStyle.Fill
         Me.Panel1.Location = New System.Drawing.Point(3, 3)
         Me.Panel1.Name = "Panel1"
-        Me.Panel1.Size = New System.Drawing.Size(1675, 405)
+        Me.Panel1.Size = New System.Drawing.Size(1675, 712)
         Me.Panel1.TabIndex = 204
+        '
+        'LinkLabel4
+        '
+        Me.LinkLabel4.AutoSize = True
+        Me.LinkLabel4.DisabledLinkColor = System.Drawing.Color.FromArgb(CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer))
+        Me.LinkLabel4.Font = New System.Drawing.Font("Century Gothic", 8.25!)
+        Me.LinkLabel4.ForeColor = System.Drawing.Color.FromArgb(CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer))
+        Me.LinkLabel4.LinkColor = System.Drawing.Color.FromArgb(CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer))
+        Me.LinkLabel4.Location = New System.Drawing.Point(114, 464)
+        Me.LinkLabel4.Margin = New System.Windows.Forms.Padding(4, 0, 4, 0)
+        Me.LinkLabel4.Name = "LinkLabel4"
+        Me.LinkLabel4.Size = New System.Drawing.Size(123, 19)
+        Me.LinkLabel4.TabIndex = 240
+        Me.LinkLabel4.TabStop = True
+        Me.LinkLabel4.Tag = ""
+        Me.LinkLabel4.Text = "Dépendance 05"
+        '
+        'Dependance_05_txt
+        '
+        Me.Dependance_05_txt.AccessibleDescription = "A"
+        Me.Dependance_05_txt.CharacterCasing = System.Windows.Forms.CharacterCasing.Normal
+        Me.Dependance_05_txt.ContextMenuStrip = Nothing
+        Me.Dependance_05_txt.Font = New System.Drawing.Font("Century Gothic", 8.25!)
+        Me.Dependance_05_txt.Location = New System.Drawing.Point(241, 460)
+        Me.Dependance_05_txt.Margin = New System.Windows.Forms.Padding(4, 5, 4, 5)
+        Me.Dependance_05_txt.MaxLength = 32767
+        Me.Dependance_05_txt.Multiline = False
+        Me.Dependance_05_txt.Name = "Dependance_05_txt"
+        Me.Dependance_05_txt.Padding = New System.Windows.Forms.Padding(1, 0, 1, 0)
+        Me.Dependance_05_txt.PasswordChar = "" & Global.Microsoft.VisualBasic.ChrW(0)
+        Me.Dependance_05_txt.ReadOnly = True
+        Me.Dependance_05_txt.ScrollBars = System.Windows.Forms.ScrollBars.None
+        Me.Dependance_05_txt.SelectionStart = 0
+        Me.Dependance_05_txt.Size = New System.Drawing.Size(130, 26)
+        Me.Dependance_05_txt.TabIndex = 239
+        Me.Dependance_05_txt.TabStop = False
+        Me.Dependance_05_txt.TextAlign = System.Windows.Forms.HorizontalAlignment.Left
+        Me.Dependance_05_txt.UseSystemPasswordChar = False
+        '
+        'Lib_Dependance_05_txt
+        '
+        Me.Lib_Dependance_05_txt.AccessibleDescription = "A"
+        Me.Lib_Dependance_05_txt.CharacterCasing = System.Windows.Forms.CharacterCasing.Normal
+        Me.Lib_Dependance_05_txt.ContextMenuStrip = Nothing
+        Me.Lib_Dependance_05_txt.Font = New System.Drawing.Font("Century Gothic", 8.25!)
+        Me.Lib_Dependance_05_txt.Location = New System.Drawing.Point(373, 460)
+        Me.Lib_Dependance_05_txt.Margin = New System.Windows.Forms.Padding(4, 5, 4, 5)
+        Me.Lib_Dependance_05_txt.MaxLength = 32767
+        Me.Lib_Dependance_05_txt.Multiline = False
+        Me.Lib_Dependance_05_txt.Name = "Lib_Dependance_05_txt"
+        Me.Lib_Dependance_05_txt.Padding = New System.Windows.Forms.Padding(1, 0, 1, 0)
+        Me.Lib_Dependance_05_txt.PasswordChar = "" & Global.Microsoft.VisualBasic.ChrW(0)
+        Me.Lib_Dependance_05_txt.ReadOnly = True
+        Me.Lib_Dependance_05_txt.ScrollBars = System.Windows.Forms.ScrollBars.None
+        Me.Lib_Dependance_05_txt.SelectionStart = 0
+        Me.Lib_Dependance_05_txt.Size = New System.Drawing.Size(658, 26)
+        Me.Lib_Dependance_05_txt.TabIndex = 241
+        Me.Lib_Dependance_05_txt.TextAlign = System.Windows.Forms.HorizontalAlignment.Left
+        Me.Lib_Dependance_05_txt.UseSystemPasswordChar = False
+        '
+        'LinkLabel3
+        '
+        Me.LinkLabel3.AutoSize = True
+        Me.LinkLabel3.DisabledLinkColor = System.Drawing.Color.FromArgb(CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer))
+        Me.LinkLabel3.Font = New System.Drawing.Font("Century Gothic", 8.25!)
+        Me.LinkLabel3.ForeColor = System.Drawing.Color.FromArgb(CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer))
+        Me.LinkLabel3.LinkColor = System.Drawing.Color.FromArgb(CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer))
+        Me.LinkLabel3.Location = New System.Drawing.Point(114, 428)
+        Me.LinkLabel3.Margin = New System.Windows.Forms.Padding(4, 0, 4, 0)
+        Me.LinkLabel3.Name = "LinkLabel3"
+        Me.LinkLabel3.Size = New System.Drawing.Size(123, 19)
+        Me.LinkLabel3.TabIndex = 237
+        Me.LinkLabel3.TabStop = True
+        Me.LinkLabel3.Tag = ""
+        Me.LinkLabel3.Text = "Dépendance 04"
+        '
+        'Dependance_04_txt
+        '
+        Me.Dependance_04_txt.AccessibleDescription = "A"
+        Me.Dependance_04_txt.CharacterCasing = System.Windows.Forms.CharacterCasing.Normal
+        Me.Dependance_04_txt.ContextMenuStrip = Nothing
+        Me.Dependance_04_txt.Font = New System.Drawing.Font("Century Gothic", 8.25!)
+        Me.Dependance_04_txt.Location = New System.Drawing.Point(241, 424)
+        Me.Dependance_04_txt.Margin = New System.Windows.Forms.Padding(4, 5, 4, 5)
+        Me.Dependance_04_txt.MaxLength = 32767
+        Me.Dependance_04_txt.Multiline = False
+        Me.Dependance_04_txt.Name = "Dependance_04_txt"
+        Me.Dependance_04_txt.Padding = New System.Windows.Forms.Padding(1, 0, 1, 0)
+        Me.Dependance_04_txt.PasswordChar = "" & Global.Microsoft.VisualBasic.ChrW(0)
+        Me.Dependance_04_txt.ReadOnly = True
+        Me.Dependance_04_txt.ScrollBars = System.Windows.Forms.ScrollBars.None
+        Me.Dependance_04_txt.SelectionStart = 0
+        Me.Dependance_04_txt.Size = New System.Drawing.Size(130, 26)
+        Me.Dependance_04_txt.TabIndex = 236
+        Me.Dependance_04_txt.TabStop = False
+        Me.Dependance_04_txt.TextAlign = System.Windows.Forms.HorizontalAlignment.Left
+        Me.Dependance_04_txt.UseSystemPasswordChar = False
+        '
+        'Lib_Dependance_04_txt
+        '
+        Me.Lib_Dependance_04_txt.AccessibleDescription = "A"
+        Me.Lib_Dependance_04_txt.CharacterCasing = System.Windows.Forms.CharacterCasing.Normal
+        Me.Lib_Dependance_04_txt.ContextMenuStrip = Nothing
+        Me.Lib_Dependance_04_txt.Font = New System.Drawing.Font("Century Gothic", 8.25!)
+        Me.Lib_Dependance_04_txt.Location = New System.Drawing.Point(373, 424)
+        Me.Lib_Dependance_04_txt.Margin = New System.Windows.Forms.Padding(4, 5, 4, 5)
+        Me.Lib_Dependance_04_txt.MaxLength = 32767
+        Me.Lib_Dependance_04_txt.Multiline = False
+        Me.Lib_Dependance_04_txt.Name = "Lib_Dependance_04_txt"
+        Me.Lib_Dependance_04_txt.Padding = New System.Windows.Forms.Padding(1, 0, 1, 0)
+        Me.Lib_Dependance_04_txt.PasswordChar = "" & Global.Microsoft.VisualBasic.ChrW(0)
+        Me.Lib_Dependance_04_txt.ReadOnly = True
+        Me.Lib_Dependance_04_txt.ScrollBars = System.Windows.Forms.ScrollBars.None
+        Me.Lib_Dependance_04_txt.SelectionStart = 0
+        Me.Lib_Dependance_04_txt.Size = New System.Drawing.Size(658, 26)
+        Me.Lib_Dependance_04_txt.TabIndex = 238
+        Me.Lib_Dependance_04_txt.TextAlign = System.Windows.Forms.HorizontalAlignment.Left
+        Me.Lib_Dependance_04_txt.UseSystemPasswordChar = False
+        '
+        'LinkLabel2
+        '
+        Me.LinkLabel2.AutoSize = True
+        Me.LinkLabel2.DisabledLinkColor = System.Drawing.Color.FromArgb(CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer))
+        Me.LinkLabel2.Font = New System.Drawing.Font("Century Gothic", 8.25!)
+        Me.LinkLabel2.ForeColor = System.Drawing.Color.FromArgb(CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer))
+        Me.LinkLabel2.LinkColor = System.Drawing.Color.FromArgb(CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer))
+        Me.LinkLabel2.Location = New System.Drawing.Point(115, 392)
+        Me.LinkLabel2.Margin = New System.Windows.Forms.Padding(4, 0, 4, 0)
+        Me.LinkLabel2.Name = "LinkLabel2"
+        Me.LinkLabel2.Size = New System.Drawing.Size(123, 19)
+        Me.LinkLabel2.TabIndex = 234
+        Me.LinkLabel2.TabStop = True
+        Me.LinkLabel2.Tag = ""
+        Me.LinkLabel2.Text = "Dépendance 03"
+        '
+        'Dependance_03_txt
+        '
+        Me.Dependance_03_txt.AccessibleDescription = "A"
+        Me.Dependance_03_txt.CharacterCasing = System.Windows.Forms.CharacterCasing.Normal
+        Me.Dependance_03_txt.ContextMenuStrip = Nothing
+        Me.Dependance_03_txt.Font = New System.Drawing.Font("Century Gothic", 8.25!)
+        Me.Dependance_03_txt.Location = New System.Drawing.Point(242, 388)
+        Me.Dependance_03_txt.Margin = New System.Windows.Forms.Padding(4, 5, 4, 5)
+        Me.Dependance_03_txt.MaxLength = 32767
+        Me.Dependance_03_txt.Multiline = False
+        Me.Dependance_03_txt.Name = "Dependance_03_txt"
+        Me.Dependance_03_txt.Padding = New System.Windows.Forms.Padding(1, 0, 1, 0)
+        Me.Dependance_03_txt.PasswordChar = "" & Global.Microsoft.VisualBasic.ChrW(0)
+        Me.Dependance_03_txt.ReadOnly = True
+        Me.Dependance_03_txt.ScrollBars = System.Windows.Forms.ScrollBars.None
+        Me.Dependance_03_txt.SelectionStart = 0
+        Me.Dependance_03_txt.Size = New System.Drawing.Size(130, 26)
+        Me.Dependance_03_txt.TabIndex = 233
+        Me.Dependance_03_txt.TabStop = False
+        Me.Dependance_03_txt.TextAlign = System.Windows.Forms.HorizontalAlignment.Left
+        Me.Dependance_03_txt.UseSystemPasswordChar = False
+        '
+        'Lib_Dependance_03_txt
+        '
+        Me.Lib_Dependance_03_txt.AccessibleDescription = "A"
+        Me.Lib_Dependance_03_txt.CharacterCasing = System.Windows.Forms.CharacterCasing.Normal
+        Me.Lib_Dependance_03_txt.ContextMenuStrip = Nothing
+        Me.Lib_Dependance_03_txt.Font = New System.Drawing.Font("Century Gothic", 8.25!)
+        Me.Lib_Dependance_03_txt.Location = New System.Drawing.Point(374, 388)
+        Me.Lib_Dependance_03_txt.Margin = New System.Windows.Forms.Padding(4, 5, 4, 5)
+        Me.Lib_Dependance_03_txt.MaxLength = 32767
+        Me.Lib_Dependance_03_txt.Multiline = False
+        Me.Lib_Dependance_03_txt.Name = "Lib_Dependance_03_txt"
+        Me.Lib_Dependance_03_txt.Padding = New System.Windows.Forms.Padding(1, 0, 1, 0)
+        Me.Lib_Dependance_03_txt.PasswordChar = "" & Global.Microsoft.VisualBasic.ChrW(0)
+        Me.Lib_Dependance_03_txt.ReadOnly = True
+        Me.Lib_Dependance_03_txt.ScrollBars = System.Windows.Forms.ScrollBars.None
+        Me.Lib_Dependance_03_txt.SelectionStart = 0
+        Me.Lib_Dependance_03_txt.Size = New System.Drawing.Size(658, 26)
+        Me.Lib_Dependance_03_txt.TabIndex = 235
+        Me.Lib_Dependance_03_txt.TextAlign = System.Windows.Forms.HorizontalAlignment.Left
+        Me.Lib_Dependance_03_txt.UseSystemPasswordChar = False
         '
         'Label2
         '
@@ -223,7 +420,7 @@ Partial Class Org_Poste
         Me.LinkLabel1.Font = New System.Drawing.Font("Century Gothic", 8.25!)
         Me.LinkLabel1.ForeColor = System.Drawing.Color.FromArgb(CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer))
         Me.LinkLabel1.LinkColor = System.Drawing.Color.FromArgb(CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer))
-        Me.LinkLabel1.Location = New System.Drawing.Point(34, 361)
+        Me.LinkLabel1.Location = New System.Drawing.Point(41, 358)
         Me.LinkLabel1.Margin = New System.Windows.Forms.Padding(4, 0, 4, 0)
         Me.LinkLabel1.Name = "LinkLabel1"
         Me.LinkLabel1.Size = New System.Drawing.Size(197, 19)
@@ -239,7 +436,7 @@ Partial Class Org_Poste
         Me.DependanceHiera.Font = New System.Drawing.Font("Century Gothic", 8.25!)
         Me.DependanceHiera.ForeColor = System.Drawing.Color.FromArgb(CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer))
         Me.DependanceHiera.LinkColor = System.Drawing.Color.FromArgb(CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer))
-        Me.DependanceHiera.Location = New System.Drawing.Point(36, 325)
+        Me.DependanceHiera.Location = New System.Drawing.Point(43, 321)
         Me.DependanceHiera.Margin = New System.Windows.Forms.Padding(4, 0, 4, 0)
         Me.DependanceHiera.Name = "DependanceHiera"
         Me.DependanceHiera.Size = New System.Drawing.Size(195, 19)
@@ -347,7 +544,7 @@ Partial Class Org_Poste
         '
         Me.Label1.AutoSize = True
         Me.Label1.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        Me.Label1.Location = New System.Drawing.Point(40, 253)
+        Me.Label1.Location = New System.Drawing.Point(45, 253)
         Me.Label1.Margin = New System.Windows.Forms.Padding(4, 0, 4, 0)
         Me.Label1.Name = "Label1"
         Me.Label1.Size = New System.Drawing.Size(192, 19)
@@ -358,7 +555,7 @@ Partial Class Org_Poste
         '
         Me.Proprietaire_.AutoSize = True
         Me.Proprietaire_.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        Me.Proprietaire_.Location = New System.Drawing.Point(44, 287)
+        Me.Proprietaire_.Location = New System.Drawing.Point(48, 284)
         Me.Proprietaire_.Margin = New System.Windows.Forms.Padding(4, 0, 4, 0)
         Me.Proprietaire_.Name = "Proprietaire_"
         Me.Proprietaire_.Size = New System.Drawing.Size(189, 19)
@@ -389,7 +586,7 @@ Partial Class Org_Poste
         Me.Grade_.Font = New System.Drawing.Font("Century Gothic", 8.25!)
         Me.Grade_.ForeColor = System.Drawing.Color.FromArgb(CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer))
         Me.Grade_.LinkColor = System.Drawing.Color.FromArgb(CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer))
-        Me.Grade_.Location = New System.Drawing.Point(39, 85)
+        Me.Grade_.Location = New System.Drawing.Point(43, 86)
         Me.Grade_.Margin = New System.Windows.Forms.Padding(4, 0, 4, 0)
         Me.Grade_.Name = "Grade_"
         Me.Grade_.Size = New System.Drawing.Size(54, 19)
@@ -447,17 +644,17 @@ Partial Class Org_Poste
         Me.Soft_Skills_Pnl.Location = New System.Drawing.Point(3, 81)
         Me.Soft_Skills_Pnl.Margin = New System.Windows.Forms.Padding(0)
         Me.Soft_Skills_Pnl.Name = "Soft_Skills_Pnl"
-        Me.Soft_Skills_Pnl.Size = New System.Drawing.Size(1669, 223)
+        Me.Soft_Skills_Pnl.Size = New System.Drawing.Size(1669, 628)
         Me.Soft_Skills_Pnl.TabIndex = 205
         '
         'SoftSkills_Grp
         '
         Me.SoftSkills_Grp.Controls.Add(Me.Soft_Skills_Pnl)
         Me.SoftSkills_Grp.Controls.Add(Me.Panel2)
-        Me.SoftSkills_Grp.Dock = System.Windows.Forms.DockStyle.Bottom
-        Me.SoftSkills_Grp.Location = New System.Drawing.Point(3, 408)
+        Me.SoftSkills_Grp.Dock = System.Windows.Forms.DockStyle.Fill
+        Me.SoftSkills_Grp.Location = New System.Drawing.Point(3, 3)
         Me.SoftSkills_Grp.Name = "SoftSkills_Grp"
-        Me.SoftSkills_Grp.Size = New System.Drawing.Size(1675, 307)
+        Me.SoftSkills_Grp.Size = New System.Drawing.Size(1675, 712)
         Me.SoftSkills_Grp.TabIndex = 231
         Me.SoftSkills_Grp.TabStop = False
         Me.SoftSkills_Grp.Text = "Soft skills"
@@ -507,6 +704,7 @@ Partial Class Org_Poste
         Me.TabControl1.Controls.Add(Me.tasks)
         Me.TabControl1.Controls.Add(Me.responsabilities)
         Me.TabControl1.Controls.Add(Me.techicalSkills)
+        Me.TabControl1.Controls.Add(Me.SoftSkills)
         Me.TabControl1.Dock = System.Windows.Forms.DockStyle.Fill
         Me.TabControl1.DrawMode = System.Windows.Forms.TabDrawMode.OwnerDrawFixed
         Me.TabControl1.Location = New System.Drawing.Point(0, 0)
@@ -518,7 +716,6 @@ Partial Class Org_Poste
         'fiche
         '
         Me.fiche.Controls.Add(Me.Panel1)
-        Me.fiche.Controls.Add(Me.SoftSkills_Grp)
         Me.fiche.Location = New System.Drawing.Point(4, 28)
         Me.fiche.Name = "fiche"
         Me.fiche.Padding = New System.Windows.Forms.Padding(3)
@@ -879,6 +1076,17 @@ Partial Class Org_Poste
         Me.techicalSkills.Text = "Compétences requises"
         Me.techicalSkills.UseVisualStyleBackColor = True
         '
+        'SoftSkills
+        '
+        Me.SoftSkills.Controls.Add(Me.SoftSkills_Grp)
+        Me.SoftSkills.Location = New System.Drawing.Point(4, 28)
+        Me.SoftSkills.Name = "SoftSkills"
+        Me.SoftSkills.Padding = New System.Windows.Forms.Padding(3)
+        Me.SoftSkills.Size = New System.Drawing.Size(1681, 718)
+        Me.SoftSkills.TabIndex = 4
+        Me.SoftSkills.Text = "Soft skills"
+        Me.SoftSkills.UseVisualStyleBackColor = True
+        '
         'Org_Poste
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(120.0!, 120.0!)
@@ -905,6 +1113,7 @@ Partial Class Org_Poste
         Me.GroupBox2.ResumeLayout(False)
         Me.Panel3.ResumeLayout(False)
         Me.techicalSkills.ResumeLayout(False)
+        Me.SoftSkills.ResumeLayout(False)
         Me.ResumeLayout(False)
 
     End Sub
@@ -956,4 +1165,14 @@ Partial Class Org_Poste
     Friend WithEvents resp_edit_btn As ud_button
     Friend WithEvents resp_add_btn As ud_button
     Friend WithEvents resp_add_new_btn As ud_button
+    Friend WithEvents LinkLabel4 As LinkLabel
+    Friend WithEvents Dependance_05_txt As ud_TextBox
+    Friend WithEvents Lib_Dependance_05_txt As ud_TextBox
+    Friend WithEvents LinkLabel3 As LinkLabel
+    Friend WithEvents Dependance_04_txt As ud_TextBox
+    Friend WithEvents Lib_Dependance_04_txt As ud_TextBox
+    Friend WithEvents LinkLabel2 As LinkLabel
+    Friend WithEvents Dependance_03_txt As ud_TextBox
+    Friend WithEvents Lib_Dependance_03_txt As ud_TextBox
+    Friend WithEvents SoftSkills As TabPage
 End Class
