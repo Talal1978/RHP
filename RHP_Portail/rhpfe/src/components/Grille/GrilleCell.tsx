@@ -31,13 +31,18 @@ const GrilleCell = ({
   };
   const { onchange } = useContext(cntx);
   const align =
-    typ?.dataType === "float" || typ?.dataType === "int"
+    (typ?.sx as any)?.textAlign ||
+    (typ?.dataType === "float" || typ?.dataType === "int"
       ? "right"
       : typ?.dataType === "smalldatetime" ||
         typ?.dataType === "datetime" ||
         typ?.dataType === "bit"
         ? "center"
-        : "left";
+        : "left");
+
+  const color = (typ?.sx as any)?.color || "inherit";
+  const fontWeight = (typ?.sx as any)?.fontWeight || "inherit";
+
   const composant = () => {
     if (typ?.typeColonne === "Image") {
       return <img src={row[col]} alt={row[col]} />;
@@ -173,7 +178,7 @@ const GrilleCell = ({
         />
       );
     } else {
-      return <div style={{ width: "100%", textAlign: align }}>{row[col]}</div>;
+      return <div style={{ width: "100%", textAlign: align, color, fontWeight }}>{row[col]}</div>;
     }
   };
   return <>{composant()}</>;

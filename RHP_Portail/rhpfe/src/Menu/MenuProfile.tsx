@@ -7,6 +7,8 @@ import { parentCntX } from "../Context/GlobalContext";
 import { Moon, Sun } from "lucide-react";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { setAgent, setJwt } from "../modules/module_general";
+import CustomizePortalDialog from "../components/CustomizePortal/CustomizePortalDialog";
+import { SettingsSuggestOutlined } from "@mui/icons-material";
 
 const MenuProfile = ({
   anchorEl,
@@ -31,6 +33,7 @@ const MenuProfile = ({
     [themeMode]
   );
   const [showChangePwd, setShowChangePwd] = useState(false);
+  const [showCustomize, setShowCustomize] = useState(false);
   const handleClose = useCallback(() => {
     setAnchorEl(null);
   }, []);
@@ -117,6 +120,17 @@ const MenuProfile = ({
           <MenuItem
             onClick={() => {
               setAnchorEl(null);
+              setShowCustomize(true);
+            }}
+          >
+            <ListItemIcon>
+              <SettingsSuggestOutlined fontSize="small" />
+            </ListItemIcon>
+            Personnaliser mon portail
+          </MenuItem>
+          <MenuItem
+            onClick={() => {
+              setAnchorEl(null);
               setShowChangePwd(true);
             }}
           >
@@ -148,7 +162,11 @@ const MenuProfile = ({
         onSuccess={() => setShowChangePwd(false)}
         onClose={() => setShowChangePwd(false)}
       />
-    </div >
+      <CustomizePortalDialog
+        open={showCustomize}
+        onClose={() => setShowCustomize(false)}
+      />
+    </div>
   );
 };
 

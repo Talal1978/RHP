@@ -29,7 +29,7 @@ import TextBox from "../../components/TextBox/TextBox";
 import CalendarZoom from "../../components/Calendar/CalendarZoom";
 import TextZoom from "../../components/TextZoom/TextZoom";
 import { Agent, colorBase } from "../../modules/module_general";
-import { parseRtfToText } from "../../modules/module_formats";
+import { parseRtfToText, toRTF } from "../../modules/module_formats";
 import useCombo from "../../hooks/useCombo";
 import GroupBox from "../../components/GroupBox/GroupBox";
 
@@ -112,12 +112,7 @@ const Recrutement_Demande = () => {
 
 
 
-    const toRTF = (text: string) => {
-        if (!text) return "";
-        const escaped = text.replace(/\\/g, '\\\\').replace(/{/g, '\\{').replace(/}/g, '\\}');
-        const withNewlines = escaped.replace(/\n/g, '\\par\n');
-        return `{\\rtf1\\ansi\\ansicpg1252\\deff0\\nouicompat\\deflang1036{\\fonttbl{\\f0\\fnil\\fcharset0 Calibri;}}\n{\\*\\generator Riched20 10.0.19041}\\viewkind4\\uc1\n\\pard\\sa200\\sl276\\slmult1\\f0\\fs22\\lang12 ${withNewlines}\\par\n}`;
-    };
+
 
 
 

@@ -27,12 +27,26 @@ Partial Class Formation_Evaluation
         Me.pnl_Right = New System.Windows.Forms.Panel()
         Me.Preambule_rtb = New System.Windows.Forms.RichTextBox()
         Me.pnl_Top = New System.Windows.Forms.Panel()
+        Me.eval_tblpnl = New System.Windows.Forms.TableLayoutPanel()
+        Me.Eval_info = New System.Windows.Forms.Panel()
+        Me.Dat_Survey_lbl = New System.Windows.Forms.LinkLabel()
+        Me.Dat_Survey_txt = New RHP.ud_TextBox()
         Me.LinkLabel1 = New System.Windows.Forms.LinkLabel()
         Me.LinkLabel3 = New System.Windows.Forms.LinkLabel()
         Me.Cod_Formation_txt = New RHP.ud_TextBox()
         Me.Lib_Formation_txt = New RHP.ud_TextBox()
         Me.Matricule_txt = New RHP.ud_TextBox()
         Me.Nom_Agent_Text = New RHP.ud_TextBox()
+        Me.pnl_note = New System.Windows.Forms.TableLayoutPanel()
+        Me.TableLayoutPanel4 = New System.Windows.Forms.TableLayoutPanel()
+        Me.note_totale_txt = New System.Windows.Forms.TextBox()
+        Me.Label3 = New System.Windows.Forms.Label()
+        Me.TableLayoutPanel3 = New System.Windows.Forms.TableLayoutPanel()
+        Me.coef_txt = New System.Windows.Forms.TextBox()
+        Me.Label2 = New System.Windows.Forms.Label()
+        Me.TableLayoutPanel2 = New System.Windows.Forms.TableLayoutPanel()
+        Me.note_txt = New System.Windows.Forms.TextBox()
+        Me.Label1 = New System.Windows.Forms.Label()
         Me.Pnl_Bottom = New System.Windows.Forms.Panel()
         Me.Lib_Survey_lbl = New System.Windows.Forms.Label()
         Me.ent_pnl = New System.Windows.Forms.TableLayoutPanel()
@@ -42,6 +56,12 @@ Partial Class Formation_Evaluation
         Me.Save_pb = New System.Windows.Forms.PictureBox()
         Me.New_pb = New System.Windows.Forms.PictureBox()
         Me.pnl_Top.SuspendLayout()
+        Me.eval_tblpnl.SuspendLayout()
+        Me.Eval_info.SuspendLayout()
+        Me.pnl_note.SuspendLayout()
+        Me.TableLayoutPanel4.SuspendLayout()
+        Me.TableLayoutPanel3.SuspendLayout()
+        Me.TableLayoutPanel2.SuspendLayout()
         Me.ent_pnl.SuspendLayout()
         CType(Me.Print_pb, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.Cloture_pb, System.ComponentModel.ISupportInitialize).BeginInit()
@@ -54,27 +74,30 @@ Partial Class Formation_Evaluation
         Me.pnl_Content.AutoScroll = True
         Me.pnl_Content.BackColor = System.Drawing.Color.FromArgb(CType(CType(250, Byte), Integer), CType(CType(250, Byte), Integer), CType(CType(250, Byte), Integer))
         Me.pnl_Content.Dock = System.Windows.Forms.DockStyle.Fill
-        Me.pnl_Content.Location = New System.Drawing.Point(29, 208)
+        Me.pnl_Content.Location = New System.Drawing.Point(36, 318)
+        Me.pnl_Content.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
         Me.pnl_Content.Name = "pnl_Content"
-        Me.pnl_Content.Size = New System.Drawing.Size(802, 426)
+        Me.pnl_Content.Size = New System.Drawing.Size(1119, 476)
         Me.pnl_Content.TabIndex = 3
         '
         'Pnl_Left
         '
         Me.Pnl_Left.BackColor = System.Drawing.Color.FromArgb(CType(CType(250, Byte), Integer), CType(CType(250, Byte), Integer), CType(CType(250, Byte), Integer))
         Me.Pnl_Left.Dock = System.Windows.Forms.DockStyle.Left
-        Me.Pnl_Left.Location = New System.Drawing.Point(2, 32)
+        Me.Pnl_Left.Location = New System.Drawing.Point(2, 40)
+        Me.Pnl_Left.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
         Me.Pnl_Left.Name = "Pnl_Left"
-        Me.Pnl_Left.Size = New System.Drawing.Size(27, 612)
+        Me.Pnl_Left.Size = New System.Drawing.Size(34, 766)
         Me.Pnl_Left.TabIndex = 0
         '
         'pnl_Right
         '
         Me.pnl_Right.BackColor = System.Drawing.Color.FromArgb(CType(CType(250, Byte), Integer), CType(CType(250, Byte), Integer), CType(CType(250, Byte), Integer))
         Me.pnl_Right.Dock = System.Windows.Forms.DockStyle.Right
-        Me.pnl_Right.Location = New System.Drawing.Point(831, 95)
+        Me.pnl_Right.Location = New System.Drawing.Point(1155, 196)
+        Me.pnl_Right.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
         Me.pnl_Right.Name = "pnl_Right"
-        Me.pnl_Right.Size = New System.Drawing.Size(27, 549)
+        Me.pnl_Right.Size = New System.Drawing.Size(34, 610)
         Me.pnl_Right.TabIndex = 4
         '
         'Preambule_rtb
@@ -83,10 +106,11 @@ Partial Class Formation_Evaluation
         Me.Preambule_rtb.BorderStyle = System.Windows.Forms.BorderStyle.None
         Me.Preambule_rtb.Dock = System.Windows.Forms.DockStyle.Top
         Me.Preambule_rtb.Enabled = False
-        Me.Preambule_rtb.Location = New System.Drawing.Point(29, 118)
+        Me.Preambule_rtb.Location = New System.Drawing.Point(36, 206)
+        Me.Preambule_rtb.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
         Me.Preambule_rtb.Name = "Preambule_rtb"
         Me.Preambule_rtb.ReadOnly = True
-        Me.Preambule_rtb.Size = New System.Drawing.Size(802, 90)
+        Me.Preambule_rtb.Size = New System.Drawing.Size(1119, 112)
         Me.Preambule_rtb.TabIndex = 0
         Me.Preambule_rtb.Text = ""
         Me.Preambule_rtb.Visible = False
@@ -94,26 +118,93 @@ Partial Class Formation_Evaluation
         'pnl_Top
         '
         Me.pnl_Top.BackColor = System.Drawing.Color.FromArgb(CType(CType(250, Byte), Integer), CType(CType(250, Byte), Integer), CType(CType(250, Byte), Integer))
-        Me.pnl_Top.Controls.Add(Me.LinkLabel1)
-        Me.pnl_Top.Controls.Add(Me.LinkLabel3)
-        Me.pnl_Top.Controls.Add(Me.Cod_Formation_txt)
-        Me.pnl_Top.Controls.Add(Me.Lib_Formation_txt)
-        Me.pnl_Top.Controls.Add(Me.Matricule_txt)
-        Me.pnl_Top.Controls.Add(Me.Nom_Agent_Text)
+        Me.pnl_Top.Controls.Add(Me.eval_tblpnl)
         Me.pnl_Top.Dock = System.Windows.Forms.DockStyle.Top
-        Me.pnl_Top.Location = New System.Drawing.Point(29, 32)
+        Me.pnl_Top.Location = New System.Drawing.Point(36, 40)
+        Me.pnl_Top.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
         Me.pnl_Top.Name = "pnl_Top"
-        Me.pnl_Top.Size = New System.Drawing.Size(829, 63)
+        Me.pnl_Top.Size = New System.Drawing.Size(1153, 156)
         Me.pnl_Top.TabIndex = 5
+        '
+        'eval_tblpnl
+        '
+        Me.eval_tblpnl.ColumnCount = 2
+        Me.eval_tblpnl.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100.0!))
+        Me.eval_tblpnl.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 250.0!))
+        Me.eval_tblpnl.Controls.Add(Me.Eval_info, 0, 0)
+        Me.eval_tblpnl.Controls.Add(Me.pnl_note, 1, 0)
+        Me.eval_tblpnl.Dock = System.Windows.Forms.DockStyle.Fill
+        Me.eval_tblpnl.Location = New System.Drawing.Point(0, 0)
+        Me.eval_tblpnl.Margin = New System.Windows.Forms.Padding(2)
+        Me.eval_tblpnl.Name = "eval_tblpnl"
+        Me.eval_tblpnl.RowCount = 1
+        Me.eval_tblpnl.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100.0!))
+        Me.eval_tblpnl.Size = New System.Drawing.Size(1153, 156)
+        Me.eval_tblpnl.TabIndex = 251
+        '
+        'Eval_info
+        '
+        Me.Eval_info.Controls.Add(Me.Dat_Survey_lbl)
+        Me.Eval_info.Controls.Add(Me.Dat_Survey_txt)
+        Me.Eval_info.Controls.Add(Me.LinkLabel1)
+        Me.Eval_info.Controls.Add(Me.LinkLabel3)
+        Me.Eval_info.Controls.Add(Me.Cod_Formation_txt)
+        Me.Eval_info.Controls.Add(Me.Lib_Formation_txt)
+        Me.Eval_info.Controls.Add(Me.Matricule_txt)
+        Me.Eval_info.Controls.Add(Me.Nom_Agent_Text)
+        Me.Eval_info.Dock = System.Windows.Forms.DockStyle.Fill
+        Me.Eval_info.Location = New System.Drawing.Point(2, 2)
+        Me.Eval_info.Margin = New System.Windows.Forms.Padding(2)
+        Me.Eval_info.Name = "Eval_info"
+        Me.Eval_info.Size = New System.Drawing.Size(899, 152)
+        Me.Eval_info.TabIndex = 250
+        '
+        'Dat_Survey_lbl
+        '
+        Me.Dat_Survey_lbl.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.Dat_Survey_lbl.AutoSize = True
+        Me.Dat_Survey_lbl.LinkColor = System.Drawing.Color.Black
+        Me.Dat_Survey_lbl.Location = New System.Drawing.Point(735, 95)
+        Me.Dat_Survey_lbl.Margin = New System.Windows.Forms.Padding(4, 0, 4, 0)
+        Me.Dat_Survey_lbl.Name = "Dat_Survey_lbl"
+        Me.Dat_Survey_lbl.Size = New System.Drawing.Size(36, 16)
+        Me.Dat_Survey_lbl.TabIndex = 251
+        Me.Dat_Survey_lbl.TabStop = True
+        Me.Dat_Survey_lbl.Tag = "SC"
+        Me.Dat_Survey_lbl.Text = "Date"
+        '
+        'Dat_Survey_txt
+        '
+        Me.Dat_Survey_txt.AccessibleDescription = "A"
+        Me.Dat_Survey_txt.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.Dat_Survey_txt.CharacterCasing = System.Windows.Forms.CharacterCasing.Normal
+        Me.Dat_Survey_txt.ContextMenuStrip = Nothing
+        Me.Dat_Survey_txt.Font = New System.Drawing.Font("Century Gothic", 8.25!)
+        Me.Dat_Survey_txt.Location = New System.Drawing.Point(774, 88)
+        Me.Dat_Survey_txt.Margin = New System.Windows.Forms.Padding(10, 8, 10, 8)
+        Me.Dat_Survey_txt.MaxLength = 32767
+        Me.Dat_Survey_txt.Multiline = False
+        Me.Dat_Survey_txt.Name = "Dat_Survey_txt"
+        Me.Dat_Survey_txt.Padding = New System.Windows.Forms.Padding(1, 0, 1, 0)
+        Me.Dat_Survey_txt.PasswordChar = "" & Global.Microsoft.VisualBasic.ChrW(0)
+        Me.Dat_Survey_txt.ReadOnly = True
+        Me.Dat_Survey_txt.ScrollBars = System.Windows.Forms.ScrollBars.None
+        Me.Dat_Survey_txt.SelectionStart = 0
+        Me.Dat_Survey_txt.Size = New System.Drawing.Size(119, 32)
+        Me.Dat_Survey_txt.TabIndex = 250
+        Me.Dat_Survey_txt.TabStop = False
+        Me.Dat_Survey_txt.Text = "31/12/2099"
+        Me.Dat_Survey_txt.TextAlign = System.Windows.Forms.HorizontalAlignment.Center
+        Me.Dat_Survey_txt.UseSystemPasswordChar = False
         '
         'LinkLabel1
         '
         Me.LinkLabel1.AutoSize = True
-        Me.LinkLabel1.Font = New System.Drawing.Font("Century Gothic", 8.25!)
         Me.LinkLabel1.LinkColor = System.Drawing.Color.Black
-        Me.LinkLabel1.Location = New System.Drawing.Point(62, 13)
+        Me.LinkLabel1.Location = New System.Drawing.Point(6, 16)
+        Me.LinkLabel1.Margin = New System.Windows.Forms.Padding(5, 0, 5, 0)
         Me.LinkLabel1.Name = "LinkLabel1"
-        Me.LinkLabel1.Size = New System.Drawing.Size(76, 16)
+        Me.LinkLabel1.Size = New System.Drawing.Size(80, 16)
         Me.LinkLabel1.TabIndex = 213
         Me.LinkLabel1.TabStop = True
         Me.LinkLabel1.Tag = "SC"
@@ -122,11 +213,11 @@ Partial Class Formation_Evaluation
         'LinkLabel3
         '
         Me.LinkLabel3.AutoSize = True
-        Me.LinkLabel3.Font = New System.Drawing.Font("Century Gothic", 8.25!)
         Me.LinkLabel3.LinkColor = System.Drawing.Color.Black
-        Me.LinkLabel3.Location = New System.Drawing.Point(76, 37)
+        Me.LinkLabel3.Location = New System.Drawing.Point(10, 54)
+        Me.LinkLabel3.Margin = New System.Windows.Forms.Padding(5, 0, 5, 0)
         Me.LinkLabel3.Name = "LinkLabel3"
-        Me.LinkLabel3.Size = New System.Drawing.Size(61, 16)
+        Me.LinkLabel3.Size = New System.Drawing.Size(67, 16)
         Me.LinkLabel3.TabIndex = 213
         Me.LinkLabel3.TabStop = True
         Me.LinkLabel3.Tag = ""
@@ -136,9 +227,9 @@ Partial Class Formation_Evaluation
         '
         Me.Cod_Formation_txt.AccessibleDescription = "A"
         Me.Cod_Formation_txt.CharacterCasing = System.Windows.Forms.CharacterCasing.Normal
-        Me.Cod_Formation_txt.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        Me.Cod_Formation_txt.Location = New System.Drawing.Point(141, 34)
-        Me.Cod_Formation_txt.Margin = New System.Windows.Forms.Padding(5, 4, 5, 4)
+        Me.Cod_Formation_txt.ContextMenuStrip = Nothing
+        Me.Cod_Formation_txt.Location = New System.Drawing.Point(89, 49)
+        Me.Cod_Formation_txt.Margin = New System.Windows.Forms.Padding(5, 6, 5, 6)
         Me.Cod_Formation_txt.MaxLength = 32767
         Me.Cod_Formation_txt.Multiline = False
         Me.Cod_Formation_txt.Name = "Cod_Formation_txt"
@@ -147,8 +238,8 @@ Partial Class Formation_Evaluation
         Me.Cod_Formation_txt.ReadOnly = True
         Me.Cod_Formation_txt.ScrollBars = System.Windows.Forms.ScrollBars.None
         Me.Cod_Formation_txt.SelectionStart = 0
-        Me.Cod_Formation_txt.Size = New System.Drawing.Size(104, 21)
-        Me.Cod_Formation_txt.TabIndex = 209
+        Me.Cod_Formation_txt.Size = New System.Drawing.Size(189, 32)
+        Me.Cod_Formation_txt.TabIndex = 247
         Me.Cod_Formation_txt.TabStop = False
         Me.Cod_Formation_txt.TextAlign = System.Windows.Forms.HorizontalAlignment.Left
         Me.Cod_Formation_txt.UseSystemPasswordChar = False
@@ -157,9 +248,9 @@ Partial Class Formation_Evaluation
         '
         Me.Lib_Formation_txt.AccessibleDescription = "A"
         Me.Lib_Formation_txt.CharacterCasing = System.Windows.Forms.CharacterCasing.Normal
-        Me.Lib_Formation_txt.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        Me.Lib_Formation_txt.Location = New System.Drawing.Point(249, 34)
-        Me.Lib_Formation_txt.Margin = New System.Windows.Forms.Padding(5, 4, 5, 4)
+        Me.Lib_Formation_txt.ContextMenuStrip = Nothing
+        Me.Lib_Formation_txt.Location = New System.Drawing.Point(282, 49)
+        Me.Lib_Formation_txt.Margin = New System.Windows.Forms.Padding(5, 6, 5, 6)
         Me.Lib_Formation_txt.MaxLength = 32767
         Me.Lib_Formation_txt.Multiline = False
         Me.Lib_Formation_txt.Name = "Lib_Formation_txt"
@@ -168,8 +259,8 @@ Partial Class Formation_Evaluation
         Me.Lib_Formation_txt.ReadOnly = False
         Me.Lib_Formation_txt.ScrollBars = System.Windows.Forms.ScrollBars.None
         Me.Lib_Formation_txt.SelectionStart = 0
-        Me.Lib_Formation_txt.Size = New System.Drawing.Size(362, 21)
-        Me.Lib_Formation_txt.TabIndex = 211
+        Me.Lib_Formation_txt.Size = New System.Drawing.Size(612, 32)
+        Me.Lib_Formation_txt.TabIndex = 249
         Me.Lib_Formation_txt.TextAlign = System.Windows.Forms.HorizontalAlignment.Left
         Me.Lib_Formation_txt.UseSystemPasswordChar = False
         '
@@ -177,9 +268,10 @@ Partial Class Formation_Evaluation
         '
         Me.Matricule_txt.AccessibleDescription = "A"
         Me.Matricule_txt.CharacterCasing = System.Windows.Forms.CharacterCasing.Normal
+        Me.Matricule_txt.ContextMenuStrip = Nothing
         Me.Matricule_txt.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        Me.Matricule_txt.Location = New System.Drawing.Point(141, 10)
-        Me.Matricule_txt.Margin = New System.Windows.Forms.Padding(5, 4, 5, 4)
+        Me.Matricule_txt.Location = New System.Drawing.Point(89, 10)
+        Me.Matricule_txt.Margin = New System.Windows.Forms.Padding(10, 8, 10, 8)
         Me.Matricule_txt.MaxLength = 32767
         Me.Matricule_txt.Multiline = False
         Me.Matricule_txt.Name = "Matricule_txt"
@@ -188,7 +280,7 @@ Partial Class Formation_Evaluation
         Me.Matricule_txt.ReadOnly = True
         Me.Matricule_txt.ScrollBars = System.Windows.Forms.ScrollBars.None
         Me.Matricule_txt.SelectionStart = 0
-        Me.Matricule_txt.Size = New System.Drawing.Size(104, 21)
+        Me.Matricule_txt.Size = New System.Drawing.Size(189, 32)
         Me.Matricule_txt.TabIndex = 209
         Me.Matricule_txt.TabStop = False
         Me.Matricule_txt.TextAlign = System.Windows.Forms.HorizontalAlignment.Left
@@ -198,9 +290,10 @@ Partial Class Formation_Evaluation
         '
         Me.Nom_Agent_Text.AccessibleDescription = "A"
         Me.Nom_Agent_Text.CharacterCasing = System.Windows.Forms.CharacterCasing.Normal
+        Me.Nom_Agent_Text.ContextMenuStrip = Nothing
         Me.Nom_Agent_Text.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        Me.Nom_Agent_Text.Location = New System.Drawing.Point(249, 10)
-        Me.Nom_Agent_Text.Margin = New System.Windows.Forms.Padding(5, 4, 5, 4)
+        Me.Nom_Agent_Text.Location = New System.Drawing.Point(282, 10)
+        Me.Nom_Agent_Text.Margin = New System.Windows.Forms.Padding(10, 8, 10, 8)
         Me.Nom_Agent_Text.MaxLength = 32767
         Me.Nom_Agent_Text.Multiline = False
         Me.Nom_Agent_Text.Name = "Nom_Agent_Text"
@@ -209,18 +302,167 @@ Partial Class Formation_Evaluation
         Me.Nom_Agent_Text.ReadOnly = False
         Me.Nom_Agent_Text.ScrollBars = System.Windows.Forms.ScrollBars.None
         Me.Nom_Agent_Text.SelectionStart = 0
-        Me.Nom_Agent_Text.Size = New System.Drawing.Size(362, 21)
+        Me.Nom_Agent_Text.Size = New System.Drawing.Size(612, 32)
         Me.Nom_Agent_Text.TabIndex = 211
         Me.Nom_Agent_Text.TextAlign = System.Windows.Forms.HorizontalAlignment.Left
         Me.Nom_Agent_Text.UseSystemPasswordChar = False
+        '
+        'pnl_note
+        '
+        Me.pnl_note.Anchor = CType((((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) _
+            Or System.Windows.Forms.AnchorStyles.Left) _
+            Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.pnl_note.AutoSize = True
+        Me.pnl_note.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink
+        Me.pnl_note.ColumnCount = 1
+        Me.pnl_note.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50.0!))
+        Me.pnl_note.Controls.Add(Me.TableLayoutPanel4, 0, 2)
+        Me.pnl_note.Controls.Add(Me.TableLayoutPanel3, 0, 1)
+        Me.pnl_note.Controls.Add(Me.TableLayoutPanel2, 0, 0)
+        Me.pnl_note.Location = New System.Drawing.Point(905, 2)
+        Me.pnl_note.Margin = New System.Windows.Forms.Padding(2)
+        Me.pnl_note.Name = "pnl_note"
+        Me.pnl_note.RowCount = 3
+        Me.pnl_note.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 49.45055!))
+        Me.pnl_note.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50.54945!))
+        Me.pnl_note.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 44.0!))
+        Me.pnl_note.Size = New System.Drawing.Size(246, 152)
+        Me.pnl_note.TabIndex = 251
+        '
+        'TableLayoutPanel4
+        '
+        Me.TableLayoutPanel4.ColumnCount = 2
+        Me.TableLayoutPanel4.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50.0!))
+        Me.TableLayoutPanel4.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50.0!))
+        Me.TableLayoutPanel4.Controls.Add(Me.note_totale_txt, 1, 0)
+        Me.TableLayoutPanel4.Controls.Add(Me.Label3, 0, 0)
+        Me.TableLayoutPanel4.Dock = System.Windows.Forms.DockStyle.Fill
+        Me.TableLayoutPanel4.Location = New System.Drawing.Point(2, 109)
+        Me.TableLayoutPanel4.Margin = New System.Windows.Forms.Padding(2)
+        Me.TableLayoutPanel4.Name = "TableLayoutPanel4"
+        Me.TableLayoutPanel4.RowCount = 1
+        Me.TableLayoutPanel4.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50.0!))
+        Me.TableLayoutPanel4.Size = New System.Drawing.Size(242, 41)
+        Me.TableLayoutPanel4.TabIndex = 3
+        '
+        'note_totale_txt
+        '
+        Me.note_totale_txt.Anchor = System.Windows.Forms.AnchorStyles.None
+        Me.note_totale_txt.BorderStyle = System.Windows.Forms.BorderStyle.None
+        Me.note_totale_txt.Font = New System.Drawing.Font("Microsoft Sans Serif", 13.8!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.note_totale_txt.ForeColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
+        Me.note_totale_txt.Location = New System.Drawing.Point(141, 7)
+        Me.note_totale_txt.Margin = New System.Windows.Forms.Padding(2)
+        Me.note_totale_txt.Name = "note_totale_txt"
+        Me.note_totale_txt.Size = New System.Drawing.Size(80, 27)
+        Me.note_totale_txt.TabIndex = 0
+        Me.note_totale_txt.Text = "0"
+        Me.note_totale_txt.TextAlign = System.Windows.Forms.HorizontalAlignment.Center
+        '
+        'Label3
+        '
+        Me.Label3.Dock = System.Windows.Forms.DockStyle.Fill
+        Me.Label3.ForeColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
+        Me.Label3.Location = New System.Drawing.Point(2, 0)
+        Me.Label3.Margin = New System.Windows.Forms.Padding(2, 0, 2, 0)
+        Me.Label3.Name = "Label3"
+        Me.Label3.Size = New System.Drawing.Size(117, 41)
+        Me.Label3.TabIndex = 1
+        Me.Label3.Text = "Note totale"
+        Me.Label3.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
+        '
+        'TableLayoutPanel3
+        '
+        Me.TableLayoutPanel3.ColumnCount = 2
+        Me.TableLayoutPanel3.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50.0!))
+        Me.TableLayoutPanel3.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50.0!))
+        Me.TableLayoutPanel3.Controls.Add(Me.coef_txt, 1, 0)
+        Me.TableLayoutPanel3.Controls.Add(Me.Label2, 0, 0)
+        Me.TableLayoutPanel3.Dock = System.Windows.Forms.DockStyle.Fill
+        Me.TableLayoutPanel3.Location = New System.Drawing.Point(2, 55)
+        Me.TableLayoutPanel3.Margin = New System.Windows.Forms.Padding(2)
+        Me.TableLayoutPanel3.Name = "TableLayoutPanel3"
+        Me.TableLayoutPanel3.RowCount = 1
+        Me.TableLayoutPanel3.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50.0!))
+        Me.TableLayoutPanel3.Size = New System.Drawing.Size(242, 50)
+        Me.TableLayoutPanel3.TabIndex = 2
+        '
+        'coef_txt
+        '
+        Me.coef_txt.Anchor = System.Windows.Forms.AnchorStyles.None
+        Me.coef_txt.BorderStyle = System.Windows.Forms.BorderStyle.None
+        Me.coef_txt.Font = New System.Drawing.Font("Microsoft Sans Serif", 13.8!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.coef_txt.ForeColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
+        Me.coef_txt.Location = New System.Drawing.Point(141, 11)
+        Me.coef_txt.Margin = New System.Windows.Forms.Padding(2)
+        Me.coef_txt.Name = "coef_txt"
+        Me.coef_txt.Size = New System.Drawing.Size(80, 27)
+        Me.coef_txt.TabIndex = 0
+        Me.coef_txt.Text = "0"
+        Me.coef_txt.TextAlign = System.Windows.Forms.HorizontalAlignment.Center
+        '
+        'Label2
+        '
+        Me.Label2.Dock = System.Windows.Forms.DockStyle.Fill
+        Me.Label2.ForeColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
+        Me.Label2.Location = New System.Drawing.Point(2, 0)
+        Me.Label2.Margin = New System.Windows.Forms.Padding(2, 0, 2, 0)
+        Me.Label2.Name = "Label2"
+        Me.Label2.Size = New System.Drawing.Size(117, 50)
+        Me.Label2.TabIndex = 1
+        Me.Label2.Text = "Coef."
+        Me.Label2.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
+        '
+        'TableLayoutPanel2
+        '
+        Me.TableLayoutPanel2.ColumnCount = 2
+        Me.TableLayoutPanel2.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50.0!))
+        Me.TableLayoutPanel2.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50.0!))
+        Me.TableLayoutPanel2.Controls.Add(Me.note_txt, 1, 0)
+        Me.TableLayoutPanel2.Controls.Add(Me.Label1, 0, 0)
+        Me.TableLayoutPanel2.Dock = System.Windows.Forms.DockStyle.Fill
+        Me.TableLayoutPanel2.Location = New System.Drawing.Point(2, 2)
+        Me.TableLayoutPanel2.Margin = New System.Windows.Forms.Padding(2)
+        Me.TableLayoutPanel2.Name = "TableLayoutPanel2"
+        Me.TableLayoutPanel2.RowCount = 1
+        Me.TableLayoutPanel2.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50.0!))
+        Me.TableLayoutPanel2.Size = New System.Drawing.Size(242, 49)
+        Me.TableLayoutPanel2.TabIndex = 1
+        '
+        'note_txt
+        '
+        Me.note_txt.Anchor = System.Windows.Forms.AnchorStyles.None
+        Me.note_txt.BorderStyle = System.Windows.Forms.BorderStyle.None
+        Me.note_txt.Font = New System.Drawing.Font("Microsoft Sans Serif", 13.8!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.note_txt.ForeColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
+        Me.note_txt.Location = New System.Drawing.Point(141, 11)
+        Me.note_txt.Margin = New System.Windows.Forms.Padding(2)
+        Me.note_txt.Name = "note_txt"
+        Me.note_txt.Size = New System.Drawing.Size(80, 27)
+        Me.note_txt.TabIndex = 0
+        Me.note_txt.Text = "0"
+        Me.note_txt.TextAlign = System.Windows.Forms.HorizontalAlignment.Center
+        '
+        'Label1
+        '
+        Me.Label1.Dock = System.Windows.Forms.DockStyle.Fill
+        Me.Label1.ForeColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
+        Me.Label1.Location = New System.Drawing.Point(2, 0)
+        Me.Label1.Margin = New System.Windows.Forms.Padding(2, 0, 2, 0)
+        Me.Label1.Name = "Label1"
+        Me.Label1.Size = New System.Drawing.Size(117, 49)
+        Me.Label1.TabIndex = 1
+        Me.Label1.Text = "Note"
+        Me.Label1.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
         '
         'Pnl_Bottom
         '
         Me.Pnl_Bottom.BackColor = System.Drawing.Color.FromArgb(CType(CType(250, Byte), Integer), CType(CType(250, Byte), Integer), CType(CType(250, Byte), Integer))
         Me.Pnl_Bottom.Dock = System.Windows.Forms.DockStyle.Bottom
-        Me.Pnl_Bottom.Location = New System.Drawing.Point(29, 634)
+        Me.Pnl_Bottom.Location = New System.Drawing.Point(36, 794)
+        Me.Pnl_Bottom.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
         Me.Pnl_Bottom.Name = "Pnl_Bottom"
-        Me.Pnl_Bottom.Size = New System.Drawing.Size(802, 10)
+        Me.Pnl_Bottom.Size = New System.Drawing.Size(1119, 12)
         Me.Pnl_Bottom.TabIndex = 6
         '
         'Lib_Survey_lbl
@@ -228,9 +470,10 @@ Partial Class Formation_Evaluation
         Me.Lib_Survey_lbl.BackColor = System.Drawing.Color.FromArgb(CType(CType(250, Byte), Integer), CType(CType(250, Byte), Integer), CType(CType(250, Byte), Integer))
         Me.Lib_Survey_lbl.Dock = System.Windows.Forms.DockStyle.Top
         Me.Lib_Survey_lbl.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Lib_Survey_lbl.Location = New System.Drawing.Point(29, 95)
+        Me.Lib_Survey_lbl.Location = New System.Drawing.Point(36, 196)
+        Me.Lib_Survey_lbl.Margin = New System.Windows.Forms.Padding(4, 0, 4, 0)
         Me.Lib_Survey_lbl.Name = "Lib_Survey_lbl"
-        Me.Lib_Survey_lbl.Size = New System.Drawing.Size(802, 23)
+        Me.Lib_Survey_lbl.Size = New System.Drawing.Size(1119, 10)
         Me.Lib_Survey_lbl.TabIndex = 0
         Me.Lib_Survey_lbl.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
         '
@@ -238,12 +481,12 @@ Partial Class Formation_Evaluation
         '
         Me.ent_pnl.BackColor = System.Drawing.Color.FromArgb(CType(CType(208, Byte), Integer), CType(CType(231, Byte), Integer), CType(CType(239, Byte), Integer))
         Me.ent_pnl.ColumnCount = 6
-        Me.ent_pnl.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 32.0!))
-        Me.ent_pnl.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 32.0!))
-        Me.ent_pnl.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 32.0!))
-        Me.ent_pnl.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 32.0!))
+        Me.ent_pnl.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 40.0!))
+        Me.ent_pnl.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 40.0!))
+        Me.ent_pnl.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 40.0!))
+        Me.ent_pnl.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 40.0!))
         Me.ent_pnl.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100.0!))
-        Me.ent_pnl.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 32.0!))
+        Me.ent_pnl.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 40.0!))
         Me.ent_pnl.Controls.Add(Me.lbl_lbl, 4, 0)
         Me.ent_pnl.Controls.Add(Me.Print_pb, 2, 0)
         Me.ent_pnl.Controls.Add(Me.Cloture_pb, 3, 0)
@@ -251,19 +494,21 @@ Partial Class Formation_Evaluation
         Me.ent_pnl.Controls.Add(Me.New_pb, 0, 0)
         Me.ent_pnl.Dock = System.Windows.Forms.DockStyle.Top
         Me.ent_pnl.Location = New System.Drawing.Point(2, 2)
+        Me.ent_pnl.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
         Me.ent_pnl.Name = "ent_pnl"
         Me.ent_pnl.RowCount = 1
         Me.ent_pnl.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100.0!))
-        Me.ent_pnl.Size = New System.Drawing.Size(856, 30)
+        Me.ent_pnl.Size = New System.Drawing.Size(1187, 38)
         Me.ent_pnl.TabIndex = 9
         '
         'lbl_lbl
         '
         Me.lbl_lbl.Font = New System.Drawing.Font("Century Gothic", 12.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.lbl_lbl.ForeColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
-        Me.lbl_lbl.Location = New System.Drawing.Point(131, 0)
+        Me.lbl_lbl.Location = New System.Drawing.Point(164, 0)
+        Me.lbl_lbl.Margin = New System.Windows.Forms.Padding(4, 0, 4, 0)
         Me.lbl_lbl.Name = "lbl_lbl"
-        Me.lbl_lbl.Size = New System.Drawing.Size(650, 30)
+        Me.lbl_lbl.Size = New System.Drawing.Size(812, 38)
         Me.lbl_lbl.TabIndex = 12
         Me.lbl_lbl.Text = "Evaluation de formation"
         Me.lbl_lbl.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
@@ -274,9 +519,10 @@ Partial Class Formation_Evaluation
         Me.Print_pb.Dock = System.Windows.Forms.DockStyle.Fill
         Me.Print_pb.Image = Global.RHP.My.Resources.Resources.btn_printer
         Me.Print_pb.InitialImage = Nothing
-        Me.Print_pb.Location = New System.Drawing.Point(67, 3)
+        Me.Print_pb.Location = New System.Drawing.Point(84, 4)
+        Me.Print_pb.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
         Me.Print_pb.Name = "Print_pb"
-        Me.Print_pb.Size = New System.Drawing.Size(26, 24)
+        Me.Print_pb.Size = New System.Drawing.Size(32, 30)
         Me.Print_pb.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom
         Me.Print_pb.TabIndex = 11
         Me.Print_pb.TabStop = False
@@ -288,9 +534,10 @@ Partial Class Formation_Evaluation
         Me.Cloture_pb.Dock = System.Windows.Forms.DockStyle.Fill
         Me.Cloture_pb.Image = Global.RHP.My.Resources.Resources.btn_unlock
         Me.Cloture_pb.InitialImage = Nothing
-        Me.Cloture_pb.Location = New System.Drawing.Point(99, 3)
+        Me.Cloture_pb.Location = New System.Drawing.Point(124, 4)
+        Me.Cloture_pb.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
         Me.Cloture_pb.Name = "Cloture_pb"
-        Me.Cloture_pb.Size = New System.Drawing.Size(26, 24)
+        Me.Cloture_pb.Size = New System.Drawing.Size(32, 30)
         Me.Cloture_pb.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom
         Me.Cloture_pb.TabIndex = 11
         Me.Cloture_pb.TabStop = False
@@ -302,9 +549,10 @@ Partial Class Formation_Evaluation
         Me.Save_pb.Dock = System.Windows.Forms.DockStyle.Fill
         Me.Save_pb.Image = Global.RHP.My.Resources.Resources.btn_save
         Me.Save_pb.InitialImage = Nothing
-        Me.Save_pb.Location = New System.Drawing.Point(35, 3)
+        Me.Save_pb.Location = New System.Drawing.Point(44, 4)
+        Me.Save_pb.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
         Me.Save_pb.Name = "Save_pb"
-        Me.Save_pb.Size = New System.Drawing.Size(26, 24)
+        Me.Save_pb.Size = New System.Drawing.Size(32, 30)
         Me.Save_pb.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom
         Me.Save_pb.TabIndex = 11
         Me.Save_pb.TabStop = False
@@ -315,19 +563,20 @@ Partial Class Formation_Evaluation
         Me.New_pb.Dock = System.Windows.Forms.DockStyle.Fill
         Me.New_pb.Image = Global.RHP.My.Resources.Resources.btn_add
         Me.New_pb.InitialImage = Nothing
-        Me.New_pb.Location = New System.Drawing.Point(3, 3)
+        Me.New_pb.Location = New System.Drawing.Point(4, 4)
+        Me.New_pb.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
         Me.New_pb.Name = "New_pb"
-        Me.New_pb.Size = New System.Drawing.Size(26, 24)
+        Me.New_pb.Size = New System.Drawing.Size(32, 30)
         Me.New_pb.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom
         Me.New_pb.TabIndex = 11
         Me.New_pb.TabStop = False
         '
         'Formation_Evaluation
         '
-        Me.AutoScaleDimensions = New System.Drawing.SizeF(96.0!, 96.0!)
+        Me.AutoScaleDimensions = New System.Drawing.SizeF(120.0!, 120.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi
         Me.BackColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
-        Me.ClientSize = New System.Drawing.Size(860, 646)
+        Me.ClientSize = New System.Drawing.Size(1191, 808)
         Me.Controls.Add(Me.pnl_Content)
         Me.Controls.Add(Me.Pnl_Bottom)
         Me.Controls.Add(Me.Preambule_rtb)
@@ -337,13 +586,24 @@ Partial Class Formation_Evaluation
         Me.Controls.Add(Me.Pnl_Left)
         Me.Controls.Add(Me.ent_pnl)
         Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None
+        Me.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
         Me.Name = "Formation_Evaluation"
         Me.Padding = New System.Windows.Forms.Padding(2)
         Me.Tag = "ECR"
         Me.Text = "Evaluation de formation"
         Me.WindowState = System.Windows.Forms.FormWindowState.Maximized
         Me.pnl_Top.ResumeLayout(False)
-        Me.pnl_Top.PerformLayout()
+        Me.eval_tblpnl.ResumeLayout(False)
+        Me.eval_tblpnl.PerformLayout()
+        Me.Eval_info.ResumeLayout(False)
+        Me.Eval_info.PerformLayout()
+        Me.pnl_note.ResumeLayout(False)
+        Me.TableLayoutPanel4.ResumeLayout(False)
+        Me.TableLayoutPanel4.PerformLayout()
+        Me.TableLayoutPanel3.ResumeLayout(False)
+        Me.TableLayoutPanel3.PerformLayout()
+        Me.TableLayoutPanel2.ResumeLayout(False)
+        Me.TableLayoutPanel2.PerformLayout()
         Me.ent_pnl.ResumeLayout(False)
         CType(Me.Print_pb, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.Cloture_pb, System.ComponentModel.ISupportInitialize).EndInit()
@@ -371,4 +631,18 @@ Partial Class Formation_Evaluation
     Friend WithEvents Print_pb As PictureBox
     Friend WithEvents lbl_lbl As Label
     Friend WithEvents New_pb As PictureBox
+    Friend WithEvents pnl_note As TableLayoutPanel
+    Friend WithEvents TableLayoutPanel4 As TableLayoutPanel
+    Friend WithEvents note_totale_txt As TextBox
+    Friend WithEvents Label3 As Label
+    Friend WithEvents TableLayoutPanel3 As TableLayoutPanel
+    Friend WithEvents coef_txt As TextBox
+    Friend WithEvents Label2 As Label
+    Friend WithEvents TableLayoutPanel2 As TableLayoutPanel
+    Friend WithEvents note_txt As TextBox
+    Friend WithEvents Label1 As Label
+    Friend WithEvents Dat_Survey_lbl As LinkLabel
+    Friend WithEvents Dat_Survey_txt As ud_TextBox
+    Friend WithEvents eval_tblpnl As TableLayoutPanel
+    Friend WithEvents Eval_info As Panel
 End Class

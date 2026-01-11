@@ -9,6 +9,8 @@ import {
   handleIdSoc,
 } from "./module_general";
 import { setSocietes, Societes, TAgent } from "../src/types";
+import { initAiContext } from "../controlers/ai_assistant";
+
 export const VGLOBALES: {
   PORT: number;
   ODBC_SERVEUR: string;
@@ -123,7 +125,8 @@ export async function initialisationGlobale(theAgent?: TAgent) {
   );
   setSocietes(soc.data);
 
-  await loadSmtpConfig();
+  loadSmtpConfig();
+  initAiContext(theAgent?.id_Societe ? Number(theAgent.id_Societe) : undefined);
 }
 
 export const initialisationSeveur = async (): Promise<boolean> => {

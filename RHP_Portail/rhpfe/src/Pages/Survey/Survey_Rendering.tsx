@@ -93,7 +93,19 @@ const Survey_Rendering = forwardRef<ChildHandle, TProps>(({ cod_survey, cod_repl
 
 
                 if (rslQuestions.data?.result && rslQuestions.data?.data?.length > 0) {
-                    const fetchedQuestions: TQuestion[] = rslQuestions.data.data;
+                    const fetchedQuestions: TQuestion[] = rslQuestions.data.data.map((q: TQuestion) => {
+                        // Sanitize scoring mode (Fix for legacy data & Formation/Evaluation contexts)
+                        if (q.AvecNote) {
+                            if (!q.Mode_Scoring || q.Mode_Scoring === 'na' || q.Mode_Scoring.trim() === '') {
+                                // If scoring enabled but mode is 'na' or empty, default to 'auto' unless function exists
+                                q.Mode_Scoring = (q.Func_Scoring && q.Func_Scoring.trim() !== '') ? 'func' : 'auto';
+                            } else if (q.Mode_Scoring === 'func' && (!q.Func_Scoring || q.Func_Scoring.trim() === '')) {
+                                // If mode is 'func' but no formula, fallback to 'auto'
+                                q.Mode_Scoring = 'auto';
+                            }
+                        }
+                        return q;
+                    });
                     setQuestions(fetchedQuestions);
 
                     const dbAnswers: any[] = rslAnswers.data?.result ? rslAnswers.data.data : [];
@@ -230,26 +242,45 @@ const Survey_Rendering = forwardRef<ChildHandle, TProps>(({ cod_survey, cod_repl
                         };
                     }
                 } else if (currentQ.Mode_Scoring === 'auto') {
-                    let score = safeNumber(getValeur(newValue, currentQ.Typ_Reponse), 0);
+                    let score = 0;
+                    if (currentQ.Typ_Reponse === 'liste' && currentQ.Reponses_Possibles) {
+                        // Logic equivalent to desktop: Index + 1
+                        const options = currentQ.Reponses_Possibles.split(';');
+                        const index = options.findIndex(opt => opt.trim() === String(newValue).trim());
+                        score = index >= 0 ? index + 1 : 0;
+                    } else {
+                        score = safeNumber(getValeur(newValue, currentQ.Typ_Reponse), 0);
+                    }
                     const coef = safeNumber(currentQ.Coef, 1);
                     finalNote = {
                         ...finalNote,
                         note: score,
                         coef: coef,
-                        note_totale: safeNumber(score * coef, 0)
+                        note_totale: safeNumber(score * coef, 0) // Fixed floating point precision if needed
                     };
                 } else if (['multi_sum', 'multi_avg', 'multi_min', 'multi_max'].includes(currentQ.Mode_Scoring)) {
-                    const func_agg: Record<string, (vals: any) => number> = {};
-                    func_agg['multi_sum'] = func_multi_sum
-                    func_agg['multi_avg'] = func_multi_avg
-                    func_agg['multi_min'] = func_multi_min
-                    func_agg['multi_max'] = func_multi_max
-                    const score = safeNumber(func_agg[currentQ.Mode_Scoring](newValue), 0);
+                    let score = 0;
+
+                    // Special handling for 'liste' type (Choice List) which returns a string but might have multi_* scoring assigned
+                    if (currentQ.Typ_Reponse === 'liste' && currentQ.Reponses_Possibles) {
+                        const options = currentQ.Reponses_Possibles.split(';');
+                        const index = options.findIndex(opt => opt.trim() === String(newValue).trim());
+                        score = index >= 0 ? index + 1 : 0;
+                    } else {
+                        // Default behavior for grids/checkboxes (arrays)
+                        const func_agg: Record<string, (vals: any) => number> = {};
+                        func_agg['multi_sum'] = func_multi_sum
+                        func_agg['multi_avg'] = func_multi_avg
+                        func_agg['multi_min'] = func_multi_min
+                        func_agg['multi_max'] = func_multi_max
+                        score = safeNumber(func_agg[currentQ.Mode_Scoring](newValue), 0);
+                    }
+
                     const coef = safeNumber(currentQ.Coef, 1);
                     finalNote = {
                         ...finalNote,
-                        note: func_agg[currentQ.Mode_Scoring](newValue),
-                        note_totale: score * coef
+                        note: score,
+                        note_totale: safeNumber(score * coef, 0)
                     };
                 }
             }

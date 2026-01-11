@@ -4,6 +4,22 @@ Public Class ud_TextBox
     Public Shadows Event KeyUp As EventHandler
     Public Shadows Event KeyPress As EventHandler
     Public Shadows Event KeyDown As EventHandler
+
+    Public Sub New()
+        ' This call is required by the designer.
+        InitializeComponent()
+
+        ' Add any initialization after the InitializeComponent() call.
+        ' Fix Docking Z-Order:
+        ' LB_lbl is Dock=Bottom, so it should be processed first (bottom of Z-order/Index 1)
+        ' Pnl is Dock=Fill, so it should be processed last (top of Z-order/Index 0)
+        Me.LB_lbl.SendToBack()
+        Me.Pnl.BringToFront()
+        
+        ' Default BackColor sync
+        Me.Pnl.BackColor = innerTextBox.BackColor
+    End Sub
+
     Public Shadows Sub ResetText()
         innerTextBox.ResetText()
     End Sub
@@ -91,6 +107,7 @@ Public Class ud_TextBox
         End Get
         Set(value As Color)
             innerTextBox.BackColor = value
+            Pnl.BackColor = value
         End Set
     End Property
     Public Shadows Property ForeColor As Color
@@ -134,12 +151,14 @@ Public Class ud_TextBox
     Private Sub innerTextBox_TextChanged(sender As Object, e As EventArgs) Handles innerTextBox.TextChanged
         RaiseEvent TextChanged(Me, e)
     End Sub
-    'Sub Resizing()
-    '    With innerTextBox
-    '        .Size = New Size(Me.Width - 3, Me.Height - LB_lbl.Height - 2)
-    '        .Location = New Point(0, 0)
-    '    End With
-    'End Sub
+    Private Sub ud_TextBox_Resize(sender As Object, e As EventArgs) Handles Me.Resize
+        ' Ensure proper layout order on resize
+        Me.Pnl.BringToFront()
+    End Sub
+
+    Private Sub Pnl_Click(sender As Object, e As EventArgs) Handles Pnl.Click
+        innerTextBox.Focus()
+    End Sub
     Private Sub innerTextBox_GotFocus(sender As Object, e As EventArgs) Handles innerTextBox.GotFocus
         '  If [ReadOnly] Then Return
         LB_lbl.BackColor = colorBase03

@@ -525,6 +525,27 @@
     <Import Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AI_Assistant\AiKnowledgeManager.vb" />
+    <Compile Include="AI_Assistant\Ai_Embedding.vb" />
+    <Compile Include="AI_Assistant\AI_KnowledgeBase.designer.vb">
+      <DependentUpon>AI_KnowledgeBase.vb</DependentUpon>
+    </Compile>
+    <Compile Include="AI_Assistant\AI_KnowledgeBase.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AI_Assistant\AiTextChunker.vb" />
+    <Compile Include="AI_Assistant\Zoom_Ai_EmbeddingConfig.Designer.vb">
+      <DependentUpon>Zoom_Ai_EmbeddingConfig.vb</DependentUpon>
+    </Compile>
+    <Compile Include="AI_Assistant\Zoom_Ai_EmbeddingConfig.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AI_Assistant\Zoom_AddModele.designer.vb">
+      <DependentUpon>Zoom_AddModele.vb</DependentUpon>
+    </Compile>
+    <Compile Include="AI_Assistant\Zoom_AddModele.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Audit\Consultation_Audit_Espion.designer.vb">
       <DependentUpon>Consultation_Audit_Espion.vb</DependentUpon>
     </Compile>
@@ -721,6 +742,12 @@
       <DependentUpon>RH_Demande_Avance_Liste.vb</DependentUpon>
     </Compile>
     <Compile Include="Documents\Demande_Avance\RH_Demande_Avance_Liste.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Communication\Communication_Blogs.Designer.vb">
+      <DependentUpon>Communication_Blogs.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Communication\Communication_Blogs.vb">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Compta\Ctb_Compta_Caisse_Banque.designer.vb">
@@ -2012,6 +2039,15 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="AI_Assistant\AI_KnowledgeBase.resx">
+      <DependentUpon>AI_KnowledgeBase.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AI_Assistant\Zoom_Ai_EmbeddingConfig.resx">
+      <DependentUpon>Zoom_Ai_EmbeddingConfig.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AI_Assistant\Zoom_AddModele.resx">
+      <DependentUpon>Zoom_AddModele.vb</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Audit\Consultation_Audit_Espion.resx">
       <DependentUpon>Consultation_Audit_Espion.vb</DependentUpon>
     </EmbeddedResource>
@@ -2042,6 +2078,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Avancement\UC_Timeline_Item.resx">
       <DependentUpon>UC_Timeline_Item.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Communication\Communication_Blogs.resx">
+      <DependentUpon>Communication_Blogs.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="customUI\MessageBox\ud_InputBox.resx">
       <DependentUpon>ud_InputBox.vb</DependentUpon>

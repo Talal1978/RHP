@@ -37,7 +37,11 @@ Public Class ud_ComboBox
     End Property
     Public Shadows Property SelectedValue As String
         Get
-            Return innerComboBox.SelectedValue
+            Dim val = innerComboBox.SelectedValue
+            If val Is Nothing OrElse IsDBNull(val) Then
+                Return Nothing
+            End If
+            Return val.ToString()
         End Get
         Set(value As String)
             If value <> Nothing Then
@@ -85,11 +89,9 @@ Public Class ud_ComboBox
     End Property
     Public Property Items As ComboBox.ObjectCollection
         Get
-            innerComboBox.DropDownStyle = ComboBoxStyle.DropDownList
             Return innerComboBox.Items
         End Get
         Set(value As ComboBox.ObjectCollection)
-            innerComboBox.DropDownStyle = ComboBoxStyle.DropDownList
             For Each obj As Object In value
                 innerComboBox.Items.Add(obj)
             Next
@@ -106,9 +108,9 @@ Public Class ud_ComboBox
         Try
             Dim TblCombo As DataTable = DATA_READER_GRD(sqlStr)
             With Me.innerComboBox
+                .DisplayMember = TblCombo.Columns(1).ColumnName
+                .ValueMember = TblCombo.Columns(0).ColumnName
                 .DataSource = TblCombo
-                .DisplayMember = TblCombo.Columns(1).Caption
-                .ValueMember = TblCombo.Columns(0).Caption
                 .DropDownStyle = ComboBoxStyle.DropDownList
                 .SelectedIndex = -1
             End With

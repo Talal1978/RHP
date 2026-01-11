@@ -34,6 +34,10 @@ const Evaluation_Liste = lazy(
   () => import("../Pages/Evaluation/Evaluation_Liste")
 );
 const Evaluation = lazy(() => import("../Pages/Evaluation/Evaluation"));
+const Formation_Evaluation = lazy(() => import("../Pages/Formation/Formation_Evaluation"));
+const Formation_Evaluation_Liste = lazy(() => import("../Pages/Formation/Formation_Evaluation_Liste"));
+const Formation = lazy(() => import("../Pages/Formation/Formation"));
+const Formation_Liste = lazy(() => import("../Pages/Formation/Formation_Liste"));
 const RH_Demande_Conge = lazy(() => import("../Pages/Conges/RH_Demande_Conge"));
 const Organigramme = lazy(() => import("../Pages/Organigramme/Organigramme"));
 const Recrutement_Demande = lazy(() => import("../Pages/Recrutement/Recrutement_Demande"));
@@ -47,6 +51,8 @@ const Demande_Doc_Administratif = lazy(() => import("../Pages/Demande_Doc_Admini
 const RH_Declaration_AT = lazy(() => import("../Pages/Accident_Travail/RH_Declaration_AT"));
 const RH_Declaration_AT_Liste = lazy(() => import("../Pages/Accident_Travail/RH_Declaration_AT_Liste"));
 const Dashboard = lazy(() => import("../Pages/Dashboard/Dashboard"));
+const Communication_Blogs_Liste = lazy(() => import("../Pages/Communication/Communication_Blogs_Liste"));
+const Communication_Blog = lazy(() => import("../Pages/Communication/Communication_Blog"));
 
 const Ecran = ({ style }: { style?: React.CSSProperties }) => {
   const { tbnMenu, settbnMenu, showSignature, signatureProps } =
@@ -103,6 +109,18 @@ const Ecran = ({ style }: { style?: React.CSSProperties }) => {
       case "Evaluation":
         setEcran(<Evaluation />);
         break;
+      case "Formation_Evaluation":
+        setEcran(<Formation_Evaluation />);
+        break;
+      case "Formation_Evaluation_Liste":
+        setEcran(<Formation_Evaluation_Liste />);
+        break;
+      case "Formation":
+        setEcran(<Formation />);
+        break;
+      case "Formation_Liste":
+        setEcran(<Formation_Liste />);
+        break;
       case "Org_Organigramme":
         setEcran(<Organigramme />);
         break;
@@ -141,6 +159,12 @@ const Ecran = ({ style }: { style?: React.CSSProperties }) => {
         break;
       case "Dashboard":
         setEcran(<Dashboard />);
+        break;
+      case "Communication_Blogs_Liste":
+        setEcran(<Communication_Blogs_Liste />);
+        break;
+      case "Communication_Blog":
+        setEcran(<Communication_Blog />);
         break;
       default:
         setEcran(

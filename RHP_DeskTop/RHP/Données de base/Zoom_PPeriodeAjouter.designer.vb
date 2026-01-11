@@ -88,7 +88,7 @@ Partial Class Zoom_PPeriodeAjouter
         Me.dtpAu.Location = New System.Drawing.Point(301, 25)
         Me.dtpAu.Margin = New System.Windows.Forms.Padding(3, 4, 3, 4)
         Me.dtpAu.Name = "dtpAu"
-        Me.dtpAu.Size = New System.Drawing.Size(108, 21)
+        Me.dtpAu.Size = New System.Drawing.Size(108, 24)
         Me.dtpAu.TabIndex = 3
         '
         'Label3
@@ -106,7 +106,7 @@ Partial Class Zoom_PPeriodeAjouter
         Me.dtpDu.Location = New System.Drawing.Point(68, 27)
         Me.dtpDu.Margin = New System.Windows.Forms.Padding(3, 4, 3, 4)
         Me.dtpDu.Name = "dtpDu"
-        Me.dtpDu.Size = New System.Drawing.Size(109, 21)
+        Me.dtpDu.Size = New System.Drawing.Size(109, 24)
         Me.dtpDu.TabIndex = 2
         '
         'Pnl
@@ -125,31 +125,34 @@ Partial Class Zoom_PPeriodeAjouter
         'Save_ud
         '
         Me.Save_ud.AutoSize = True
+        Me.Save_ud.BackColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
+        Me.Save_ud.bgColor = System.Drawing.Color.White
         Me.Save_ud.Border = RHP.ud_button.BorderStyle.All
         Me.Save_ud.BorderColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
         Me.Save_ud.BorderSize = 2
         Me.Save_ud.Cursor = System.Windows.Forms.Cursors.Hand
-        Me.Save_ud.ForeColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(36, Byte), Integer), CType(CType(36, Byte), Integer))
         Me.Save_ud.Image = Global.RHP.My.Resources.Resources.btn_save
-        Me.Save_ud.Location = New System.Drawing.Point(361, 108)
+        Me.Save_ud.isDefault = False
+        Me.Save_ud.Location = New System.Drawing.Point(352, 108)
         Me.Save_ud.Margin = New System.Windows.Forms.Padding(3, 5, 3, 5)
         Me.Save_ud.MinimumSize = New System.Drawing.Size(27, 31)
         Me.Save_ud.Name = "Save_ud"
         Me.Save_ud.Padding = New System.Windows.Forms.Padding(2)
-        Me.Save_ud.Size = New System.Drawing.Size(111, 33)
+        Me.Save_ud.Size = New System.Drawing.Size(120, 33)
         Me.Save_ud.TabIndex = 32
         Me.Save_ud.Text = "Enregistrer"
-        Me.Save_ud.ToolTip = ""
         '
         'Annuler_ud
         '
         Me.Annuler_ud.AutoSize = True
+        Me.Annuler_ud.BackColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
+        Me.Annuler_ud.bgColor = System.Drawing.Color.White
         Me.Annuler_ud.Border = RHP.ud_button.BorderStyle.All
         Me.Annuler_ud.BorderColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
         Me.Annuler_ud.BorderSize = 2
         Me.Annuler_ud.Cursor = System.Windows.Forms.Cursors.Hand
-        Me.Annuler_ud.ForeColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(36, Byte), Integer), CType(CType(36, Byte), Integer))
         Me.Annuler_ud.Image = Global.RHP.My.Resources.Resources.btn_close
+        Me.Annuler_ud.isDefault = False
         Me.Annuler_ud.Location = New System.Drawing.Point(10, 108)
         Me.Annuler_ud.Margin = New System.Windows.Forms.Padding(3, 5, 3, 5)
         Me.Annuler_ud.MinimumSize = New System.Drawing.Size(27, 31)
@@ -158,11 +161,10 @@ Partial Class Zoom_PPeriodeAjouter
         Me.Annuler_ud.Size = New System.Drawing.Size(111, 33)
         Me.Annuler_ud.TabIndex = 33
         Me.Annuler_ud.Text = "Annuler"
-        Me.Annuler_ud.ToolTip = ""
         '
         'Zoom_PPeriodeAjouter
         '
-        Me.AutoScaleDimensions = New System.Drawing.SizeF(7.0!, 16.0!)
+        Me.AutoScaleDimensions = New System.Drawing.SizeF(8.0!, 19.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.BackColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
         Me.ClientSize = New System.Drawing.Size(486, 157)

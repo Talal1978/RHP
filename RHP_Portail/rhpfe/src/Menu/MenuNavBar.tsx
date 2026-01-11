@@ -24,9 +24,11 @@ export default function MenuNavBar() {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const { titre } = useParams();
   useEffect(() => {
-    socket.on("nbSignature", (nb: any) => {
-      setNbsignature(nb);
-    });
+    if (socket) {
+      socket.on("nbSignature", (nb: any) => {
+        setNbsignature(nb);
+      });
+    }
   }, []);
   return (
     <div className="menuNavBar">

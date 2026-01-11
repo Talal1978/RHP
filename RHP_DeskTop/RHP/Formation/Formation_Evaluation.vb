@@ -11,12 +11,10 @@ Public Class Formation_Evaluation
     Dim btn_Signature As New mybtn_Signature(Me, "Signer_D", "", "btn_sign")
     Dim Paie_Calculee As Boolean = False
 
-    ' Variables pour stocker les notes car les contrôles UI n'existent pas dans ce formulaire
-    Private NoteGlobale As Double = 0
-    Private CoefGlobal As Double = 0
-    Private NoteTotaleGlobale As Double = 0
+
 
     Private Sub Survey_render_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        If Not EstDate(Dat_Survey_txt.Text) Then Dat_Survey_txt.Text = Now.ToShortDateString
         Matricule_txt.Text = theUser.Matricule
         Cod_Formation_txt.Text = CnExecuting("select isnull((select top 1 Cod_Formation from Formation where isnull(Statut_Formation,'')='Cloturee' and id_Societe=" & Societe.id_Societe & " and Cod_Formation in (select Cod_Formation from Formation_Participants where id_Societe=" & Societe.id_Societe & " and isnull(Present,'false')='true' and Matricule like '" & Matricule_txt.Text & "%')),'')").Fields(0).Value
     End Sub
@@ -37,6 +35,10 @@ Public Class Formation_Evaluation
     Private Sub Cod_Formation_txt_TextChanged(sender As Object, e As EventArgs) Handles Cod_Formation_txt.TextChanged
         Request()
     End Sub
+    
+    Private Sub LinkLabel2_LinkClicked(sender As Object, e As LinkLabelLinkClickedEventArgs) Handles Dat_Survey_lbl.LinkClicked
+        Appel_Calender(Dat_Survey_txt, Me)
+    End Sub
 
     Dim Code As String
     Sub Request()
@@ -54,13 +56,16 @@ Public Class Formation_Evaluation
         CodReponse = CnExecuting("select isnull((select Top 1 Cod_Reply from Survey_Reply where Cod_Survey='" & CodSurvey & "' and Evaluateur='" & Matricule_txt.Text & "' and Evalue='" & Cod_Formation_txt.Text & "' and id_Societe=" & Societe.id_Societe & "),-1)").Fields(0).Value
         
         Preambule_rtb.Rtf = FindLibelle("Preambule", "Cod_Survey", CodSurvey, "Survey")
+        Dat_Survey_txt.Text = FindLibelle("Dat_Survey", "Cod_Reply", CodReponse, "Survey_Reply")
         Preambule_rtb.Visible = (Preambule_rtb.Text.Trim <> "")
 
         If CodSurvey <> "" Then
             ' "F" pour Formation
             Tbl_Question = Generate_QuestionnaireNew(CodSurvey, pnl_Content, CodReponse, Cod_Formation_txt.Text, Matricule_txt.Text, "F")
+            Print_pb.Visible = True
         Else
             pnl_Content.Controls.Clear()
+            Print_pb.Visible = False
         End If
 
         afficherLesNotes = Tbl_Question.Select("AvecNote='true'").Length > 0
@@ -74,7 +79,7 @@ Public Class Formation_Evaluation
         miseAjourBtnValidationSignature(statut)
         Recalcul()
         
-        ' Pas de pnl_note dans Formation_Evaluation, donc on ne gère pas sa visibilité
+        pnl_note.Visible = afficherLesNotes
         
         With pnl_Content
             Dim fisrtCtr = If(.Controls.Count > 0, .Controls(.Controls.Count - 1), Nothing)
@@ -96,6 +101,7 @@ Public Class Formation_Evaluation
         Reset_Form(Me)
         Matricule_txt.Text = theUser.Matricule
         Cod_Formation_txt.Text = CnExecuting("select isnull((select top 1 Cod_Formation from Formation where isnull(Statut_Formation,'')='Cloturee' and id_Societe=" & Societe.id_Societe & " and Cod_Formation in (select Cod_Formation from Formation_Participants where id_Societe=" & Societe.id_Societe & " and isnull(Present,'false')='true' and Matricule like '" & Matricule_txt.Text & "%')),'')").Fields(0).Value
+        If Not EstDate(Dat_Survey_txt.Text) Then Dat_Survey_txt.Text = Now.ToShortDateString
         Request()
     End Sub
 
@@ -134,10 +140,9 @@ Public Class Formation_Evaluation
         Next
         If coef = 0 Then coef = 1
         
-        ' Mise à jour des variables globales
-        NoteGlobale = Math.Round(note, 2)
-        CoefGlobal = Math.Round(coef, 2)
-        NoteTotaleGlobale = Math.Round(CDbl(note / coef), 2)
+        note_txt.Text = Math.Round(note, 2)
+        coef_txt.Text = Math.Round(coef, 2)
+        note_totale_txt.Text = Math.Round(CDbl(note / coef), 2)
     End Sub
 
     Function Saving(statut As String) As savingResult
@@ -204,12 +209,12 @@ Public Class Formation_Evaluation
         ' rs("Ref_Evaluation").Value = Cod_Formation_txt.Text ' Optionnel, si nécessaire
         rs("Statut").Value = statut
         
-        ' Sauvegarde des notes même si non affichées
-        rs("Note").Value = NoteGlobale
-        rs("Coef").Value = CoefGlobal
-        rs("Note_Totale").Value = NoteTotaleGlobale
+        ' Sauvegarde des notes
+        rs("Note").Value = IIf(note_txt.Text = "", 0, note_txt.Text)
+        rs("Coef").Value = IIf(coef_txt.Text = "", 0, coef_txt.Text)
+        rs("Note_Totale").Value = IIf(note_totale_txt.Text = "", 0, note_totale_txt.Text)
         
-        ' rs("Dat_Survey").Value = ... ' Pas de champ date dans ce formulaire
+        rs("Dat_Survey").Value = If(EstDate(Dat_Survey_txt.Text), Dat_Survey_txt.Text, Now.ToShortDateString)
         
         rs("Dat_Modif").Value = Now
         rs("Modified_By").Value = theUser.Login
@@ -237,17 +242,17 @@ Public Class Formation_Evaluation
                     rs("Typ_Reponse").Value = c.Key.Typ_Reponse
                     rs("Num_Sous_Question").Value = v.Key
                     rs("Reponses").Value = v.Value
-                    
-                    If nrw(0)("Sous_Question").ToString.Split({";"}, StringSplitOptions.RemoveEmptyEntries).Length > 0 And IsNumeric(v.Key) Then
+
+                    If nrw(0)("Sous_Question").ToString.Split({";"c}, StringSplitOptions.RemoveEmptyEntries).Length > 0 And IsNumeric(v.Key) Then
                         Dim sq As String = nrw(0)("Sous_Question").ToString
-                        rs("Sous_Question").Value = sq.Split({";"}, StringSplitOptions.RemoveEmptyEntries)(v.Key)
+                        rs("Sous_Question").Value = sq.Split({";"c}, StringSplitOptions.RemoveEmptyEntries)(v.Key)
                         Reponse = ""
                         Select Case nrw(0)("Typ_Reponse")
                             Case "grille_cases", "cocher", "oui_non", "vrai_faux", "echelle", "grille_choix", "choix"
-                                rsp = v.Key.Split({";"}, StringSplitOptions.RemoveEmptyEntries)
+                                rsp = v.Key.Split({";"c}, StringSplitOptions.RemoveEmptyEntries)
                                 For n = 0 To rsp.Length - 1
                                     If rsp(n).Trim = "1" Then
-                                        Reponse &= IIf(Reponse = "", "", ";") & nrw(0)("Reponses_Possibles").ToString.Split({";"}, StringSplitOptions.RemoveEmptyEntries)(n)
+                                        Reponse &= IIf(Reponse = "", "", ";") & nrw(0)("Reponses_Possibles").ToString.Split({";"c}, StringSplitOptions.RemoveEmptyEntries)(n)
                                     End If
                                 Next
                             Case Else
@@ -255,14 +260,14 @@ Public Class Formation_Evaluation
                         End Select
                         rs("Valeur_Reponse").Value = Reponse
                     End If
-                    
+
                     Dim noteDic = c.Key.noteDic
                     If noteDic IsNot Nothing AndAlso noteDic.Count > 0 Then
                         rs("Note").Value = noteDic("note")
                         rs("Coef").Value = noteDic("coef")
                         rs("Note_Totale").Value = noteDic("note_totale")
                     End If
-                    
+
                     rs("Rang").Value = nb
                     rs("Flg_Maj").Value = Flg_Maj
                     nb += 1
@@ -273,7 +278,7 @@ Public Class Formation_Evaluation
         Next
         Return New savingResult With {.result = True, .message = "Evaluation enregistrée avec succès."}
     End Function
-    
+
     Sub estErreur(ud As ud_pattern)
         ud.Select()
         pnl_Content.ScrollControlIntoView(ud)
@@ -284,31 +289,24 @@ Public Class Formation_Evaluation
     Function SoumettreEnSignature() As savingResult
         Return Saving("SS")
     End Function
-    
+
     Function requestAfterSignature() As Boolean
         Request()
         Return True
     End Function
-    
+
     Sub miseAjourBtnValidationSignature(statut As String)
-        ' Adaptation pour Formation qui utilise Cloture_pb par défaut
-        ' EV est-il le bon code document pour Formation ?
-        ' Evaluation utilise 'EV'. Formation utilise peut-être autre chose ou pas de workflow.
-        ' On va supposer 'EV' pour l'instant ou essayer de détecter.
-        ' Mais ici c'est de l'Evaluation de Formation, peut-être qu'il faut un autre code.
-        ' Si on reste sur la logique Evaluation, on garde EV.
-        
-        Dim typDoc As String = "EV" ' A confirmer si Formation a un autre code
+        Dim typDoc As String = "EV"
         Dim gereWrkf As Boolean = estGereEnSignature(typDoc)
-        Dim controlToRemove As Control = ent_pnl.GetControlFromPosition(3, 0) ' Position de Cloture_pb (index 3)
-        
+        Dim controlToRemove As Control = ent_pnl.GetControlFromPosition(3, 0)
+
         If gereWrkf Then
             If TypeOf controlToRemove IsNot mybtn_Signature Then
                 Dim Dv As DataView = Tbl_Workflow_ParamDocuments.DefaultView
                 Dv.RowFilter = "Typ_Document='" & typDoc & "' and isnull(Gere_Signature,'false')='true'"
                 Dim Dt = Dv.ToTable
                 If Dt.Rows.Count = 0 Then Return
-                
+
                 With btn_Signature
                     .Image = My.Resources.Resources.btn_sign
                     .Name = "Signer_D"
@@ -321,10 +319,10 @@ Public Class Formation_Evaluation
                     .Size = New Size(.Width * 1.2, .Height * 1.2)
                     AddHandler .Click, AddressOf SubSignatures
                 End With
-                
+
                 If controlToRemove IsNot Nothing Then
                     ent_pnl.Controls.Remove(controlToRemove)
-                    controlToRemove.Dispose() 
+                    controlToRemove.Dispose()
                 End If
                 ent_pnl.Controls.Add(btn_Signature, 3, 0)
             Else
@@ -338,7 +336,7 @@ Public Class Formation_Evaluation
         Else
             Cloture_pb.Enabled = statut = ""
             Cloture_pb.Image = If(statut = "", My.Resources.btn_unlock, My.Resources.btn_lock_w)
-            
+
             If TypeOf controlToRemove IsNot PictureBox Then
                 If controlToRemove IsNot Nothing Then
                     ent_pnl.Controls.Remove(controlToRemove)
@@ -356,12 +354,16 @@ Public Class Formation_Evaluation
     Private H_pos As Integer
     Private NumPage As Integer = 1
     Private oFontStr As String = "Segoe UI"
+
+    ' Couleurs améliorées pour un design moderne (identique à Evaluation.vb)
     Private ReadOnly HeaderBackgroundColor As Color = Color.FromArgb(41, 128, 185)
     Private ReadOnly HeaderTextColor As Color = Color.White
     Private ReadOnly SectionHeaderColor As Color = Color.FromArgb(236, 240, 241)
     Private ReadOnly BorderColor As Color = Color.FromArgb(189, 195, 199)
     Private ReadOnly AlternateRowColor As Color = Color.FromArgb(250, 251, 252)
     Private ReadOnly QuestionBackgroundColor As Color = Color.FromArgb(245, 248, 250)
+
+    ' Marges et dimensions
     Private ReadOnly MarginLeft As Integer = 40
     Private ReadOnly MarginRight As Integer = 40
     Private ReadOnly MarginTop As Integer = 50
@@ -369,6 +371,7 @@ Public Class Formation_Evaluation
     Private HeaderHeight As Integer = 105
     Private ReadOnly FooterHeight As Integer = 40
     Private ReadOnly SectionSpacing As Integer = 20
+
     Private MaxW As Integer
     Private MaxH As Integer
     Private ContentWidth As Integer
@@ -402,12 +405,14 @@ Public Class Formation_Evaluation
         Dim obr As New SolidBrush(Color.Black)
         Dim _frm As New StringFormat()
         Dim Ht As Integer = MarginTop
+
         If NumPage = 1 Then
             RenderHeader(e, obr, _frm)
             Ht = MarginTop + HeaderHeight + SectionSpacing
         Else
             Ht = MarginTop
         End If
+
         If obj.Count = 0 Then
             For Each ctrl As Control In pnl_Content.Controls.Cast(Of Control)().Reverse()
                 If TypeOf ctrl Is ud_pattern Then
@@ -415,17 +420,21 @@ Public Class Formation_Evaluation
                 End If
             Next
         End If
+
         Dim startIndex As Integer = H_pos
         Dim hasMorePages As Boolean = False
+
         For i As Integer = startIndex To obj.Count - 1
             Dim ctrl As Control = CType(obj(i), Control)
             Dim rendered As Boolean = False
             Dim estimatedHeight As Integer = EstimateControlHeight(ctrl)
+
             If Ht + estimatedHeight > MaxH - FooterHeight - MarginBottom Then
                 hasMorePages = True
                 H_pos = i
                 Exit For
             End If
+
             Select Case True
                 Case TypeOf ctrl Is ud_grille_libre
                     rendered = RenderGridLibreImproved(e, ctrl, Ht, obr, _frm)
@@ -438,6 +447,7 @@ Public Class Formation_Evaluation
                 Case TypeOf ctrl Is ud_paragraph
                     rendered = RenderParagraphImproved(e, ctrl, Ht, obr, _frm)
             End Select
+
             If Not rendered Then
                 hasMorePages = True
                 H_pos = i
@@ -445,8 +455,10 @@ Public Class Formation_Evaluation
             End If
             H_pos = i + 1
         Next
+
         RenderFooterImproved(e, obr, _frm)
         e.HasMorePages = hasMorePages
+
         If hasMorePages Then
             NumPage += 1
         Else
@@ -506,13 +518,15 @@ Public Class Formation_Evaluation
         headerRect, HeaderBackgroundColor, Color.FromArgb(52, 152, 219), Drawing2D.LinearGradientMode.Horizontal)
             e.Graphics.FillRectangle(gradientBrush, headerRect)
         End Using
+
         _frm.Alignment = StringAlignment.Center
         _frm.LineAlignment = StringAlignment.Center
         Using titleFont As New Font(oFontStr, 14, FontStyle.Bold)
-            e.Graphics.DrawString(Lib_Survey_lbl.Text.ToUpper() & vbCrLf & Now.ToShortDateString, titleFont,
+            e.Graphics.DrawString(Lib_Survey_lbl.Text.ToUpper() & vbCrLf & Dat_Survey_txt.Text, titleFont,
                               New SolidBrush(HeaderTextColor),
                               New Rectangle(0, 0, MaxW, 60), _frm)
         End Using
+
         Dim headerFont As New Font(oFontStr, 9, FontStyle.Bold)
         Dim textFont As New Font(oFontStr, 8)
         Dim boxPen As New Pen(BorderColor, 0.5F)
@@ -522,7 +536,7 @@ Public Class Formation_Evaluation
         Dim codeWidth As Integer = 80
         Dim nameWidth As Integer = ContentWidth - labelWidth - codeWidth
 
-        ' Ligne 1 : L'évaluateur
+        ' Ligne 1 : L'évaluateur (Utilisateur courant)
         e.Graphics.DrawString("L'évaluateur", headerFont, obr, MarginLeft, startY + 4)
         e.Graphics.DrawRectangle(boxPen, MarginLeft + labelWidth, startY, codeWidth, boxHeight)
         e.Graphics.DrawString(Matricule_txt.Text, textFont, obr,
@@ -542,15 +556,28 @@ Public Class Formation_Evaluation
                           New Rectangle(MarginLeft + labelWidth + codeWidth + 3, startY + 2, nameWidth - 6, boxHeight - 4))
         startY += boxHeight + 4
 
+        ' Ligne 3: Evaluation Survey Libelle
+        ' Dans Evaluation.vb c'est "Evaluation" -> Cod_Evaluation / Lib_Survey
+        ' Ici on peut remettre CodSurvey
+        e.Graphics.DrawString("Sondage", headerFont, obr, MarginLeft, startY + 4)
+        e.Graphics.DrawRectangle(boxPen, MarginLeft + labelWidth, startY, codeWidth, boxHeight)
+        e.Graphics.DrawString(CodSurvey, textFont, obr,
+                           New Rectangle(MarginLeft + labelWidth + 3, startY + 2, codeWidth - 6, boxHeight - 4))
+        ' On utilise le libellé de survey affiché
+        Dim libSurveyOnly As String = If(Lib_Survey_lbl.Text.Contains(":"), Lib_Survey_lbl.Text.Split({":"c}, 2)(1).Trim(), Lib_Survey_lbl.Text)
+
+        e.Graphics.DrawRectangle(boxPen, MarginLeft + labelWidth + codeWidth, startY, nameWidth, boxHeight)
+        e.Graphics.DrawString(libSurveyOnly, textFont, obr,
+                           New Rectangle(MarginLeft + labelWidth + codeWidth + 3, startY + 2, nameWidth - 6, boxHeight - 4))
+
         If afficherLesNotes Then
             startY += boxHeight + 4
             Dim accentPen As New SolidBrush(Color.White)
             Dim noteLineRect As New Rectangle(MarginLeft, startY, ContentWidth, boxHeight + 12)
-            
-            ' Utilisation des variables globales
+
             e.Graphics.FillRectangle(New SolidBrush(HeaderBackgroundColor), noteLineRect)
             startY += 6
-            Dim noteStr = $"Note totale: {NoteGlobale}      Coefficient: {CoefGlobal}      Note finale: {NoteTotaleGlobale}"
+            Dim noteStr = $"Note totale: {note_txt.Text}      Coefficient: {coef_txt.Text}      Note finale: {note_totale_txt.Text}"
             Using lblFont As New Font(oFontStr, 12, FontStyle.Bold)
                 Dim textSize As SizeF = e.Graphics.MeasureString(noteStr, lblFont)
                 Dim startX As Integer = MarginLeft + (oReport.DefaultPageSettings.PaperSize.Width - textSize.Width) / 2
@@ -671,11 +698,16 @@ Public Class Formation_Evaluation
             Next
         End Using
         If afficherLesNotes AndAlso grid.avecNote AndAlso note.HasValue Then
+            ' Assumption: RenderNoteLine exists or I need to add it. 
+            ' Evaluation.vb had RenderNoteLine but here it is missing in previous file view. 
+            ' I will add RenderNoteLine to be safe.
             RenderNoteLine(e, Ht, note, coef, noteTotale, obr)
         End If
         Ht += SectionSpacing
         Return True
     End Function
+
+
 
     Private Function ColumnHasData(grid As Object, colIndex As Integer) As Boolean
         For r As Integer = 0 To grid.Grd.RowCount - 1

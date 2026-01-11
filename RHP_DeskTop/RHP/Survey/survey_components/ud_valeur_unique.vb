@@ -15,7 +15,7 @@ Public Class ud_valeur_unique
             Else
                 With note_txt
                     .ReadOnly = False
-                    .BackColor = System.Drawing.SystemColors.Control
+                    .BackColor = System.Drawing.SystemColors.Window
                     .Font = New Font(.Font, FontStyle.Underline)
                     AddHandler .KeyPress, Sub(_sender As Object, _e As KeyPressEventArgs)
                                               ControleSaisie(_sender, _e, True, False, True, False, False)
@@ -23,7 +23,7 @@ Public Class ud_valeur_unique
                                           End Sub
                     AddHandler .Validated, Sub(_sender As Object, _e As EventArgs)
                                                If Not IsNumeric(.Text) Then .Text = 0
-                                               If CDbl(.Text) > maxScore Then .Text = maxScore
+                                               If modeScoring <> "manuel" AndAlso CDbl(.Text) > maxScore Then .Text = maxScore
                                                Saving()
                                            End Sub
                 End With
@@ -180,6 +180,11 @@ Public Class ud_valeur_unique
             If funcScoring <> "" Then
                 Dim noteFunc = Module_Generateur_Survey.myVBS.Eval($"Func_Survey_{codQuestion}(""{IsNull(Grd.Item(1, 0).Value, valeurParDefaut)}"")")
                 If IsNumeric(noteFunc) Then laNote = Math.Round(CDbl(noteFunc), 2)
+            ElseIf Typ_Reponse = "liste" AndAlso modeScoring <> "manuel" Then
+                Dim cmb As DataGridViewComboBoxColumn = CType(Grd.Columns(1), DataGridViewComboBoxColumn)
+                If Grd.Item(1, 0).Value IsNot Nothing Then
+                    laNote = cmb.Items.IndexOf(Grd.Item(1, 0).Value) + 1
+                End If
             End If
             note_txt.Text = laNote
             note_totale = Math.Round(If(IsNumeric(coef), coef * laNote, laNote), 2)

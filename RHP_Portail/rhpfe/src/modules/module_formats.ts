@@ -253,3 +253,21 @@ export const parseRtfToText = (rtf: string) => {
   }
   return result.trim();
 };
+
+export const toRTF = (text: string) => {
+  if (!text) return "";
+  let rtf = "{\\rtf1\\ansi\\ansicpg1252\\deff0\\nouicompat\\deflang1036{\\fonttbl{\\f0\\fnil\\fcharset0 Calibri;}}\n";
+  rtf += "{\\*\\generator Riched20 10.0.19041}\\viewkind4\\uc1 \n";
+  rtf += "\\pard\\sa200\\sl276\\slmult1\\f0\\fs22\\lang12 ";
+
+  // Basic escaping
+  let escaped = text
+    .replace(/\\/g, "\\\\")
+    .replace(/\{/g, "\\{")
+    .replace(/\}/g, "\\}")
+    .replace(/\n/g, "\\par\n");
+
+  rtf += escaped;
+  rtf += "}";
+  return rtf;
+};

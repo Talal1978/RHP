@@ -39,6 +39,7 @@ const UdValeurUnique = ({
   readOnly = false,
 }: TProps) => {
   const [inputValue, setInputValue] = useState(valeurInitiale ?? "");
+  console.log(`[UdValeurUnique] Question: ${laquestion}, ReadOnly: ${readOnly}, Options Raw: '${colonnes}'`);
   // CORRECTION: useRef pour éviter la boucle infinie
   const onValueChangeRef = useRef(onValueChange);
   useEffect(() => {
@@ -119,13 +120,14 @@ const UdValeurUnique = ({
             onChange={(e: SelectChangeEvent) => handleValueChange(e.target.value)}
             variant="standard"
             displayEmpty
-            readOnly={readOnly}
+            inputProps={{ readOnly: readOnly }}
             sx={{ ...commonSx, width: "100%", borderBottom: `1px solid gray`, backgroundColor: readOnly ? "var(--chip-bg) !important" : 'var(--bg-input) !important' }}
+            MenuProps={{ disableScrollLock: true }}
           >
             <MenuItem value="" disabled><em>Sélectionnez...</em></MenuItem>
-            {options.map((option, index) => (
+            {options.length > 0 ? options.map((option, index) => (
               <MenuItem key={index} value={option.trim()}>{option.trim()}</MenuItem>
-            ))}
+            )) : <MenuItem value="" disabled>Aucune option</MenuItem>}
           </Select>
         );
       default:

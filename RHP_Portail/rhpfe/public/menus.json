@@ -13,7 +13,7 @@
     "typ_ecran": "MNU",
     "parent": "",
     "rang": 1,
-    "img": "AccountTree"
+    "img": "Domain"
   },
   {
     "name_ecran": "RH_Agent",
@@ -21,7 +21,7 @@
     "typ_ecran": "ECR",
     "parent": "orga",
     "rang": 1,
-    "img": "PersonOutline"
+    "img": "Badge"
   },
   {
     "name_ecran": "Org_Poste",
@@ -29,7 +29,7 @@
     "typ_ecran": "ECR",
     "parent": "orga",
     "rang": 2,
-    "img": "NoteAlt"
+    "img": "Work"
   },
   {
     "name_ecran": "Org_Organigramme",
@@ -37,7 +37,7 @@
     "typ_ecran": "ECR",
     "parent": "orga",
     "rang": 3,
-    "img": "Schema"
+    "img": "AccountTree"
   },
   {
     "name_ecran": "RH_Avancement_Timeline",
@@ -61,7 +61,7 @@
     "typ_ecran": "ECR",
     "parent": "MesDemandes",
     "rang": 1,
-    "img": "DownhillSkiing"
+    "img": "BeachAccess"
   },
   {
     "name_ecran": "RH_Demande_Avance_Liste",
@@ -69,7 +69,7 @@
     "typ_ecran": "ECR",
     "parent": "MesDemandes",
     "rang": 2,
-    "img": "CurrencyExchange"
+    "img": "Payments"
   },
   {
     "name_ecran": "RH_Demande_Pret_Liste",
@@ -77,7 +77,7 @@
     "typ_ecran": "ECR",
     "parent": "MesDemandes",
     "rang": 3,
-    "img": "Savings"
+    "img": "Handshake"
   },
   {
     "name_ecran": "RH_Dossier_Maladie_Liste",
@@ -93,7 +93,7 @@
     "typ_ecran": "ECR",
     "parent": "MesDemandes",
     "rang": 5,
-    "img": "Commute"
+    "img": "Receipt"
   },
   {
     "name_ecran": "MesDeclarationsAT",
@@ -109,7 +109,7 @@
     "typ_ecran": "ECR",
     "parent": "MesDeclarationsAT",
     "rang": 7,
-    "img": "MedicalServices"
+    "img": "Healing"
   },
   {
     "name_ecran": "mesConsultations",
@@ -117,7 +117,7 @@
     "typ_ecran": "MNU",
     "parent": "",
     "rang": 3,
-    "img": "AccountBalanceWallet"
+    "img": "LibraryBooks"
   },
   {
     "name_ecran": "RH_Bulletin_Liste",
@@ -125,15 +125,15 @@
     "typ_ecran": "ECR",
     "parent": "mesConsultations",
     "rang": 1,
-    "img": "Money"
+    "img": "ReceiptLong"
   },
   {
     "name_ecran": "mesEvaluations",
-    "text_ecran": "Evaluations",
+    "text_ecran": "Evaluations et formations",
     "typ_ecran": "MNU",
     "parent": "",
     "rang": 4,
-    "img": "FolderSpecial"
+    "img": "FactCheck"
   },
   {
     "name_ecran": "Evaluation_Liste",
@@ -144,12 +144,20 @@
     "img": "StarHalf"
   },
   {
-    "name_ecran": "Evaluation",
-    "text_ecran": "Evaluation",
+    "name_ecran": "Formation_Evaluation_Liste",
+    "text_ecran": "Evaluation de Formation",
+    "typ_ecran": "ECR",
+    "parent": "mesEvaluations",
+    "rang": 3,
+    "img": "School"
+  },
+  {
+    "name_ecran": "Formation_Liste",
+    "text_ecran": "Gestion des formations",
     "typ_ecran": "ECR",
     "parent": "mesEvaluations",
     "rang": 2,
-    "img": "ThumbUp"
+    "img": "School"
   },
   {
     "name_ecran": "Recrutement_fdr",
@@ -157,7 +165,7 @@
     "typ_ecran": "MNU",
     "parent": "",
     "rang": 5,
-    "img": "ContactEmergency"
+    "img": "PersonAdd"
   },
   {
     "name_ecran": "Recrutement_Demande_Liste",
@@ -165,7 +173,7 @@
     "typ_ecran": "ECR",
     "parent": "Recrutement_fdr",
     "rang": 1,
-    "img": "Portrait"
+    "img": "AssignmentInd"
   },
   {
     "name_ecran": "Entretien",
@@ -173,7 +181,7 @@
     "typ_ecran": "ECR",
     "parent": "Recrutement_fdr",
     "rang": 2,
-    "img": "PersonPin"
+    "img": "RecordVoiceOver"
   },
   {
     "name_ecran": "DiverseEditions",
@@ -181,7 +189,7 @@
     "typ_ecran": "ECR",
     "parent": "",
     "rang": 7,
-    "img": "Topic"
+    "img": "Print"
   },
   {
     "name_ecran": "Discipline_fdr",
@@ -189,13 +197,29 @@
     "typ_ecran": "MNU",
     "parent": "",
     "rang": 8,
-    "img": "FolderSpecial"
+    "img": "Gavel"
   },
   {
     "name_ecran": "RH_Discipline_Liste",
     "text_ecran": "Sanctions disciplinaires",
     "typ_ecran": "ECR",
     "parent": "Discipline_fdr",
+    "rang": 1,
+    "img": "ReportProblem"
+  },
+  {
+    "name_ecran": "Communication",
+    "text_ecran": "Communication",
+    "typ_ecran": "MNU",
+    "parent": "",
+    "rang": 9,
+    "img": "Topic"
+  },
+  {
+    "name_ecran": "Communication_Blogs_Liste",
+    "text_ecran": "Blogs",
+    "typ_ecran": "ECR",
+    "parent": "Communication",
     "rang": 1,
     "img": "NoteAlt"
   }

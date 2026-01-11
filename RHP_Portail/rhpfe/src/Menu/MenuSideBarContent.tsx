@@ -9,83 +9,18 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
-  SvgIconProps,
-  SvgIconTypeMap,
   Typography,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { controleMenus } from "../modules/module_menus";
 import {
-  AccountTree,
-  PersonOutline,
-  NoteAlt,
-  Schema,
-  FolderShared,
-  DownhillSkiing,
-  CurrencyExchange,
-  Savings,
-  MedicalInformation,
-  Commute,
-  Money,
-  AccountBalanceWallet,
-  FolderSpecial,
-  StarHalf,
-  ThumbUp,
-  ContactEmergency,
-  Portrait,
-  PersonPin,
-  EventAvailable,
-  Topic,
-  ChevronRight,
-  StarBorder,
   ExpandLess,
   ExpandMore,
-  MedicalServices,
-  SpaceDashboard,
 } from "@mui/icons-material";
 import { Fragment, useContext, useEffect, useState } from "react";
 import { cntX } from "./MenuMain";
 import { useNavigate } from "react-router-dom";
-import { colorBase } from "../modules/module_general";
-import { inherits } from "util";
-interface MenuIcons {
-  [key: string]: React.ElementType<SvgIconProps>;
-}
-const menusIcon: MenuIcons = {
-  AccountTree: AccountTree,
-  PersonOutline: PersonOutline,
-  NoteAlt: NoteAlt,
-  Schema: Schema,
-  FolderShared: FolderShared,
-  DownhillSkiing: DownhillSkiing,
-  CurrencyExchange: CurrencyExchange,
-  Savings: Savings,
-  MedicalInformation: MedicalInformation,
-  Commute: Commute,
-  Money: Money,
-  AccountBalanceWallet: AccountBalanceWallet,
-  FolderSpecial: FolderSpecial,
-  StarHalf: StarHalf,
-  ThumbUp: ThumbUp,
-  ContactEmergency: ContactEmergency,
-  Portrait: Portrait,
-  PersonPin: PersonPin,
-  EventAvailable: EventAvailable,
-  Topic: Topic,
-  ChevronRight: ChevronRight,
-  MedicalServices: MedicalServices,
-  SpaceDashboard: SpaceDashboard,
-};
-const GetMenuIcon = ({
-  name_ecran,
-  sx = { color: colorBase.colorBase01 },
-}: {
-  name_ecran: string;
-  sx?: any;
-}): JSX.Element => {
-  const IconComponent = menusIcon[name_ecran] || ChevronRight;
-  return <IconComponent sx={{ ...sx }} />;
-};
+import { GetMenuIcon } from "./MenuIcons";
 
 const MenuSideBarContent = () => {
   const navigate = useNavigate();

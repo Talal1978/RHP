@@ -17,7 +17,7 @@ Public Class ud_grille_cases
             Else
                 With note_txt
                     .ReadOnly = False
-                    .BackColor = System.Drawing.SystemColors.Control
+                    .BackColor = System.Drawing.SystemColors.Window
                     .Font = New Font(.Font, FontStyle.Underline)
                     AddHandler .KeyPress, Sub(_sender As Object, _e As KeyPressEventArgs)
                                               ControleSaisie(_sender, _e, True, False, True, False, False)
@@ -25,7 +25,7 @@ Public Class ud_grille_cases
                                           End Sub
                     AddHandler .Validated, Sub(_sender As Object, _e As EventArgs)
                                                If Not IsNumeric(.Text) Then .Text = 0
-                                               If CDbl(.Text) > maxScore Then .Text = maxScore
+                                               If modeScoring <> "manuel" AndAlso CDbl(.Text) > maxScore Then .Text = maxScore
                                                Saving()
                                            End Sub
                 End With
@@ -130,34 +130,37 @@ Public Class ud_grille_cases
         With Grd
             Dim laNote As Double = 0
             Dim note_totale As Double = 0
-            If Typ_Reponse = "oui_non" Or Typ_Reponse = "vrai_faux" Then
-                If CBool(.Item(1, 0).Tag) Then
-                    laNote = 1
-                Else
-                    laNote = 0
-                End If
-            ElseIf Typ_Reponse = "cocher" Or Typ_Reponse = "echelle" Then
-                For j = 1 To .ColumnCount - 1
-                    If CBool(.Item(j, 0).Tag) Then
-                        laNote = j
-                        Exit For
-                    End If
-                Next
+            If modeScoring = "manuel" Then
+                If IsNumeric(note_txt.Text) Then laNote = CDbl(note_txt.Text)
             Else
-                If modeScoring = "multi_sum" Then
+                If Typ_Reponse = "oui_non" Or Typ_Reponse = "vrai_faux" Then
+                    If CBool(.Item(1, 0).Tag) Then
+                        laNote = 1
+                    Else
+                        laNote = 0
+                    End If
+                ElseIf Typ_Reponse = "cocher" Or Typ_Reponse = "echelle" Then
+                    For j = 1 To .ColumnCount - 1
+                        If CBool(.Item(j, 0).Tag) Then
+                            laNote = j
+                            Exit For
+                        End If
+                    Next
+                Else
+                    If modeScoring = "multi_sum" Then
                         For i = 0 To .RowCount - 1
                             For j = 1 To .ColumnCount - 1
                                 If CBool(.Item(j, i).Tag) Then
-                                laNote += 1
-                            End If
+                                    laNote += 1
+                                End If
                             Next
                         Next
                     ElseIf modeScoring = "multi_avg" Then
                         For i = 0 To .RowCount - 1
                             For j = 1 To .ColumnCount - 1
                                 If CBool(.Item(j, i).Tag) Then
-                                laNote += 1
-                            End If
+                                    laNote += 1
+                                End If
                             Next
                         Next
                         laNote = Math.Round(laNote / (.RowCount * (.ColumnCount - 1)), 2)
@@ -179,6 +182,7 @@ Public Class ud_grille_cases
                         Next
                     End If
                 End If
+            End If
             If funcScoring <> "" Then
                 Dim noteFunc = Module_Generateur_Survey.myVBS.Eval($"Func_Survey_{codQuestion}({laNote})")
                 If IsNumeric(noteFunc) Then laNote = Math.Round(CDbl(noteFunc), 2)
