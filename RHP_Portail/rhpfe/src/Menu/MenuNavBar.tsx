@@ -15,6 +15,7 @@ import "./mainmenu.scss";
 import { socket } from "../socket";
 import ThemeToggle from "../components/ThemeToggle/ThemeToggle";
 import { parentCntX } from "../Context/GlobalContext";
+import AiAssistantWidget from "../components/AiAssistant/AiAssistantWidget";
 
 export default function MenuNavBar() {
   const navigate = useNavigate();
@@ -51,6 +52,8 @@ export default function MenuNavBar() {
           <Box sx={{ flexGrow: 1 }} />
 
           <ThemeToggle />
+
+          <AiAssistantWidget />
 
           <Box sx={{ md: "flex" }}>
             <IconButton

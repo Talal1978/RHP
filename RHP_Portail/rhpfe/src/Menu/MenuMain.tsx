@@ -9,7 +9,6 @@ import { Box, useMediaQuery, useTheme } from "@mui/material";
 import Ged from "../Pages/GED/Ged";
 import Loading from "../components/Loading/Loading";
 import MyAlert from "../components/MyAlert/MyAlert";
-import AiAssistantWidget from "../components/AiAssistant/AiAssistantWidget";
 export const cntX = createContext<{
   setShowLoading: Dispatch<SetStateAction<boolean>>;
   setShowGED: Dispatch<SetStateAction<boolean>>;
@@ -119,7 +118,6 @@ export const MenuMain = () => {
       <MyAlert {...alertProps} />
       {showGED && <Ged {...GEDprops} />}
       {showLoading && <Loading />}
-      <AiAssistantWidget />
     </cntX.Provider>
   );
 };

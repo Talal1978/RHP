@@ -64,11 +64,12 @@ const Dashboard = () => {
         // Fetch Dashboard Data
         const resp = await myAxiosPost("dashboard", {});
         if (resp && resp.data.result) {
-            const { signatures, insights, blogs } = resp.data.data;
+            const { signatures, insights, blogs, solde } = resp.data.data;
             const newNotifs: any[] = [];
             let idCounter = 1;
 
             if (blogs) setBlogs(blogs);
+            if (solde !== undefined) setSoldeConge(solde.toString()); // Set Real Solde
 
             // Process Signatures
             if (signatures && signatures.length > 0) {
@@ -155,7 +156,6 @@ const Dashboard = () => {
     useEffect(() => {
         fetchData();
         fetchWeather();
-        setSoldeConge("18.5");
     }, []);
 
     const formatDate = (dateStr: string) => {
