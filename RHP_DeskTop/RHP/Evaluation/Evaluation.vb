@@ -30,7 +30,7 @@ Public Class Evaluation
                     .tbl = Dt
                     .frm = Me
                     .Statut = statut
-                    .valeurIndex = CodReponse
+                    .valeurIndex = $"{Cod_Evaluation_txt.Text}_{Evalue_txt.Text}_{Evaluateur_txt.Text}"
                     .Visible = (estGereEnSignature("EV") And (.valeurIndex <> ""))
                     .ToolTip = "Signatures"
                     .Size = New Size(.Width * 1.2, .Height * 1.2)
@@ -82,6 +82,7 @@ Public Class Evaluation
     End Sub
     Private Sub Evaluation_Load(sender As Object, e As EventArgs) Handles Me.Load
         If Not EstDate(Dat_Survey_txt.Text) Then Dat_Survey_txt.Text = Now.ToShortDateString
+        Recalcul()
     End Sub
     Dim Code As String
     Sub Request()
@@ -110,7 +111,7 @@ Public Class Evaluation
         End If
 
         miseAjourBtnValidationSignature(statut)
-        Recalcul()
+
         pnl_note.Visible = afficherLesNotes
         With pnl_Content
             Dim fisrtCtr = If(.Controls.Count > 0, .Controls(.Controls.Count - 1), Nothing)
@@ -119,10 +120,12 @@ Public Class Evaluation
         CnExecuting("delete from Controle_Access where Name_Ecran='" & Me.Name & "' and value='" & Code & "' and Process_Id= " & ProcessId)
 
         DroitAcces(Me, DroitModify_Fiche(Cod_Evaluation_txt.Text & "_" & Evalue_txt.Text & "_" & Evaluateur_txt.Text, Me))
-        If (statut = "") Then
+
+        If (statut = "" OrElse Save_pb.Enabled) Then
             Code = Cod_Evaluation_txt.Text & "_" & Evalue_txt.Text & "_" & Evaluateur_txt.Text
             Check_Accessible(Me.Name, Code)
         End If
+        Recalcul()
     End Sub
     Private Sub Cloture_pb_Click(sender As Object, e As EventArgs) Handles Valide_pb.Click
         Dim resp As savingResult = Saving("VA")
@@ -144,20 +147,24 @@ Public Class Evaluation
     Sub Recalcul()
         Dim dictQ As New Dictionary(Of ud_pattern, Dictionary(Of String, String))
         dictQ = pnl_Content.Tag
-        Dim note As Double = 0
+        ' Apply Visibility Logic
+        Module_Generateur_Survey.survey_CheckVisibility(Tbl_Question, dictQ)
         Dim coef As Double = 0
         Dim note_totale As Double = 0
         For Each c In dictQ
             Dim noteDic = c.Key.noteDic
+
             If noteDic IsNot Nothing AndAlso noteDic.Count > 0 Then
-                note += noteDic("note")
-                coef += noteDic("coef")
+                If c.Key.avecNote And c.Key.modeScoring <> "na" AndAlso c.Key.Visible Then
+                    note_totale += noteDic("note_totale")
+                    coef += noteDic("coef")
+                End If
             End If
         Next
         If coef = 0 Then coef = 1
-        note_txt.Text = Math.Round(note, 2)
+        note_txt.Text = Math.Round(CDbl(note_totale / coef), 2)
         coef_txt.Text = Math.Round(coef, 2)
-        note_totale_txt.Text = Math.Round(CDbl(note / coef), 2)
+        note_totale_txt.Text = Math.Round(note_totale, 2)
     End Sub
     Function Saving(statut As String) As savingResult
         If Paie_Calculee Then Return New savingResult With {.result = False, .message = "Cette évaluation concerne une paie déjà calculée."}
@@ -198,9 +205,7 @@ Public Class Evaluation
             estErreur(checkErr.ud)
             Return New savingResult With {.result = False, .message = checkErr.err}
         End If
-
         Recalcul()
-
         Dim rs As New ADODB.Recordset
         rs.Open("select * from Survey_Reply where Cod_Reply=" & CodReponse, cn, 1, 3)
         If rs.EOF Then
@@ -394,6 +399,8 @@ Public Class Evaluation
                     rendered = RenderValeurUniqueImproved(e, ctrl, Ht, obr, _frm)
                 Case TypeOf ctrl Is ud_paragraph
                     rendered = RenderParagraphImproved(e, ctrl, Ht, obr, _frm)
+                Case TypeOf ctrl Is ud_titre
+                    rendered = RenderTitreImproved(e, ctrl, Ht, obr, _frm)
             End Select
 
             If Not rendered Then
@@ -463,6 +470,8 @@ Public Class Evaluation
             Return 70 + SectionSpacing
         ElseIf TypeOf ctrl Is ud_paragraph Then
             Return 120 + SectionSpacing
+        ElseIf TypeOf ctrl Is ud_titre Then
+            Return 40 + SectionSpacing
         End If
         Return 100
     End Function
@@ -610,10 +619,68 @@ Public Class Evaluation
         _frm.Alignment = StringAlignment.Near
         _frm.LineAlignment = StringAlignment.Center
         Using valueFont As New Font(oFontStr, 8, FontStyle.Bold)
-            e.Graphics.DrawString(value, valueFont, obr,
-                                New Rectangle(x + 5, y, width - 10, 25), _frm)
         End Using
     End Sub
+
+    ' Rendu amélioré pour ud_titre
+    Private Function RenderTitreImproved(e As PrintPageEventArgs, ctrl As Control,
+                                        ByRef Ht As Integer, obr As SolidBrush,
+                                        _frm As StringFormat) As Boolean
+        Dim titreCtrl As ud_titre = CType(ctrl, ud_titre)
+        Dim style As String = titreCtrl.Style.ToLower()
+        Dim text As String = titreCtrl.Titre
+        Dim pd As Integer = 15
+        
+        Dim fSize As Single = 12
+        Dim fStyle As FontStyle = FontStyle.Bold
+        Dim indent As Integer = 0
+        Dim rectHeight As Integer = 35
+        
+        Select Case style
+            Case "h1"
+                fSize = 16
+                Dim rect As New Rectangle(MarginLeft, Ht, ContentWidth, rectHeight)
+                e.Graphics.FillRectangle(New SolidBrush(colorBase01), rect)
+                _frm.Alignment = StringAlignment.Near
+                _frm.LineAlignment = StringAlignment.Center
+                Using f As New Font(oFontStr, fSize, fStyle)
+                    e.Graphics.DrawString(text, f, Brushes.White, New Rectangle(MarginLeft + 5, Ht, ContentWidth - 10, rectHeight), _frm)
+                End Using
+                
+            Case "h2"
+                fSize = 14
+                indent = pd * 2
+            Case "h3"
+                fSize = 12
+                indent = pd * 3
+            Case "h4"
+                fSize = 11
+                indent = pd * 4
+            Case "h5"
+                fSize = 10
+                indent = pd * 5
+            Case "h6"
+                fSize = 8
+                fStyle = FontStyle.Bold Or FontStyle.Italic Or FontStyle.Underline
+                indent = pd * 6
+            Case Else
+                fSize = 9
+        End Select
+
+        If style <> "h1" Then
+             _frm.Alignment = StringAlignment.Near
+             _frm.LineAlignment = StringAlignment.Center
+             Dim textColor As Brush = New SolidBrush(colorBase01)
+             If style = "h6" Then textColor = New SolidBrush(colorBase02)
+             
+             Using f As New Font(oFontStr, fSize, fStyle)
+                 e.Graphics.DrawString(text, f, textColor, New Rectangle(MarginLeft + indent + 5, Ht, ContentWidth - indent - 5, rectHeight), _frm)
+             End Using
+        End If
+
+        Ht += rectHeight + SectionSpacing
+        Return True
+    End Function
 
     ' Fonction améliorée pour rendre une grille libre
     ' Fonction améliorée pour rendre une grille (libre / choix / cases)

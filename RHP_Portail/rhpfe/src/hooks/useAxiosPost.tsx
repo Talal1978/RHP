@@ -42,13 +42,16 @@ const useAxiosPost = () => {
           }
         } catch (refreshErr) {
           console.error("Token refresh failed", refreshErr);
+          localStorage.removeItem("auth_token");
+          localStorage.removeItem("auth_agent");
           window.location.href = "/";
         }
       }
 
       // Connection cut / Network Error detection
       if (!err.response || err.code === "ERR_NETWORK") {
-        window.location.href = "/";
+        // window.location.href = "/"; // STOP LOOPING
+        console.error("Network Error - Redirect prevented");
       }
 
       console.error(apiStr, err);

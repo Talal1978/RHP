@@ -122,19 +122,27 @@ Public Class ud_grille_choix
         With Grd
             Dim laNote As Double = 0
             Dim note_totale As Double = 0
-            For i = 0 To .RowCount - 1
-                For j = 1 To .ColumnCount - 1
-                    If CBool(.Item(j, i).Tag) Then
-                        laNote += j + 1
-                        Exit For
-                    End If
+
+            If modeScoring = "manuel" Then
+                If IsNumeric(note_txt.Text) Then
+                    laNote = CDbl(note_txt.Text)
+                End If
+            Else
+                For i = 0 To .RowCount - 1
+                    For j = 1 To .ColumnCount - 1
+                        If CBool(.Item(j, i).Tag) Then
+                            laNote += j + 1
+                            Exit For
+                        End If
+                    Next
                 Next
-            Next
-            laNote = Math.Round(laNote / Math.Max(1, .RowCount), 2)
-            If funcScoring <> "" Then
-                Dim noteFunc = Module_Generateur_Survey.myVBS.Eval($"Func_Survey_{codQuestion}({laNote})")
-                If IsNumeric(noteFunc) Then laNote = Math.Round(CDbl(noteFunc), 2)
+                laNote = Math.Round(laNote / Math.Max(1, .RowCount), 2)
+                If funcScoring <> "" Then
+                    Dim noteFunc = Module_Generateur_Survey.myVBS.Eval($"Func_Survey_{codQuestion}({laNote})")
+                    If IsNumeric(noteFunc) Then laNote = Math.Round(CDbl(noteFunc), 2)
+                End If
             End If
+            
             note_txt.Text = laNote
             note_totale = Math.Round(If(IsNumeric(coef), coef * laNote, laNote), 2)
             note_totale_txt.Text = note_totale

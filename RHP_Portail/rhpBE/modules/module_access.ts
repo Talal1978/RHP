@@ -36,6 +36,12 @@ export const isAccessible = async (
     values (@nameEcran,@idSoc,@idEcran,@login,'portail','',@processId,getdate())
     select convert(bit,'true') as canModify, @login as Taken_By_User,@processId as Process_Id
     end
+    else if (@Taken_By_User=@login)
+    begin
+        update Controle_Access set Process_Id=@processId, Date_Deb=getdate()
+        where Name_Ecran=@nameEcran and [Value]=@idEcran and id_Societe=@idSoc
+        select convert(bit,'true') as canModify, @login as Taken_By_User,@processId as Process_Id
+    end
     else
     begin
     select convert(bit, case when @currentProcessId=@processId and @Taken_By_User=@login then 'true' when isnull(@idEcran,'')='' then 'true' else 'false' end) as canModify,@Taken_By_User as Taken_By_User,@currentProcessId as Process_Id

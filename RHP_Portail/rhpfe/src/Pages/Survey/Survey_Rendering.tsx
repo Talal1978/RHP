@@ -8,7 +8,7 @@ import { colorBase } from '../../modules/module_general';
 import Loading from '../../components/Loading/Loading';
 import { ChildHandle, TAnswers, TAnswerState, TDbAnswer, TNoteResult, TQuestion } from './Types';
 import useAxiosPost from '../../hooks/useAxiosPost';
-import { defaultValueMap, evaluateExpression, func_multi_avg, func_multi_max, func_multi_min, func_multi_sum, getValeur, safeNumber } from './Survey_Functions';
+import { defaultValueMap, evaluateExpression, func_multi_avg, func_multi_max, func_multi_min, func_multi_sum, getValeur, safeNumber, calculateGridScores, calculateGridScoresFromFunction } from './Survey_Functions';
 import useAxiosGet from '../../hooks/useAxiosGet';
 
 const initialAnswerState: TAnswerState = {
@@ -95,18 +95,10 @@ const Survey_Rendering = forwardRef<ChildHandle, TProps>(({ cod_survey, cod_repl
                 if (rslQuestions.data?.result && rslQuestions.data?.data?.length > 0) {
                     const fetchedQuestions: TQuestion[] = rslQuestions.data.data.map((q: TQuestion) => {
                         // Sanitize scoring mode (Fix for legacy data & Formation/Evaluation contexts)
-                        if (q.AvecNote) {
-                            if (!q.Mode_Scoring || q.Mode_Scoring === 'na' || q.Mode_Scoring.trim() === '') {
-                                // If scoring enabled but mode is 'na' or empty, default to 'auto' unless function exists
-                                q.Mode_Scoring = (q.Func_Scoring && q.Func_Scoring.trim() !== '') ? 'func' : 'auto';
-                            } else if (q.Mode_Scoring === 'func' && (!q.Func_Scoring || q.Func_Scoring.trim() === '')) {
-                                // If mode is 'func' but no formula, fallback to 'auto'
-                                q.Mode_Scoring = 'auto';
-                            }
-                        }
                         return q;
                     });
                     setQuestions(fetchedQuestions);
+                    questionsRef.current = fetchedQuestions;
 
                     const dbAnswers: any[] = rslAnswers.data?.result ? rslAnswers.data.data : [];
 
@@ -126,7 +118,7 @@ const Survey_Rendering = forwardRef<ChildHandle, TProps>(({ cod_survey, cod_repl
                         };
 
                         // Find answers for this question
-                        const qAnswers = dbAnswers.filter(a => a.Cod_Question === q.Cod_Question);
+                        const qAnswers = dbAnswers.filter(a => String(a.Cod_Question) === String(q.Cod_Question));
 
                         if (qAnswers.length > 0) {
                             // Logic to map DB answers to state value
@@ -182,11 +174,11 @@ const Survey_Rendering = forwardRef<ChildHandle, TProps>(({ cod_survey, cod_repl
                             isMandatory: q.Obligatoire,
                             typ_reponse: q.Typ_Reponse,
                             mode_scoring: q.Mode_Scoring,
+                            colonnes: q.Reponses_Possibles,
+                            lignes: q.Sous_Question,
                         };
                     });
                     setAnswers(initialAnswers);
-                } else {
-                    console.warn("⚠️ No questions found from API");
                 }
             } catch (error) {
                 console.error("❌ Erreur chargement données survey:", error);
@@ -216,7 +208,10 @@ const Survey_Rendering = forwardRef<ChildHandle, TProps>(({ cod_survey, cod_repl
             }
             let finalNote = prevAnswers[qNum]?.note;
             if (finalNote !== null) {
-                if (currentQ.Mode_Scoring === 'func' && currentQ.Func_Scoring) {
+                // Determine if this is a grid type question which requires row-by-row scoring
+                const isGridType = ['grille_libre', 'grille_cases', 'grille_choix'].includes(currentQ.Typ_Reponse);
+
+                if (currentQ.Mode_Scoring === 'func' && currentQ.Func_Scoring && !isGridType) {
                     try {
                         const funcScore = evaluateExpression(
                             currentQ.Func_Scoring,
@@ -241,40 +236,68 @@ const Survey_Rendering = forwardRef<ChildHandle, TProps>(({ cod_survey, cod_repl
                             note_totale: 0
                         };
                     }
+                /* MERGED INTO NEXT BLOCK
                 } else if (currentQ.Mode_Scoring === 'auto') {
-                    let score = 0;
-                    if (currentQ.Typ_Reponse === 'liste' && currentQ.Reponses_Possibles) {
-                        // Logic equivalent to desktop: Index + 1
-                        const options = currentQ.Reponses_Possibles.split(';');
-                        const index = options.findIndex(opt => opt.trim() === String(newValue).trim());
-                        score = index >= 0 ? index + 1 : 0;
-                    } else {
-                        score = safeNumber(getValeur(newValue, currentQ.Typ_Reponse), 0);
-                    }
-                    const coef = safeNumber(currentQ.Coef, 1);
-                    finalNote = {
-                        ...finalNote,
-                        note: score,
-                        coef: coef,
-                        note_totale: safeNumber(score * coef, 0) // Fixed floating point precision if needed
-                    };
-                } else if (['multi_sum', 'multi_avg', 'multi_min', 'multi_max'].includes(currentQ.Mode_Scoring)) {
+                    // Logic moved to the unified block below to support Agregation_Scoring
+                */
+                } else if ((['multi_sum', 'multi_avg', 'multi_min', 'multi_max', 'auto'].includes(currentQ.Mode_Scoring) || !!currentQ.Agregation_Scoring || isGridType) && currentQ.Mode_Scoring !== 'manuel') {
+
                     let score = 0;
 
-                    // Special handling for 'liste' type (Choice List) which returns a string but might have multi_* scoring assigned
-                    if (currentQ.Typ_Reponse === 'liste' && currentQ.Reponses_Possibles) {
-                        const options = currentQ.Reponses_Possibles.split(';');
-                        const index = options.findIndex(opt => opt.trim() === String(newValue).trim());
-                        score = index >= 0 ? index + 1 : 0;
-                    } else {
-                        // Default behavior for grids/checkboxes (arrays)
-                        const func_agg: Record<string, (vals: any) => number> = {};
-                        func_agg['multi_sum'] = func_multi_sum
-                        func_agg['multi_avg'] = func_multi_avg
-                        func_agg['multi_min'] = func_multi_min
-                        func_agg['multi_max'] = func_multi_max
-                        score = safeNumber(func_agg[currentQ.Mode_Scoring](newValue), 0);
-                    }
+                    // Refactored logic to match Desktop Component behavior (ud_grille_cases, ud_grille_choix)
+                    
+                    // 1. Calculate individual row scores (based on column index)
+                    // 1. Calculate individual row scores (based on column index)
+                    const scores = calculateGridScores(newValue, currentQ.Typ_Reponse, currentQ.Func_Scoring, currentQ.Reponses_Possibles);
+                    
+                     // 2. Apply Aggregation Logic
+                     
+                     // Helper for case-insensitive property access (backend casing safety)
+                     const getProp = (obj: any, key: string) => {
+                         const foundKey = Object.keys(obj).find(k => k.toLowerCase() === key.toLowerCase());
+                         return foundKey ? obj[foundKey] : undefined;
+                     };
+
+                     const rawAgg = getProp(currentQ, 'Agregation_Scoring');
+                     const rawMode = getProp(currentQ, 'Mode_Scoring');
+                     
+                     // Helper to determine aggregation mode: Agregation_Scoring > Mode_Scoring > 'multi_sum' (default)
+                     let aggMode = (rawAgg || rawMode || '').toLowerCase().trim();
+                     
+                     // Debug logging for troubleshooting
+
+
+                     // Normalize simple mode keys to aggegation keys if necessary, though usually they match 'multi_*'
+                     
+                     // Normalize simple mode keys to aggegation keys if necessary, though usually they match 'multi_*'
+                     
+                     if (currentQ.Typ_Reponse === 'liste' && currentQ.Reponses_Possibles) {
+                          // Logic equivalent to desktop: Index + 1
+                          const options = currentQ.Reponses_Possibles.split(';');
+                          const index = options.findIndex(opt => opt.trim() === String(newValue).trim());
+                          score = index >= 0 ? index + 1 : 0;
+                     } else if (['grille_choix', 'choix'].includes(currentQ.Typ_Reponse)) {
+                          // Desktop ud_grille_choix ALWAYS averages the sum of scores by row count
+                          const rowCount = Array.isArray(newValue) ? newValue.length : 1;
+                          const sum = scores.reduce((a: number, b: number) => a + b, 0);
+                          score = safeNumber(rowCount > 0 ? sum / rowCount : 0, 0);
+                     } else {
+                         // Desktop ud_grille_cases supports aggregation modes
+                         if (aggMode === 'multi_avg') {
+                              const rowCount = Array.isArray(newValue) ? newValue.length : 1;
+                              const sum = scores.reduce((a: number, b: number) => a + b, 0);
+                              score = safeNumber(rowCount > 0 ? sum / rowCount : 0, 0);
+
+                         } else if (aggMode === 'multi_max') {
+                              score = scores.length > 0 ? Math.max(...scores) : 0;
+                         } else if (aggMode === 'multi_min') {
+                              score = scores.length > 0 ? Math.min(...scores) : 0;
+                         } else {
+                              // Default (multi_sum)
+                              score = scores.reduce((a: number, b: number) => a + b, 0);
+
+                         }
+                     }
 
                     const coef = safeNumber(currentQ.Coef, 1);
                     finalNote = {
@@ -358,7 +381,6 @@ const Survey_Rendering = forwardRef<ChildHandle, TProps>(({ cod_survey, cod_repl
                             console.error(`Erreur évaluation Obligatoire_Si Q${q.NumQuestion}:`, error);
                         }
                     }
-
                     // Traitement des réponses avec erreur conditionnelle                       }
                     if (q.Erreur_Si && q.Erreur_Si.trim().length !== 0) {
                         const errorRule = q.Erreur_Si;
@@ -397,7 +419,7 @@ const Survey_Rendering = forwardRef<ChildHandle, TProps>(({ cod_survey, cod_repl
             numQuestion: q.NumQuestion,
             laquestion: q.Question,
             Obligatoire: qState.isMandatory,
-            avecNote: q.AvecNote,
+            avecNote: q.AvecNote && qState.mode_scoring !== 'na',
             note: qState.note,
             colonnes: q.Reponses_Possibles,
             valeurInitiale: qState.value,
@@ -421,11 +443,13 @@ const Survey_Rendering = forwardRef<ChildHandle, TProps>(({ cod_survey, cod_repl
             case 'vrai_faux':
             case 'oui_non':
                 return (
-                    <UdGrilleCases
-                        key={q.NumQuestion}
-                        {...commonProps}
-                        lignes={q.Sous_Question}
-                    />
+                    <>
+                        <UdGrilleCases
+                            key={q.NumQuestion}
+                            {...commonProps}
+                            lignes={q.Sous_Question}
+                        />
+                    </>
                 );
 
             case 'grille_choix':
@@ -474,6 +498,24 @@ const Survey_Rendering = forwardRef<ChildHandle, TProps>(({ cod_survey, cod_repl
                     />
                 );
 
+            case 'titre':
+                const styleH = q.Reponses_Possibles || 'h6'; // Default to h6 if not specified (Structure_Reponse mapped to Reponses_Possibles or we check mapping)
+                // In desktop: Structure_Reponse -> .Style. Here mapped? 
+                // In surveyQuestions controller: `isnull(Structure_Reponse,'h6') as Structure_Reponse` is not selected? 
+                // Wait, in controller: `isnull(Structure_Reponse,'h6') as Structure_Reponse` IS selected in qst_sql but strictly checking `TQuestion` interface might show it's missing or mapped elsewhere.
+                // TQuestion interface has no Structure_Reponse. 
+                // Let's check controller output in `surveyQuestions`.
+                // It selects `Structure_Reponse`.
+                // But `TQuestion` interface in Types.tsx needs update?
+                // Let's just use Typography variants or default to h6.
+                return (
+                    <Box key={q.NumQuestion} sx={{ mt: 2, mb: 1, borderBottom: '1px solid #ddd', pb: 1 }}>
+                        <Typography variant="h6" sx={{ color: colorBase.colorBase01, fontWeight: 'bold' }}>
+                            {q.Question}
+                        </Typography>
+                    </Box>
+                );
+
             default:
                 return (
                     <Box key={q.NumQuestion} sx={{ p: 2, border: '1px solid red' }}>
@@ -486,7 +528,7 @@ const Survey_Rendering = forwardRef<ChildHandle, TProps>(({ cod_survey, cod_repl
     const totalScore = useMemo(() => {
         return questions.reduce<{ noteTotal: number, coefTotal: number }>((total, q) => {
             const qState = answers[q.NumQuestion];
-            if (qState && qState.isVisible && q.AvecNote) {
+            if (qState && qState.isVisible && q.AvecNote && qState.mode_scoring !== 'na') {
                 const noteTotal = safeNumber(qState.note?.note_totale, 0);
                 const coefTotal = safeNumber(qState.note?.coef, 0);
                 return { noteTotal: total.noteTotal + noteTotal, coefTotal: total.coefTotal + coefTotal };
@@ -519,11 +561,11 @@ const Survey_Rendering = forwardRef<ChildHandle, TProps>(({ cod_survey, cod_repl
                 if (['grille_cases', 'grille_choix', 'echelle', 'cocher', 'choix', 'oui_non', 'vrai_faux'].includes(q.Typ_Reponse)) {
                     // checks for arrays
                     if (Array.isArray(val) && val.length > 0) {
-                        const hasContent = (v: any): boolean => {
-                            if (Array.isArray(v)) return v.some(hasContent);
-                            return v === true || v === 1 || v === "1" || (typeof v === 'string' && v.trim().length > 0) || (typeof v === 'number' && v !== 0);
-                        };
-                        isFilled = hasContent(val);
+                         const isEmpty = (v: any): boolean => {
+                             if (Array.isArray(v)) return v.every(isEmpty);
+                             return v === 0 || v === "0" || v === false || v === "false" || v === "" || v === null || v === undefined;
+                        }
+                        isFilled = !val.every(isEmpty);
                     }
                 } else {
                     // Simple values
@@ -563,6 +605,7 @@ const Survey_Rendering = forwardRef<ChildHandle, TProps>(({ cod_survey, cod_repl
     const saveAnswers = useCallback(async (): Promise<{ result: boolean, data: any[] }> => {
         // Validation
         const { isValid, newAnswers } = validateSurvey();
+        console.log("DEBUG saveAnswers Validation:", { isValid, newAnswers, answers });
 
         if (!isValid) {
             setAnswers(newAnswers);
@@ -588,10 +631,12 @@ const Survey_Rendering = forwardRef<ChildHandle, TProps>(({ cod_survey, cod_repl
                 typ_survey,
                 ref_evaluation
             });
+            console.log("DEBUG myAxiosPost Response:", rsl);
+
             if (rsl.data) {
                 return rsl.data;
             }
-            return { result: false, data: [] };
+            return { result: false, data: ["No data/error in response"] };
         } catch (error) {
             console.error('Error saving answers:', error);
             return { result: false, data: [error] };

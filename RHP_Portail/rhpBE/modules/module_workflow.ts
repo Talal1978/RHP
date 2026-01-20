@@ -21,6 +21,7 @@ export async function get_signataires(req: Request, res: Response) {
   const { Typ_Document, Valeur_Index } = req.query;
 
   const { id_Societe } = req.params;
+  console.log(Typ_Document, Valeur_Index, id_Societe)
   const rsl = await lireSql(
     `select  Statut, Typ_Signature,Operande_Signature, Dans_Ordre, e.Num_Ligne, 
 Signataire,isnull(a.Nom,u.Nom) as Nom, isnull(Decision,'') Decision, Dat_Signature , l.RowId, e.Statut , isnull(Commentaire,'')Commentaire 

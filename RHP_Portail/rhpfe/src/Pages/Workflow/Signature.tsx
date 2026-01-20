@@ -34,7 +34,7 @@ const Signature = (props: TSignature) => {
       },
     })
       .then((dt) => {
-        if (dt.data.result) {
+               if (dt.data.result) {
           setSignataires(dt.data.data);
         } else {
           setSignataires([]);

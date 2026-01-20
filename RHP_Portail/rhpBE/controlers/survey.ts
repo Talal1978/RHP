@@ -10,7 +10,7 @@ export const surveyQuestions = async (req: Request, res: Response) => {
     const qst_sql = `select row_number() over(order by Rang asc) as NumQuestion, isnull(Typ_Reponse, '') as Typ_Reponse, RowId as Cod_Question, isnull(Question, '') as Question, isnull(Sous_Question, '') as Sous_Question,
     isnull(Reponses_Possibles, '') as Reponses_Possibles, convert(bit,case when isnull(Obligatoire_Si, '') <> '' then 'false' else isnull(Obligatoire, 'false') end) as Obligatoire,
     isnull(AvecNote, 'false') as AvecNote, isnull(Mode_Scoring, 'na') as Mode_Scoring, isnull(Max_Score, 0) as Max_Score, isnull(Func_Scoring, '') as Func_Scoring, isnull(Coef, 1) as Coef, isnull(Obligatoire_Si, '') as Obligatoire_Si,
-    isnull(Erreur_Si, '') as Erreur_Si, isnull(Erreur_Msg, '') as Erreur_Msg
+    isnull(Erreur_Si, '') as Erreur_Si, isnull(Erreur_Msg, '') as Erreur_Msg, isnull(Agregation_Scoring, '') as Agregation_Scoring, isnull(Structure_Reponse, 'h6') as Structure_Reponse
 from Survey_Detail d
 outer apply(select top 1 AvecNote from Survey s where s.Cod_Survey = d.Cod_Survey)q
 where Cod_Survey = @cod_survey and id_Societe = @idSoc
@@ -43,11 +43,13 @@ where Cod_Survey = @cod_survey and Cod_Reply = @cod_reply`;
 };
 
 export const surveyAnswersSave = async (req: Request, res: Response) => {
-    const { cod_survey, cod_reply, answers, evalue, evaluateur, ref_evaluation } = req.body;
+    const { cod_survey, cod_reply, answers, evalue, evaluateur, ref_evaluation, typ_survey } = req.body;
     // Note: User snippet usually gets idSoc from params or user context.
     const idSoc = req.params.id_Societe || 1;
 
     const login = req.params.login || "System";
+    const typEvalue = typ_survey || 'E'; // Default to 'E' if not provided
+
     if (!cod_survey) return res.send({ result: false, data: ["Code évaluation vide."] });
 
     // Generate Flg_Maj (Batch ID)
@@ -58,12 +60,15 @@ export const surveyAnswersSave = async (req: Request, res: Response) => {
     let currentCodReply = 0;
 
     // Use Composite Key (Ref_Evaluation + Evalue + Evaluateur)
-    let checkSql = `select Cod_Reply, convert(bit, isnull(Paie_Calculee, 0)) as Paie_Calculee 
+    // Fix: Handle cases where Ref_Evaluation might be NULL in older records, and strictly check Typ_Evalue
+    let checkSql = `select top 1 Cod_Reply, convert(bit, isnull(Paie_Calculee, 0)) as Paie_Calculee 
                     from Survey_Reply 
-                    where Ref_Evaluation = @ref_evaluation 
+                    where (Ref_Evaluation = @ref_evaluation OR Ref_Evaluation IS NULL OR Ref_Evaluation = '')
                       and Evalue = @evalue 
                       and Evaluateur = @evaluateur 
-                      and id_Societe = @idSoc`;
+                      and Typ_Evalue = @typEvalue
+                      and id_Societe = @idSoc
+                    order by Cod_Reply desc`; // Pick latest if duplicates exist
 
     let exists = false;
 
@@ -71,6 +76,7 @@ export const surveyAnswersSave = async (req: Request, res: Response) => {
         { param: "ref_evaluation", sqlType: NVarChar, valeur: ref_evaluation },
         { param: "evalue", sqlType: NVarChar, valeur: evalue },
         { param: "evaluateur", sqlType: NVarChar, valeur: evaluateur },
+        { param: "typEvalue", sqlType: NVarChar, valeur: typEvalue },
         { param: "idSoc", sqlType: Int, valeur: idSoc }
     ]);
 
@@ -82,9 +88,10 @@ export const surveyAnswersSave = async (req: Request, res: Response) => {
 
     let headerSql = "";
     if (!exists) {
+        // ... (INSERT block logs are already there) ...
         // INSERT
         headerSql = `insert into Survey_Reply(id_Societe, Cod_Survey, Dat_Crea, Created_By, Evaluateur, Typ_Evalue, Evalue, Ref_Evaluation, Statut, Note, Coef, Note_Totale, Dat_Survey, Dat_Modif, Modified_By, Flg_Maj)
-values(@idSoc, @cod_survey, getdate(), @login, @evaluateur, 'E', @evalue, @ref_evaluation, '', 0, 1, 0, getdate(), getdate(), @login, @flg_maj);
+values(@idSoc, @cod_survey, getdate(), @login, @evaluateur, @typEvalue, @evalue, @ref_evaluation, '', 0, 1, 0, getdate(), getdate(), @login, @flg_maj);
         SELECT SCOPE_IDENTITY() as NewId; `;
 
         const rslHeader = await lireSql(headerSql, [
@@ -92,6 +99,7 @@ values(@idSoc, @cod_survey, getdate(), @login, @evaluateur, 'E', @evalue, @ref_e
             { param: "cod_survey", sqlType: NVarChar, valeur: cod_survey },
             { param: "login", sqlType: NVarChar, valeur: login },
             { param: "evaluateur", sqlType: NVarChar, valeur: evaluateur },
+            { param: "typEvalue", sqlType: NVarChar, valeur: typEvalue },
             { param: "evalue", sqlType: NVarChar, valeur: evalue },
             { param: "ref_evaluation", sqlType: NVarChar, valeur: ref_evaluation },
             { param: "flg_maj", sqlType: NVarChar, valeur: flg_maj.toString() }
@@ -106,12 +114,13 @@ values(@idSoc, @cod_survey, getdate(), @login, @evaluateur, 'E', @evalue, @ref_e
     } else {
         // UPDATE
         headerSql = `update Survey_Reply set
-Evaluateur = @evaluateur, Typ_Evalue = 'E', Evalue = @evalue, Ref_Evaluation = @ref_evaluation, Statut = '',
+Evaluateur = @evaluateur, Typ_Evalue = @typEvalue, Evalue = @evalue, Ref_Evaluation = @ref_evaluation, Statut = '',
     Dat_Modif = getdate(), Modified_By = @login, Flg_Maj = @flg_maj
             where Cod_Reply = @cod_reply`;
 
-        await lireSql(headerSql, [
+        const rslUpd = await lireSql(headerSql, [
             { param: "evaluateur", sqlType: NVarChar, valeur: evaluateur },
+            { param: "typEvalue", sqlType: NVarChar, valeur: typEvalue },
             { param: "evalue", sqlType: NVarChar, valeur: evalue },
             { param: "ref_evaluation", sqlType: NVarChar, valeur: ref_evaluation },
             { param: "login", sqlType: NVarChar, valeur: login },
@@ -131,7 +140,15 @@ Evaluateur = @evaluateur, Typ_Evalue = 'E', Evalue = @evalue, Ref_Evaluation = @
         { param: "cod_survey", sqlType: NVarChar, valeur: cod_survey },
         { param: "idSoc", sqlType: Int, valeur: idSoc }
     ]);
+
+    if (!rslQsts2.result) {
+        console.error("DEBUG Questions Fetch Error:", rslQsts2.sort);
+        return res.send({ result: false, data: ["Error fetching survey details"] });
+    }
+
     const questionsList = rslQsts2.data || [];
+
+
     let rang = 0;
 
     const insertPromises: Promise<any>[] = [];
@@ -139,6 +156,11 @@ Evaluateur = @evaluateur, Typ_Evalue = 'E', Evalue = @evalue, Ref_Evaluation = @
     for (const qDef of questionsList) {
         const qNum = qDef.NumQuestion;
         const ansState = answers[qNum];
+
+        if (ansState) {
+        } else {
+        }
+
         if (!ansState) continue;
 
         const val = ansState.value;

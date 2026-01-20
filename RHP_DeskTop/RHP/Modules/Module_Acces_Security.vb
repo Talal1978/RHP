@@ -1,4 +1,7 @@
-﻿Module Module_Acces_Security
+﻿Imports System.Drawing.Drawing2D
+Imports System.Drawing.Imaging
+
+Module Module_Acces_Security
     Friend ErrCalcul As String = ""
     Sub Show_form(ByVal q As Form)
         With q
@@ -143,7 +146,7 @@
         Dim Ctrl() = CurrentForm.Controls.Find(Name, True)
         If Ctrl.Length > 0 Then
             Return Ctrl(0)
-        ElseIf CurrentForm.dictButtons.ContainsKey(name) Then
+        ElseIf CurrentForm.dictButtons.ContainsKey(Name) Then
             Return CurrentForm.dictButtons(Name)
         Else
             Return Nothing
@@ -170,6 +173,9 @@
                         .enabled = True
                     ElseIf "DataGridView;ud_Grd".Split(";").Contains(Objet.GetType.Name) Then
                         .readonly = False
+                    ElseIf Objet.GetType.Name = "PictureBox" Then
+                        RetablirPictureBox(Objet)
+                        .enabled = True
                     Else
                         .enabled = True
                     End If
@@ -185,6 +191,9 @@
                         .enabled = False
                     ElseIf "DataGridView;ud_Grd".Split(";").Contains(Objet.GetType.Name) Then
                         .readonly = True
+                    ElseIf Objet.GetType.Name = "PictureBox" Then
+                        GriserPictureBox(Objet)
+                        .enabled = False
                     Else
 
                         .enabled = False
@@ -372,4 +381,82 @@ where (isnull(parSociete,'false')='false' or exists(select id_Societe from Param
             Return True
         End If
     End Function
+
+    Private ReadOnly _imgOriginal As New Dictionary(Of PictureBox, Image)
+
+    ''' <summary>
+    ''' Convertit une image en niveaux de gris tout en préservant le canal alpha.
+    ''' </summary>
+    Private Function ToGrayscale(src As Image) As Bitmap
+        Dim srcBmp As New Bitmap(src)
+        Try
+            Dim dst As New Bitmap(srcBmp.Width, srcBmp.Height, PixelFormat.Format32bppArgb)
+            Using g As Graphics = Graphics.FromImage(dst)
+                g.Clear(Color.Transparent)
+                g.CompositingMode = CompositingMode.SourceCopy
+
+                Dim cm As New ColorMatrix(New Single()() {
+                New Single() {0.299F, 0.299F, 0.299F, 0, 0},
+                New Single() {0.587F, 0.587F, 0.587F, 0, 0},
+                New Single() {0.114F, 0.114F, 0.114F, 0, 0},
+                New Single() {0, 0, 0, 1, 0},
+                New Single() {0, 0, 0, 0, 1}
+            })
+
+                Using ia As New ImageAttributes()
+                    ia.SetColorMatrix(cm)
+                    g.DrawImage(srcBmp,
+                            New Rectangle(0, 0, dst.Width, dst.Height),
+                            0, 0, srcBmp.Width, srcBmp.Height,
+                            GraphicsUnit.Pixel, ia)
+                End Using
+            End Using
+            Return dst
+        Finally
+            srcBmp.Dispose() ' Libérer le bitmap temporaire
+        End Try
+    End Function
+
+    ''' <summary>
+    ''' Convertit l'image du PictureBox en niveaux de gris.
+    ''' </summary>
+    Public Sub GriserPictureBox(pb As PictureBox)
+        If pb.Image Is Nothing Then Return
+
+        ' Ne rien faire si déjà grisé
+        If _imgOriginal.ContainsKey(pb) Then Return
+
+        ' Sauvegarder l'original et appliquer le gris
+        Dim original As Image = pb.Image
+        _imgOriginal.Add(pb, original)
+        pb.Image = ToGrayscale(original)
+    End Sub
+
+    ''' <summary>
+    ''' Restaure l'image originale du PictureBox.
+    ''' </summary>
+    Public Sub RetablirPictureBox(pb As PictureBox)
+        If Not _imgOriginal.ContainsKey(pb) Then Return
+
+        ' Récupérer et disposer l'image grisée
+        Dim imgGrisee As Image = pb.Image
+
+        ' Restaurer l'original
+        pb.Image = _imgOriginal(pb)
+        _imgOriginal.Remove(pb)
+
+        ' Disposer l'image grisée (après l'avoir détachée du PictureBox)
+        imgGrisee?.Dispose()
+    End Sub
+
+    ''' <summary>
+    ''' Libère toutes les ressources du cache d'images.
+    ''' </summary>
+    Public Sub DisposerToutesImages()
+        For Each kvp In _imgOriginal
+            kvp.Value?.Dispose()
+        Next
+        _imgOriginal.Clear()
+    End Sub
+
 End Module

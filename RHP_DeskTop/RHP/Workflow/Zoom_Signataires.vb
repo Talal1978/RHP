@@ -155,7 +155,7 @@ order by RowId"
         Dim rs As New ADODB.Recordset
         With Grd
             For i = 0 To .Rows.Count - 1
-                rs.Open("select * from Signatures_Lig where RowId=" & Grd.Rows(i).Tag, cn, 2, 2)
+                rs.Open("select * from Signatures_Lig where RowId='" & Grd.Rows(i).Tag & "'", cn, 2, 2)
                 rs.Update()
                 rs("Commentaire").Value = IsNull(.Item(commentaire.Index, i).Value, "")
                 rs.Update()

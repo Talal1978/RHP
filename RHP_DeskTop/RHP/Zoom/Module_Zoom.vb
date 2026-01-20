@@ -1,6 +1,6 @@
 ﻿Imports System.Text.RegularExpressions
 Module Module_Zoom
-    Sub Appel_Zoom1(ByVal NumZoom As String, ByVal Zom_Object As Object, ByVal Zom_Form As Form, Optional ByVal Zom_Condition As String = "", Optional ByVal Zom_Parameters As String = "", Optional ByVal Zoom_Objet_Location As Object = Nothing)
+    Sub Appel_Zoom1(ByVal NumZoom As String, ByVal Zom_Object As Object, ByVal Zom_Form As Form, Optional ByVal Zom_Condition As String = "", Optional ByVal Zom_Parameters As String = "", Optional ByVal Zoom_Objet_Location As Object = Nothing, Optional multiSelect As Boolean = False)
         Try
             If CnExecuting("Select count(*) from Controle_Def_Zoom where Num_Zoom='" & NumZoom & "'").Fields(0).Value = 0 Then
                 ShowMessageBox("Le Menu :" & NumZoom & " n'existe pas.")
@@ -13,6 +13,7 @@ Module Module_Zoom
             Zoom_OrderByG = ""
             Dim f As New Zoom
             f.NumZoom = NumZoom
+            f.multiSelect = multiSelect
             f.Loading()
             If Zoom_Objet_Location Is Nothing Then Zoom_Objet_Location = Zoom_Object
             ShowDialogToPosition(Zoom_Objet_Location, Zom_Form, f)

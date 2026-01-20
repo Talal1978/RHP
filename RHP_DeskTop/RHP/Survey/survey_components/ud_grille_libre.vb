@@ -2,6 +2,7 @@
 Imports System.Text.RegularExpressions
 Public Class ud_grille_libre
     Dim colDic As New Dictionary(Of Integer, String)
+    Dim modeRequest As Boolean = False
     Private Sub ud_grille_cases_Load(sender As Object, e As EventArgs) Handles Me.Load
         SuspendLayout()
         If avecNote And modeScoring <> "na" Then
@@ -113,9 +114,10 @@ Public Class ud_grille_libre
             End If
             oH += Grd.Rows(i).Height + 8
         Next
+        modeRequest = True
         For i = 0 To nbLig - 1
             For j = 0 To Grd.ColumnCount - 1
-                Select Case colDic(j)
+                Select Case colDic(j).Trim
                     Case "[C]"
                         Grd.Item(j, i).Tag = (repDic(CStr(i)).Split(";")(j).Trim = "1")
                         Grd.Item(j, i).Value = IIf(CBool(Grd.Item(j, i).Tag), My.Resources.RadioButtonSel, My.Resources.RadioButtonUnsel)
@@ -140,6 +142,7 @@ Public Class ud_grille_libre
                 End Select
             Next
         Next
+        modeRequest = False
         laquestion_lbl.Text = laquestion & IIf(Obligatoire, " (*)", "")
         laquestion_lbl.Refresh()
 
@@ -160,8 +163,8 @@ Public Class ud_grille_libre
                 Dim r As Integer = e.RowIndex
                 Dim c As Integer = e.ColumnIndex
                 If colDic(c) = "[C]" Then
-                    Grd.Item(c, r).Tag = True
-                    Grd.Item(c, r).Value = My.Resources.RadioButtonSel
+                    Grd.Item(c, r).Tag = Not CBool(Grd.Item(c, r).Tag)
+                    Grd.Item(c, r).Value = If(CBool(Grd.Item(c, r).Tag), My.Resources.RadioButtonSel, My.Resources.RadioButtonUnsel)
                     For j = 0 To .ColumnCount - 1
                         If j <> c And colDic(j) = "[C]" Then
                             .Item(j, r).Value = My.Resources.RadioButtonUnsel
@@ -171,7 +174,7 @@ Public Class ud_grille_libre
                 End If
             End If
         End With
-
+        Saving()
     End Sub
 
     Private Sub Grd_SelectionChanged(sender As Object, e As EventArgs) Handles Grd.SelectionChanged
@@ -179,7 +182,40 @@ Public Class ud_grille_libre
     End Sub
     Overrides Sub CalculNote()
         With Grd
-            Dim laNote As Double = If(modeScoring = "manuel" And IsNumeric(note_txt.Text), CDbl(note_txt.Text), 0)
+            Dim laNote As Double = 0
+            If modeScoring = "manuel" Then
+                If IsNumeric(note_txt.Text) Then
+                    laNote = CDbl(note_txt.Text)
+                End If
+            Else
+                Dim lesNotes As List(Of Double) = New List(Of Double)
+                For r = 0 To .RowCount - 1
+                    If funcScoring <> "" Then
+                        Dim noteFunc = GetValeurFunction(r + 1)
+                        If IsNumeric(noteFunc) Then
+                            lesNotes.Add(Math.Round(CDbl(noteFunc), 2))
+                        End If
+                    End If
+                Next
+                If aggregationScoring = "multi_avg" Then
+                    For i = 0 To lesNotes.Count - 1
+                        laNote += lesNotes(i)
+                    Next
+                    laNote = Math.Round(laNote / .RowCount, 2)
+                ElseIf aggregationScoring = "multi_max" Then
+                    For i = 0 To lesNotes.Count - 1
+                        laNote = Math.Max(lesNotes(i), laNote)
+                    Next
+                ElseIf aggregationScoring = "multi_min" Then
+                    For i = 0 To lesNotes.Count - 1
+                        laNote = Math.Min(lesNotes(i), laNote)
+                    Next
+                Else
+                    For i = 0 To lesNotes.Count - 1
+                        laNote += lesNotes(i)
+                    Next
+                End If
+            End If
             Dim note_totale As Double = 0
             note_txt.Text = laNote
             note_totale = Math.Round(If(IsNumeric(coef), coef * laNote, laNote), 2)
@@ -235,6 +271,7 @@ Public Class ud_grille_libre
 
     Private Sub Grd_CellValueChanged(sender As Object, e As DataGridViewCellEventArgs) _
     Handles Grd.CellValueChanged
+        If modeRequest Then Exit Sub
         If e.RowIndex < 0 OrElse e.ColumnIndex < 0 Then Exit Sub
         Dim mark = colDic(e.ColumnIndex)
         If mark = "[C]" Then Exit Sub  ' géré par CellClick

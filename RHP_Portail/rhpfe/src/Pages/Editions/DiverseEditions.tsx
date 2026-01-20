@@ -26,7 +26,7 @@ const DiverseEditions = () => {
     const handleCardClick = (report: IEdition) => {
         // Placeholder for clicking logic, e.g., opening a report viewer
         // For now, just logging or showing alert if needed, but user didn't specify action yet.
-        console.log("Clicked:", report.Cod_Report);
+
         // Assuming generation logic would be something like:
         // myAxios("getreport", { report: report.Cod_Report }); 
         // But for now just the list as requested.

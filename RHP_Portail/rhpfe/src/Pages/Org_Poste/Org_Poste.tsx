@@ -36,7 +36,7 @@ const Org_Poste = () => {
     const grade = useCombo("grade");
     const postes = useCombo("postes");
     const background_academique = useCombo("Niveau");
-    console.log("Niveau", background_academique);
+
     useEffect(() => {
         if (Agent.Cod_Poste) {
             loadPoste(Agent.Cod_Poste);
@@ -49,7 +49,7 @@ const Org_Poste = () => {
                 if (res.data.result && res.data.data.length > 0) {
                     setPoste(res.data.data[0]);
                 } else {
-                    console.log("No data found for poste: " + code);
+
                 }
             })
             .catch((err) => console.error(err));

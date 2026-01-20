@@ -1,4 +1,4 @@
-export type TQuestionType = "alpha" | "choix" | "cocher" | "date" | "dateTime" | "echelle" | "entier" | "grille_cases" | "grille_choix" | "grille_libre" | "heure" | "liste" | "numerique" | "oui_non" | "paragraph" | "vrai_faux" | "multiLine";
+export type TQuestionType = "alpha" | "choix" | "cocher" | "date" | "dateTime" | "echelle" | "entier" | "grille_cases" | "grille_choix" | "grille_libre" | "heure" | "liste" | "numerique" | "oui_non" | "paragraph" | "vrai_faux" | "multiLine" | "titre";
 
 export type TModeScoring = "auto" | "multi_sum" | "multi_avg" | "multi_min" | "multi_max" | "manuel" | "func" | "na";
 
@@ -20,6 +20,8 @@ export interface TQuestion {
   Obligatoire_Si: string;
   Erreur_Si: string;
   Erreur_Msg: string;
+  Agregation_Scoring: string;
+  Structure_Reponse: string;
 }
 
 export interface TDbAnswer {
@@ -43,6 +45,8 @@ export interface TAnswerState {
   errorMsg: string;
   typ_reponse: TQuestionType;
   mode_scoring: TModeScoring;
+  colonnes?: string;
+  lignes?: string;
 }
 
 export interface TAnswers {

@@ -200,20 +200,21 @@ const Formation_Evaluation_Liste = () => {
                     onclick={({ colIndex, value, rowIndex }) => {
                         if (colIndex !== undefined && rowIndex !== undefined && ds[rowIndex]) {
                             const row = ds[rowIndex];
+
                             // Navigate to Detail Page
                             // The backend returns: Cod_Formation, Lib_Formation, Participant, Nom_Participant, Cod_Survey, Cod_Reply, Statut_Reponse
-                            navigate("/myspace/Evaluation/Formation_Evaluation", {
+                            navigate(`/myspace/Formation_Evaluation/${row["Lib_Formation"] || "Detail"}`, {
                                 state: {
                                     cod_evaluation: row["Cod_Formation"],
                                     lib_evaluation: row["Lib_Formation"],
-                                    evaluateur: row["Participant"],
-                                    nom_evaluateur: row["Nom_Participant"],
+                                    evaluateur: row["Matricule"],
+                                    nom_evaluateur: row["Nom_Complet"],
                                     evalue: row["Cod_Formation"],
                                     nom_evalue: row["Lib_Formation"],
                                     cod_survey: row["Cod_Survey"],
                                     cod_reply: row["Cod_Reply"] || -1,
                                     typ_survey: "F",
-                                    statut: row["Statut_Reponse"] || ""
+                                    statut: row["Statut_Evaluation"] || ""
                                 }
                             });
                         }

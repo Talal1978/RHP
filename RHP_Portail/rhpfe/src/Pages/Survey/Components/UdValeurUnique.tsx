@@ -39,7 +39,7 @@ const UdValeurUnique = ({
   readOnly = false,
 }: TProps) => {
   const [inputValue, setInputValue] = useState(valeurInitiale ?? "");
-  console.log(`[UdValeurUnique] Question: ${laquestion}, ReadOnly: ${readOnly}, Options Raw: '${colonnes}'`);
+
   // CORRECTION: useRef pour éviter la boucle infinie
   const onValueChangeRef = useRef(onValueChange);
   useEffect(() => {

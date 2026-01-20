@@ -1,4 +1,4 @@
-import { Button, TextField, Backdrop, CircularProgress } from "@mui/material";
+import { Button, TextField, Backdrop, CircularProgress, FormControlLabel, Switch } from "@mui/material";
 import "./login.scss";
 import {
   Agent,
@@ -8,7 +8,7 @@ import {
   setAgent,
   setJwt,
 } from "../../modules/module_general";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import useAxiosGet from "../../hooks/useAxiosGet";
 import useAxiosPost from "../../hooks/useAxiosPost";
 import { useNavigate } from "react-router-dom";
@@ -21,12 +21,47 @@ import useAlert from "../../hooks/useAlert";
 export const Login = () => {
   const navigate = useNavigate();
   const [errorMsg, setErrorMsg] = useState("");
-  const [credention, setCredentials] = useState({ login: "talal.hamdaoui@gmail.com", password: "Azerty@123" });
+  const [credention, setCredentials] = useState({ login: "", password: "" });
   const [showChangePwd, setShowChangePwd] = useState(false);
   const myAxiosGet = useAxiosGet();
   const myAxiosPost = useAxiosPost();
   const showAlert = useAlert();
   const [isLoading, setIsLoading] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
+
+  useEffect(() => {
+    const storedToken = localStorage.getItem("auth_token");
+    const storedAgent = localStorage.getItem("auth_agent");
+    const storedLogin = localStorage.getItem("remembered_login");
+
+    if (storedLogin) {
+        setCredentials(prev => ({ ...prev, login: storedLogin }));
+        setRememberMe(true);
+    }
+
+    if (storedToken && storedAgent) {
+      try {
+        const parsedAgent = JSON.parse(storedAgent);
+
+        // Validation structurale basique pour éviter les objets corrompus
+        if (!parsedAgent || typeof parsedAgent !== 'object') {
+            throw new Error("Données agent corrompues");
+        }
+
+        setJwt(storedToken);
+        setAgent(parsedAgent);
+        setSocket(storedToken);
+        navigate("/myspace");
+      } catch (e) {
+        console.error("Error restoring session (Corruption detected):", e);
+        // Nettoyage complet en cas de corruption
+        localStorage.removeItem("auth_token");
+        localStorage.removeItem("auth_agent");
+        // Optionnel : vider tout le localStorage si on soupçonne une corruption globale
+        // localStorage.clear(); 
+      }
+    }
+  }, [navigate]);
 
   const handleForgotPassword = useCallback(async () => {
     if (!credention.login) {
@@ -59,35 +94,75 @@ export const Login = () => {
 
   const authentification = useCallback(async () => {
     setIsLoading(true);
-    const rsl = await myAxiosGet({
-      apiStr: "auth",
-      bdy: {
-        login: credention.login,
-        pwd: credention.password,
-      },
-    });
-    setIsLoading(false);
-    if (!rsl) {
-      setErrorMsg("problème de connexion");
-    } else if (!rsl.data.result) {
-      setErrorMsg("Identifiants erronés");
-    } else {
-      setAgent(rsl.data.data);
-      const { accessToken } = rsl.data.jwt;
-      setJwt(accessToken);
-      setSocket(accessToken);
+    try {
+        // Version Check
+        const verRsl = await myAxiosGet({ apiStr: "check_version" });
+        if (verRsl && verRsl.data && verRsl.data.result && verRsl.data.data && verRsl.data.data.length > 0) {
+            const serverVersion = verRsl.data.data[0].Valeur;
+            const clientVersionClean = Num_Version.replace(/\./g, "");
+            const serverVersionClean = String(serverVersion).replace(/\./g, "");
+            
+            if (parseInt(clientVersionClean) !== parseInt(serverVersionClean)) {
+                showAlert({
+                    titre: "Version incompatible",
+                    msg: "La version installée sur votre serveur est différente de votre version.\nVeuillez contactez votre administrateur.",
+                    typMsg: "warning" // Using warning to match "alerte en tenant compte du thème"
+                });
+                return; // Prevent login per Login.vb logic
+            }
+        }
 
-      // Check if temporary password (handles string 'true', boolean true, or 1)
-      const isTemp = rsl.data.data.is_Temp;
-      if (isTemp === 'true' || isTemp === true || isTemp === 1) {
-        setShowChangePwd(true);
-      } else {
-        setRubriques((await myAxiosGet({ apiStr: "list_rubriques" }))?.data);
-        setErrorMsg("");
-        navigate("/myspace");
-      }
+        const rsl = await myAxiosGet({
+            apiStr: "auth",
+            bdy: {
+                login: credention.login,
+                pwd: credention.password,
+            },
+        });
+        
+        if (!rsl) {
+            setErrorMsg("problème de connexion");
+        } else if (!rsl.data.result) {
+            setErrorMsg("Identifiants erronés");
+        } else {
+            setAgent(rsl.data.data);
+            const { accessToken } = rsl.data.jwt;
+            setJwt(accessToken);
+            setSocket(accessToken);
+
+            // Check if temporary password
+            const isTemp = rsl.data.data.is_Temp;
+            if (isTemp === 'true' || isTemp === true || isTemp === 1) {
+                setShowChangePwd(true);
+            } else {
+                if (rememberMe) {
+                    localStorage.setItem("auth_token", accessToken);
+                    localStorage.setItem("auth_agent", JSON.stringify(rsl.data.data));
+                    localStorage.setItem("remembered_login", credention.login);
+                } else {
+                    localStorage.removeItem("auth_token");
+                    localStorage.removeItem("auth_agent");
+                    localStorage.removeItem("remembered_login");
+                }
+                
+                try {
+                    const rubriques = await myAxiosGet({ apiStr: "list_rubriques" });
+                    if(rubriques?.data) setRubriques(rubriques.data);
+                } catch(e) {
+                    console.warn("Failed to fetch rubriques", e);
+                }
+                
+                setErrorMsg("");
+                navigate("/myspace");
+            }
+        }
+    } catch (e) {
+        console.error("Auth error:", e);
+        setErrorMsg("Erreur technique lors de la connexion");
+    } finally {
+        setIsLoading(false);
     }
-  }, [credention]);
+  }, [credention, rememberMe, showAlert, myAxiosGet, navigate]);
 
   const keyUpEv = useCallback(
     (e: React.KeyboardEvent) => {
@@ -162,6 +237,18 @@ export const Login = () => {
                 password: event.target.value,
               }));
             }}
+          />
+          <FormControlLabel
+            control={
+              <Switch
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                name="rememberMe"
+                color="primary"
+              />
+            }
+            label="Se souvenir de moi"
+            sx={{ width: "90%", color: colorBase.foreColorBase01 }}
           />
         </form>
         <div className="btn">

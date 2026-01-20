@@ -106,7 +106,16 @@
     Sub setFilter(Indx() As Integer)
         Me.SuspendLayout()
         dicCol.Clear()
-        If dataSourceOrigine Is Nothing Or dataSourceOrigine?.Columns.Count = 0 Then dataSourceOrigine = DataSource
+        If dataSourceOrigine Is Nothing OrElse dataSourceOrigine.Columns.Count = 0 Then
+            If TypeOf DataSource Is BindingSource Then
+                Dim bs As BindingSource = CType(DataSource, BindingSource)
+                If TypeOf bs.DataSource Is DataTable Then
+                    dataSourceOrigine = CType(bs.DataSource, DataTable)
+                End If
+            ElseIf TypeOf DataSource Is DataTable Then
+                dataSourceOrigine = CType(DataSource, DataTable)
+            End If
+        End If
         For Each nd In Indx
             If Not dicCol.ContainsKey(nd) Then dicCol.Add(nd, New filterArgs With {.image = My.Resources.btn_search_w, .filter = "", .width = If(Me.Columns.Count > 0, Me.Columns(nd).Width, 100) + 25})
         Next
@@ -340,15 +349,24 @@
 
         Try
             If oFiltre <> "" Then
-                Dtr.DefaultView.RowFilter = oFiltre
                 ModeFiltreActive = True
                 FiltreStr = oFiltre
             Else
-                Dtr.DefaultView.RowFilter = "1=1"
                 ModeFiltreActive = False
                 FiltreStr = ""
             End If
-            Me.DataSource = Dtr
+
+            If TypeOf Me.DataSource Is BindingSource Then
+                CType(Me.DataSource, BindingSource).Filter = If(oFiltre = "", Nothing, oFiltre)
+            Else
+                If oFiltre <> "" Then
+                    Dtr.DefaultView.RowFilter = oFiltre
+                Else
+                    Dtr.DefaultView.RowFilter = "1=1"
+                End If
+                Me.DataSource = Dtr
+            End If
+
         Catch ex As Exception
             ShowMessageBox("Erreur condition de filtre : " & vbCrLf & oFiltre)
             Return

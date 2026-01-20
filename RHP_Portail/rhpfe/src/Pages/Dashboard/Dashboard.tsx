@@ -93,10 +93,25 @@ const Dashboard = () => {
                     let title = item.Evenement;
 
                     // Determine Type and Link
+
+                    // Determine Type and Link
+                    let state = null;
+
                     if (item.Evenement === "Formation") {
                         type = "formation";
-                        // Assuming a route exists or keeping generic
-                        link = "/myspace/Header_Formation/Formation";
+                        link = "/myspace/Formation_Evaluation/Evaluation de Formation";
+                        state = {
+                            cod_evaluation: item.Code, // Alias from SQL
+                            lib_evaluation: item.Libelle, // Alias from SQL
+                            evaluateur: Agent.Matricule,
+                            nom_evaluateur: Agent.Nom,
+                            evalue: item.Code,
+                            nom_evalue: item.Libelle,
+                            cod_survey: item.Cod_Survey,
+                            cod_reply: item.Cod_Reply || -1,
+                            typ_survey: "F",
+                            statut: item.Statut_Evaluation || ""
+                        };
                     } else if (item.Evenement === "Evaluation à effectuer" || item.Evenement === "Evaluation") {
                         type = "evaluation";
                         link = "/myspace/Evaluation_Liste/Consultation des évaluations";
@@ -111,7 +126,8 @@ const Dashboard = () => {
                         desc: item.Libelle || item.Description || "Nouvel événement",
                         time: item.Date ? formatDate(item.Date) : "",
                         type: type,
-                        link: link
+                        link: link,
+                        state: state
                     });
                 });
             }
@@ -431,7 +447,7 @@ const Dashboard = () => {
                                 notifications.map((notif, index) => {
                                     const style = getColor(notif.type, index);
                                     return (
-                                        <Box key={notif.id} onClick={() => notif.link && notif.link !== "#" && navigate(notif.link)}>
+                                        <Box key={notif.id} onClick={() => notif.link && notif.link !== "#" && navigate(notif.link, { state: notif.state })}>
                                             <Box
                                                 sx={{
                                                     p: 2,

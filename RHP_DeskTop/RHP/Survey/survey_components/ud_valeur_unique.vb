@@ -146,7 +146,7 @@ Public Class ud_valeur_unique
     End Sub
     Function parsing(valeur, Typ_reponse) As Object
         If Typ_reponse = "numerique" Then
-            valeur = valeur.Replace(".", ",")
+            valeur = IsNull(valeur, "").Replace(".", ",")
             If IsNumeric(valeur) Then
                 Return CDbl(valeur)
             Else
@@ -177,7 +177,7 @@ Public Class ud_valeur_unique
             Dim laNote As Double = If(modeScoring = "manuel" And IsNumeric(note_txt.Text), note_txt.Text, 0)
             Dim note_totale As Double = 0
             Dim valeurParDefaut = If("entier;numerique".Split(";").Contains(Typ_Reponse), 0, "''")
-            If funcScoring <> "" Then
+            If funcScoring <> "" AndAlso modeScoring <> "manuel" Then
                 Dim noteFunc = Module_Generateur_Survey.myVBS.Eval($"Func_Survey_{codQuestion}(""{IsNull(Grd.Item(1, 0).Value, valeurParDefaut)}"")")
                 If IsNumeric(noteFunc) Then laNote = Math.Round(CDbl(noteFunc), 2)
             ElseIf Typ_Reponse = "liste" AndAlso modeScoring <> "manuel" Then

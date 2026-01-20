@@ -29,13 +29,13 @@ Partial Class Zoom_Survey_Editeur_Formule
         Dim TreeNode4 As System.Windows.Forms.TreeNode = New System.Windows.Forms.TreeNode("L'évalué")
         Dim TreeNode5 As System.Windows.Forms.TreeNode = New System.Windows.Forms.TreeNode("L'évaluateur")
         Dim TreeNode6 As System.Windows.Forms.TreeNode = New System.Windows.Forms.TreeNode("Type évaluation")
-        Dim TreeNode7 As System.Windows.Forms.TreeNode = New System.Windows.Forms.TreeNode("Réponses", New System.Windows.Forms.TreeNode() {TreeNode3, TreeNode4, TreeNode5, TreeNode6})
+        Dim TreeNode7 As System.Windows.Forms.TreeNode = New System.Windows.Forms.TreeNode("Question[N° Question][Ligne, Colonne]")
+        Dim TreeNode8 As System.Windows.Forms.TreeNode = New System.Windows.Forms.TreeNode("Réponses", New System.Windows.Forms.TreeNode() {TreeNode3, TreeNode4, TreeNode5, TreeNode6, TreeNode7})
         Me.Formule_Function_Text = New System.Windows.Forms.RichTextBox()
         Me.Resultat = New DevComponents.DotNetBar.Controls.TextBoxX()
         Me.Function_Trv = New System.Windows.Forms.TreeView()
         Me.ContextMenuStrip1 = New System.Windows.Forms.ContextMenuStrip(Me.components)
         Me.EvaluerLaValeurDeLaVariableToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
-        Me.Rechercher_txt = New RHP.ud_TextBox()
         Me.ToolTip1 = New System.Windows.Forms.ToolTip(Me.components)
         Me.Entete_pnl = New System.Windows.Forms.TableLayoutPanel()
         Me.Titre_lbl = New System.Windows.Forms.Label()
@@ -44,6 +44,7 @@ Partial Class Zoom_Survey_Editeur_Formule
         Me.Save_pb = New System.Windows.Forms.PictureBox()
         Me.Close_pb = New System.Windows.Forms.PictureBox()
         Me.Trv_pnl = New System.Windows.Forms.Panel()
+        Me.Rechercher_txt = New RHP.ud_TextBox()
         Me.Splitter1 = New System.Windows.Forms.Splitter()
         Me.ContextMenuStrip1.SuspendLayout()
         Me.Entete_pnl.SuspendLayout()
@@ -111,9 +112,12 @@ Partial Class Zoom_Survey_Editeur_Formule
         TreeNode6.Name = "Typ_Evaluation"
         TreeNode6.Tag = "Typ_Evaluation"
         TreeNode6.Text = "Type évaluation"
-        TreeNode7.Name = "RSP"
-        TreeNode7.Text = "Réponses"
-        Me.Function_Trv.Nodes.AddRange(New System.Windows.Forms.TreeNode() {TreeNode1, TreeNode2, TreeNode7})
+        TreeNode7.Name = "Qst"
+        TreeNode7.Tag = "Q[Numero][LigneEncours,1]"
+        TreeNode7.Text = "Question[N° Question][Ligne, Colonne]"
+        TreeNode8.Name = "RSP"
+        TreeNode8.Text = "Réponses"
+        Me.Function_Trv.Nodes.AddRange(New System.Windows.Forms.TreeNode() {TreeNode1, TreeNode2, TreeNode8})
         Me.Function_Trv.Size = New System.Drawing.Size(302, 476)
         Me.Function_Trv.TabIndex = 8
         '
@@ -130,26 +134,6 @@ Partial Class Zoom_Survey_Editeur_Formule
         Me.EvaluerLaValeurDeLaVariableToolStripMenuItem.Name = "EvaluerLaValeurDeLaVariableToolStripMenuItem"
         Me.EvaluerLaValeurDeLaVariableToolStripMenuItem.Size = New System.Drawing.Size(284, 26)
         Me.EvaluerLaValeurDeLaVariableToolStripMenuItem.Text = "Evaluer la valeur de la variable"
-        '
-        'Rechercher_txt
-        '
-        Me.Rechercher_txt.CharacterCasing = System.Windows.Forms.CharacterCasing.Normal
-        Me.Rechercher_txt.ContextMenuStrip = Nothing
-        Me.Rechercher_txt.Dock = System.Windows.Forms.DockStyle.Top
-        Me.Rechercher_txt.Location = New System.Drawing.Point(0, 0)
-        Me.Rechercher_txt.Margin = New System.Windows.Forms.Padding(4, 2, 4, 2)
-        Me.Rechercher_txt.MaxLength = 32767
-        Me.Rechercher_txt.Multiline = False
-        Me.Rechercher_txt.Name = "Rechercher_txt"
-        Me.Rechercher_txt.Padding = New System.Windows.Forms.Padding(1, 0, 1, 0)
-        Me.Rechercher_txt.PasswordChar = "" & Global.Microsoft.VisualBasic.ChrW(0)
-        Me.Rechercher_txt.ReadOnly = False
-        Me.Rechercher_txt.ScrollBars = System.Windows.Forms.ScrollBars.None
-        Me.Rechercher_txt.SelectionStart = 0
-        Me.Rechercher_txt.Size = New System.Drawing.Size(302, 26)
-        Me.Rechercher_txt.TabIndex = 9
-        Me.Rechercher_txt.TextAlign = System.Windows.Forms.HorizontalAlignment.Left
-        Me.Rechercher_txt.UseSystemPasswordChar = False
         '
         'Entete_pnl
         '
@@ -254,6 +238,26 @@ Partial Class Zoom_Survey_Editeur_Formule
         Me.Trv_pnl.Name = "Trv_pnl"
         Me.Trv_pnl.Size = New System.Drawing.Size(302, 502)
         Me.Trv_pnl.TabIndex = 10
+        '
+        'Rechercher_txt
+        '
+        Me.Rechercher_txt.CharacterCasing = System.Windows.Forms.CharacterCasing.Normal
+        Me.Rechercher_txt.ContextMenuStrip = Nothing
+        Me.Rechercher_txt.Dock = System.Windows.Forms.DockStyle.Top
+        Me.Rechercher_txt.Location = New System.Drawing.Point(0, 0)
+        Me.Rechercher_txt.Margin = New System.Windows.Forms.Padding(4, 2, 4, 2)
+        Me.Rechercher_txt.MaxLength = 32767
+        Me.Rechercher_txt.Multiline = False
+        Me.Rechercher_txt.Name = "Rechercher_txt"
+        Me.Rechercher_txt.Padding = New System.Windows.Forms.Padding(1, 0, 1, 0)
+        Me.Rechercher_txt.PasswordChar = "" & Global.Microsoft.VisualBasic.ChrW(0)
+        Me.Rechercher_txt.ReadOnly = False
+        Me.Rechercher_txt.ScrollBars = System.Windows.Forms.ScrollBars.None
+        Me.Rechercher_txt.SelectionStart = 0
+        Me.Rechercher_txt.Size = New System.Drawing.Size(302, 26)
+        Me.Rechercher_txt.TabIndex = 9
+        Me.Rechercher_txt.TextAlign = System.Windows.Forms.HorizontalAlignment.Left
+        Me.Rechercher_txt.UseSystemPasswordChar = False
         '
         'Splitter1
         '

@@ -1615,6 +1615,12 @@
     <Compile Include="Survey\survey_components\ud_grille_cases.vb">
       <SubType>UserControl</SubType>
     </Compile>
+    <Compile Include="Survey\survey_components\ud_titre.Designer.vb">
+      <DependentUpon>ud_titre.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Survey\survey_components\ud_titre.vb">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Include="Formation\Formation_Evaluation.Designer.vb">
       <DependentUpon>Formation_Evaluation.vb</DependentUpon>
     </Compile>

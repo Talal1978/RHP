@@ -15,7 +15,7 @@ export const authentication = async (req: Request, res: Response) => {
   if (controleInjection(login).result === false) return res.send({ result: false, message: "Injection détectée" });
   const sqlStr = `declare @lg nvarchar(50)
     set @lg=upper(@login)
-    select top 1 -1 id_User,id_Societe,Matricule, ltrim(rtrim(isnull(Nom_Agent,'') + ' ' + isnull(Prenom_Agent,''))) as Nom,isnull(Cod_Entite,'') as Cod_Entite, isnull(Cod_Poste,'') as Cod_Poste, Mail Login_User,
+    select top 1 -1 id_User,id_Societe,Matricule, ltrim(rtrim(isnull(Nom_Agent,'') + ' ' + isnull(Prenom_Agent,''))) as Nom,isnull(Cod_Entite,'') as Cod_Entite, isnull(Cod_Poste,'') as Cod_Poste, Mail as Login,
     isnull(Droit_Paie,'false') as User_Actif, -1 as Cod_Profile, isnull(Droit_Paie,'false') as Profile_Actif , isnull(Mail,'') as Mail,convert(bit, case when estTeamLeader>0 then 'true' else 'false' end) as TeamLeader, isnull(Typ_Role,'') as Typ_Role,
     isnull(is_Temp,'false') as is_Temp
     from Rh_Agent a
@@ -182,3 +182,14 @@ export const setPwd = async (req: Request, res: Response) => {
     return res.send({ result: false, data: err });
   }
 };
+
+export const checkVersion = async (req: Request, res: Response) => {
+  try {
+    const sqlStr = `select Valeur from Param_General where Cod_Param = 'Version'`;
+    const rsl = await lireSql(sqlStr, []);
+    return res.send({ result: rsl.result, data: rsl.data });
+  } catch (err) {
+    return res.send({ result: false, data: err });
+  }
+};
+

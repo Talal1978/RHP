@@ -2,7 +2,7 @@ import express from "express";
 import multer from "multer";
 import path from "path";
 import { validate } from "../modules/module_jwt";
-import { authentication, getNewPwd, refreshToken, setPwd } from "../controlers/authentication";
+import { authentication, checkVersion, getNewPwd, refreshToken, setPwd } from "../controlers/authentication";
 import { getZoomApi } from "../modules/module_zoom";
 import { findLibelleApi } from "../modules/module_findLibelle";
 import { getRubrique, listRubriques } from "../modules/module_rubrique";
@@ -99,6 +99,7 @@ const upload = multer({ storage: storage });
 export default mainRooting;
 
 mainRooting.get("/auth", authentication);
+mainRooting.get("/check_version", checkVersion);
 mainRooting.post("/refresh", refreshToken);
 mainRooting.post("/getNewPwd", getNewPwd);
 mainRooting.post("/setPwd", validate, setPwd);

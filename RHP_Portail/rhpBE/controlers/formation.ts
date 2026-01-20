@@ -102,19 +102,23 @@ export const formation_evaluation_liste = async (req: Request, res: Response) =>
     // Assuming we might join Rh_Agent for current entity or trust provided criteria matches logic.
 
     let sqlStr = `
- select
+                select
+                    f.Cod_Formation,
+                    f.Lib_Formation,
+                    f.Cod_Survey,
                     fp.Matricule,
                     isnull(a.Nom_Agent,'') + ' ' + isnull(a.Prenom_Agent,'') as Nom_Complet,
                     fp.Present,
+                    r.Cod_Reply,
                     case when r.Statut is not null then r.Statut else 'Non évalué' end as Statut_Evaluation
-                from Formation_Participants fp left join Formation f on f.Cod_Formation=fp.Cod_Formation and f.id_Societe=fp.id_Societe
-
+                from Formation_Participants fp 
+                inner join Formation f on f.Cod_Formation=fp.Cod_Formation and f.id_Societe=fp.id_Societe
                 left join RH_Agent a on a.Matricule=fp.Matricule and a.id_Societe=fp.id_Societe
-                left join Survey s on s.Cod_Survey = f.Cod_Survey  and s.id_Societe = fp.id_Societe
-                left join Survey_Reply r on r.Cod_Survey = s.Cod_Survey
-                    and r.Evaluateur = fp.Matricule
-                    and r.Evalue = fp.Cod_Formation
-                    and r.id_Societe = fp.id_Societe
+                outer apply (select top 1 Cod_Survey from Survey where Cod_Survey = f.Cod_Survey and id_Societe = fp.id_Societe) s
+                outer apply (select top 1 Statut, Cod_Reply from Survey_Reply where Cod_Survey = s.Cod_Survey 
+                    and Evaluateur = fp.Matricule 
+                    and Evalue = fp.Cod_Formation 
+                    and id_Societe = fp.id_Societe) r
     ${swhere}
     order by f.Dat_Du desc, f.Lib_Formation
     `;
@@ -190,7 +194,6 @@ export const get_formation = async (req: Request, res: Response) => {
     let idSoc = theAgent?.id_Societe || "0000";
 
     try {
-        console.log(`[DEBUG] get_formation: Cod_Formation=${Cod_Formation}, idSoc=${idSoc}`);
 
         // Headers
         const sqlHeader = `select * from Formation where Cod_Formation=@Cod_Formation and id_Societe=@idSoc`;
@@ -256,7 +259,6 @@ export const get_formation = async (req: Request, res: Response) => {
 
             res.send({ result: true, data: [data] });
         } else {
-            console.log(`[DEBUG] No header data found`);
             res.send({ result: true, data: [] });
         }
 

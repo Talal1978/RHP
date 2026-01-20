@@ -1,5 +1,6 @@
 ﻿Imports System.ComponentModel
 Public Class RH_Preparation_Paie
+    Dim WithEvents bsPrePaie As New BindingSource
     Dim oMnu, oMnu2, oMnu3, anaMnu, oMnu5, oMnu6, oMnu7, oMnu8, oMnu8_0, oMnu8_1 As New ToolStripMenuItem
     Dim WithEvents oCntx As New ContextMenuStrip
     Friend Code As String = "XYZ"
@@ -261,29 +262,38 @@ order by Cod_Function ", .Libre_GRD)
             If .SelectedRows.Count <= 0 Then Return
             If .SelectedRows(0).Index < 0 Then Return
             If .ColumnCount <= 0 Then Return
-            If BKG_Del.IsBusy Then Return
+            
             If ShowMessageBox("Etes vous sûr de vouloir supprimer ces lignes?", "Suppression", MessageBoxButtons.OKCancel, msgIcon.Warning) = DialogResult.Cancel Then Return
-            If .SelectedRows.Count > 20 Then AttendreProcess(True)
+            
             .SuspendLayout()
-            BKG_Del.RunWorkerAsync()
+            Try
+                Dim itemsToDelete As New List(Of DataRowView)
+                
+                ' Collect DataRowViews first to avoid index issues
+                For Each row As DataGridViewRow In .SelectedRows
+                    If row.DataBoundItem IsNot Nothing AndAlso TypeOf row.DataBoundItem Is DataRowView Then
+                        itemsToDelete.Add(CType(row.DataBoundItem, DataRowView))
+                    End If
+                Next
+
+                ' Remove from DataTable (Hard Remove)
+                For Each drv As DataRowView In itemsToDelete
+                     lst_matricules_supprimes.Add(drv("Matricule"))
+                     PrePaie.TblPrePaie.Rows.Remove(drv.Row)
+                Next
+                
+                PrePaie.Modifie = True
+
+            Finally
+                bsPrePaie.ResetBindings(False)
+                .ResumeLayout()
+                .Refresh()
+            End Try
+
         End With
     End Sub
     Private Sub BKG_Del_DoWork(sender As Object, e As DoWorkEventArgs) Handles BKG_Del.DoWork
-        With PrePaie_Grd
-            Dim deleted As New ArrayList
-            For Each r As DataGridViewRow In PrePaie_Grd.SelectedRows
-                deleted.Add(r.Cells("Matricule").Value)
-            Next
-            For Each d In deleted
-                Dim rowsToDelete() As DataRow = PrePaie.TblPrePaie.Select($"Matricule='{d}'")
-                ' Delete each row that meets the condition
-                For Each row As DataRow In rowsToDelete
-                    row.Delete() ' Marks the row for deletion
-                Next
-            Next
-            PrePaie.TblPrePaie.AcceptChanges()
-            PrePaie.Modifie = True
-        End With
+      
     End Sub
     'Private Sub BKG_Del_DoWork(sender As Object, e As DoWorkEventArgs) Handles BKG_Del.DoWork
     '    ' Suspend la liaison des données pour éviter les mises à jour intempestives
@@ -324,10 +334,7 @@ order by Cod_Function ", .Libre_GRD)
     '    currencyManager.ResumeBinding()
     'End Sub
     Private Sub BKG_Del_RunWorkerCompleted(sender As Object, e As RunWorkerCompletedEventArgs) Handles BKG_Del.RunWorkerCompleted
-        AttendreProcess(False)
-        PrePaie_Grd.ResumeLayout(True)
-        PrePaie_Grd.Invalidate()
-
+     
     End Sub
     Sub RecalculDeLaLigne()
         If Cod_Preparation_Text.Text = "" Then Return
@@ -685,7 +692,7 @@ order by case when patindex('%;'+Cod_Rubrique+';%',@EE)=0 then 999999 else patin
         With PrePaie_Grd
             Dim NomCol As String = .Columns(.CurrentCell.ColumnIndex).Name
             If .Columns(.CurrentCell.ColumnIndex).Tag = "EV" Then
-                ControleSaisie(.CurrentCell, e, True, IIf(.DataSource.columns(NomCol).datatype.ToString.ToUpper.Contains("INT"), True, False), False, False, False)
+                ControleSaisie(.CurrentCell, e, True, IIf(PrePaie.TblPrePaie.Columns(NomCol).DataType.ToString.ToUpper.Contains("INT"), True, False), False, False, False)
             End If
         End With
     End Sub
@@ -1091,7 +1098,8 @@ order by case when patindex('%;'+Cod_Rubrique+';%',@EE)=0 then 999999 else patin
             .Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight
         End With
         With PrePaie_Grd
-            .DataSource = PrePaie.TblPrePaie
+            bsPrePaie.DataSource = PrePaie.TblPrePaie
+            .DataSource = bsPrePaie
             '          .RowTemplate = New GrdNumberedRow
             If .Columns.Contains("Entité") Then
                 .Columns("Entité").ReadOnly = True

@@ -12,7 +12,6 @@ import { TModeScoring, TNoteResult } from "../Types";
 import { safeNumber } from "../Survey_Functions";
 import { parse, isValid } from "date-fns";
 
-// Marqueurs de colonne basés sur le code VB
 type TColMark = "[C]" | "[O]" | "[E]" | "[D]" | "[N]" | "[T]" | "TEXT_DEFAULT";
 
 /**
@@ -126,7 +125,8 @@ const UdGrilleLibre = ({
                 dataType = 'text';
             }
 
-            if (header || colMark === "[T]") {
+            // FIX: Always add the column if it's a valid definition, even if header is empty (e.g. [C] for just a checkbox)
+            if (header || colMark !== "TEXT_DEFAULT") {
                 columnDefinitions.push({
                     header: header || "Valeur",
                     colMark: colMark,
@@ -142,17 +142,19 @@ const UdGrilleLibre = ({
     const initialGridData = useMemo(() => {
         if (valeurInitiale && valeurInitiale.length > 0) {
             // FIX: Parse dates if needed
-            return valeurInitiale.map(row =>
+            return valeurInitiale.map((row, rIdx) =>
                 row.map((cell: any, colIndex: number) => {
                     if (parsedColumns[colIndex] && parsedColumns[colIndex].colMark === '[D]') {
                         if (cell && typeof cell === 'string') {
-                            // Try to parse ISO or standard formats
-                            // 1. Try simple Date constructor (ISO)
-                            let d = new Date(cell);
-                            if (!isNaN(d.getTime())) return d;
-                            // 2. Try dd/MM/yyyy
-                            d = parse(cell, 'dd/MM/yyyy', new Date());
+                            // 1. Try strict dd/MM/yyyy (handling potential HH:mm:ss suffix)
+                            // We split by space to get just the date part if a time exists
+                            const datePart = cell.trim().split(' ')[0];
+                            let d = parse(datePart, 'dd/MM/yyyy', new Date());
                             if (isValid(d)) return d;
+                            
+                            // 2. Try ISO or native constructor
+                            d = new Date(cell);
+                            if (!isNaN(d.getTime())) return d;
                         }
                     }
                     return cell;
@@ -323,7 +325,7 @@ const UdGrilleLibre = ({
     );
 };
 
-export default UdGrilleLibre;
+// export default UdGrilleLibre; // REPLACED: Export moved to end of file
 
 // Composant Auxiliaire pour l'affichage de la note
 const NoteField = ({ label, value, readonly, onChange = () => { } }: any) => {
@@ -459,3 +461,5 @@ const CellRenderer = ({
             );
     }
 };
+
+export default UdGrilleLibre;

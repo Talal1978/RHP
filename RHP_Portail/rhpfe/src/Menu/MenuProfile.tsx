@@ -57,6 +57,8 @@ const MenuProfile = ({
       RacineHierarchique: "",
     });
     setJwt("");
+    localStorage.removeItem("auth_token");
+    localStorage.removeItem("auth_agent");
     handleClose();
     navigate("/");
   }, [handleClose, navigate]);

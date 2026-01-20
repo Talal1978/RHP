@@ -3,7 +3,7 @@ const VB_FUNCTIONS = {
     SiNull, Si, SansEspace, Remplacer, Puissance, NullSi,
     Mois, Miniscule, Min, Max, Majiscule, Maintenant, Jour,
     Gauche, Floor, Droite, CountWorkingDays, Ceiling, Arrondir, Annee, InStr,
-    Len, Mid, IsNull, IsNumeric, CInt, CDbl, CStr, Abs, Sqr, Int, Trim, LTrim, RTrim
+    Len, Mid, IsNull, IsNumeric, CInt, CDbl, CStr, Abs, Sqr, Int, Trim, LTrim, RTrim, IIf
 };
 
 function traitementFonctions(strFonction: string) {
@@ -47,7 +47,27 @@ function traitementFonctions(strFonction: string) {
     strFonction = strFonction.replace(/<>/g, '!==');
 
     // 2. Protéger les opérateurs composés avec des marqueurs temporaires
-    strFonction = strFonction.replace(/<=>/g, '___LTE___');  // Au cas où
+    // 1. Remplacements Basiques et Mots-clés
+    // Case insensitive replacements
+    strFonction = strFonction.replace(/\bTrue\b/gi, 'true');
+    strFonction = strFonction.replace(/\bFalse\b/gi, 'false');
+    strFonction = strFonction.replace(/\bNothing\b/gi, 'null');
+
+    // Opérateurs Logiques
+    strFonction = strFonction.replace(/\bAND\b/gi, '&&');
+    strFonction = strFonction.replace(/\bOR\b/gi, '||');
+    strFonction = strFonction.replace(/\bNOT\b/gi, '!');
+
+    // Séparateurs d'arguments (Excel/VBS style ; -> JS ,)
+    // Attention de ne pas remplacer les ; dans les chaines, mais traitementFonctions est simpliste
+    // On suppose que les ; sont des séparateurs
+    strFonction = strFonction.replace(/;/g, ',');
+
+    // Opérateurs de comparaison VBScript
+    strFonction = strFonction.replace(/<>/g, '!=='); // Not Equal
+
+    // 2. Protéger les opérateurs JS existants ou convertis
+    strFonction = strFonction.replace(/<=>/g, '___LTE___');  // ??? conservé pour compatibilité si existant, mais étrange
     strFonction = strFonction.replace(/>=/g, '___GTE___');
     strFonction = strFonction.replace(/<=/g, '___LTE___');
     strFonction = strFonction.replace(/===/g, '___EQ3___');
@@ -92,6 +112,10 @@ function SiNull(Expression: any, ValReplacement: any) {
 
 function Si(exp: any, trueP: any, falseP: any) {
     return eval(exp) ? trueP : falseP;
+}
+
+function IIf(exp: any, trueP: any, falseP: any) {
+    return exp ? trueP : falseP; // exp is already evaluated if passed as argument usually, but in eval context it works as ternary
 }
 
 function SansEspace(str: string) {

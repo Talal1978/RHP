@@ -280,7 +280,7 @@ where id_Societe ='" & Societe.id_Societe & "'")
     End Sub
 
     Private Sub LinkLabel2_LinkClicked(sender As Object, e As LinkLabelLinkClickedEventArgs) Handles LinkLabel2.LinkClicked
-        Appel_Zoom1("MS010", Cod_Entite_txt, Me)
+        Appel_Zoom1("MS039", Cod_Entite_txt, Me, "", "", Nothing, True)
     End Sub
     Sub Nouveau()
         Chargement()
@@ -289,14 +289,15 @@ where id_Societe ='" & Societe.id_Societe & "'")
         Statut_Evaluation.SelectedValue = "Planifiee"
         Save_D.Enabled = True
         Dat_Du.Value = Now.ToShortDateString
-        Dat_Au.Value = Now.ToShortDateString
+        Dat_Au.Value = Now.AddDays(30).ToShortDateString
         Description_txt.Select()
         Sous_Entite_chk.Checked = True
-        Rd2.Checked = True
+        Rd1.Checked = True
+        Cod_Entite_txt.Text = CnExecuting($"select isnull((select top 1 Cod_Entite from Org_Entite where id_Societe={Societe.id_Societe} and isnull(Attachement_Hierarchique,'')=''),'')").Fields(0).Value
     End Sub
 
     Private Sub Grade__LinkClicked(sender As Object, e As LinkLabelLinkClickedEventArgs) Handles Grade_.LinkClicked
-        Appel_Zoom1("MS015", Cod_Grade_txt, Me)
+        Appel_Zoom1("MS038", Cod_Grade_txt, Me, "", "", Nothing, True)
     End Sub
 
     Private Sub Cod_Entite_txt_TextChanged(sender As Object, e As EventArgs) Handles Cod_Entite_txt.TextChanged
@@ -351,7 +352,7 @@ where id_Societe ='" & Societe.id_Societe & "'")
     End Sub
     Sub ChargerTrv(CodEvaluation As String, oNd As Node, childNodeName As String, EntiteGrade As String)
         Chargement()
-        Dim nrw() As DataRow = TblEntite.Select("Cod_Entite='" & childNodeName & "'")
+        Dim nrw() As DataRow = TblEntite.Select("Cod_Entite in ('" & String.Join("','", childNodeName.Split(";")) & "')")
         If nrw.Length > 0 And (CodEvaluation = "" Or (TblEvaDetail.Select("Cod_Element ='" & childNodeName & "'").Length > 0)) Then
             Dim Nod As New Node
             With Nod
@@ -369,7 +370,7 @@ where id_Societe ='" & Societe.id_Societe & "'")
                 .Cells(3).Text = ""
                 .Cells(4).Text = ""
                 .Cells(5).Text = Nothing
-                Dim aRw() As DataRow = TblAgent.Select("Cod_Entite='" & .Name & "'" & IIf(Cod_Grade_txt.Text <> "", " and Cod_Grade='" & Cod_Grade_txt.Text & "'", ""))
+                Dim aRw() As DataRow = TblAgent.Select("Cod_Entite='" & .Name & "'" & IIf(Cod_Grade_txt.Text <> "", " and Cod_Grade in ('" & String.Join("','", Cod_Grade_txt.Text.Split(";")) & "')", ""))
                 For i = 0 To aRw.Length - 1
                     If (CodEvaluation = "" Or (TblEvaDetail.Select("Cod_Element ='" & aRw(i)("Matricule") & "'").Length > 0)) Then
                         Dim Ndf As New Node

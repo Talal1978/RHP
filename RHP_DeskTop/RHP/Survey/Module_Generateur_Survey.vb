@@ -4,7 +4,8 @@ Module Module_Generateur_Survey
     Friend myVBS As New vsEngine
     Friend Paie_Calcule As Boolean = False
     Friend Statut_Survey As String = ""
-    Public rx_survey As New Regex("(?i)\bQ\s*\[\s*(?<N>\d+)\s*\](?:\s*\[\s*(?:(?<L>\d+)\s*(?:,|:)\s*)?(?<C>\d+)\s*\])?")
+    Public rx_survey As New Regex("(?i)\bQ\s*\[\s*(?<N>\w+)\s*\](?:\s*\[\s*(?:(?<L>\w+)\s*(?:,|:)\s*)?(?<C>\d+)\s*\])?")
+    Public rgxE As New Regex("\[[COEDNT]\]", RegexOptions.IgnoreCase)
     Dim dicType As New Dictionary(Of String, Type) From {
         {"grille_cases", GetType(ud_grille_cases)},
         {"cocher", GetType(ud_grille_cases)},
@@ -40,13 +41,13 @@ Module Module_Generateur_Survey
         Dim Tbl_Question As DataTable = DATA_READER_GRD("select row_number () over(order by Rang asc) as NumQuestion, isnull(Typ_Reponse,'') as Typ_Reponse,RowId as Cod_Question, isnull(Question,'') as Question ,isnull(Sous_Question,'') as Sous_Question,
 isnull(Reponses_Possibles,'') as Reponses_Possibles, isnull(Obligatoire,'false') as Obligatoire, 
 isnull(AvecNote,'false') as AvecNote,isnull(Mode_Scoring,'na') as Mode_Scoring, isnull(Max_Score,0) as Max_Score, isnull(Func_Scoring,'') as Func_Scoring , isnull(Coef,1) as Coef, isnull(Obligatoire_Si,'') as Obligatoire_Si,
-isnull(Erreur_Si,'') as Erreur_Si, isnull(Erreur_Msg,'') as Erreur_Msg
+isnull(Erreur_Si,'') as Erreur_Si, isnull(Erreur_Msg,'') as Erreur_Msg, isnull(Structure_Reponse,'h6') as Structure_Reponse,isnull(Agregation_Scoring,'') as Agregation_Scoring
 from Survey_Detail d
 outer apply (select top 1 AvecNote from Survey s where s.Cod_Survey=d.Cod_Survey)q
 where Cod_Survey='" & CodSurvey & "' and id_Societe=" & Societe.id_Societe & "
 order by isnull(Rang,0) desc")
         Pnl_Content.Controls.Clear()
-        Dim rw_function() = Tbl_Question.Select("Func_Scoring<>''")
+        Dim rw_function() = Tbl_Question.Select("Func_Scoring<>'' and Typ_Reponse not like 'grille%'")
         For i = 0 To rw_function.Length - 1
             Dim strFunc = $"Function Func_Survey_{rw_function(i)("Cod_Question")}(CurrentAnswer)
                 Func_Survey_{rw_function(i)("Cod_Question")}={TraitementCaractere(rw_function(i)("Func_Scoring"))}
@@ -61,12 +62,24 @@ where Cod_Reply=" & CodReply)
         With Tbl_Question
             For i = 0 To .Rows.Count - 1
                 '       Try
-        
-                Dim repDic As New Dictionary(Of String, String)
+                Dim typReponseStr = .Rows(i)("Typ_Reponse")
+
+                Dim ud As Object
+                If typReponseStr = "titre" Then
+                    ud = New ud_titre
+                    With ud
+                        .Name = Tbl_Question.Rows(i)("Cod_Question")
+                        .Style = Tbl_Question.Rows(i)("Structure_Reponse")
+                        .Titre = Tbl_Question.Rows(i)("Question")
+                        .Dock = DockStyle.Top
+                        .avecNote = False
+                    End With
+                Else
+                    Dim typeReponse As Type = CType(dicType(typReponseStr), Type)
+                    Dim repDic As New Dictionary(Of String, String)
                     Dim nrw() As DataRow = Tbl_Reponse.Select("Cod_Reply=" & CodReply & " and Cod_Question=" & .Rows(i)("Cod_Question"))
                     Dim colonnes As String = .Rows(i)("Reponses_Possibles")
                     Dim lignes As String = .Rows(i)("Sous_Question")
-                    Dim typReponseStr = .Rows(i)("Typ_Reponse")
                     For j = 0 To nrw.Length - 1
                         If j = 0 Then
                             Paie_Calcule = nrw(0)("Paie_Calculee")
@@ -78,11 +91,10 @@ where Cod_Reply=" & CodReply)
                         MsgBox("Type de réponse inconnu pour la question " & .Rows(i)("NumQuestion") & ": '" & typReponseStr & "'")
                         Continue For ' Passer à la question suivante
                     End If
-                    Dim typeReponse As Type = CType(dicType(typReponseStr), Type)
-                    Dim ud As Object = typeReponse.Assembly.CreateInstance(typeReponse.FullName)
+                    ud = typeReponse.Assembly.CreateInstance(typeReponse.FullName)
                     If "RHP.ud_valeur_unique;RHP.ud_paragraph".Split(";").Contains(typeReponse.FullName) Or
-           (lignes.Split({";"}, StringSplitOptions.RemoveEmptyEntries).Length > 0 AndAlso
-            colonnes.Split({";"}, StringSplitOptions.RemoveEmptyEntries).Length > 0) Then
+               (lignes.Split({";"}, StringSplitOptions.RemoveEmptyEntries).Length > 0 AndAlso
+                colonnes.Split({";"}, StringSplitOptions.RemoveEmptyEntries).Length > 0) Then
                         With ud
                             .Typ_Reponse = Tbl_Question.Rows(i)("Typ_Reponse")
                             .Obligatoire = Tbl_Question.Rows(i)("Obligatoire")
@@ -96,6 +108,7 @@ where Cod_Reply=" & CodReply)
                             .numQuestion = Tbl_Question.Rows(i)("NumQuestion")
                             .avecNote = IsNull(Tbl_Question.Rows(i)("AvecNote"), False)
                             .modeScoring = IsNull(Tbl_Question.Rows(i)("Mode_Scoring"), "na")
+                            .aggregationScoring = IsNull(Tbl_Question.Rows(i)("Agregation_Scoring"), "")
                             .maxScore = IsNull(Tbl_Question.Rows(i)("Max_Score"), 0)
                             .coef = IsNull(Tbl_Question.Rows(i)("Coef"), 1)
                             .funcScoring = IsNull(Tbl_Question.Rows(i)("Func_Scoring"), "")
@@ -104,9 +117,12 @@ where Cod_Reply=" & CodReply)
                             .Chargement()
                             .Dock = DockStyle.Top
                         End With
-                        Pnl_Content.Controls.Add(ud)
-                        dictQ.Add(ud, ud.repDic)
                     End If
+                End If
+                If ud IsNot Nothing Then
+                    Pnl_Content.Controls.Add(ud)
+                    dictQ.Add(ud, ud.repDic)
+                End If
 
                 '       Catch ex As Exception
                 '    MsgBox("ERREUR à la question " & .Rows(i)("NumQuestion") & vbCrLf &
@@ -188,6 +204,67 @@ where Cod_Reply=" & CodReply)
         Next
         Return Nothing
     End Function
+    Sub survey_CheckVisibility(Tbl_Question As DataTable, reponses As Dictionary(Of ud_pattern, Dictionary(Of String, String)))
+        Dim obgRw() = Tbl_Question.Select("Obligatoire_Si<>''")
+        Dim obgFunct As MatchEvaluator = Function(m)
+                                             Dim N As String = m.Groups("N").Value
+                                             If IsNumeric(N) Then
+
+                                                 Dim qst() = Tbl_Question.Select($"NumQuestion={N}")
+                                                 If qst.Length = 0 Then Return m.Value
+                                                 Dim maQst As String = qst(0)("Cod_Question")
+                                                 Dim typRep As String = IsNull(qst(0)("Typ_Reponse"), "alpha")
+                                                 Dim vari As String = ""
+                                                 Dim dim_vari As String = ""
+
+                                                 Dim reponse = reponses.Keys.FirstOrDefault(Function(c) c.Name = maQst)
+                                                 If reponse Is Nothing Then Return m.Value
+                                                 If m.Groups("C").Success Then
+                                                     Dim C As String = m.Groups("C").Value
+                                                     If IsNumeric(C) Then
+                                                         If m.Groups("L").Success Then
+                                                             Dim L As String = m.Groups("L").Value
+                                                             If IsNumeric(L) Then
+                                                                 vari = $"Qst6yrbi_{N}_{L}_{C}"
+                                                                 dim_vari = $"Qst6yrbi_{N}_{L}_{C} = " & getValeur(reponse, C, L)
+                                                             End If
+                                                         Else
+                                                             vari = $"Qst6yrbi_{N}_{C}"
+                                                             dim_vari = $"Qst6yrbi_{N}_{C}= " & getValeur(reponse, C)
+                                                         End If
+                                                     End If
+                                                 Else
+                                                     vari = $"Qst6yrbi_{N}"
+                                                     dim_vari = $"Qst6yrbi_{N}= " & getValeur(reponse)
+                                                 End If
+                                                 dim_vari = TraitementCaractere(dim_vari)
+                                                 myVBS.ExecuteStatement(dim_vari)
+                                                 Return vari
+                                             Else
+                                                 Return m.Value
+                                             End If
+                                         End Function
+        For i = 0 To obgRw.Length - 1
+            Dim codQuestion As String = obgRw(i)("Cod_Question")
+            Dim strFunction As String = obgRw(i)("Obligatoire_Si")
+            Dim currentQuestion = reponses.Keys.FirstOrDefault(Function(c) c.Name = codQuestion)
+            If currentQuestion IsNot Nothing Then
+                Dim output As String = TraitementCaractere(rx_survey.Replace(strFunction, obgFunct))
+                Dim isMandatory As Boolean = False
+                Try
+                    isMandatory = myVBS.Eval(output)
+                Catch ex As Exception
+                    isMandatory = False
+                End Try
+
+                ' Logic Mapped from Portal: isVisible = isMandatory
+                ' If condition is true -> Visible & Mandatory
+                ' If condition is false -> Hidden & Not Mandatory
+                currentQuestion.Visible = isMandatory
+                currentQuestion.Obligatoire = isMandatory
+            End If
+        Next
+    End Sub
     Public Structure erreurSi
         Public ud As ud_pattern
         Public err As String
@@ -320,18 +397,35 @@ where Cod_Reply=" & CodReply)
                             End If
                         Next
                     End If
+                ElseIf IsNull(colonne, 0) < 0 And IsNull(ligne, 0) < 0 Then
+                    Dim reponses As New List(Of Integer)
+                    For Each resp In .repDic.Values
+                        Dim laréponse() = resp.Split(";")
+                        If laréponse.Length > 0 Then
+                            For c = 0 To laréponse.Length - 1
+                                If laréponse(c) = "1" Then
+                                    reponses.Add(c + 1)
+                                    Exit For
+                                End If
+                            Next
+                        End If
+                    Next
+                    Return If(reponses.Count = 0, 0, Math.Round(reponses.Average(), 2))
                 End If
                 Return 0
             End With
         ElseIf TypeOf rep Is ud_grille_libre Then
             With CType(rep, ud_grille_libre)
+                'tester si la colonne est une colonne numérique ou de case à cocher ou option C,O,E,N
+                Dim rgx As New Regex("\[[COEN]\]", RegexOptions.IgnoreCase)
                 If IsNull(ligne, 0) > 0 And IsNull(colonne, 0) > 0 Then
-                    If ligne < .Grd.RowCount And colonne < .Grd.ColumnCount Then
-                        Return .Grd.Item(colonne - 1, ligne - 1).Tag
+                    If ligne <= .Grd.RowCount And colonne <= .Grd.ColumnCount Then
+                        Return IsNull(.Grd.Item(colonne - 1, ligne - 1).Tag, If(rgx.IsMatch(IsNull(rep.colonnes.Split(";"c)(colonne - 1), "")), 0, "''"))
                     End If
                 End If
             End With
         End If
         Return "''"
     End Function
+
 End Module

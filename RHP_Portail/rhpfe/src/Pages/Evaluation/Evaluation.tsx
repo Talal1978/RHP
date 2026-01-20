@@ -7,7 +7,6 @@ import { cntX } from '../../Menu/MenuMain';
 import { DrawOutlined, PrintOutlined, SaveAsOutlined, VisibilityOff } from '@mui/icons-material';
 import { ChildHandle } from '../Survey/Types';
 import useAlert from '../../hooks/useAlert';
-import { TReport } from '../../Report/ReportViewer';
 import useMsgBox from '../../hooks/useMsgBox';
 import useAxiosPost from '../../hooks/useAxiosPost';
 

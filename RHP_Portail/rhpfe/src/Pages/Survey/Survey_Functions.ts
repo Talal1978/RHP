@@ -35,6 +35,221 @@ export const safeArrondi = (value: any, decimals: number = 2): number => {
     return Arrondi(safe, decimals);
 };
 
+/**
+ * Calcule les scores individuels pour chaque ligne d'une question de type grille ou liste.
+ * Reproduit la logique du Desktop (ud_grille_cases, ud_grille_choix, etc.)
+ */
+export function calculateGridScores(value: any, typ_reponse: TQuestionType, funcScoring: string = "", columnsDef: string = ""): number[] {
+    const scores: number[] = [];
+
+    if (!value) return scores;
+
+    // 1. OUI_NON / VRAI_FAUX
+    if (['oui_non', 'vrai_faux'].includes(typ_reponse)) {
+        if (Array.isArray(value) && Array.isArray(value[0])) {
+            const isChecked = value[0][0] === 1 || value[0][0] === true || value[0][0] === "1";
+            scores.push(isChecked ? 1 : 0);
+        }
+        return scores;
+    }
+
+    // 2. COCHER / ECHELLE (Single Row Grids essentially)
+    if (['cocher', 'echelle'].includes(typ_reponse)) {
+        if (Array.isArray(value) && Array.isArray(value[0])) {
+            // Find index of checked item
+            const index = value[0].findIndex((v: any) => v === 1 || v === true || v === "1");
+            if (index >= 0) {
+                scores.push(index + 1); // 1-based index
+            }
+        }
+        return scores;
+    }
+
+    // 3. GRILLE_CHOIX / CHOIX
+    // Desktop: ud_grille_choix.vb -> laNote += j + 1 (Start at index 1 -> note 2??)
+    if (['grille_choix', 'choix'].includes(typ_reponse)) {
+        if (Array.isArray(value)) {
+            value.forEach((row: any[]) => {
+                if (Array.isArray(row)) {
+                    // Find checked column
+                    const index = row.findIndex((v: any) => v === 1 || v === true || v === "1");
+                    if (index >= 0) {
+                        scores.push(index + 2); // j+1 where j=index+1 => index+1+1 = index+2
+                    }
+                }
+            });
+        }
+        return scores;
+    }
+
+    // 4. GRILLE_CASES (Default)
+    if (typ_reponse === 'grille_cases') {
+        if (Array.isArray(value)) {
+            value.forEach((row: any[]) => {
+                if (Array.isArray(row)) {
+                    const index = row.findIndex((v: any) => v === 1 || v === true || v === "1");
+                    if (index >= 0) {
+                        scores.push(index + 1);
+                    }
+                }
+            });
+        }
+    }
+
+    // 5. GRILLE_LIBRE
+    if (typ_reponse === 'grille_libre') {
+        return calculateGridScoresFromFunction(value, funcScoring, columnsDef);
+    }
+
+    return scores;
+}
+
+
+
+// Helper to get default value based on column type (Desktop logic alignment)
+function getDefaultValueForColumn(colType: string): string {
+    if (!colType) return "''";
+    // Check for [C], [O], [E], [N] -> Return 0
+    if (/\[[COEN]\]/i.test(colType)) {
+        return '0';
+    }
+    return "''";
+}
+
+/**
+ * Calcule les scores pour chaque ligne en utilisant une formule VB (Func_Scoring)
+ * Utilisé principalement pour grille_libre ou grille_cases avec calculs complexes par ligne.
+ * Remplace Col(x) par la valeur de la colonne x (base 1) pour chaque ligne.
+ */
+export function calculateGridScoresFromFunction(value: any, funcScoring: string, columnsDef: string = ""): number[] {
+    const scores: number[] = [];
+    if (!value || !Array.isArray(value)) return scores;
+
+    if (!funcScoring || funcScoring.trim() === '') return scores;
+
+
+
+    const columns = columnsDef ? columnsDef.split(';') : [];
+
+    value.forEach((row: any[], rowIndex: number) => {
+        // Ignorer les lignes non valides
+        if (!Array.isArray(row)) return;
+
+        let formula = funcScoring;
+
+        // Remplacer Col(x) par la valeur
+        const replaceColumnValue = (match: string, p1: string) => {
+            const colIndex = parseInt(p1) - 1; // Base 1 -> Base 0
+            const colType = columns[colIndex] || "";
+
+            if (colIndex >= 0 && colIndex < row.length) {
+                const rawVal = row[colIndex];
+                if (rawVal === null || rawVal === undefined || rawVal === "") return getDefaultValueForColumn(colType);
+                if (typeof rawVal === 'number') return String(rawVal);
+                if (typeof rawVal === 'boolean') return rawVal ? '1' : '0';
+
+                let normalizedVal = rawVal;
+                if (typeof rawVal === 'string') normalizedVal = rawVal.replace(/,/g, '.');
+
+                if (normalizedVal !== "" && normalizedVal !== null && !isNaN(Number(normalizedVal)) && isFinite(Number(normalizedVal))) {
+                    return String(normalizedVal);
+                }
+                return `"${String(rawVal).replace(/"/g, '\\"')}"`;
+            }
+            return getDefaultValueForColumn(colType);
+        };
+
+        // Regex Robust pour Q[Num] ou Q[Num][Col] ou Q[Num][Row,Col] matching Desktop logic
+        // Desktop Regex: (?i)\bQ\s*\[\s*(?<N>\w+)\s*\](?:\s*\[\s*(?:(?<L>\w+)\s*(?:,|:)\s*)?(?<C>\d+)\s*\])?
+        // JS Regex (no named groups for wider support if target is old, but we can use indices)
+        // Groups: 1=N, 2=Full second brackets, 3=L (row), 4=C (col)
+        // Note: L (row) is optional. If missing or non-numeric ("LigneEncours"), we use rowIndex + 1.
+
+        const qRefRegex = /Q\s*\[\s*(\w+)\s*\](?:\s*\[\s*(?:(\w+)\s*(?:,|:)\s*)?(\d+)\s*\])?/gi;
+
+        // Fonction de remplacement pour la regex
+        const replaceQRef = (match: string, qNumCtx: string, rowCtx: string, colCtx: string) => {
+
+
+            // Si Col est défini
+            if (colCtx) {
+                // Logique Desktop: Si Row est non-numérique ou absent, utiliser numLigne (ici rowIndex + 1)
+                let targetRowIndex = rowIndex; // default to current row (0-based)
+
+                if (rowCtx && !isNaN(parseInt(rowCtx))) {
+                    targetRowIndex = parseInt(rowCtx) - 1; // Convert 1-based to 0-based
+                }
+
+                const targetColIndex = parseInt(colCtx) - 1; // Convert 1-based to 0-based
+
+                // Si on fait référence à la question courante (ou pas de numéro Q spécifié dans le contexte global, mais ici le match a Q[N])
+                // Dans le contexte de "calculateGridScoresFromFunction", on traite souvent la question elle-même.
+                // Le code VBS utilise 'getValeur' qui peut aller chercher dans d'autres questions.
+                // MAIS ici 'value' contient SEULEMENT les données de la question en cours.
+                // LIMITATION: Cette fonction ne connait pas les 'answers' globales.
+                // HYPOTHÈSE: La formule fait référence à la grille en cours (Q[Numero]).
+                // TODO: Si Num != CurrentNum, ça ne marchera pas avec 'value' seul.
+                // Cependant, le cas d'usage 'LigneEncours' est typiquement pour l'auto-référence.
+
+                if (targetRowIndex >= 0 && targetRowIndex < value.length) {
+                    const targetRow = value[targetRowIndex];
+                    if (Array.isArray(targetRow) && targetColIndex >= 0 && targetColIndex < targetRow.length) {
+                        const colType = columns[targetColIndex] || "";
+                        const rawVal = targetRow[targetColIndex];
+
+                        // Réutilisation de la logique de formatage
+                        if (rawVal === null || rawVal === undefined || rawVal === "") {
+                            return getDefaultValueForColumn(colType);
+                        }
+
+                        if (typeof rawVal === 'number') return String(rawVal);
+                        if (typeof rawVal === 'boolean') return rawVal ? '1' : '0';
+
+                        let normalizedVal = rawVal;
+                        if (typeof rawVal === 'string') {
+                            normalizedVal = rawVal.replace(/,/g, '.');
+                        }
+
+                        if (normalizedVal !== "" && normalizedVal !== null && !isNaN(Number(normalizedVal)) && isFinite(Number(normalizedVal))) {
+                            return String(normalizedVal);
+                        }
+
+                        return `"${String(rawVal).replace(/"/g, '\\"')}"`;
+                    }
+                }
+                // Hors limites
+                return "0";
+            }
+
+            return "0"; // Fallback
+        };
+
+        // 1. Remplacer les références Q[...]
+        formula = formula.replace(qRefRegex, replaceQRef);
+
+        // 2. Remplacer les références Col(x) (Legacy simple)
+        formula = formula.replace(/Col\s*\(\s*(\d+)\s*\)/gi, replaceColumnValue);
+
+        // 3. Appliquer les transformations de syntaxe VBScript -> JS (via traitementFonctions 'light' ou manuel)
+        // Comme on n'a pas accès direct à traitementFonctions ici sans import circulaire ou duplication,
+        // on applique les remplacements critiques (True, False, ;, =)
+
+        formula = formula.replace(/\bTrue\b/gi, 'true');
+        formula = formula.replace(/\bFalse\b/gi, 'false');
+        formula = formula.replace(/;/g, ','); // Séparateur arguments
+        formula = formula.replace(/(\w+|\)|"[^"]*")\s*=\s*(\w+|\(|"[^"]*")/g, '$1 == $2'); // Comparaison (Loose equality for VBScript compatibility 1 == true)
+        formula = formula.replace(/<>/g, '!==');
+
+        // Évaluer la formule
+
+
+        const rowScore = evalFormula(formula);
+        scores.push(safeNumber(rowScore, 0));
+    });
+
+    return scores;
+}
+
 function formatValueForVBScript(value: any, typ_reponse: string): any {
     // Types numériques → retourner le nombre
     const numericTypes = ['entier', 'numerique', 'echelle', 'oui_non', 'vrai_faux',
@@ -66,20 +281,13 @@ export function getValeur(orgineValeur: any, typ_reponse: TQuestionType): any {
                 score = selectedIndex >= 0 ? selectedIndex + 1 : 0;
             }
             break;
-        case 'choix':
-            // retourner le nombre d'options sélectionnées
-            if (Array.isArray(orgineValeur) && Array.isArray(orgineValeur[0])) {
-                score = orgineValeur[0].reduce((acc: number, val: any) => acc + (val === 1 ? 1 : 0), 0);
-            }
-            break;
         case 'grille_choix':
+        case 'choix':
         case 'grille_cases':
-            // retourner le nombre total d'options sélectionnées à deux dimensions
-            if (Array.isArray(orgineValeur)) {
-                score = orgineValeur.reduce((accRow: number, row: any[]) =>
-                    accRow + row.reduce((accCol: number, val: any) => accCol + (val === 1 ? 1 : 0), 0)
-                    , 0);
-            }
+            // Logic updated to match Desktop via calculateGridScores default SUM behavior
+            // We use calculateGridScores to get the list of scores, then sum them.
+            const scores = calculateGridScores(orgineValeur, typ_reponse);
+            score = scores.reduce((a: number, b: number) => a + b, 0);
             break;
         case 'numerique':
         case 'entier':
@@ -101,6 +309,12 @@ export function getValeur(orgineValeur: any, typ_reponse: TQuestionType): any {
     }
     return score;
 }
+
+/**
+ * Calcule les scores individuels pour chaque ligne d'une question de type grille ou liste.
+ * Reproduit la logique du Desktop (ud_grille_cases, ud_grille_choix, etc.)
+ */
+
 
 export function getAnswerValue(expression: string, answers: TAnswers): any {
     const qMatch = expression.match(/^Q\[(\d+)\]/);
@@ -217,7 +431,17 @@ export function getAnswerValue(expression: string, answers: TAnswers): any {
 
             if (answer.typ_reponse === 'grille_libre') {
                 if (Array.isArray(answer.value[0])) {
-                    return answer.value[0][index1] ?? "";
+                    const val = answer.value[0][index1];
+                    if (val !== undefined && val !== null && val !== "") return val;
+                    // Logic equivalent to desktop: Check column definition for [C/O/E/N]
+                    if (answer.colonnes) {
+                        const cols = answer.colonnes.split(';');
+                        if (index1 < cols.length) {
+                            const colDef = cols[index1];
+                            if (/\[[COEN]\]/i.test(colDef)) return 0;
+                        }
+                    }
+                    return "";
                 }
                 return "";
             }
@@ -241,7 +465,16 @@ export function getAnswerValue(expression: string, answers: TAnswers): any {
                 return value === true || value === 1 || value === "1" ? 1 : 0;
             }
             if (answer.typ_reponse === 'grille_libre') {
-                return value ?? "";
+                if (value !== undefined && value !== null && value !== "") return value;
+                // Logic equivalent to desktop: Check column definition for [C/O/E/N]
+                if (answer.colonnes) {
+                    const cols = answer.colonnes.split(';');
+                    if (index2Colonne < cols.length) {
+                        const colDef = cols[index2Colonne];
+                        if (/\[[COEN]\]/i.test(colDef)) return 0;
+                    }
+                }
+                return "";
             }
             return formatValueForVBScript(value, answer.typ_reponse);
         }
@@ -276,10 +509,25 @@ export function evaluateExpression(expression: string, answers: TAnswers, curren
     });
 
     // Remplacement des Q[N]...
-    const qRefRegex = /(Q\[\d+\]\s*(?:\[\d+(?:[,:]\s*\d+)?\])?)/g;
+    // Permissive regex matching desktop logic: Q space? [ space? N space? ] (opt: [ space? L , space? C ])
+    // Note: JS regex doesn't support named groups in replace callback consistently across envs easily without logic,
+    // so we'll use indexed groups.
+    // Group 1: Whole Q expression
+    // The previous regex was: /(Q\[\d+\]\s*(?:\[\d+(?:[,:]\s*\d+)?\])?)/g
+    // New regex:
+    const qRefRegex = /(Q\s*\[\s*\d+\s*\](?:\s*\[\s*\d+(?:[,:]\s*\d+)?\s*\])?)/gi;
+
     evaluatedExpression = evaluatedExpression.replace(qRefRegex, (match) => {
+        // Normalize the match to standard form for getAnswerValue (which expects Q[N] or Q[N][C] or Q[N][L,C] with tight spacing or loose?)
+        // actually getAnswerValue regex is: /^Q\[(\d+)\]/ and /\[(\d+)(?:[,:]\s*(\d+))?\]$/
+        // So we should just pass the match as is?
+        // getAnswerValue cleans spaces: const cleanExpression = expression.replace(/\s+/g, '');
+        // so we can pass the loose match directly.
+
         const val = getAnswerValue(match, answers);
-        const qNum = parseInt(match.match(/Q\[(\d+)\]/)![1]);
+        const qNumMatch = match.match(/Q\s*\[\s*(\d+)\s*\]/i);
+        const qNum = qNumMatch ? parseInt(qNumMatch[1]) : 0;
+
         const answer = answers[qNum];
 
         if (!answer) {

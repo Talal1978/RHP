@@ -105,9 +105,9 @@ Partial Class Action_Evaluation
         Me.GroupBox2.Controls.Add(Me.LinkLabel1)
         Me.GroupBox2.Dock = System.Windows.Forms.DockStyle.Top
         Me.GroupBox2.Location = New System.Drawing.Point(0, 0)
-        Me.GroupBox2.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
+        Me.GroupBox2.Margin = New System.Windows.Forms.Padding(4)
         Me.GroupBox2.Name = "GroupBox2"
-        Me.GroupBox2.Padding = New System.Windows.Forms.Padding(4, 4, 4, 4)
+        Me.GroupBox2.Padding = New System.Windows.Forms.Padding(4)
         Me.GroupBox2.Size = New System.Drawing.Size(1392, 161)
         Me.GroupBox2.TabIndex = 218
         Me.GroupBox2.TabStop = False
@@ -117,7 +117,7 @@ Partial Class Action_Evaluation
         Me.Dat_Au.CustomFormat = "dd/MM/yyyy"
         Me.Dat_Au.Format = System.Windows.Forms.DateTimePickerFormat.Custom
         Me.Dat_Au.Location = New System.Drawing.Point(252, 119)
-        Me.Dat_Au.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
+        Me.Dat_Au.Margin = New System.Windows.Forms.Padding(4)
         Me.Dat_Au.Name = "Dat_Au"
         Me.Dat_Au.Size = New System.Drawing.Size(120, 24)
         Me.Dat_Au.TabIndex = 214
@@ -137,7 +137,7 @@ Partial Class Action_Evaluation
         Me.Dat_Du.CustomFormat = "dd/MM/yyyy"
         Me.Dat_Du.Format = System.Windows.Forms.DateTimePickerFormat.Custom
         Me.Dat_Du.Location = New System.Drawing.Point(94, 119)
-        Me.Dat_Du.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
+        Me.Dat_Du.Margin = New System.Windows.Forms.Padding(4)
         Me.Dat_Du.Name = "Dat_Du"
         Me.Dat_Du.Size = New System.Drawing.Size(119, 24)
         Me.Dat_Du.TabIndex = 213
@@ -160,9 +160,9 @@ Partial Class Action_Evaluation
         Me.GroupBox1.Controls.Add(Me.Rd2)
         Me.GroupBox1.Controls.Add(Me.Rd1)
         Me.GroupBox1.Location = New System.Drawing.Point(62, 50)
-        Me.GroupBox1.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
+        Me.GroupBox1.Margin = New System.Windows.Forms.Padding(4)
         Me.GroupBox1.Name = "GroupBox1"
-        Me.GroupBox1.Padding = New System.Windows.Forms.Padding(4, 4, 4, 4)
+        Me.GroupBox1.Padding = New System.Windows.Forms.Padding(4)
         Me.GroupBox1.Size = New System.Drawing.Size(1125, 60)
         Me.GroupBox1.TabIndex = 211
         Me.GroupBox1.TabStop = False
@@ -376,7 +376,7 @@ Partial Class Action_Evaluation
         Me.Lib_Entite_txt.CharacterCasing = System.Windows.Forms.CharacterCasing.Normal
         Me.Lib_Entite_txt.ContextMenuStrip = Nothing
         Me.Lib_Entite_txt.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        Me.Lib_Entite_txt.Location = New System.Drawing.Point(306, 26)
+        Me.Lib_Entite_txt.Location = New System.Drawing.Point(744, 26)
         Me.Lib_Entite_txt.Margin = New System.Windows.Forms.Padding(4, 5, 4, 5)
         Me.Lib_Entite_txt.MaxLength = 32767
         Me.Lib_Entite_txt.Multiline = False
@@ -406,7 +406,7 @@ Partial Class Action_Evaluation
         Me.Cod_Entite_txt.ReadOnly = True
         Me.Cod_Entite_txt.ScrollBars = System.Windows.Forms.ScrollBars.None
         Me.Cod_Entite_txt.SelectionStart = 0
-        Me.Cod_Entite_txt.Size = New System.Drawing.Size(176, 26)
+        Me.Cod_Entite_txt.Size = New System.Drawing.Size(610, 26)
         Me.Cod_Entite_txt.TabIndex = 219
         Me.Cod_Entite_txt.TextAlign = System.Windows.Forms.HorizontalAlignment.Left
         Me.Cod_Entite_txt.UseSystemPasswordChar = False
@@ -431,7 +431,7 @@ Partial Class Action_Evaluation
         Me.Adv.Columns.Add(Me.Evalue)
         Me.Adv.Dock = System.Windows.Forms.DockStyle.Fill
         Me.Adv.Location = New System.Drawing.Point(0, 259)
-        Me.Adv.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
+        Me.Adv.Margin = New System.Windows.Forms.Padding(4)
         Me.Adv.Name = "Adv"
         Me.Adv.NodesConnector = Me.NodeConnector1
         Me.Adv.NodeStyle = Me.ElementStyle1
@@ -522,8 +522,8 @@ Partial Class Action_Evaluation
         '
         Me.Sous_Entite_chk.AutoSize = True
         Me.Sous_Entite_chk.Checked = True
-        Me.Sous_Entite_chk.Location = New System.Drawing.Point(688, 30)
-        Me.Sous_Entite_chk.Margin = New System.Windows.Forms.Padding(5, 5, 5, 5)
+        Me.Sous_Entite_chk.Location = New System.Drawing.Point(1127, 27)
+        Me.Sous_Entite_chk.Margin = New System.Windows.Forms.Padding(5)
         Me.Sous_Entite_chk.MaximumSize = New System.Drawing.Size(0, 25)
         Me.Sous_Entite_chk.MinimumSize = New System.Drawing.Size(125, 25)
         Me.Sous_Entite_chk.Name = "Sous_Entite_chk"
@@ -542,9 +542,9 @@ Partial Class Action_Evaluation
         Me.GroupBox3.Controls.Add(Me.LinkLabel2)
         Me.GroupBox3.Dock = System.Windows.Forms.DockStyle.Top
         Me.GroupBox3.Location = New System.Drawing.Point(0, 161)
-        Me.GroupBox3.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
+        Me.GroupBox3.Margin = New System.Windows.Forms.Padding(4)
         Me.GroupBox3.Name = "GroupBox3"
-        Me.GroupBox3.Padding = New System.Windows.Forms.Padding(4, 4, 4, 4)
+        Me.GroupBox3.Padding = New System.Windows.Forms.Padding(4)
         Me.GroupBox3.Size = New System.Drawing.Size(1392, 98)
         Me.GroupBox3.TabIndex = 222
         Me.GroupBox3.TabStop = False
@@ -572,7 +572,7 @@ Partial Class Action_Evaluation
         Me.Cod_Grade_txt.CharacterCasing = System.Windows.Forms.CharacterCasing.Normal
         Me.Cod_Grade_txt.ContextMenuStrip = Nothing
         Me.Cod_Grade_txt.Location = New System.Drawing.Point(126, 59)
-        Me.Cod_Grade_txt.Margin = New System.Windows.Forms.Padding(5, 5, 5, 5)
+        Me.Cod_Grade_txt.Margin = New System.Windows.Forms.Padding(5)
         Me.Cod_Grade_txt.MaxLength = 6
         Me.Cod_Grade_txt.Multiline = False
         Me.Cod_Grade_txt.Name = "Cod_Grade_txt"
@@ -581,7 +581,7 @@ Partial Class Action_Evaluation
         Me.Cod_Grade_txt.ReadOnly = True
         Me.Cod_Grade_txt.ScrollBars = System.Windows.Forms.ScrollBars.None
         Me.Cod_Grade_txt.SelectionStart = 0
-        Me.Cod_Grade_txt.Size = New System.Drawing.Size(176, 26)
+        Me.Cod_Grade_txt.Size = New System.Drawing.Size(610, 26)
         Me.Cod_Grade_txt.TabIndex = 225
         Me.Cod_Grade_txt.TextAlign = System.Windows.Forms.HorizontalAlignment.Left
         Me.Cod_Grade_txt.UseSystemPasswordChar = False
@@ -590,8 +590,8 @@ Partial Class Action_Evaluation
         '
         Me.Lib_Grade_txt.CharacterCasing = System.Windows.Forms.CharacterCasing.Normal
         Me.Lib_Grade_txt.ContextMenuStrip = Nothing
-        Me.Lib_Grade_txt.Location = New System.Drawing.Point(306, 59)
-        Me.Lib_Grade_txt.Margin = New System.Windows.Forms.Padding(5, 5, 5, 5)
+        Me.Lib_Grade_txt.Location = New System.Drawing.Point(744, 62)
+        Me.Lib_Grade_txt.Margin = New System.Windows.Forms.Padding(5)
         Me.Lib_Grade_txt.MaxLength = 50
         Me.Lib_Grade_txt.Multiline = False
         Me.Lib_Grade_txt.Name = "Lib_Grade_txt"
@@ -616,7 +616,7 @@ Partial Class Action_Evaluation
         Me.Controls.Add(Me.GroupBox2)
         Me.Font = New System.Drawing.Font("Century Gothic", 8.25!)
         Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None
-        Me.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
+        Me.Margin = New System.Windows.Forms.Padding(4)
         Me.Name = "Action_Evaluation"
         Me.Tag = "ECR"
         Me.Text = "Actions d'évaluation"

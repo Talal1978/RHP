@@ -187,7 +187,7 @@ const Formation_Liste = () => {
                     className="laGrille"
                     onclick={({ colIndex, value }) => {
                         if (colIndex === 0) {
-                            navigate(`/myspace/Formation/Formation/${value}`);
+                            navigate(`/myspace/Formation_Evaluation/Formation/${value}`);
                         }
                     }}
                     sx={{

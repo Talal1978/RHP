@@ -1,15 +1,13 @@
 ﻿Imports System.Text.RegularExpressions
-Imports DevComponents.DotNetBar
-Imports ExcelLibrary.Office.Excel
 Public Class Survey
     Friend Code As String = ""
     Dim Tbl_TypReponse As New DataTable
     Dim dictRg As New Dictionary(Of String, Regex)
-    Dim rgx As New Regex("[\w\'\s\-\+%àéèêâôîïö\?\!\<\>\=.\(\)]+(\[[COEDNT]\])?", RegexOptions.IgnoreCase)
-    Dim rgxE As New Regex("\[[COEDNT]\]", RegexOptions.IgnoreCase)
+    Dim rgx As New Regex("[\w\'\s\-\+%àéèêâôîïö\,\.\?\!\<\>\=.\(\)\*]+\s*(\[[COEDNT]\])?", RegexOptions.IgnoreCase)
     Dim Save_D As ud_btn
     Dim Del_D As ud_btn
     Dim modeScoring As New DataTable
+    Dim modeDuplication As Boolean = False
     Private Sub Ctb_Compta_Axe_Ana_FormClosing(ByVal sender As Object, ByVal e As System.Windows.Forms.FormClosingEventArgs) Handles Me.FormClosing
         Try
             If Save_D.Enabled = True Then
@@ -20,6 +18,7 @@ Public Class Survey
         End Try
     End Sub
     Private Sub LinkLabel1_LinkClicked(sender As Object, e As LinkLabelLinkClickedEventArgs) Handles LinkLabel1.LinkClicked
+        modeDuplication = False
         Appel_Zoom1("MS156", Cod_Survey_txt, Me)
     End Sub
     Sub chargementCombo()
@@ -56,6 +55,8 @@ Public Class Survey
             ' Droits par défaut
             Save_D.Enabled = True
             Del_D.Enabled = True
+
+            If modeDuplication Then Return
 
             ' Droits selon profil et écran
             DroitAcces(Me, DroitModify_Fiche(Cod_Survey_txt.Text, Me))
@@ -115,6 +116,7 @@ Public Class Survey
                             .Item(Erreur_Si.Index, i).Value = IsNull(r("Erreur_Si"), "")
                             .Item(Erreur_Msg.Index, i).Value = IsNull(r("Erreur_Msg"), "")
                             .Item(Rang.Index, i).Value = IsNull(r("NumQuestion"), 0)
+                            .Item(Agregation_Scoring.Index, i).Value = IsNull(r("Agregation_Scoring"), "")
                             .Item(RowId.Index, i).Value = IsNull(r("RowId"), 0)
                         End With
                     Next
@@ -141,6 +143,7 @@ Public Class Survey
         Lib_Survey_txt.Select()
     End Sub
     Sub Enregistrer()
+        modeDuplication = False
         If Lib_Survey_txt.Text = "" Then
             ShowMessageBox("Renseignez le libellé de l'enquête.", "Validation", MessageBoxButtons.OK, msgIcon.Stop)
             Return
@@ -192,18 +195,7 @@ Public Class Survey
                         .Item(Coef.Index, i).Selected = True
                         Return
                     End If
-                    If IsNull(.Item(Max_Score.Index, i).Value, 0) = 0 And Not "na;auto;func".Split(";").Contains(.Item(Mode_Scoring.Index, i).Value) And IsNull(.Item(Coef.Index, i).Value, 0) > 0 Then
-                        ShowMessageBox("Maximum nul.", "Validation", MessageBoxButtons.OK, msgIcon.Stop)
-                        .FirstDisplayedCell = .Item(Max_Score.Index, i)
-                        .Item(Max_Score.Index, i).Selected = True
-                        Return
-                    End If
                     If IsNull(.Item(Func_Scoring.Index, i).Value, "").Trim = "" And .Item(Mode_Scoring.Index, i).Value = "func" Then
-                        ShowMessageBox("Incohérence mode scoring et le texte de la fonction.", "Validation", MessageBoxButtons.OK, msgIcon.Stop)
-                        .FirstDisplayedCell = .Item(Mode_Scoring.Index, i)
-                        .Item(Mode_Scoring.Index, i).Selected = True
-                        Return
-                    ElseIf IsNull(.Item(Func_Scoring.Index, i).Value, "").Trim = "" And .Item(Mode_Scoring.Index, i).Value = "func" Then
                         ShowMessageBox("Syntaxe de la fonction vide.", "Validation", MessageBoxButtons.OK, msgIcon.Stop)
                         .FirstDisplayedCell = .Item(Func_Scoring.Index, i)
                         .Item(Func_Scoring.Index, i).Selected = True
@@ -274,6 +266,7 @@ Public Class Survey
                             rs("Func_Scoring").Value = ""
                             rs("Coef").Value = IsNull(.Item(Coef.Index, i).Value, 1)
                         End If
+                        rs("Agregation_Scoring").Value = IsNull(.Item(Agregation_Scoring.Index, i).Value, "")
                     Else
                         rs("Coef").Value = Nothing
                         rs("Mode_Scoring").Value = Nothing
@@ -289,120 +282,120 @@ Public Class Survey
                     rs("Erreur_Si").Value = .Item(Erreur_Si.Index, i).Value
                     rs("Erreur_Msg").Value = .Item(Erreur_Msg.Index, i).Value
                     Select Case IsNull(.Item(Typ_Reponse.Index, i).Value, "")
-                            Case "grille_cases", "grille_choix"
-                                Dim colonnes As String = ""
-                                Dim lignes As String = ""
-                                For Each c As Match In dictRg(.Item(Typ_Reponse.Index, i).Value).Matches(IsNull(.Item(Structure_Reponse.Index, i).Value, ""))
-                                    If c.Groups("Col").Value.Trim <> "" Then
-                                        colonnes = c.Groups("Col").Value.Trim
-                                        Exit For
-                                    End If
-                                Next
-                                For Each c As Match In dictRg(.Item(Typ_Reponse.Index, i).Value).Matches(IsNull(.Item(Structure_Reponse.Index, i).Value, ""))
-                                    If c.Groups("Lig").Value.Trim <> "" Then
-                                        lignes = c.Groups("Lig").Value.Trim
-                                        Exit For
-                                    End If
-                                Next
-                                Dim str() As String = lignes.Split({";"}, StringSplitOptions.RemoveEmptyEntries)
-                                lignes = ""
-                                For n = 0 To str.Length - 1
-                                    If str(n).Trim <> "" Then lignes &= IIf(lignes = "", "", ";") & str(n).Trim
-                                Next
-                                str = colonnes.Split({";"}, StringSplitOptions.RemoveEmptyEntries)
-                                colonnes = ""
-                                For n = 0 To str.Length - 1
-                                    If str(n).Trim <> "" Then colonnes &= IIf(colonnes = "", "", ";") & str(n).Trim
-                                Next
-                                rs("Sous_Question").Value = lignes
-                                rs("Reponses_Possibles").Value = colonnes
-                            Case "grille_libre"
-                                Dim colonnes As String = ""
-                                Dim lignes As String = ""
-                                Dim nbLig As Object = Nothing
-                                For Each c As Match In dictRg(.Item(Typ_Reponse.Index, i).Value).Matches(IsNull(.Item(Structure_Reponse.Index, i).Value, ""))
-                                    If c.Groups("Col").Value.Trim <> "" Then
-                                        colonnes = c.Groups("Col").Value.Trim
-                                        Exit For
-                                    End If
-                                Next
-                                Dim str As String = colonnes
-                                colonnes = ""
-                                For Each c As Match In rgx.Matches(str)
-                                    If c.Value.Trim <> "" Then
-                                        If Not rgxE.IsMatch(c.Value.Trim) Then
-                                            colonnes &= IIf(colonnes = "", "", ";") & c.Value.Trim & "[T]"
-                                        Else
-                                            colonnes &= IIf(colonnes = "", "", ";") & c.Value.Trim
-                                        End If
-                                    End If
-                                Next
-                                For Each c As Match In dictRg(.Item(Typ_Reponse.Index, i).Value).Matches(IsNull(.Item(Structure_Reponse.Index, i).Value, ""))
-                                    If c.Groups("Lig").Value.Trim <> "" Then
-                                        nbLig = c.Groups("Lig").Value.Trim
-                                        Exit For
-                                    End If
-                                Next
-                                str = ""
-                                For k = 0 To IIf(IsNumeric(nbLig), ConvertEntier(nbLig), 1) - 1
-                                    str &= IIf(str = "", "", ";") & k
-                                Next
-                                rs("Sous_Question").Value = str
-                                rs("Reponses_Possibles").Value = colonnes
-                            Case "cocher", "choix", "liste"
-                                Dim colonnes As String = IsNull(.Item(Structure_Reponse.Index, i).Value, "")
-                                Dim lignes As String = .Item(Question.Index, i).Value
-                                Dim str() As String = colonnes.Split({";"}, StringSplitOptions.RemoveEmptyEntries)
-                                colonnes = ""
-                                For n = 0 To str.Length - 1
-                                    If str(n).Trim <> "" Then colonnes &= IIf(colonnes = "", "", ";") & str(n).Trim
-                                Next
-                                rs("Sous_Question").Value = lignes
-                                rs("Reponses_Possibles").Value = colonnes
-                            Case "oui_non"
-                                Dim colonnes As String = "Oui;Non"
-                                Dim lignes As String = .Item(Question.Index, i).Value
-                                rs("Sous_Question").Value = lignes
-                                rs("Reponses_Possibles").Value = colonnes
-                            Case "vrai_faux"
-                                Dim colonnes As String = "Vrai;Faux"
-                                Dim lignes As String = .Item(Question.Index, i).Value
-                                rs("Sous_Question").Value = lignes
-                                rs("Reponses_Possibles").Value = colonnes
-                            Case "echelle"
-                                Dim min_ As String = ""
-                                Dim max_ As String = ""
-                                Dim colonnes As String = ""
-                                Dim lignes As String = .Item(Question.Index, i).Value
-                                For Each c As Match In dictRg(.Item(Typ_Reponse.Index, i).Value).Matches(IsNull(.Item(Structure_Reponse.Index, i).Value, ""))
-                                    If c.Groups("min").Value.Trim <> "" Then
-                                        min_ = c.Groups("min").Value.Trim
-                                        Exit For
-                                    End If
-                                Next
-                                For Each c As Match In dictRg(.Item(Typ_Reponse.Index, i).Value).Matches(IsNull(.Item(Structure_Reponse.Index, i).Value, ""))
-                                    If c.Groups("max").Value.Trim <> "" Then
-                                        max_ = c.Groups("max").Value.Trim
-                                        Exit For
-                                    End If
-                                Next
-                                If IsNumeric(min_) And IsNumeric(max_) Then
-                                    If CInt(min_) < CInt(max_) Then
-                                        For k = CInt(min_) To CInt(max_)
-                                            colonnes &= IIf(colonnes = "", "", ";") & k
-                                        Next
+                        Case "grille_cases", "grille_choix"
+                            Dim colonnes As String = ""
+                            Dim lignes As String = ""
+                            For Each c As Match In dictRg(.Item(Typ_Reponse.Index, i).Value).Matches(IsNull(.Item(Structure_Reponse.Index, i).Value, ""))
+                                If c.Groups("Col").Value.Trim <> "" Then
+                                    colonnes = c.Groups("Col").Value.Trim
+                                    Exit For
+                                End If
+                            Next
+                            For Each c As Match In dictRg(.Item(Typ_Reponse.Index, i).Value).Matches(IsNull(.Item(Structure_Reponse.Index, i).Value, ""))
+                                If c.Groups("Lig").Value.Trim <> "" Then
+                                    lignes = c.Groups("Lig").Value.Trim
+                                    Exit For
+                                End If
+                            Next
+                            Dim str() As String = lignes.Split({";"}, StringSplitOptions.RemoveEmptyEntries)
+                            lignes = ""
+                            For n = 0 To str.Length - 1
+                                If str(n).Trim <> "" Then lignes &= IIf(lignes = "", "", ";") & str(n).Trim
+                            Next
+                            str = colonnes.Split({";"}, StringSplitOptions.RemoveEmptyEntries)
+                            colonnes = ""
+                            For n = 0 To str.Length - 1
+                                If str(n).Trim <> "" Then colonnes &= IIf(colonnes = "", "", ";") & str(n).Trim
+                            Next
+                            rs("Sous_Question").Value = lignes
+                            rs("Reponses_Possibles").Value = colonnes
+                        Case "grille_libre"
+                            Dim colonnes As String = ""
+                            Dim lignes As String = ""
+                            Dim nbLig As Object = Nothing
+                            For Each c As Match In dictRg(.Item(Typ_Reponse.Index, i).Value).Matches(IsNull(.Item(Structure_Reponse.Index, i).Value, ""))
+                                If c.Groups("Col").Value.Trim <> "" Then
+                                    colonnes = c.Groups("Col").Value.Trim
+                                    Exit For
+                                End If
+                            Next
+                            Dim str As String = colonnes
+                            colonnes = ""
+                            For Each c As Match In rgx.Matches(str)
+                                If c.Value.Trim <> "" Then
+                                    If Not rgxE.IsMatch(c.Value.Trim) Then
+                                        colonnes &= IIf(colonnes = "", "", ";") & c.Value.Trim & "[T]"
+                                    Else
+                                        colonnes &= IIf(colonnes = "", "", ";") & c.Value.Trim
                                     End If
                                 End If
-                                rs("Sous_Question").Value = lignes
-                                rs("Reponses_Possibles").Value = colonnes
-                            Case Else
-                                Dim lignes As String = .Item(Question.Index, i).Value
-                                rs("Sous_Question").Value = lignes
-                                rs("Reponses_Possibles").Value = ""
-                        End Select
-                        rs.Update()
-                        rs.Close()
-                    End If
+                            Next
+                            For Each c As Match In dictRg(.Item(Typ_Reponse.Index, i).Value).Matches(IsNull(.Item(Structure_Reponse.Index, i).Value, ""))
+                                If c.Groups("Lig").Value.Trim <> "" Then
+                                    nbLig = c.Groups("Lig").Value.Trim
+                                    Exit For
+                                End If
+                            Next
+                            str = ""
+                            For k = 0 To IIf(IsNumeric(nbLig), ConvertEntier(nbLig), 1) - 1
+                                str &= IIf(str = "", "", ";") & k
+                            Next
+                            rs("Sous_Question").Value = str
+                            rs("Reponses_Possibles").Value = colonnes
+                        Case "cocher", "choix", "liste"
+                            Dim colonnes As String = IsNull(.Item(Structure_Reponse.Index, i).Value, "")
+                            Dim lignes As String = .Item(Question.Index, i).Value
+                            Dim str() As String = colonnes.Split({";"}, StringSplitOptions.RemoveEmptyEntries)
+                            colonnes = ""
+                            For n = 0 To str.Length - 1
+                                If str(n).Trim <> "" Then colonnes &= IIf(colonnes = "", "", ";") & str(n).Trim
+                            Next
+                            rs("Sous_Question").Value = lignes
+                            rs("Reponses_Possibles").Value = colonnes
+                        Case "oui_non"
+                            Dim colonnes As String = "Oui;Non"
+                            Dim lignes As String = .Item(Question.Index, i).Value
+                            rs("Sous_Question").Value = lignes
+                            rs("Reponses_Possibles").Value = colonnes
+                        Case "vrai_faux"
+                            Dim colonnes As String = "Vrai;Faux"
+                            Dim lignes As String = .Item(Question.Index, i).Value
+                            rs("Sous_Question").Value = lignes
+                            rs("Reponses_Possibles").Value = colonnes
+                        Case "echelle"
+                            Dim min_ As String = ""
+                            Dim max_ As String = ""
+                            Dim colonnes As String = ""
+                            Dim lignes As String = .Item(Question.Index, i).Value
+                            For Each c As Match In dictRg(.Item(Typ_Reponse.Index, i).Value).Matches(IsNull(.Item(Structure_Reponse.Index, i).Value, ""))
+                                If c.Groups("min").Value.Trim <> "" Then
+                                    min_ = c.Groups("min").Value.Trim
+                                    Exit For
+                                End If
+                            Next
+                            For Each c As Match In dictRg(.Item(Typ_Reponse.Index, i).Value).Matches(IsNull(.Item(Structure_Reponse.Index, i).Value, ""))
+                                If c.Groups("max").Value.Trim <> "" Then
+                                    max_ = c.Groups("max").Value.Trim
+                                    Exit For
+                                End If
+                            Next
+                            If IsNumeric(min_) And IsNumeric(max_) Then
+                                If CInt(min_) < CInt(max_) Then
+                                    For k = CInt(min_) To CInt(max_)
+                                        colonnes &= IIf(colonnes = "", "", ";") & k
+                                    Next
+                                End If
+                            End If
+                            rs("Sous_Question").Value = lignes
+                            rs("Reponses_Possibles").Value = colonnes
+                        Case Else
+                            Dim lignes As String = .Item(Question.Index, i).Value
+                            rs("Sous_Question").Value = lignes
+                            rs("Reponses_Possibles").Value = ""
+                    End Select
+                    rs.Update()
+                    rs.Close()
+                End If
             Next
         End With
         If Cod_Survey_txt.Text = "" Then
@@ -415,7 +408,12 @@ Public Class Survey
     Private Sub Grd_DataError(sender As Object, e As DataGridViewDataErrorEventArgs) Handles Grd.DataError
 
     End Sub
+    Sub Dupliquer()
+        modeDuplication = True
+        Cod_Survey_txt.Text = ""
+    End Sub
     Sub Deleting()
+        modeDuplication = False
         If Cod_Survey_txt.Text = "" Then Return
         Return
         Diviseur_delete("GPEC_Domaines_Competence", "Domaines_Competence", "Domaines_Competence", Cod_Survey_txt, Me, True)
@@ -461,6 +459,7 @@ Public Class Survey
             With f
                 .otxt = Grd.Item(Func_Scoring.Index, e.RowIndex)
                 .formulafunction = IsNull(Grd.Item(Func_Scoring.Index, e.RowIndex).Value, "")
+                .TypReponse = IsNull(Grd.Item(Typ_Reponse.Index, e.RowIndex).Value, "")
                 .TypRetour = "float"
                 .ShowDialog()
             End With
@@ -470,7 +469,13 @@ Public Class Survey
                 .otxt = Grd.Item(Erreur_Si.Index, e.RowIndex)
                 .formulafunction = IsNull(Grd.Item(Erreur_Si.Index, e.RowIndex).Value, "")
                 .TypRetour = "bit"
-                If f.Function_Trv.Nodes("RSP").Nodes.ContainsKey("CurrentAnswer") Then f.Function_Trv.Nodes("RSP").Nodes.RemoveByKey("CurrentAnswer")
+                .TypReponse = IsNull(Grd.Item(Typ_Reponse.Index, e.RowIndex).Value, "")
+                If f.Function_Trv.Nodes("RSP").Nodes.ContainsKey("CurrentAnswer") Then
+                    f.Function_Trv.Nodes("RSP").Nodes.RemoveByKey("CurrentAnswer")
+                End If
+                If f.Function_Trv.Nodes("RSP").Nodes.ContainsKey("Qst") Then
+                    f.Function_Trv.Nodes("RSP").Nodes.RemoveByKey("Qst")
+                End If
                 Dim nd As New TreeNode
                 nd.Name = $"Q[{e.RowIndex + 1}]"
                 nd.Text = $"La réponse"
@@ -484,7 +489,12 @@ Public Class Survey
                 .otxt = Grd.Item(Obligatoire_Si.Index, e.RowIndex)
                 .formulafunction = IsNull(Grd.Item(Obligatoire_Si.Index, e.RowIndex).Value, "")
                 .TypRetour = "bit"
-                If f.Function_Trv.Nodes("RSP").Nodes.ContainsKey("CurrentAnswer") Then f.Function_Trv.Nodes("RSP").Nodes.RemoveByKey("CurrentAnswer")
+                If f.Function_Trv.Nodes("RSP").Nodes.ContainsKey("CurrentAnswer") Then
+                    f.Function_Trv.Nodes("RSP").Nodes.RemoveByKey("CurrentAnswer")
+                End If
+                If f.Function_Trv.Nodes("RSP").Nodes.ContainsKey("Qst") Then
+                    f.Function_Trv.Nodes("RSP").Nodes.RemoveByKey("Qst")
+                End If
                 With Grd
                     For i = 0 To .RowCount - 2
                         If i <> e.RowIndex Then
@@ -530,6 +540,7 @@ Public Class Survey
         Max_Score.Visible = AvecNote_chk.Checked
         Mode_Scoring.Visible = AvecNote_chk.Checked
         Func_Scoring.Visible = AvecNote_chk.Checked
+        Mode_Scoring.Visible = AvecNote_chk.Checked
     End Sub
     Private Function ModeScoringTable(modeScoresPossibles As String()) As DataTable
         Dim rows() As DataRow = modeScoring.Select($"Valeur in ('{String.Join("', '", modeScoresPossibles)}')")
@@ -548,6 +559,16 @@ Public Class Survey
         cell.ValueMember = "Valeur"     ' Idem
         Dim src As DataTable = ModeScoringTable(modeScoresPossibles)
         cell.DataSource = src
+
+        Dim agregationModes As String() = IsNull(Tbl_TypReponse.Select($"Typ_Reponse='{typ}'")(0)("Agregation_Scoring"), "").Split(";")
+        Dim g_cell As DataGridViewComboBoxCell = TryCast(Grd.Rows(lig).Cells("Agregation_Scoring"), DataGridViewComboBoxCell)
+        If g_cell Is Nothing Then Exit Sub
+        'si la datasource actuelle est la même que celle à appliquer quitter sans rien faire
+        If agregationModes.Contains(g_cell.Value) Then Return
+        g_cell.DisplayMember = "Membre"   ' Doit correspondre à la colonne de votre DataTable
+        g_cell.ValueMember = "Valeur"     ' Idem
+        Dim src0 As DataTable = ModeScoringTable(agregationModes)
+        g_cell.DataSource = src0
     End Sub
     Private Sub Grd_CellEnter(sender As Object, e As DataGridViewCellEventArgs) Handles Grd.CellEnter
         If e.RowIndex < 0 Or e.RowIndex >= Grd.RowCount - 1 Then Exit Sub

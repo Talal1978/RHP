@@ -9,6 +9,7 @@ Public Class Zoom
     Dim MenuTitre As String = ""
     Dim oSize As New Size
     Dim oLoc As New Point
+    Friend multiSelect As Boolean = False
     Private Sub Zoom_KeyPress(ByVal sender As Object, ByVal e As System.Windows.Forms.KeyPressEventArgs) Handles Me.KeyPress
         If Zoom_Grd.ColumnCount = 0 Then Return
         If Zoom_Grd.SelectedCells.Count > 0 Then ColumnSearch = Zoom_Grd.SelectedCells(0).ColumnIndex
@@ -42,6 +43,8 @@ Public Class Zoom
         End With
     End Sub
     Private Sub Zoom_Load(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles MyBase.Load
+        Save_pb.Visible = multiSelect
+        SelectAll_pb.Visible = multiSelect
         With Zoom_Grd
             .SelectionMode = DataGridViewSelectionMode.CellSelect
             Dim minWidth As Integer = 100
@@ -104,7 +107,19 @@ Public Class Zoom
                 Zoom_Where1 &= IIf(idSocWhere = "", "", $" and ({idSocWhere})")
             End If
             ' Zoom_Tbl = FilterRoleWhere(Zoom_Tbl)
-            Cod_Sql = "select distinct " & Zoom_Cod & " as Code," & Zoom_Lib & " FROM " & Zoom_Tbl & " where " & Zoom_Where1 & IIf(Zoom_Order <> "", " Order by " & Zoom_Order, "") & " " & ZoomSens
+            Dim _selected As String = ""
+            If multiSelect Then
+                Select Case Zoom_Object.GetType.Name
+                    Case "TextBox", "ud_TextBox", "LinkLabel"
+                        _selected = Zoom_Object.Text
+                    Case "ComboBox", "ud_ComboBox"
+                        _selected = Zoom_Object.Selectedvalue
+                    Case "DataGridViewTextBoxCell", "DataGridViewComboBoxCell"
+                        _selected = Zoom_Object.value
+                End Select
+            End If
+
+            Cod_Sql = $"select distinct {If(multiSelect, $"convert(bit,case when {Zoom_Cod} in ('{String.Join("','", _selected.Split(";"))}') then 1 else 0 end) as ' ', ", "")} " & Zoom_Cod & " as Code," & Zoom_Lib & " FROM " & Zoom_Tbl & " where " & Zoom_Where1 & IIf(Zoom_Order <> "", " Order by " & If(IsNumeric(Zoom_Order) And multiSelect, CDbl(Zoom_Order) + 1, Zoom_Order), "") & " " & ZoomSens
             '  If NumZoom = "MS067" Then MsgBox(Cod_Sql)
             If IsNull(Zoom_Parameters, "") <> "" Then
                 Cod_Sql = String.Format(Cod_Sql, Zoom_Parameters.Split(","))
@@ -144,6 +159,7 @@ Public Class Zoom
                 Next
 
                 With Zoom_Grd
+                    If multiSelect Then TblZoomP.Columns(0).ReadOnly = False
                     .dataSourceOrigine = TblZoomP
                     .setFilter(oIndx)
                 End With
@@ -185,27 +201,63 @@ Public Class Zoom
     End Sub
 
     Private Sub Zoom_Grd_CellDoubleClick(ByVal sender As Object, ByVal e As System.Windows.Forms.DataGridViewCellEventArgs) Handles Zoom_Grd.CellDoubleClick
-        If e.RowIndex >= 0 Then SELECTION_GRD()
+        If e.RowIndex >= 0 Then
+            If Not multiSelect Then
+                SELECTION_GRD()
+            End If
+        End If
     End Sub
-
+    Private Sub Zoom_Grd_CellClick(sender As Object, e As DataGridViewCellEventArgs) Handles Zoom_Grd.CellClick
+        If e.RowIndex >= 0 Then
+            If multiSelect Then
+                If e.ColumnIndex = 0 Then
+                    If Zoom_Grd.DataSource Is Nothing Then Return
+                    With Zoom_Grd
+                        .Item(e.ColumnIndex, e.RowIndex).Value = Not CBool(.Item(e.ColumnIndex, e.RowIndex).Value)
+                    End With
+                End If
+            End If
+        End If
+    End Sub
     Sub SELECTION_GRD()
         Try
             With Zoom_Grd
-                If .SelectedCells.Count = 0 Then Exit Sub
-                Dim oRow As Integer = .SelectedCells(0).RowIndex
-                If oRow < 0 Then Exit Sub
-                Select Case Zoom_Object.GetType.Name
-                    Case "TextBox", "ud_TextBox"
-                        Zoom_Object.Text = ""
-                        Zoom_Object.Text = .Item(0, oRow).Value
-                    Case "LinkLabel"
-                        Zoom_Object.Text = ""
-                        Zoom_Object.Text = .Item(0, oRow).Value
-                    Case "ComboBox", "ud_ComboBox"
-                        Zoom_Object.Selectedvalue = .Item(0, oRow).Value
-                    Case "DataGridViewTextBoxCell", "DataGridViewComboBoxCell"
-                        Zoom_Object.value = .Item(0, oRow).Value
-                End Select
+                If Not multiSelect Then
+                    If .SelectedCells.Count = 0 Then Exit Sub
+                    Dim oRow As Integer = .SelectedCells(0).RowIndex
+                    If oRow < 0 Then Exit Sub
+                    Select Case Zoom_Object.GetType.Name
+                        Case "TextBox", "ud_TextBox"
+                            Zoom_Object.Text = ""
+                            Zoom_Object.Text = .Item(0, oRow).Value
+                        Case "LinkLabel"
+                            Zoom_Object.Text = ""
+                            Zoom_Object.Text = .Item(0, oRow).Value
+                        Case "ComboBox", "ud_ComboBox"
+                            Zoom_Object.Selectedvalue = .Item(0, oRow).Value
+                        Case "DataGridViewTextBoxCell", "DataGridViewComboBoxCell"
+                            Zoom_Object.value = .Item(0, oRow).Value
+                    End Select
+                Else
+                    Dim _selected As String = ""
+                    For i = 0 To .RowCount - 1
+                        If CBool(.Item(0, i).Value) Then
+                            _selected &= If(_selected = "", "", ";") & .Item(1, i).Value
+                        End If
+                    Next
+                    Select Case Zoom_Object.GetType.Name
+                        Case "TextBox", "ud_TextBox"
+                            Zoom_Object.Text = ""
+                            Zoom_Object.Text = _selected
+                        Case "LinkLabel"
+                            Zoom_Object.Text = ""
+                            Zoom_Object.Text = _selected
+                        Case "ComboBox", "ud_ComboBox"
+                            Zoom_Object.Selectedvalue = _selected
+                        Case "DataGridViewTextBoxCell", "DataGridViewComboBoxCell"
+                            Zoom_Object.value = _selected
+                    End Select
+                End If
                 Me.Close()
             End With
         Catch ex As Exception
@@ -245,4 +297,19 @@ Public Class Zoom
     Private Sub Close_pb_Load(sender As Object, e As EventArgs) Handles Close_pb.Click
         Me.Close()
     End Sub
+
+    Private Sub Save_pb_Click(sender As Object, e As EventArgs) Handles Save_pb.Click
+        SELECTION_GRD()
+    End Sub
+
+    Private Sub SelectAll_pb_Click(sender As Object, e As EventArgs) Handles SelectAll_pb.Click
+        If Not multiSelect Then Return
+        With Zoom_Grd
+            For i = 0 To .RowCount - 1
+                .Item(0, i).Value = Not CBool(.Item(0, i).Value)
+            Next
+        End With
+    End Sub
+
+
 End Class

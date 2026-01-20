@@ -2,7 +2,7 @@
 Public Class Zoom_Survey_Editeur_Formule
     Friend myVBS As New vsEngine
     Friend xwhere As String = ""
-    Friend CodRubrique As String = ""
+    Friend TypReponse As String = ""
     Friend TypRetour As String = ""
     Friend otxt As New DataGridViewTextBoxCell
     Friend formulafunction As String = ""
@@ -55,10 +55,6 @@ Public Class Zoom_Survey_Editeur_Formule
         End If
     End Sub
     Private Sub Function_Trv_NodeMouseDoubleClick(ByVal sender As Object, ByVal e As System.Windows.Forms.TreeNodeMouseClickEventArgs) Handles Function_Trv.NodeMouseDoubleClick
-        If CodRubrique = IsNull(Function_Trv.SelectedNode.Tag, "") Then
-            MessageBoxRHP(691)
-            Exit Sub
-        End If
         With Formule_Function_Text
             .Select()
             Dim SelPos As Integer = Formule_Function_Text.SelectionStart
@@ -96,55 +92,40 @@ Public Class Zoom_Survey_Editeur_Formule
             Dim strFunction As String = Formule_Function_Text.Text
             Dim output As String = rx_survey.Replace(strFunction, Function(m)
                                                                       Dim N As String = m.Groups("N").Value
-                                                                      If IsNumeric(N) Then
-                                                                          Dim typRep As String = IsNull(otxt.DataGridView.Item("Typ_Reponse", CInt(N) - 1).Value, "alpha")
-                                                                          Dim vari As String = ""
-                                                                          Dim dim_vari As String = ""
-                                                                          If m.Groups("C").Success Then
-                                                                              Dim C As String = m.Groups("C").Value
-                                                                              If IsNumeric(C) Then
-                                                                                  If m.Groups("L").Success Then
-                                                                                      Dim L As String = m.Groups("L").Value
-                                                                                      If IsNumeric(L) Then
-                                                                                          vari = $"Qst6yrbi_{N}_{L}_{C}"
-                                                                                      End If
-                                                                                  Else
-                                                                                      vari = $"Qst6yrbi_{N}_{C}"
-                                                                                  End If
-                                                                              End If
-                                                                          Else
-                                                                              vari = $"Qst6yrbi_{N}"
-                                                                          End If
-                                                                          If vari <> "" Then
-                                                                              Select Case typRep
-                                                                                  Case "cocher", "grille_cases", "grille_cases_lig_libre", "grille_choix", "grille_libre", "entier", "echelle", "choix", "numerique", "oui_non", "vrai_faux"
-                                                                                      dim_vari = vari & " = " & 0
-                                                                                  Case "date", "dateTime"
-                                                                                      dim_vari = vari & " = " & "'01/01/2025'"
-                                                                                  Case "heure"
-                                                                                      dim_vari = vari & " = " & "'00:01'"
-                                                                                  Case Else
-                                                                                      dim_vari = vari & " = ''"
-                                                                              End Select
-                                                                          End If
-                                                                          dim_vari = TraitementCaractere(dim_vari)
-                                                                          myVBS.ExecuteStatement(dim_vari)
-                                                                          Return vari
-                                                                      Else
-                                                                          Return m.Value
+                                                                      If Not IsNumeric(N) Then
+                                                                          N = 1
                                                                       End If
+                                                                      Dim vari As String = ""
+                                                                      Dim dim_vari As String = ""
+                                                                      Dim L As String = "1"
+                                                                      Dim C As String = "1"
+                                                                      If m.Groups("C").Success Then
+                                                                          C = m.Groups("C").Value
+                                                                          If IsNumeric(C) Then
+                                                                              If m.Groups("L").Success Then
+                                                                                  L = m.Groups("L").Value
+                                                                                  If Not IsNumeric(L) Then L = 1
+                                                                              End If
+                                                                          End If
+                                                                      End If
+                                                                      vari = $"Qst6yrbi_{N}_{C}_{L}"
+                                                                      If vari <> "" Then
+                                                                          Select Case TypReponse
+                                                                              Case "grille_libre", "cocher", "grille_cases", "grille_choix", "entier", "echelle", "choix", "numerique", "oui_non", "vrai_faux"
+                                                                                  dim_vari = vari & " = " & 0
+                                                                              Case "date", "dateTime"
+                                                                                  dim_vari = vari & " = " & "'01/01/2025'"
+                                                                              Case "heure"
+                                                                                  dim_vari = vari & " = " & "'00:01'"
+                                                                              Case Else
+                                                                                  dim_vari = vari & " = ''"
+                                                                          End Select
+                                                                      End If
+                                                                      dim_vari = TraitementCaractere(dim_vari)
+                                                                      myVBS.ExecuteStatement(dim_vari)
+                                                                      Return vari
                                                                   End Function)
             strFunction = TraitementCaractere(output)
-            'Dim f As New Zoom_RH_Saisie_EV
-            'With f
-            '    .myVBS = myVBS
-            '    .silentMode = Societe.LeMatricule <> ""
-            '    If .silentMode Then
-            '        .Save_D_Click(Nothing, Nothing)
-            '    Else
-            '        .ShowDialog()
-            '    End If
-            'End With
             Select Case TypRetour
                 Case "bit"
                     Resultat.Text = CBool(myVBS.Eval(strFunction))

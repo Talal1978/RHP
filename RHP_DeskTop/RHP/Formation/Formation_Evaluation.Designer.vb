@@ -74,10 +74,10 @@ Partial Class Formation_Evaluation
         Me.pnl_Content.AutoScroll = True
         Me.pnl_Content.BackColor = System.Drawing.Color.FromArgb(CType(CType(250, Byte), Integer), CType(CType(250, Byte), Integer), CType(CType(250, Byte), Integer))
         Me.pnl_Content.Dock = System.Windows.Forms.DockStyle.Fill
-        Me.pnl_Content.Location = New System.Drawing.Point(36, 318)
-        Me.pnl_Content.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
+        Me.pnl_Content.Location = New System.Drawing.Point(36, 358)
+        Me.pnl_Content.Margin = New System.Windows.Forms.Padding(4)
         Me.pnl_Content.Name = "pnl_Content"
-        Me.pnl_Content.Size = New System.Drawing.Size(1119, 476)
+        Me.pnl_Content.Size = New System.Drawing.Size(1119, 436)
         Me.pnl_Content.TabIndex = 3
         '
         'Pnl_Left
@@ -85,7 +85,7 @@ Partial Class Formation_Evaluation
         Me.Pnl_Left.BackColor = System.Drawing.Color.FromArgb(CType(CType(250, Byte), Integer), CType(CType(250, Byte), Integer), CType(CType(250, Byte), Integer))
         Me.Pnl_Left.Dock = System.Windows.Forms.DockStyle.Left
         Me.Pnl_Left.Location = New System.Drawing.Point(2, 40)
-        Me.Pnl_Left.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
+        Me.Pnl_Left.Margin = New System.Windows.Forms.Padding(4)
         Me.Pnl_Left.Name = "Pnl_Left"
         Me.Pnl_Left.Size = New System.Drawing.Size(34, 766)
         Me.Pnl_Left.TabIndex = 0
@@ -95,7 +95,7 @@ Partial Class Formation_Evaluation
         Me.pnl_Right.BackColor = System.Drawing.Color.FromArgb(CType(CType(250, Byte), Integer), CType(CType(250, Byte), Integer), CType(CType(250, Byte), Integer))
         Me.pnl_Right.Dock = System.Windows.Forms.DockStyle.Right
         Me.pnl_Right.Location = New System.Drawing.Point(1155, 196)
-        Me.pnl_Right.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
+        Me.pnl_Right.Margin = New System.Windows.Forms.Padding(4)
         Me.pnl_Right.Name = "pnl_Right"
         Me.pnl_Right.Size = New System.Drawing.Size(34, 610)
         Me.pnl_Right.TabIndex = 4
@@ -106,8 +106,8 @@ Partial Class Formation_Evaluation
         Me.Preambule_rtb.BorderStyle = System.Windows.Forms.BorderStyle.None
         Me.Preambule_rtb.Dock = System.Windows.Forms.DockStyle.Top
         Me.Preambule_rtb.Enabled = False
-        Me.Preambule_rtb.Location = New System.Drawing.Point(36, 206)
-        Me.Preambule_rtb.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
+        Me.Preambule_rtb.Location = New System.Drawing.Point(36, 246)
+        Me.Preambule_rtb.Margin = New System.Windows.Forms.Padding(4)
         Me.Preambule_rtb.Name = "Preambule_rtb"
         Me.Preambule_rtb.ReadOnly = True
         Me.Preambule_rtb.Size = New System.Drawing.Size(1119, 112)
@@ -121,7 +121,7 @@ Partial Class Formation_Evaluation
         Me.pnl_Top.Controls.Add(Me.eval_tblpnl)
         Me.pnl_Top.Dock = System.Windows.Forms.DockStyle.Top
         Me.pnl_Top.Location = New System.Drawing.Point(36, 40)
-        Me.pnl_Top.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
+        Me.pnl_Top.Margin = New System.Windows.Forms.Padding(4)
         Me.pnl_Top.Name = "pnl_Top"
         Me.pnl_Top.Size = New System.Drawing.Size(1153, 156)
         Me.pnl_Top.TabIndex = 5
@@ -460,7 +460,7 @@ Partial Class Formation_Evaluation
         Me.Pnl_Bottom.BackColor = System.Drawing.Color.FromArgb(CType(CType(250, Byte), Integer), CType(CType(250, Byte), Integer), CType(CType(250, Byte), Integer))
         Me.Pnl_Bottom.Dock = System.Windows.Forms.DockStyle.Bottom
         Me.Pnl_Bottom.Location = New System.Drawing.Point(36, 794)
-        Me.Pnl_Bottom.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
+        Me.Pnl_Bottom.Margin = New System.Windows.Forms.Padding(4)
         Me.Pnl_Bottom.Name = "Pnl_Bottom"
         Me.Pnl_Bottom.Size = New System.Drawing.Size(1119, 12)
         Me.Pnl_Bottom.TabIndex = 6
@@ -473,7 +473,7 @@ Partial Class Formation_Evaluation
         Me.Lib_Survey_lbl.Location = New System.Drawing.Point(36, 196)
         Me.Lib_Survey_lbl.Margin = New System.Windows.Forms.Padding(4, 0, 4, 0)
         Me.Lib_Survey_lbl.Name = "Lib_Survey_lbl"
-        Me.Lib_Survey_lbl.Size = New System.Drawing.Size(1119, 10)
+        Me.Lib_Survey_lbl.Size = New System.Drawing.Size(1119, 50)
         Me.Lib_Survey_lbl.TabIndex = 0
         Me.Lib_Survey_lbl.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
         '
@@ -494,7 +494,7 @@ Partial Class Formation_Evaluation
         Me.ent_pnl.Controls.Add(Me.New_pb, 0, 0)
         Me.ent_pnl.Dock = System.Windows.Forms.DockStyle.Top
         Me.ent_pnl.Location = New System.Drawing.Point(2, 2)
-        Me.ent_pnl.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
+        Me.ent_pnl.Margin = New System.Windows.Forms.Padding(4)
         Me.ent_pnl.Name = "ent_pnl"
         Me.ent_pnl.RowCount = 1
         Me.ent_pnl.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100.0!))
@@ -520,7 +520,7 @@ Partial Class Formation_Evaluation
         Me.Print_pb.Image = Global.RHP.My.Resources.Resources.btn_printer
         Me.Print_pb.InitialImage = Nothing
         Me.Print_pb.Location = New System.Drawing.Point(84, 4)
-        Me.Print_pb.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
+        Me.Print_pb.Margin = New System.Windows.Forms.Padding(4)
         Me.Print_pb.Name = "Print_pb"
         Me.Print_pb.Size = New System.Drawing.Size(32, 30)
         Me.Print_pb.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom
@@ -535,7 +535,7 @@ Partial Class Formation_Evaluation
         Me.Cloture_pb.Image = Global.RHP.My.Resources.Resources.btn_unlock
         Me.Cloture_pb.InitialImage = Nothing
         Me.Cloture_pb.Location = New System.Drawing.Point(124, 4)
-        Me.Cloture_pb.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
+        Me.Cloture_pb.Margin = New System.Windows.Forms.Padding(4)
         Me.Cloture_pb.Name = "Cloture_pb"
         Me.Cloture_pb.Size = New System.Drawing.Size(32, 30)
         Me.Cloture_pb.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom
@@ -550,7 +550,7 @@ Partial Class Formation_Evaluation
         Me.Save_pb.Image = Global.RHP.My.Resources.Resources.btn_save
         Me.Save_pb.InitialImage = Nothing
         Me.Save_pb.Location = New System.Drawing.Point(44, 4)
-        Me.Save_pb.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
+        Me.Save_pb.Margin = New System.Windows.Forms.Padding(4)
         Me.Save_pb.Name = "Save_pb"
         Me.Save_pb.Size = New System.Drawing.Size(32, 30)
         Me.Save_pb.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom
@@ -564,7 +564,7 @@ Partial Class Formation_Evaluation
         Me.New_pb.Image = Global.RHP.My.Resources.Resources.btn_add
         Me.New_pb.InitialImage = Nothing
         Me.New_pb.Location = New System.Drawing.Point(4, 4)
-        Me.New_pb.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
+        Me.New_pb.Margin = New System.Windows.Forms.Padding(4)
         Me.New_pb.Name = "New_pb"
         Me.New_pb.Size = New System.Drawing.Size(32, 30)
         Me.New_pb.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom
@@ -586,7 +586,7 @@ Partial Class Formation_Evaluation
         Me.Controls.Add(Me.Pnl_Left)
         Me.Controls.Add(Me.ent_pnl)
         Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None
-        Me.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
+        Me.Margin = New System.Windows.Forms.Padding(4)
         Me.Name = "Formation_Evaluation"
         Me.Padding = New System.Windows.Forms.Padding(2)
         Me.Tag = "ECR"

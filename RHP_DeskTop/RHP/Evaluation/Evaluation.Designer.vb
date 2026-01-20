@@ -631,6 +631,7 @@ Partial Class Evaluation
         Me.Save_pb.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom
         Me.Save_pb.TabIndex = 11
         Me.Save_pb.TabStop = False
+        Me.Save_pb.Tag = "SC"
         '
         'Valide_pb
         '
@@ -645,6 +646,7 @@ Partial Class Evaluation
         Me.Valide_pb.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom
         Me.Valide_pb.TabIndex = 11
         Me.Valide_pb.TabStop = False
+        Me.Valide_pb.Tag = "SC"
         '
         'Print_pb
         '
@@ -659,6 +661,7 @@ Partial Class Evaluation
         Me.Print_pb.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage
         Me.Print_pb.TabIndex = 11
         Me.Print_pb.TabStop = False
+        Me.Print_pb.Tag = ""
         '
         'lbl_lbl
         '

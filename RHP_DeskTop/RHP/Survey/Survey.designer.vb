@@ -53,6 +53,7 @@ Partial Class Survey
         Me.Regex = New System.Windows.Forms.DataGridViewTextBoxColumn()
         Me.Structure_Reponse = New System.Windows.Forms.DataGridViewTextBoxColumn()
         Me.Mode_Scoring = New System.Windows.Forms.DataGridViewComboBoxColumn()
+        Me.Agregation_Scoring = New System.Windows.Forms.DataGridViewComboBoxColumn()
         Me.Max_Score = New DevComponents.DotNetBar.Controls.DataGridViewDoubleInputColumn()
         Me.Func_Scoring = New System.Windows.Forms.DataGridViewTextBoxColumn()
         Me.Coef = New DevComponents.DotNetBar.Controls.DataGridViewDoubleInputColumn()
@@ -317,7 +318,7 @@ Partial Class Survey
         DataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.[True]
         Me.Grd.ColumnHeadersDefaultCellStyle = DataGridViewCellStyle1
         Me.Grd.ColumnHeadersHeight = 30
-        Me.Grd.Columns.AddRange(New System.Windows.Forms.DataGridViewColumn() {Me.Rang, Me.Question, Me.Typ_Reponse, Me.Regex, Me.Structure_Reponse, Me.Mode_Scoring, Me.Max_Score, Me.Func_Scoring, Me.Coef, Me.Obligatoire, Me.Obligatoire_Si, Me.Erreur_Si, Me.Erreur_Msg, Me.RowId})
+        Me.Grd.Columns.AddRange(New System.Windows.Forms.DataGridViewColumn() {Me.Rang, Me.Question, Me.Typ_Reponse, Me.Regex, Me.Structure_Reponse, Me.Mode_Scoring, Me.Agregation_Scoring, Me.Max_Score, Me.Func_Scoring, Me.Coef, Me.Obligatoire, Me.Obligatoire_Si, Me.Erreur_Si, Me.Erreur_Msg, Me.RowId})
         Me.Grd.ContextMenuStrip = Me.CntScripts
         DataGridViewCellStyle6.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft
         DataGridViewCellStyle6.BackColor = System.Drawing.SystemColors.Window
@@ -399,6 +400,12 @@ Partial Class Survey
         Me.Mode_Scoring.MinimumWidth = 6
         Me.Mode_Scoring.Name = "Mode_Scoring"
         Me.Mode_Scoring.Width = 117
+        '
+        'Agregation_Scoring
+        '
+        Me.Agregation_Scoring.HeaderText = "Agrégation"
+        Me.Agregation_Scoring.MinimumWidth = 6
+        Me.Agregation_Scoring.Name = "Agregation_Scoring"
         '
         'Max_Score
         '
@@ -525,6 +532,7 @@ Partial Class Survey
     Friend WithEvents Regex As DataGridViewTextBoxColumn
     Friend WithEvents Structure_Reponse As DataGridViewTextBoxColumn
     Friend WithEvents Mode_Scoring As DataGridViewComboBoxColumn
+    Friend WithEvents Agregation_Scoring As DataGridViewComboBoxColumn
     Friend WithEvents Max_Score As DevComponents.DotNetBar.Controls.DataGridViewDoubleInputColumn
     Friend WithEvents Func_Scoring As DataGridViewTextBoxColumn
     Friend WithEvents Coef As DevComponents.DotNetBar.Controls.DataGridViewDoubleInputColumn
