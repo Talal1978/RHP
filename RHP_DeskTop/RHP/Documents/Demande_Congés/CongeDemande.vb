@@ -306,7 +306,7 @@ Public Class CongeDemande
             Dim NumConge As String = ent.Num_Conge
             If NumConge = "" Then
                 Dim Cp As New ADODB.Recordset
-                Cp = CnExecuting("select isnull(max(convert(int,right(Num_Conge,6))),0) from RH_Conge_Suivi where id_Societe=" & Societe.id_Societe & " and year(Dat_Crea)=" & Now.Year)
+                Cp = CnExecuting("select isnull(max(convert(int,right(Num_Conge,6))),0) from RH_Conge_Suivi where id_Societe=" & Societe.id_Societe & " and year(Dat_Deb_Conge)=" & ent.Dat_Deb_Conge.Year)
                 If Not Cp.EOF Then
                     NumConge = "C" & Societe.id_Societe & "-" & CDate(ent.Dat_Deb_Conge).Year & Droite("000000" & CInt(Cp.Fields(0).Value + 1), 6)
                 Else
@@ -368,6 +368,7 @@ Public Class CongeDemande
             End With
             rs.Close()
             If ent.Num_Conge = "" Then ent.Num_Conge = NumConge
+            CnExecuting("exec Sys_Conge_MajConso '" & ent.Matricule & "'," & Societe.id_Societe)
             Return New savingResult With {.message = "Enregistré avec succès", .result = True}
         Catch ex As Exception
             Return New savingResult With {.message = ex.Message, .result = False}
@@ -376,34 +377,43 @@ Public Class CongeDemande
     Function Calcul() As Boolean
         If Not setCalcul Then Return True
         If ent.Statut <> "" Then Return True
+
         lig.Clear()
         ent.Duree_Globale = 0
         ent.Repos_Hebdomadaire = 0
         ent.Jours_Feries = 0
         ent.Duree_Conge = 0
+
         If Not IsNumeric(ent.JourPaie) Then Return False
         If Not EstDate(ent.Dat_Deb_Conge.ToShortDateString()) Then Return False
         If Not EstDate(ent.Dat_Fin_Conge.ToShortDateString()) Then Return False
-        If Not EstDate(ent.JourPaie & "/" & Month(ent.Dat_Deb_Conge.ToShortDateString()) & "/" & Year(ent.Dat_Deb_Conge.ToShortDateString())) Then Return False
+        If Not EstDate(ent.JourPaie & "/" & Month(ent.Dat_Deb_Conge) & "/" & Year(ent.Dat_Deb_Conge)) Then Return False
+
         Dim DureeGlobal As Double = 0
         Dim DureeDetail As Double = 0
+
         If ent.Dat_Deb_Conge > ent.Dat_Fin_Conge Then
             Return False
         End If
+
         DureeGlobal = DateDiff(DateInterval.Day, ent.Dat_Deb_Conge, ent.Dat_Fin_Conge) + 1
         If ent.Dat_Deb_am_pm = "pm" Then DureeGlobal -= 0.5
         If ent.Dat_Fin_am_pm = "am" Then DureeGlobal -= 0.5
+
         Dim JoursOuvres() As String = Societe.JourOuvrables.Split({";"}, StringSplitOptions.RemoveEmptyEntries)
         Dim nbrp, nbfr As Integer
-        Dim oDate As New Date
-        Dim TblJourFeries As DataTable = DATA_READER_GRD("select * from dbo.Sys_JourFeries ('" & ent.Dat_Deb_Conge.ToShortDateString() & "' , " & Societe.id_Societe & ")")
-        Dim DatFinPaie As Date = ent.Dat_Deb_Conge.AddMonths(1).AddDays(ent.JourPaie - ent.Dat_Deb_Conge.Day) 'CDate(ent.JourPaie & "/" & Month(ent.Dat_Deb_Conge.ToShortDateString()) + IIf(ent.JourPaie = "1", 1, 0) & "/" & Year(ent.Dat_Deb_Conge.ToShortDateString()))
+        Dim oDate As Date
+
+        ' CORRECTION 1: Format de date ISO pour la requête SQL
+        Dim TblJourFeries As DataTable = DATA_READER_GRD("SELECT * FROM dbo.Sys_JourFeries ('" & ent.Dat_Deb_Conge.ToString("dd/MM/yyyy") & "', " & Societe.id_Societe & ")")
+
+        Dim DatFinPaie As Date = ent.Dat_Deb_Conge.AddMonths(1).AddDays(ent.JourPaie - ent.Dat_Deb_Conge.Day)
         DatFinPaie = DateAdd(DateInterval.Day, -1, DatFinPaie)
         Dim DatDebPaie As Date = ent.Dat_Deb_Conge
         Dim k As Integer = 0
+
         With lig
             Do While DatFinPaie >= DatDebPaie And DatFinPaie < ent.Dat_Fin_Conge
-                'objectif de cette boucle est de traiter les dates s'étalant sur des périodes couvrant différentes période
                 If DatDebPaie = ent.Dat_Deb_Conge And ent.Dat_Deb_am_pm = "pm" Then
                     .Add(New ligDemande With {.Dat_Deb = DatDebPaie, .Dat_Fin = DatFinPaie, .Duree_Globale = DateDiff(DateInterval.Day, DatDebPaie, DatFinPaie) + 0.5, .Repos_Hebdomadaire = 0, .Jours_Feries = 0, .Duree_Conge = 0})
                 Else
@@ -415,29 +425,49 @@ Public Class CongeDemande
                 k += 1
             Loop
             .Add(New ligDemande With {.Dat_Deb = DatDebPaie, .Dat_Fin = ent.Dat_Fin_Conge, .Duree_Globale = DureeGlobal - DureeDetail, .Repos_Hebdomadaire = 0, .Jours_Feries = 0, .Duree_Conge = 0})
+
             nbrp = 0
             nbfr = 0
+
             For i = 0 To .Count - 1
                 Dim lng As ligDemande = lig(i)
                 oDate = lng.Dat_Deb
-                Do Until oDate = lng.Dat_Fin
-                    'Calcul du nombre de jours de repos
+
+                ' CORRECTION 2: <= pour inclure le dernier jour
+                Do While oDate <= lng.Dat_Fin
+                    Dim estJourRepos As Boolean = False
+                    Dim estJourFerie As Boolean = False
+
+                    ' Calcul du nombre de jours de repos
                     If JoursOuvres.Length = 7 Then
-                        If CInt(JoursOuvres(IIf(oDate.DayOfWeek = 0, 7, oDate.DayOfWeek) - 1)) = 0 Then
-                            lng.Repos_Hebdomadaire += 1
-                            nbrp += 1
+                        ' CORRECTION 3: Mapping correct DayOfWeek (Dimanche=0) vers index tableau (Lundi=0)
+                        Dim indexJour As Integer = If(oDate.DayOfWeek = DayOfWeek.Sunday, 6, CInt(oDate.DayOfWeek) - 1)
+                        If CInt(JoursOuvres(indexJour)) = 0 Then
+                            estJourRepos = True
                         End If
                     End If
-                    'Calcul du nombre de jours fériés
-                    If TblJourFeries.Select("'" & oDate & "'>=[DatDeb] and '" & oDate & "'<=[DatFin]").Length > 0 Then
+
+                    ' CORRECTION 4: Format de date explicite pour le Select DataTable
+                    Dim sDate As String = oDate.ToString("dd/MM/yyyy")
+                    If TblJourFeries.Select("'" & sDate & "' >= DatDeb AND '" & sDate & "' <= DatFin").Length > 0 Then
+                        estJourFerie = True
+                    End If
+
+                    ' CORRECTION 5: Éviter le double comptage (férié qui tombe un weekend)
+                    If estJourRepos Then
+                        lng.Repos_Hebdomadaire += 1
+                        nbrp += 1
+                    ElseIf estJourFerie Then
                         lng.Jours_Feries += 1
                         nbfr += 1
                     End If
+
                     oDate = oDate.AddDays(1)
                 Loop
-                lng.Duree_Conge = Math.Max(0, lng.Duree_Globale - lng.Jours_Feries - lng.Repos_Hebdomadaire)
 
+                lng.Duree_Conge = Math.Max(0, lng.Duree_Globale - lng.Jours_Feries - lng.Repos_Hebdomadaire)
             Next
+
             ent.Duree_Globale = DureeGlobal
 
             If Tbl_RH_Conge_Type.Rows.Count > 0 Then
@@ -456,6 +486,7 @@ Public Class CongeDemande
                 ent.Duree_Conge = 0
             End If
         End With
+
         Return True
     End Function
 End Class
