@@ -2451,6 +2451,7 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Données de base\Param_Periode_Paie.resx">
       <DependentUpon>Param_Periode_Paie.vb</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Déclarations fiscales et sociales\IR_Benefeciaires.resx">
       <DependentUpon>IR_Benefeciaires.vb</DependentUpon>

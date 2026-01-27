@@ -154,17 +154,18 @@ export async function save_demande_conge(req: Request, res: Response) {
       data: "Erreur calcul de congé",
     });
   }
+  const DatDeb = toSqlDateFormat(entete.Dat_Deb_Conge);
+  const DatFin = toSqlDateFormat(entete.Dat_Fin_Conge);
   if (!Num_Conge || Num_Conge === "") {
     const rsNum = await lireSql(
       `select 'C${id_Societe}-${new Date().getFullYear()}'+right('000000'+convert(nvarchar(6),isnull(max(racine),0)+1),6) as racine from (select convert(int,case when isnumeric(ISNULL(racine,''))!=1 then 0 else racine end ) as Racine from RH_Conge_Suivi 
     outer apply(select RIGHT(Num_Conge,6) as racine)n
-    where id_Societe=${id_Societe} and year(Dat_Deb_Conge)=${new Date().getFullYear()})f`,
+    where id_Societe=${id_Societe} and year(Dat_Deb_Conge)=year('${DatDeb}'))f`,
       []
     );
     Num_Conge = rsNum?.data?.[0]?.racine;
   }
-  const DatDeb = toSqlDateFormat(entete.Dat_Deb_Conge);
-  const DatFin = toSqlDateFormat(entete.Dat_Fin_Conge);
+
   const Sys_Conge_Check = await lireSql(
     `exec Sys_Conge_Check @Num_Conge,@Dat_Deb_Conge,@Dat_Fin_Conge,@Matricule,@id_Societe`,
     [
@@ -208,15 +209,17 @@ export async function save_demande_conge(req: Request, res: Response) {
       await ecrireSql({
         tableName: "RH_Conge_Suivi_Detail",
         fields: { ...d, id_Societe, Matricule, Num_Conge, Flag_Maj: flgMaj },
-        joinFields: ["Num_Conge", "id_Societe"],
+        joinFields: ["Num_Conge", "id_Societe", "Dat_Deb"],
         excludeFields: ["RowId"],
         login: Matricule,
       });
     }
+
     await lireSql(
       `delete from RH_Conge_Suivi_Detail where id_Societe=${id_Societe} and Num_Conge='${Num_Conge}' and Flag_Maj!=${flgMaj}`,
       []
     );
+    await lireSql(`exec Sys_Conge_MajConso '${Matricule}',${id_Societe}`);
     if (entete.Statut === "SS")
       await sousmettre_signature("C", Num_Conge, id_Societe, Matricule);
     return res.send(rsEnt);
@@ -269,30 +272,31 @@ async function Calcul(
   id_Societe: number
 ): Promise<ligDemande[]> {
   if (entete.Statut !== "" && entete.Statut !== "SS") return [];
+
   const Societe: TSociete = Societes.find((s) => s.id_Societe === id_Societe)!;
   const lig: ligDemande[] = [];
+
   entete.Duree_Globale = 0;
   entete.Repos_Hebdomadaire = 0;
   entete.Jours_Feries = 0;
   entete.Duree_Conge = 0;
+
   const datDeb = new Date(entete.Dat_Deb_Conge);
   const datFin = new Date(entete.Dat_Fin_Conge);
+
   if (isNaN(entete.JourPaie)) entete.JourPaie = 1;
   if (!checkDateFormat(datDeb)) return [];
   if (!checkDateFormat(datFin)) return [];
-  const jourPaieDate = new Date(
-    datDeb.getFullYear(),
-    datDeb.getMonth(),
-    entete.JourPaie
-  );
+
+  const jourPaieDate = new Date(datDeb.getFullYear(), datDeb.getMonth(), entete.JourPaie);
   if (!checkDateFormat(jourPaieDate)) return [];
 
   let DureeGlobal = 0;
   let DureeDetail = 0;
   if (datDeb > datFin) return [];
 
-  DureeGlobal =
-    Math.ceil((datFin.getTime() - datDeb.getTime()) / (1000 * 3600 * 24)) + 1;
+  // Calcul de la durée globale (nombre de jours)
+  DureeGlobal = Math.floor((datFin.getTime() - datDeb.getTime()) / (1000 * 3600 * 24)) + 1;
 
   if (entete.Dat_Deb_am_pm === "pm") DureeGlobal -= 0.5;
   if (entete.Dat_Fin_am_pm === "am") DureeGlobal -= 0.5;
@@ -300,11 +304,12 @@ async function Calcul(
   const JoursOuvres = Societe.JourOuvrables.split(";").map(Number);
   let nbrp = 0;
   let nbfr = 0;
-  let oDate: Date;
+
   const jrs = await lireSql(
-    `select * from dbo.Sys_JourFeries('${datDeb.toISOString()}', ${Societe.id_Societe
-    })`
+    `SELECT * FROM dbo.Sys_JourFeries('${datDeb.toISOString().split('T')[0]}', ${Societe.id_Societe})`
   );
+
+  // CORRECTION : Convertir les dates SQL en objets Date
   const TblJourFeries: {
     Lib_Jour: string;
     DatDeb: Date;
@@ -313,50 +318,44 @@ async function Calcul(
     JourFeries: number;
     Duree: number;
     Hijir: number;
-  }[] = jrs.data;
+  }[] = jrs.data.map((jf: any) => ({
+    ...jf,
+    DatDeb: new Date(jf.DatDeb),
+    DatFin: new Date(jf.DatFin)
+  }));
+
   let DatFinPaie = new Date(datDeb);
   DatFinPaie.setMonth(DatFinPaie.getMonth() + 1);
   DatFinPaie.setDate(entete.JourPaie);
   DatFinPaie.setDate(DatFinPaie.getDate() - 1);
-  let DatDebPaie = datDeb;
+
+  let DatDebPaie = new Date(datDeb);
   let k = 0;
+
   const Tbl_RH_Conge_Type = await lireSql(
-    `select * from RH_Conge_Type where Typ_Conge=@Typ_Conge`,
+    `SELECT * FROM RH_Conge_Type WHERE Typ_Conge = @Typ_Conge`,
     [{ param: "Typ_Conge", sqlType: NVarChar, valeur: entete.Typ_Conge }]
   );
+
   let deductibleDuConge = true;
-  if (Tbl_RH_Conge_Type.result) {
-    deductibleDuConge = IsNull(
-      Tbl_RH_Conge_Type.data[0]["deductibleDuConge"],
-      true
-    );
+  if (Tbl_RH_Conge_Type.result && Tbl_RH_Conge_Type.data.length > 0) {
+    deductibleDuConge = IsNull(Tbl_RH_Conge_Type.data[0]["deductibleDuConge"], true);
   }
-  while (DatFinPaie >= DatDebPaie && DatFinPaie < datFin) {
-    if (DatDebPaie === datDeb && entete.Dat_Deb_am_pm === "pm") {
-      lig.push({
-        Dat_Deb: DatDebPaie,
-        Dat_Fin: DatFinPaie,
-        Duree_Globale:
-          Math.ceil(
-            (DatFinPaie.getTime() - DatDebPaie.getTime()) / (1000 * 3600 * 24)
-          ) + 0.5,
-        Repos_Hebdomadaire: 0,
-        Jours_Feries: 0,
-        Duree_Conge: 0,
-      });
-    } else {
-      lig.push({
-        Dat_Deb: DatDebPaie,
-        Dat_Fin: DatFinPaie,
-        Duree_Globale:
-          Math.ceil(
-            (DatFinPaie.getTime() - DatDebPaie.getTime()) / (1000 * 3600 * 24)
-          ) + 1,
-        Repos_Hebdomadaire: 0,
-        Jours_Feries: 0,
-        Duree_Conge: 0,
-      });
-    }
+
+  // CORRECTION : Comparer les timestamps, pas les références
+  while (DatFinPaie.getTime() >= DatDebPaie.getTime() && DatFinPaie.getTime() < datFin.getTime()) {
+    const isFirstPeriodPM = DatDebPaie.getTime() === datDeb.getTime() && entete.Dat_Deb_am_pm === "pm";
+    const duree = Math.floor((DatFinPaie.getTime() - DatDebPaie.getTime()) / (1000 * 3600 * 24)) + (isFirstPeriodPM ? 0.5 : 1);
+
+    lig.push({
+      Dat_Deb: new Date(DatDebPaie),
+      Dat_Fin: new Date(DatFinPaie),
+      Duree_Globale: duree,
+      Repos_Hebdomadaire: 0,
+      Jours_Feries: 0,
+      Duree_Conge: 0,
+    });
+
     DureeDetail += lig[k].Duree_Globale;
     DatDebPaie = new Date(DatFinPaie);
     DatDebPaie.setDate(DatDebPaie.getDate() + 1);
@@ -367,49 +366,62 @@ async function Calcul(
   }
 
   lig.push({
-    Dat_Deb: DatDebPaie,
-    Dat_Fin: datFin,
+    Dat_Deb: new Date(DatDebPaie),
+    Dat_Fin: new Date(datFin),
     Duree_Globale: DureeGlobal - DureeDetail,
     Repos_Hebdomadaire: 0,
     Jours_Feries: 0,
     Duree_Conge: 0,
   });
 
+  // Fonction helper pour normaliser une date (minuit)
+  const normalizeDate = (d: Date): number => {
+    return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+  };
+
   for (let i = 0; i < lig.length; i++) {
     const lng = lig[i];
-    oDate = new Date(lng.Dat_Deb);
+    let oDate = new Date(lng.Dat_Deb);
+    const finTime = normalizeDate(lng.Dat_Fin);
 
-    do {
-      // Calculate weekly rest days
+    while (normalizeDate(oDate) <= finTime) {
+      let estJourRepos = false;
+      let estJourFerie = false;
+
+      // Calcul du jour de repos (weekend)
       if (JoursOuvres.length === 7) {
-        if (JoursOuvres[oDate.getDay() === 0 ? 6 : oDate.getDay() - 1] === 0) {
-          lng.Repos_Hebdomadaire++;
-          nbrp++;
+        // getDay(): 0=Dimanche, 1=Lundi... -> Mapping vers index tableau (0=Lundi)
+        const indexJour = oDate.getDay() === 0 ? 6 : oDate.getDay() - 1;
+        if (JoursOuvres[indexJour] === 0) {
+          estJourRepos = true;
         }
       }
 
-      // Calculate holidays
-      if (
-        TblJourFeries.some((jf) => oDate >= jf.DatDeb && oDate <= jf.DatFin)
-      ) {
+      // Calcul des jours fériés
+      const oDateTime = normalizeDate(oDate);
+      if (TblJourFeries.some((jf) => oDateTime >= normalizeDate(jf.DatDeb) && oDateTime <= normalizeDate(jf.DatFin))) {
+        estJourFerie = true;
+      }
+
+      // CORRECTION : Éviter le double comptage
+      if (estJourRepos) {
+        lng.Repos_Hebdomadaire++;
+        nbrp++;
+      } else if (estJourFerie) {
         lng.Jours_Feries++;
         nbfr++;
       }
 
       oDate.setDate(oDate.getDate() + 1);
-    } while (oDate <= lng.Dat_Fin);
+    }
 
-    lng.Duree_Conge = Math.max(
-      0,
-      lng.Duree_Globale - lng.Jours_Feries - lng.Repos_Hebdomadaire
-    );
+    lng.Duree_Conge = Math.max(0, lng.Duree_Globale - lng.Jours_Feries - lng.Repos_Hebdomadaire);
   }
 
   entete.Duree_Globale = DureeGlobal;
   entete.Repos_Hebdomadaire = deductibleDuConge ? nbrp : 0;
   entete.Jours_Feries = deductibleDuConge ? nbfr : 0;
-  entete.Duree_Conge = deductibleDuConge
-    ? Math.max(0, DureeGlobal - nbrp - nbfr)
-    : 0;
+  entete.Duree_Conge = deductibleDuConge ? Math.max(0, DureeGlobal - nbrp - nbfr) : 0;
+
   return lig;
 }
