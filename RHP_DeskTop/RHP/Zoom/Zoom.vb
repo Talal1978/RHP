@@ -136,9 +136,9 @@ Public Class Zoom
             End If
             '  If NumZoom = "MS067" Then MsgBox(Cod_Sql)
             TblZoomP = ChargerGrille(Cod_Sql)
+
             If TblZoomP Is Nothing Then Return
             Dim Col As Integer = TblZoomP.Columns.Count - 1
-            Dim oWidth As Integer = 0
             Dim oIndx(TblZoomP.Columns.Count - 1) As Integer
             With Zoom_Grd
                 .ContextMenuStrip = AddContextMenu(False, True, True, True, False, False, False, False)
@@ -160,17 +160,17 @@ Public Class Zoom
 
                 With Zoom_Grd
                     If multiSelect Then TblZoomP.Columns(0).ReadOnly = False
-                    .dataSourceOrigine = TblZoomP
                     .setFilter(oIndx)
+                    .dataSourceOrigine = TblZoomP
+                    .SelectionMode = DataGridViewSelectionMode.CellSelect
                 End With
-                For i = 0 To Col
-                    oWidth += .Columns(i).Width + 1
-                Next
+
+
                 AddHandler .PreviewKeyDown, AddressOf EnterClicking
                 If .ColumnCount > 0 And .RowCount > 0 And ColumnSearch >= 0 And ColumnSearch < .ColumnCount Then
                     .Item(ColumnSearch, 0).Selected = True
                 End If
-                Me.Width = Math.Min(oWidth + 20, 500)
+
                 ' Ajouter l'événement textchanged au text de sélection
                 AddHandler .ZoneFiltertxt.TextChanged, AddressOf txt_TextChanged
             End With

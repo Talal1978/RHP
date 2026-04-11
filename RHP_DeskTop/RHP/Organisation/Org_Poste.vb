@@ -23,6 +23,8 @@ Public Class Org_Poste
             First_D = dictButtons("First_D")
             New_D = dictButtons("New_D")
         End If
+        Responsabilites_lv.Items.Clear()
+        TachesAttributions_lv.Items.Clear()
     End Sub
     Private Sub Org_Poste_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         Chargement()
@@ -31,6 +33,8 @@ Public Class Org_Poste
         img.ImageSize = New Size(1, 22)    ' 36 px de hauteur de ligne
         TachesAttributions_lv.SmallImageList = img
         Responsabilites_lv.SmallImageList = img
+        Responsabilites_lv.Items.Clear()
+        TachesAttributions_lv.Items.Clear()
     End Sub
     Sub Request()
         Chargement()

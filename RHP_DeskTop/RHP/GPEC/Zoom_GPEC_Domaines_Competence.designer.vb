@@ -47,11 +47,13 @@ Partial Class Zoom_GPEC_Domaines_Competence
         '
         'Grd
         '
+        Me.Grd.AfficherLesEntetesLignes = True
         Me.Grd.AllowUserToAddRows = False
         Me.Grd.AllowUserToDeleteRows = False
         Me.Grd.AllowUserToResizeRows = False
         DataGridViewCellStyle1.BackColor = System.Drawing.Color.FromArgb(CType(CType(219, Byte), Integer), CType(CType(235, Byte), Integer), CType(CType(240, Byte), Integer))
         Me.Grd.AlternatingRowsDefaultCellStyle = DataGridViewCellStyle1
+        Me.Grd.AlternerLesLignes = False
         Me.Grd.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.AllCells
         Me.Grd.BackgroundColor = System.Drawing.Color.FromArgb(CType(CType(250, Byte), Integer), CType(CType(250, Byte), Integer), CType(CType(250, Byte), Integer))
         Me.Grd.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D
@@ -87,6 +89,7 @@ Partial Class Zoom_GPEC_Domaines_Competence
         DataGridViewCellStyle4.SelectionForeColor = System.Drawing.Color.FromArgb(CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer))
         Me.Grd.RowHeadersDefaultCellStyle = DataGridViewCellStyle4
         Me.Grd.RowHeadersVisible = False
+        Me.Grd.RowHeadersWidth = 51
         Me.Grd.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect
         Me.Grd.Size = New System.Drawing.Size(562, 282)
         Me.Grd.TabIndex = 1

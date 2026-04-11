@@ -193,7 +193,11 @@
             If e.X > Me.Columns(e.ColumnIndex).Width - 30 Then
                 sender.Columns(e.ColumnIndex).SortMode = DataGridViewColumnSortMode.NotSortable
             Else
-                sender.Columns(e.ColumnIndex).SortMode = DataGridViewColumnSortMode.Automatic
+                If Me.AllowUserToOrderColumns Then
+                    sender.Columns(e.ColumnIndex).SortMode = DataGridViewColumnSortMode.Automatic
+                Else
+                    sender.Columns(e.ColumnIndex).SortMode = DataGridViewColumnSortMode.NotSortable
+                End If
             End If
             Me.Columns(e.ColumnIndex).Width = w
         Else

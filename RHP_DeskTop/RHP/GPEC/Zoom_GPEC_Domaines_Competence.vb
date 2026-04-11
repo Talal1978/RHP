@@ -12,6 +12,12 @@
         oSize = Me.Size
         oLoc = Me.Location
         Request()
+        With Grd
+            .AlternatingRowsDefaultCellStyle = Nothing
+            .DataSource = TblSource
+            .AllowUserToOrderColumns = False
+            .SelectionMode = DataGridViewSelectionMode.CellSelect
+        End With
     End Sub
     Sub Request()
         dictionary = stringToDictionary(String.Join(";", domaines))
@@ -34,7 +40,7 @@ select convert(bit,case when ','+@str+',' like '%,'+Competence+',%' then 1 else 
 from  Tbl
 order by Rang"
         TblSource = DATA_READER_GRD(Cod_Sql)
-        With Grd()
+        With Grd
             If TblSource.Rows.Count > 50 Then
                 .DataSource = TblSource.AsEnumerable.Take(50).CopyToDataTable
             Else
@@ -48,7 +54,12 @@ order by Rang"
             .Columns("Compétence").MinimumWidth = 400
             .Columns("Compétence").AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill
             .AlternatingRowsDefaultCellStyle = Nothing
-            Grd.setFilter({0, 1, 2, 3})
+            .setFilter({0, 1, 2, 3})
+            .DataSource = TblSource
+            .AllowUserToOrderColumns = False
+            For Each col As DataGridViewColumn In .Columns
+                col.SortMode = DataGridViewColumnSortMode.NotSortable
+            Next
         End With
     End Sub
     Private Sub myDataGridView_CellFormatting(sender As Object, e As DataGridViewCellFormattingEventArgs) Handles Grd.CellFormatting

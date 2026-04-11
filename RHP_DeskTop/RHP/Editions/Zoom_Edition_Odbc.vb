@@ -13,16 +13,51 @@ Public Class Zoom_Edition_Odbc
     Private ts As ToolStrip
     Private cryRpt As ReportDocument
 
+    Private Function FindCrystalParameterName(rpt As ReportDocument, inputName As String) As String
+        If rpt Is Nothing OrElse rpt.DataDefinition Is Nothing OrElse rpt.DataDefinition.ParameterFields Is Nothing Then
+            Return inputName
+        End If
+
+        For Each paramDef As ParameterFieldDefinition In rpt.DataDefinition.ParameterFields
+            If String.Equals(paramDef.Name, inputName, StringComparison.OrdinalIgnoreCase) Then
+                Return paramDef.Name
+            End If
+            If String.Equals(paramDef.ParameterFieldName, inputName, StringComparison.OrdinalIgnoreCase) Then
+                Return paramDef.Name
+            End If
+        Next
+
+        Return inputName
+    End Function
+
+    Private Function TrySetReportParameter(rpt As ReportDocument, inputName As String, inputValue As Object, ByRef errorMessage As String) As Boolean
+        errorMessage = ""
+        If rpt Is Nothing Then
+            errorMessage = "Rapport non initialisé"
+            Return False
+        End If
+
+        Dim resolvedName As String = FindCrystalParameterName(rpt, inputName)
+
+        Try
+            rpt.SetParameterValue(resolvedName, inputValue)
+            Return True
+        Catch ex As Exception
+            errorMessage = "Paramètre '" & inputName & "' (résolu: '" & resolvedName & "') valeur='" & If(inputValue Is Nothing, "<NULL>", inputValue.ToString()) & "' : " & ex.Message
+            Return False
+        End Try
+    End Function
+
     Private Sub Zoom_Edition_Odbc_Load(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles MyBase.Load
         Try
             Dim rg As New System.Text.RegularExpressions.Regex("\\([^\\]+)\.[^.]+$")
             Dim match As System.Text.RegularExpressions.Match = rg.Match(etat)
             Dim rptName As String = ""
-            Dim withPassWord = False
+            '  Dim withPassWord = False
 
             If match.Success Then
                 rptName = match.Groups(1).Value
-                withPassWord = FindLibelle("withPassword", "Cod_Report", rptName, "Param_Mod_Edition")
+                '   withPassWord = FindLibelle("withPassword", "Cod_Report", rptName, "Param_Mod_Edition")
             End If
 
             Me.WindowState = FormWindowState.Maximized
@@ -35,6 +70,7 @@ Public Class Zoom_Edition_Odbc
                 .DisplayGroupTree = DisplayTree
                 .EnableRefresh = True
                 .EnableDrillDown = True
+                .ReuseParameterValuesOnRefresh = True
 
                 If Gere_Wkf = "O" Then
                     If Pie_Valide = "O" Then
@@ -45,8 +81,8 @@ Public Class Zoom_Edition_Odbc
                         .ShowExportButton = False
                     End If
                 Else
-                    .ShowPrintButton = Droits.EstAuthentic
-                    .ShowExportButton = Droits.EstAuthentic
+                    .ShowPrintButton = LegalVersion
+                    .ShowExportButton = .ShowPrintButton
                 End If
 
                 .ShowCloseButton = True
@@ -56,6 +92,8 @@ Public Class Zoom_Edition_Odbc
                 .ShowRefreshButton = True
                 .ShowTextSearchButton = True
                 .ShowZoomButton = True
+                .SelectionFormula = Nothing
+                .ViewTimeSelectionFormula = Nothing
 
                 .Refresh()
             End With
@@ -79,31 +117,31 @@ Public Class Zoom_Edition_Odbc
                 ts.Refresh()
             End If
 
-            If CBool(withPassWord) Then
-                Dim fullFileName As String = ""
-                If rptName <> "" Then
-                    fullFileName = rptName & "_" & (New Random).Next(10000, 99999) & ".pdf"
-                End If
+            'If CBool(withPassWord) Then
+            '    Dim fullFileName As String = ""
+            '    If rptName <> "" Then
+            '        fullFileName = rptName & "_" & (New Random).Next(10000, 99999) & ".pdf"
+            '    End If
 
-                Dim saveFileDialog As New SaveFileDialog()
-                With saveFileDialog
-                    .InitialDirectory = importPath
-                    .Filter = "Fichiers PDF (*.pdf)|*.pdf|Tous les fichiers (*.*)|*.*"
-                    .FilterIndex = 1
-                    .RestoreDirectory = True
-                    .FileName = fullFileName
-                    .Title = "Enregistrer le rapport PDF protégé"
-                End With
+            '    Dim saveFileDialog As New SaveFileDialog()
+            '    With saveFileDialog
+            '        .InitialDirectory = importPath
+            '        .Filter = "Fichiers PDF (*.pdf)|*.pdf|Tous les fichiers (*.*)|*.*"
+            '        .FilterIndex = 1
+            '        .RestoreDirectory = True
+            '        .FileName = fullFileName
+            '        .Title = "Enregistrer le rapport PDF protégé"
+            '    End With
 
-                If saveFileDialog.ShowDialog() = DialogResult.OK Then
-                    fullFileName = saveFileDialog.FileName
-                    RptExportingToPdf(fullFileName, True)
-                Else
-                    Me.Close()
-                End If
-            Else
-                GeneratingReport()
-            End If
+            '    If saveFileDialog.ShowDialog() = DialogResult.OK Then
+            '        fullFileName = saveFileDialog.FileName
+            '        RptExportingToPdf(fullFileName, True)
+            '    Else
+            '        Me.Close()
+            '    End If
+            'Else
+            GeneratingReport()
+            '   End If
 
             Cursor = Cursors.Default
             CrystalReportViewer1.Cursor = Cursors.Default
@@ -135,8 +173,8 @@ Public Class Zoom_Edition_Odbc
         Try
             Cursor = Cursors.WaitCursor
             CrystalReportViewer1.Cursor = Cursors.WaitCursor
-            Dim ODBCRHP As String = FindParam("ODBC_RHP")
-            If String.IsNullOrEmpty(ODBCRHP) Then
+            Dim ODBCRay1 As String = FindParam("ODBC_RHP")
+            If String.IsNullOrEmpty(ODBCRay1) Then
                 ShowMessageBox("ODBC non renseigné dans les paramètres généraux", "Erreur de configuration", MessageBoxButtons.OK, MessageBoxIcon.Warning)
                 Me.Close()
                 Exit Sub
@@ -146,12 +184,12 @@ Public Class Zoom_Edition_Odbc
             With cryRpt
                 .Load(etat)
                 If .DataSourceConnections.Count > 0 Then
-                    .DataSourceConnections(0).SetConnection(ODBCRHP, DataBaseName, False)
+                    .DataSourceConnections(0).SetConnection(ODBCRay1, DataBaseName, False)
                     .DataSourceConnections(0).SetLogon(ConnectionSQL, PWDConnectionSQL)
                 End If
                 For Each table As CrystalDecisions.CrystalReports.Engine.Table In .Database.Tables
                     Dim logonInfo As New TableLogOnInfo()
-                    logonInfo.ConnectionInfo.ServerName = ODBCRHP
+                    logonInfo.ConnectionInfo.ServerName = ODBCRay1
                     logonInfo.ConnectionInfo.DatabaseName = DataBaseName
                     logonInfo.ConnectionInfo.UserID = ConnectionSQL
                     logonInfo.ConnectionInfo.Password = PWDConnectionSQL
@@ -161,14 +199,24 @@ Public Class Zoom_Edition_Odbc
 
             ' *** MODIFICATION IMPORTANTE : Définir les paramètres AVANT d'assigner le ReportSource ***
             ' Passer les paramètres au rapport principal
+            '   Dim strParam As String = ""
+            Dim paramErrors As New List(Of String)
             For i As Integer = 0 To ParamList.Count - 1
-                Try
-                    cryRpt.SetParameterValue(ParamList(i).ToString(), ValList(i))
-                Catch ex As Exception
-                    Debug.WriteLine($"Erreur paramètre principal {ParamList(i)} : {ex.Message}")
-                End Try
+                Dim err As String = ""
+                Dim pname As String = ParamList(i).ToString()
+                Dim pvalue As Object = ValList(i)
+                If Not TrySetReportParameter(cryRpt, pname, pvalue, err) Then
+                    paramErrors.Add(err)
+                End If
             Next
 
+            If paramErrors.Count > 0 Then
+                Dim msg As String = "Les paramètres du rapport n'ont pas pu être appliqués." & vbCrLf & vbCrLf & String.Join(vbCrLf, paramErrors)
+                ShowMessageBox(msg, "Erreur paramètres Crystal", MessageBoxButtons.OK, MessageBoxIcon.Error)
+                Me.Close()
+                Exit Sub
+            End If
+            '   MsgBox(strParam)
             ' Passer les paramètres aux sous-rapports
             Try
                 PasserParametresAuxSousRapports(cryRpt)
@@ -178,6 +226,10 @@ Public Class Zoom_Edition_Odbc
 
             ' *** MAINTENANT on peut assigner le ReportSource ***
             CrystalReportViewer1.ReportSource = cryRpt
+
+            If Not String.IsNullOrWhiteSpace(cryRpt.RecordSelectionFormula) Then
+                CrystalReportViewer1.SelectionFormula = cryRpt.RecordSelectionFormula
+            End If
 
             ' Ne PAS appeler RefreshReport ici car cela redemandera les paramètres
             ' CrystalReportViewer1.RefreshReport()
@@ -211,15 +263,17 @@ Public Class Zoom_Edition_Odbc
 
                                         ' Vérifier si le paramètre existe dans le sous-rapport
                                         Dim paramExists As Boolean = False
+                                        Dim resolvedName As String = paramName
                                         For Each paramDef As ParameterFieldDefinition In subReportDoc.DataDefinition.ParameterFields
-                                            If paramDef.Name = paramName OrElse paramDef.ParameterFieldName = paramName Then
+                                            If String.Equals(paramDef.Name, paramName, StringComparison.OrdinalIgnoreCase) OrElse String.Equals(paramDef.ParameterFieldName, paramName, StringComparison.OrdinalIgnoreCase) Then
                                                 paramExists = True
+                                                resolvedName = paramDef.Name
                                                 Exit For
                                             End If
                                         Next
 
                                         If paramExists Then
-                                            subReportDoc.SetParameterValue(paramName, paramValue)
+                                            subReportDoc.SetParameterValue(resolvedName, paramValue)
                                         End If
                                     Catch exParam As Exception
                                         Debug.WriteLine($"Impossible de passer le paramètre {ParamList(i)} au sous-rapport : {exParam.Message}")
@@ -289,9 +343,9 @@ Public Class Zoom_Edition_Odbc
     Sub RptExportingToPdf(fullFileName As String, Optional ByVal withPassWord As Boolean = False)
         Try
             Dim exportRpt As New ReportDocument
-            Dim ODBCRHP As String = FindParam("ODBC_RHP")
+            Dim ODBCRay1 As String = FindParam("ODBC_Ray1")
 
-            If String.IsNullOrEmpty(ODBCRHP) Then
+            If String.IsNullOrEmpty(ODBCRay1) Then
                 ShowMessageBox("ODBC non renseigné dans les paramètres généraux", "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Warning)
                 Exit Sub
             End If
@@ -301,7 +355,7 @@ Public Class Zoom_Edition_Odbc
             With exportRpt
                 .Load(etat)
                 If .DataSourceConnections.Count > 0 Then
-                    .DataSourceConnections(0).SetConnection(ODBCRHP, DataBaseName, False)
+                    .DataSourceConnections(0).SetConnection(ODBCRay1, DataBaseName, False)
                     .DataSourceConnections(0).SetLogon(ConnectionSQL, PWDConnectionSQL)
                 End If
             End With
