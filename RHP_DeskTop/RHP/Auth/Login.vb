@@ -351,6 +351,35 @@ where HashBytes('SHA1',upper(isnull(Login,'984iuiuhiuht65161')))=HashBytes('SHA1
             End With
         Else
             theUser.Matricule = ""
+
+            ' Vérification de l'ancienneté du mot de passe (PWD_Duree en jours).
+            ' Si Dat_Maj_Pwd est NULL, on considère une date très ancienne pour forcer le changement.
+            ' Si la durée écoulée dépasse PWD_Duree (et PWD_Duree > 0), on ouvre l'écran de
+            ' changement de mot de passe avant de continuer.
+            If Not theUser.is_AD Then
+                Dim pwdDureeObj As Object = FindParam("PWD_Duree")
+                Dim pwdDuree As Integer = 0
+                If IsNumeric(pwdDureeObj) Then pwdDuree = CInt(pwdDureeObj)
+                If pwdDuree > 0 Then
+                    Dim sqlDuree As String =
+                        "select datediff(day, isnull(Dat_Maj_Pwd, dateadd(day,-10000,getdate())), getdate()) as Duree " &
+                        "from Controle_Users where id_User='" & theUser.id_User & "'"
+                    Dim rsDuree As ADODB.Recordset = CnExecuting(sqlDuree)
+                    Dim dureeJours As Integer = 0
+                    If rsDuree IsNot Nothing AndAlso Not rsDuree.EOF Then
+                        dureeJours = CInt(IsNull(rsDuree.Fields("Duree").Value, 0))
+                    End If
+                    If dureeJours > pwdDuree Then
+                        ShowMessageBox("Votre mot de passe a plus de " & pwdDuree & " jours (" & dureeJours & " jours). Vous devez le modifier.",
+                                       "Renouvellement du mot de passe", MessageBoxButtons.OK, msgIcon.Warning)
+                        Dim fPwd As New Admin_ChangePwd
+                        fPwd.Old_Pwd_User_Text.Text = Pwd_txt.Text
+                        fPwd.Pwd1_Text.Select()
+                        fPwd.ShowDialog()
+                    End If
+                End If
+            End If
+
             With Wait
                 .AutoScaleMode = AutoScaleMode.Dpi
                 .StartPosition = FormStartPosition.CenterScreen

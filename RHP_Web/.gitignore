@@ -1,0 +1,12 @@
+# dépendances
+node_modules/
+
+# dossiers de build/production
+dist/
+build/
+out/
+
+# fichiers sensibles ou temporaires
+.env*
+*.log
+coverage/

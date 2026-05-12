@@ -1372,7 +1372,7 @@
     </Compile>
     <Compile Include="Modules\Module_Conversion.vb" />
     <Compile Include="Modules\Module_Xml_Dictionnary.vb" />
-    <Compile Include="Gestion des menus et écrans\Module_DPI.vb" />
+    <Compile Include="InfinityTU\Module_DPI.vb" />
     <Compile Include="Organisation\Org_Evolution_Carriere.Designer.vb">
       <DependentUpon>Org_Evolution_Carriere.vb</DependentUpon>
     </Compile>

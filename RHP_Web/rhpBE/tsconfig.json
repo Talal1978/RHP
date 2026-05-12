@@ -1,0 +1,15 @@
+{
+    "compilerOptions": {
+      "target": "ES2018",
+      "outDir": "./dist",
+      "module": "commonjs",
+      "strict": true,
+      "esModuleInterop": true,
+      "skipLibCheck": true,
+      "forceConsistentCasingInFileNames": true,
+      "rootDir": ".",
+      "types": ["node"],
+      "typeRoots": ["./node_modules/@types", "./custom-types.d.ts"]
+    },
+    "include": ["src/**/*", "modules/**/*", "controlers/**/*", "root/**/*"]
+  }

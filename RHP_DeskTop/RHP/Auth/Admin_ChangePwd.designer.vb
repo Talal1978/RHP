@@ -32,6 +32,9 @@ Partial Class Admin_ChangePwd
         Me.Old_Pwd_User_Text = New RHP.ud_TextBox()
         Me.Pwd1_Text = New RHP.ud_TextBox()
         Me.Pwd2_Text = New RHP.ud_TextBox()
+        Me.Strength_Bar = New System.Windows.Forms.ProgressBar()
+        Me.Strength_Label = New System.Windows.Forms.Label()
+        Me.Rules_Label = New System.Windows.Forms.Label()
         Me.Panel1.SuspendLayout()
         Me.SuspendLayout()
         '
@@ -80,11 +83,14 @@ Partial Class Admin_ChangePwd
         Me.Panel1.Controls.Add(Me.Label1)
         Me.Panel1.Controls.Add(Me.Pwd2_Label)
         Me.Panel1.Controls.Add(Me.Pwd2_Text)
+        Me.Panel1.Controls.Add(Me.Strength_Bar)
+        Me.Panel1.Controls.Add(Me.Strength_Label)
+        Me.Panel1.Controls.Add(Me.Rules_Label)
         Me.Panel1.Dock = System.Windows.Forms.DockStyle.Fill
         Me.Panel1.Location = New System.Drawing.Point(2, 2)
         Me.Panel1.Margin = New System.Windows.Forms.Padding(3, 4, 3, 4)
         Me.Panel1.Name = "Panel1"
-        Me.Panel1.Size = New System.Drawing.Size(626, 232)
+        Me.Panel1.Size = New System.Drawing.Size(626, 399)
         Me.Panel1.TabIndex = 35
         '
         'Titre_lbl
@@ -111,7 +117,7 @@ Partial Class Admin_ChangePwd
         Me.Save_ud.Cursor = System.Windows.Forms.Cursors.Hand
         Me.Save_ud.Image = Global.RHP.My.Resources.Resources.btn_save
         Me.Save_ud.isDefault = False
-        Me.Save_ud.Location = New System.Drawing.Point(476, 171)
+        Me.Save_ud.Location = New System.Drawing.Point(474, 342)
         Me.Save_ud.Margin = New System.Windows.Forms.Padding(3, 5, 3, 5)
         Me.Save_ud.MinimumSize = New System.Drawing.Size(23, 31)
         Me.Save_ud.Name = "Save_ud"
@@ -131,7 +137,7 @@ Partial Class Admin_ChangePwd
         Me.Annuler_ud.Cursor = System.Windows.Forms.Cursors.Hand
         Me.Annuler_ud.Image = Global.RHP.My.Resources.Resources.btn_close
         Me.Annuler_ud.isDefault = False
-        Me.Annuler_ud.Location = New System.Drawing.Point(13, 171)
+        Me.Annuler_ud.Location = New System.Drawing.Point(11, 342)
         Me.Annuler_ud.Margin = New System.Windows.Forms.Padding(3, 5, 3, 5)
         Me.Annuler_ud.MinimumSize = New System.Drawing.Size(23, 31)
         Me.Annuler_ud.Name = "Annuler_ud"
@@ -200,12 +206,40 @@ Partial Class Admin_ChangePwd
         Me.Pwd2_Text.TextAlign = System.Windows.Forms.HorizontalAlignment.Left
         Me.Pwd2_Text.UseSystemPasswordChar = False
         '
+        'Strength_Bar
+        '
+        Me.Strength_Bar.Location = New System.Drawing.Point(261, 181)
+        Me.Strength_Bar.Name = "Strength_Bar"
+        Me.Strength_Bar.Size = New System.Drawing.Size(330, 8)
+        Me.Strength_Bar.Step = 1
+        Me.Strength_Bar.TabIndex = 37
+        '
+        'Strength_Label
+        '
+        Me.Strength_Label.ForeColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(36, Byte), Integer), CType(CType(36, Byte), Integer))
+        Me.Strength_Label.Location = New System.Drawing.Point(9, 166)
+        Me.Strength_Label.Name = "Strength_Label"
+        Me.Strength_Label.Size = New System.Drawing.Size(246, 34)
+        Me.Strength_Label.TabIndex = 36
+        Me.Strength_Label.Tag = "NC"
+        Me.Strength_Label.Text = "Force "
+        Me.Strength_Label.TextAlign = System.Drawing.ContentAlignment.MiddleRight
+        '
+        'Rules_Label
+        '
+        Me.Rules_Label.ForeColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(36, Byte), Integer), CType(CType(36, Byte), Integer))
+        Me.Rules_Label.Location = New System.Drawing.Point(38, 200)
+        Me.Rules_Label.Name = "Rules_Label"
+        Me.Rules_Label.Size = New System.Drawing.Size(553, 123)
+        Me.Rules_Label.TabIndex = 38
+        Me.Rules_Label.Tag = "NC"
+        '
         'Admin_ChangePwd
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(120.0!, 120.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi
         Me.BackColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
-        Me.ClientSize = New System.Drawing.Size(630, 236)
+        Me.ClientSize = New System.Drawing.Size(630, 403)
         Me.ControlBox = False
         Me.Controls.Add(Me.Panel1)
         Me.DoubleBuffered = True
@@ -234,4 +268,7 @@ Partial Class Admin_ChangePwd
     Friend WithEvents Save_ud As ud_button
     Friend WithEvents Annuler_ud As ud_button
     Friend WithEvents Titre_lbl As Label
+    Friend WithEvents Strength_Bar As System.Windows.Forms.ProgressBar
+    Friend WithEvents Strength_Label As System.Windows.Forms.Label
+    Friend WithEvents Rules_Label As System.Windows.Forms.Label
 End Class
