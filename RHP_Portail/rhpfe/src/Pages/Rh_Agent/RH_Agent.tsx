@@ -629,6 +629,7 @@ const RH_Agent = ({ readonly = false }: { readonly?: boolean }) => {
               control={
                 <Switch
                   checked={rhAgent?.Droit_Paie || false}
+                  disabled={true}
                   style={{
                     color: colorBase.colorBase01,
                   }}

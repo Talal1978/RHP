@@ -83,6 +83,7 @@ import {
 } from "../controlers/demande_doc_admin";
 import { declarationATListe, get_declaration_at } from "../controlers/declaration_at";
 import { getDashboardData } from "../controlers/dashboard";
+import { getDashboardWidgetData } from "../controlers/dashboard_widgets";
 import { get_communication_blog, get_communication_blogs_liste } from "../controlers/communication";
 import { ask_ai_assistant } from "../controlers/ai_assistant";
 import {
@@ -130,6 +131,9 @@ import {
   sante_poste_risque_liste, save_sante_poste_risque,
   sante_agent_critere_liste, save_sante_agent_critere,
 } from "../controlers/sante_divers";
+import {
+  sante_aptitude_pdf, sante_incident_at_pdf, sante_rapport_annuel_pdf,
+} from "../controlers/sante_report";
 const mainRooting = express.Router();
 const storage = multer.diskStorage({
   destination: async (req, file, cb) => {
@@ -238,6 +242,7 @@ mainRooting.post("/delete_demande_doc_admin", validate, delete_demande_doc_admin
 mainRooting.post("/declarationATListe", validate, declarationATListe);
 mainRooting.post("/get_declaration_at", validate, get_declaration_at);
 mainRooting.post("/dashboard", validate, getDashboardData);
+mainRooting.post("/dashboard_widget", validate, getDashboardWidgetData);
 mainRooting.post("/communication_blogs_liste", validate, get_communication_blogs_liste);
 mainRooting.post("/get_communication_blog", validate, get_communication_blog);
 mainRooting.post("/ask_ai", validate, ask_ai_assistant);
@@ -308,6 +313,9 @@ mainRooting.post("/sante_poste_risque_liste", validate, sante_poste_risque_liste
 mainRooting.post("/save_sante_poste_risque", validate, save_sante_poste_risque);
 mainRooting.post("/sante_agent_critere_liste", validate, sante_agent_critere_liste);
 mainRooting.post("/save_sante_agent_critere", validate, save_sante_agent_critere);
+mainRooting.post("/sante_aptitude_pdf", validate, sante_aptitude_pdf);
+mainRooting.post("/sante_incident_at_pdf", validate, sante_incident_at_pdf);
+mainRooting.post("/sante_rapport_annuel_pdf", validate, sante_rapport_annuel_pdf);
 mainRooting.post("/get_outillage_info", validate, get_outillage_info);
 
 

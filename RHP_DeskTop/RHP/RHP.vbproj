@@ -785,6 +785,54 @@
     <Compile Include="Sante\RH_Sante_Maladie_Pro_Liste.vb">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="Sante\RH_Sante_Vaccination.Designer.vb">
+      <DependentUpon>RH_Sante_Vaccination.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Sante\RH_Sante_Vaccination.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Sante\RH_Sante_Campagne.Designer.vb">
+      <DependentUpon>RH_Sante_Campagne.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Sante\RH_Sante_Campagne.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Sante\RH_Declaration_AT_Suivi.Designer.vb">
+      <DependentUpon>RH_Declaration_AT_Suivi.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Sante\RH_Declaration_AT_Suivi.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Sante\RH_Sante_Stats_AT.Designer.vb">
+      <DependentUpon>RH_Sante_Stats_AT.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Sante\RH_Sante_Stats_AT.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Sante\RH_Sante_Tableau_Bord.Designer.vb">
+      <DependentUpon>RH_Sante_Tableau_Bord.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Sante\RH_Sante_Tableau_Bord.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Sante\RH_Sante_Audit.Designer.vb">
+      <DependentUpon>RH_Sante_Audit.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Sante\RH_Sante_Audit.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Sante\RH_Sante_Rapport_Annuel.Designer.vb">
+      <DependentUpon>RH_Sante_Rapport_Annuel.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Sante\RH_Sante_Rapport_Annuel.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Sante\RH_Sante_Param.Designer.vb">
+      <DependentUpon>RH_Sante_Param.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Sante\RH_Sante_Param.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Documents\Note de frais\Note_Frais.Designer.vb">
       <DependentUpon>Note_Frais.vb</DependentUpon>
     </Compile>
@@ -2201,6 +2249,30 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Sante\RH_Sante_Maladie_Pro_Liste.resx">
       <DependentUpon>RH_Sante_Maladie_Pro_Liste.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Sante\RH_Sante_Vaccination.resx">
+      <DependentUpon>RH_Sante_Vaccination.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Sante\RH_Sante_Campagne.resx">
+      <DependentUpon>RH_Sante_Campagne.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Sante\RH_Declaration_AT_Suivi.resx">
+      <DependentUpon>RH_Declaration_AT_Suivi.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Sante\RH_Sante_Stats_AT.resx">
+      <DependentUpon>RH_Sante_Stats_AT.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Sante\RH_Sante_Tableau_Bord.resx">
+      <DependentUpon>RH_Sante_Tableau_Bord.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Sante\RH_Sante_Audit.resx">
+      <DependentUpon>RH_Sante_Audit.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Sante\RH_Sante_Rapport_Annuel.resx">
+      <DependentUpon>RH_Sante_Rapport_Annuel.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Sante\RH_Sante_Param.resx">
+      <DependentUpon>RH_Sante_Param.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Documents\Demande de remboursement Assurances\RH_Dossier_Maladie_Liste.resx">
       <DependentUpon>RH_Dossier_Maladie_Liste.vb</DependentUpon>

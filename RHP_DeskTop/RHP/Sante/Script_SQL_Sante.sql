@@ -1282,3 +1282,31 @@ PRINT '=== Module Sante : installation terminee ===';
 PRINT 'Actions restantes : Generation globale (Admin_TreeView), circuits Workflow VM/FA,';
 PRINT 'affectation des fonctions SANTE_* aux profils, parametres reglementaires, Notifications.';
 GO
+
+/* -------------------------------------------------------------------------- */
+/* 13. Editions Crystal Reports (gabarits a produire - voir Documentation      */
+/*     07_Specifications_Rapports.md). Le bouton Imprimer apparait             */
+/*     automatiquement sur les ecrans des que le .rpt est depose dans Reports. */
+/* -------------------------------------------------------------------------- */
+
+IF NOT EXISTS (SELECT 1 FROM Param_Mod_Edition WHERE Cod_Report = 'Sante_Fiche_Aptitude')
+    INSERT INTO Param_Mod_Edition (Cod_Report, Nom_Report, Typ_Pie, parSociete, Portail, Typ_Modele_Edition, withPassword, Dat_Crea, Created_By)
+    VALUES ('Sante_Fiche_Aptitude', 'Fiche d''aptitude médicale', '', 'true', 'true', 'A', 'false', GETDATE(), 'SCRIPT');
+IF NOT EXISTS (SELECT 1 FROM Param_Mod_Edition WHERE Cod_Report = 'Sante_Rapport_Incident_AT')
+    INSERT INTO Param_Mod_Edition (Cod_Report, Nom_Report, Typ_Pie, parSociete, Portail, Typ_Modele_Edition, withPassword, Dat_Crea, Created_By)
+    VALUES ('Sante_Rapport_Incident_AT', 'Rapport d''incident - accident du travail', '', 'true', 'true', 'A', 'false', GETDATE(), 'SCRIPT');
+IF NOT EXISTS (SELECT 1 FROM Param_Mod_Edition WHERE Cod_Report = 'Sante_Rapport_Annuel')
+    INSERT INTO Param_Mod_Edition (Cod_Report, Nom_Report, Typ_Pie, parSociete, Portail, Typ_Modele_Edition, withPassword, Dat_Crea, Created_By)
+    VALUES ('Sante_Rapport_Annuel', 'Rapport annuel du service médical du travail', '', 'true', 'false', 'A', 'false', GETDATE(), 'SCRIPT');
+GO
+
+IF NOT EXISTS (SELECT 1 FROM Controle_Def_Ecran_Mod_Edition WHERE Name_Ecran = 'RH_Sante_Aptitude' AND Cod_Report = 'Sante_Fiche_Aptitude')
+    INSERT INTO Controle_Def_Ecran_Mod_Edition (Name_Ecran, Cod_Report, Criteres)
+    VALUES ('RH_Sante_Aptitude', 'Sante_Fiche_Aptitude', 'IDSOC:=GV_IDSOC;Num_Aptitude:=Num_Aptitude_txt');
+IF NOT EXISTS (SELECT 1 FROM Controle_Def_Ecran_Mod_Edition WHERE Name_Ecran = 'RH_Declaration_AT_Suivi' AND Cod_Report = 'Sante_Rapport_Incident_AT')
+    INSERT INTO Controle_Def_Ecran_Mod_Edition (Name_Ecran, Cod_Report, Criteres)
+    VALUES ('RH_Declaration_AT_Suivi', 'Sante_Rapport_Incident_AT', 'IDSOC:=GV_IDSOC;Num_Declaration:=Num_Declaration_txt');
+IF NOT EXISTS (SELECT 1 FROM Controle_Def_Ecran_Mod_Edition WHERE Name_Ecran = 'RH_Sante_Rapport_Annuel' AND Cod_Report = 'Sante_Rapport_Annuel')
+    INSERT INTO Controle_Def_Ecran_Mod_Edition (Name_Ecran, Cod_Report, Criteres)
+    VALUES ('RH_Sante_Rapport_Annuel', 'Sante_Rapport_Annuel', 'IDSOC:=GV_IDSOC;Annee:=Annee_txt');
+GO

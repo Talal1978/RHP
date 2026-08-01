@@ -35,6 +35,8 @@ import type {
   DashboardNotificationIconGetter,
 } from "./sections/SectionTypes";
 
+const TOP_SECTION_IDS: DashboardSectionId[] = ["welcome", "profile", "leaveBalance", "weather"];
+
 const Dashboard = () => {
   const navigate = useNavigate();
   const myAxiosPost = useAxiosPost();
@@ -264,6 +266,34 @@ const Dashboard = () => {
 
   const visibleSections = sectionPreferences.filter((section) => section.visible);
 
+  const hasWidgets = isLoaded && userWidgets.length > 0;
+  const lastTopSectionIndex = visibleSections.reduce(
+    (lastIndex, section, index) => (TOP_SECTION_IDS.includes(section.id) ? index : lastIndex),
+    -1
+  );
+  const widgetsInsertIndex = hasWidgets ? lastTopSectionIndex + 1 : visibleSections.length;
+  const topSections = visibleSections.slice(0, widgetsInsertIndex);
+  const bottomSections = visibleSections.slice(widgetsInsertIndex);
+
+  const renderSection = (section: DashboardSectionPreference) => {
+    const definition = DASHBOARD_SECTION_DEFINITION_MAP[section.id];
+    const SectionComponent = dashboardSectionRegistry[section.id];
+
+    return (
+      <Grid item key={section.id} xs={12} md={definition.desktopSpan} sx={{ mb: { xs: 1, sm: 0 }, px: { md: 0.5 } }}>
+        <React.Suspense
+          fallback={
+            <Paper sx={{ p: 3, borderRadius: 2, border: "1px solid", borderColor: "divider", boxShadow: "none", bgcolor: "background.paper" }}>
+              <Typography color="text.secondary">Chargement...</Typography>
+            </Paper>
+          }
+        >
+          <SectionComponent {...sectionPropsMap[section.id]} />
+        </React.Suspense>
+      </Grid>
+    );
+  };
+
   return (
     <Box
       sx={{
@@ -277,27 +307,10 @@ const Dashboard = () => {
       }}
     >
       <Grid container spacing={{ xs: 1, sm: 3, md: 0 }} rowSpacing={{ md: 4 }} justifyContent="center" alignItems="stretch">
-        {visibleSections.map((section) => {
-          const definition = DASHBOARD_SECTION_DEFINITION_MAP[section.id];
-          const SectionComponent = dashboardSectionRegistry[section.id];
-
-          return (
-            <Grid item key={section.id} xs={12} md={definition.desktopSpan} sx={{ mb: { xs: 1, sm: 0 }, px: { md: 0.5 } }}>
-              <React.Suspense
-                fallback={
-                  <Paper sx={{ p: 3, borderRadius: 2, border: "1px solid", borderColor: "divider", boxShadow: "none", bgcolor: "background.paper" }}>
-                    <Typography color="text.secondary">Chargement...</Typography>
-                  </Paper>
-                }
-              >
-                <SectionComponent {...sectionPropsMap[section.id]} />
-              </React.Suspense>
-            </Grid>
-          );
-        })}
+        {topSections.map(renderSection)}
       </Grid>
 
-      {isLoaded && userWidgets.length > 0 && (
+      {hasWidgets && (
         <>
           <Stack
             direction="row"
@@ -310,7 +323,7 @@ const Dashboard = () => {
               Mes widgets
             </Typography>
           </Stack>
-          <Grid container spacing={{ xs: 1, sm: 3, md: 0 }} rowSpacing={{ md: 4 }} justifyContent="center" alignItems="stretch">
+          <Grid container spacing={{ xs: 1, sm: 3, md: 0 }} rowSpacing={{ md: 4 }} justifyContent="center" alignItems="stretch" sx={{ mb: { xs: 1, md: 2 } }}>
             {userWidgets.map((uw) => (
               <Grid item key={uw.instanceId} xs={12} md={uw.span} sx={{ mb: { xs: 1, sm: 0 }, px: { md: 0.5 } }}>
                 <WidgetRenderer
@@ -331,6 +344,12 @@ const Dashboard = () => {
             ))}
           </Grid>
         </>
+      )}
+
+      {bottomSections.length > 0 && (
+        <Grid container spacing={{ xs: 1, sm: 3, md: 0 }} rowSpacing={{ md: 4 }} justifyContent="center" alignItems="stretch">
+          {bottomSections.map(renderSection)}
+        </Grid>
       )}
 
       <WidgetBuilder

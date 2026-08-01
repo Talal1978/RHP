@@ -1,5 +1,11 @@
 # Traçabilité exigences → composants → tests, et plan de migration (Phase 1)
 
+## 0bis. Résultats Phases 3 et 4 (01/08/2026)
+
+- **Phase 3 — RHP_DeskTop** : `Sante\Module_Sante.vb` (audit paramétré ADODB, contrôle fonctions SANTE_*, verrou CNDP, exécution paramétrée anti-injection) + **20 écrans** (Visite+Liste, Dossier 8 onglets, Aptitude+Liste, Consultation+Liste, Examen+Liste, MaladiePro+Liste, Vaccination, Campagne, Declaration_AT_Suivi, Stats_AT, Tableau_Bord, Audit, Rapport_Annuel, Param). **Compilation VB : 0 erreur** (la copie finale de RHP.exe nécessite de fermer l'application en cours).
+- **Phase 4 — RHP_Portail (pages clés)** : 5 pages (`RH_Sante_Visite_Liste` planning, `RH_Sante_Visite` fiche médecin, `Sante_MaSante` salarié, `RH_Sante_Tableau_Bord` agrégats, `RH_Declaration_AT_Suivi`) enregistrées dans `Ecran.tsx` + `menus.json`. **Lint : 0 erreur ; build (`tsc -b && vite build`) : OK.** Corrections appliquées : `TMenuBtn` réel (`libelle`/`action`/`color`), `lodash.isequal`, typages `onchange`.
+- **Reste à décliner du gabarit (marqué)** : pages portail secondaires (Aptitude liste/fiche, Consultation, Examen, MaladiePro, Campagne) — même gabarit que les 5 pages livrées, endpoints déjà disponibles et testés.
+
 ## 0. Résultats d'exécution (Phase 2 — 01/08/2026)
 
 - **Script d'installation** : `Script_SQL_Sante.sql` — **58/58 batches OK** (idempotent, rejoué 5 fois).

@@ -238,5 +238,85 @@
     "parent": "Communication",
     "rang": 1,
     "img": "NoteAlt"
+  },
+  {
+    "name_ecran": "Sante",
+    "text_ecran": "Santé au travail",
+    "typ_ecran": "MNU",
+    "parent": "",
+    "rang": 11,
+    "img": "MedicalServices"
+  },
+  {
+    "name_ecran": "Sante_MaSante",
+    "text_ecran": "Ma santé au travail",
+    "typ_ecran": "ECR",
+    "parent": "Sante",
+    "rang": 1,
+    "img": "Favorite"
+  },
+  {
+    "name_ecran": "RH_Sante_Visite_Liste",
+    "text_ecran": "Visites médicales",
+    "typ_ecran": "ECR",
+    "parent": "Sante",
+    "rang": 2,
+    "img": "EventAvailable"
+  },
+  {
+    "name_ecran": "RH_Sante_Aptitude_Liste",
+    "text_ecran": "Fiches d'aptitude",
+    "typ_ecran": "ECR",
+    "parent": "Sante",
+    "rang": 3,
+    "img": "AssignmentTurnedIn"
+  },
+  {
+    "name_ecran": "RH_Sante_Campagne",
+    "text_ecran": "Campagnes et convocations",
+    "typ_ecran": "ECR",
+    "parent": "Sante",
+    "rang": 4,
+    "img": "Campaign"
+  },
+  {
+    "name_ecran": "RH_Sante_Consultation_Liste",
+    "text_ecran": "Infirmerie",
+    "typ_ecran": "ECR",
+    "parent": "Sante",
+    "rang": 5,
+    "img": "MedicalServices"
+  },
+  {
+    "name_ecran": "RH_Sante_Examen_Liste",
+    "text_ecran": "Examens complémentaires",
+    "typ_ecran": "ECR",
+    "parent": "Sante",
+    "rang": 6,
+    "img": "Biotech"
+  },
+  {
+    "name_ecran": "RH_Sante_Maladie_Pro_Liste",
+    "text_ecran": "Maladies professionnelles",
+    "typ_ecran": "ECR",
+    "parent": "Sante",
+    "rang": 7,
+    "img": "Sick"
+  },
+  {
+    "name_ecran": "RH_Sante_Tableau_Bord",
+    "text_ecran": "Tableau de bord santé",
+    "typ_ecran": "ECR",
+    "parent": "Sante",
+    "rang": 8,
+    "img": "MonitorHeart"
+  },
+  {
+    "name_ecran": "RH_Declaration_AT_Suivi",
+    "text_ecran": "Suivi réglementaire AT",
+    "typ_ecran": "ECR",
+    "parent": "Sante",
+    "rang": 9,
+    "img": "AssignmentLate"
   }
 ] }
