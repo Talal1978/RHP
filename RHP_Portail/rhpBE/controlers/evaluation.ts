@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { estDate, toSqlDateFormat } from "../modules/module_format";
 import { lireSql } from "../modules/module_sqlRW";
-import { NVarChar, SmallDateTime } from "mssql";
+import { NVarChar, SmallDateTime, Int } from "mssql";
 
 export const getEvaluationListe = async (req: Request, res: Response) => {
     let {
@@ -18,10 +18,14 @@ export const getEvaluationListe = async (req: Request, res: Response) => {
     } = req.body;
 
     const { processId, ...theAgent } = req.params;
-    let idSoc = theAgent?.id_Societe || "0000";
+    const idSocNum = Number(theAgent?.id_Societe);
+    if (isNaN(idSocNum) || idSocNum <= 0) {
+        res.send({ result: false, message: "id_Societe invalide" });
+        return;
+    }
 
     // Build WHERE clause based on logic
-    let swhere = ` where id_Societe = ${idSoc}`;
+    let swhere = ` where id_Societe = @p_id_Societe`;
     Dat_Du = estDate(Dat_Du)
         ? toSqlDateFormat(Dat_Du)
         : toSqlDateFormat(new Date(1900, 0, 1));
@@ -29,41 +33,42 @@ export const getEvaluationListe = async (req: Request, res: Response) => {
         ? toSqlDateFormat(Dat_Au)
         : toSqlDateFormat(new Date(2045, 11, 31));
 
-    swhere += ` and (Dat_Du <= @Dat_Au or Dat_Au >= @Dat_Du) `;
+    swhere += ` and (Dat_Du <= @p_Dat_Au or Dat_Au >= @p_Dat_Du) `;
 
     const params: any[] = [
-        { param: "Dat_Du", sqlType: SmallDateTime, valeur: Dat_Du },
-        { param: "Dat_Au", sqlType: SmallDateTime, valeur: Dat_Au },
+        { param: "p_id_Societe", sqlType: Int, valeur: idSocNum },
+        { param: "p_Dat_Du", sqlType: SmallDateTime, valeur: Dat_Du },
+        { param: "p_Dat_Au", sqlType: SmallDateTime, valeur: Dat_Au },
     ];
 
     if (Evaluateur) {
-        swhere += ` and Cod_Evaluateur = @Evaluateur`;
-        params.push({ param: "Evaluateur", sqlType: NVarChar, valeur: Evaluateur });
+        swhere += ` and Cod_Evaluateur = @p_Evaluateur`;
+        params.push({ param: "p_Evaluateur", sqlType: NVarChar, valeur: Evaluateur });
     }
 
     if (Evalue) {
-        swhere += ` and Matricule = @Evalue`;
-        params.push({ param: "Evalue", sqlType: NVarChar, valeur: Evalue });
+        swhere += ` and Matricule = @p_Evalue`;
+        params.push({ param: "p_Evalue", sqlType: NVarChar, valeur: Evalue });
     }
 
     if (Cod_Entite) {
-        swhere += ` and isnull(Cod_Entite,'') = @Cod_Entite`;
-        params.push({ param: "Cod_Entite", sqlType: NVarChar, valeur: Cod_Entite });
+        swhere += ` and isnull(Cod_Entite,'') = @p_Cod_Entite`;
+        params.push({ param: "p_Cod_Entite", sqlType: NVarChar, valeur: Cod_Entite });
     }
 
     if (Cod_Grade) {
-        swhere += ` and isnull(Cod_Grade,'') = @Cod_Grade`;
-        params.push({ param: "Cod_Grade", sqlType: NVarChar, valeur: Cod_Grade });
+        swhere += ` and isnull(Cod_Grade,'') = @p_Cod_Grade`;
+        params.push({ param: "p_Cod_Grade", sqlType: NVarChar, valeur: Cod_Grade });
     }
 
     if (Cod_Evaluation) {
-        swhere += ` and isnull(Cod_Evaluation,'') = @Cod_Evaluation`;
-        params.push({ param: "Cod_Evaluation", sqlType: NVarChar, valeur: Cod_Evaluation });
+        swhere += ` and isnull(Cod_Evaluation,'') = @p_Cod_Evaluation`;
+        params.push({ param: "p_Cod_Evaluation", sqlType: NVarChar, valeur: Cod_Evaluation });
     }
 
     if (Statut_Evaluation) {
-        swhere += ` and isnull(Statut_Evaluation,'Planifiee') = @Statut_Evaluation`;
-        params.push({ param: "Statut_Evaluation", sqlType: NVarChar, valeur: Statut_Evaluation });
+        swhere += ` and isnull(Statut_Evaluation,'Planifiee') = @p_Statut_Evaluation`;
+        params.push({ param: "p_Statut_Evaluation", sqlType: NVarChar, valeur: Statut_Evaluation });
     }
 
     if (Rd1 === true || Rd1 === 'true') {

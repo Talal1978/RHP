@@ -1,10 +1,11 @@
 @use "../../_variables.scss";
-.container {
-  position: absolute; /* or position: fixed; */
+.login-page-container {
+  position: fixed;
   top: 0;
   left: 0;
-  width: 100vw;
+  width: 100%;
   height: 100vh;
+  z-index: 0;
 
   background-image: linear-gradient(
     variables.$gradientStart,
@@ -18,9 +19,12 @@
   align-items: center;
 
   .login {
-    padding: 1em;
+    padding: 1.5em;
     width: clamp(22rem, 24rem, 24rem);
-    height: 36rem;
+    min-height: 36rem;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-sizing: border-box;
     background-color: variables.$bgInput;
     border-radius: 10px;
     display: flex;
@@ -34,7 +38,7 @@
       font-optical-sizing: auto;
       font-weight: 700;
       font-style: normal;
-      font-size: 2em;
+      font-size: 1.5em;
       color: variables.$colorBase01;
       span {
         color: variables.$colorBase02;
@@ -50,8 +54,9 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: flex-start;
-      gap: 0.5em;
+      justify-content: center;
+      gap: 0.75em;
+      margin-top: 0.5em;
     }
     .txt {
       flex-grow: 3;
@@ -60,16 +65,24 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 1em;
+      gap: 1.5em;
     }
     .bouton,
     .textBox {
       width: 90%;
+      max-width: 100%;
+      box-sizing: border-box;
       // Fix for MUI TextField colors in Dark Mode
       & .MuiInputBase-input {
         color: variables.$foreColorBase01 !important;
       }
-      & .MuiInputLabel-root {
+      & .MuiIconButton-root {
+        color: variables.$foreColorBase01 !important;
+      }
+      & .MuiInputLabel-root:not(.MuiInputLabel-shrink) {
+        color: #9ca3af !important;
+      }
+      & .MuiInputLabel-root.MuiInputLabel-shrink {
         color: variables.$foreColorBase01 !important;
       }
       & .MuiInput-underline:before {

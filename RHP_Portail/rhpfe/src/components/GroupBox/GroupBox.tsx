@@ -1,7 +1,7 @@
 import { Box, Chip, Divider } from "@mui/material";
 import "./groupbox.scss";
 import React, { Children } from "react";
-import { relative } from "path";
+
 const GroupBox = ({
   sx,
   display,
@@ -32,6 +32,7 @@ const GroupBox = ({
       sx={{
         ...sx,
         marginInline: { xs: 0, sm: 0, md: 0, lg: "2em", xl: "3em" },
+        overflow: "hidden",
         // paddingInline: { xs: 0, sm: 0, md: 0, lg: "2em", xl: "3em" },
       }}
       className={`groupbox ${className}`}

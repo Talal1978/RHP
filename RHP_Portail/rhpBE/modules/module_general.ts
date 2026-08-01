@@ -5,12 +5,18 @@ import { NVarChar } from "mssql";
 export const findParam = async (req: Request, res: Response) => {
   return res.send(await getParams());
 };
+import { getCache, setCache } from "./module_cache";
+
 export async function getParams() {
+  const cached = getCache<any>("getParams");
+  if (cached) return cached;
   let sqlStr = `declare @s varchar(max)
     select @s=isnull( @s+',','select ')+''''+Valeur+''' as '''+Cod_Param+'''' from Param_General
     exec (@s)`;
   let rslParamGeneral = await lireSql(sqlStr, []);
-  return { ...rslParamGeneral.data[0] };
+  const result = { ...rslParamGeneral.data[0] };
+  setCache("getParams", result, 300);
+  return result;
 }
 export async function getParam(codParam: string) {
   const rsl = await lireSql(

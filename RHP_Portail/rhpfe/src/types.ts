@@ -44,16 +44,18 @@ export type TGed = {
   name_ecran: string;
   valeur_index: string;
 };
+import { ReactNode } from "react";
+
 export type TAlert = {
   titre?: string;
-  msg: string | JSX.Element;
+  msg: string | ReactNode;
   typMsg?: "warning" | "error" | "info" | "success";
   timeOut?: number;
 };
 
 export type TMsgBox = {
   titre?: string;
-  msg: string | JSX.Element;
+  msg: string | ReactNode;
   typMsg?: "warning" | "error" | "info" | "question" | "stop";
   typReply?: "OkOnly" | "YesNoCancel" | "OKCancel";
   handleOk?: () => Promise<any>;

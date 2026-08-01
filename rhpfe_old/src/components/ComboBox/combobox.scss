@@ -1,0 +1,19 @@
+@use "../../variables";
+.comboBoxContainer {
+  min-width: 150px;
+  display: flex !important;
+  flex-direction: row !important;
+  justify-content: flex-start !important;
+  align-items: flex-end !important;
+  gap: 3px !important;
+  .comboBox {
+    width: clamp(100px, auto, 550px);
+    padding-inline: 10px;
+    flex-grow: 1;
+  }
+  .clearIcon {
+    color: gray;
+    cursor: pointer;
+    margin-bottom: 5px;
+  }
+}

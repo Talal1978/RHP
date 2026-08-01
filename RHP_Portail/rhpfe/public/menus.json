@@ -208,11 +208,27 @@
     "img": "ReportProblem"
   },
   {
+    "name_ecran": "Outillage",
+    "text_ecran": "Outillage",
+    "typ_ecran": "MNU",
+    "parent": "",
+    "rang": 9,
+    "img": "Construction"
+  },
+  {
+    "name_ecran": "Outillage_Mouvement_Liste",
+    "text_ecran": "Mouvements Outillage",
+    "typ_ecran": "ECR",
+    "parent": "Outillage",
+    "rang": 1,
+    "img": "Inventory"
+  },
+  {
     "name_ecran": "Communication",
     "text_ecran": "Communication",
     "typ_ecran": "MNU",
     "parent": "",
-    "rang": 9,
+    "rang": 10,
     "img": "Topic"
   },
   {

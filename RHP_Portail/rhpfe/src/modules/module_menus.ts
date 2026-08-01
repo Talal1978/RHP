@@ -1,5 +1,4 @@
 import { loadJSON } from "./module_filesNfolders";
-import { SvgIconProps, SvgIconTypeMap } from "@mui/material";
 
 export interface controleMenusInterface {
   name_ecran: string;
@@ -10,7 +9,7 @@ export interface controleMenusInterface {
   img?: "";
 }
 export const controleMenus: controleMenusInterface[] = await loadJSON(
-  `${process.env.PUBLIC_URL}/menus.json`
+  `${import.meta.env.BASE_URL}menus.json`
 )
   .then((dt: any) => {
     if (Array.isArray(dt["menus"])) return dt["menus"];

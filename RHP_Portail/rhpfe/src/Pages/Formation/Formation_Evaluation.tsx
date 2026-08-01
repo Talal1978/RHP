@@ -250,7 +250,7 @@ const Formation_Evaluation = () => {
                 marginBottom: '10px'
             }}>
                 <Grid container spacing={2}>
-                    <Grid item xs={12} sm={6}>
+                    <Grid xs={12} sm={6}>
                         <Box>
                             <Typography variant="subtitle2" sx={{ color: colorBase.colorBase01, fontWeight: 'bold' }}>
                                 Formation
@@ -260,7 +260,7 @@ const Formation_Evaluation = () => {
                             </Typography>
                         </Box>
                     </Grid>
-                    <Grid item xs={12} sm={6}>
+                    <Grid xs={12} sm={6}>
                         <Box>
                             <Typography variant="subtitle2" sx={{ color: colorBase.colorBase01, fontWeight: 'bold' }}>
                                 Participant (Répondant)
@@ -270,7 +270,7 @@ const Formation_Evaluation = () => {
                             </Typography>
                         </Box>
                     </Grid>
-                    <Grid item xs={12} sm={6}>
+                    <Grid xs={12} sm={6}>
                         <Box>
                             <Typography variant="subtitle2" sx={{ color: colorBase.colorBase01, fontWeight: 'bold' }}>
                                 Formulaire
@@ -280,7 +280,7 @@ const Formation_Evaluation = () => {
                             </Typography>
                         </Box>
                     </Grid>
-                    <Grid item xs={12} sm={6}>
+                    <Grid xs={12} sm={6}>
                         <Box>
                             <Typography variant="subtitle2" sx={{ color: colorBase.colorBase01, fontWeight: 'bold' }}>
                                 Etat de la réponse (ID: {currentCodReply})

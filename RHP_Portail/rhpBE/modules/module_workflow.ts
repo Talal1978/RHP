@@ -61,8 +61,12 @@ export async function get_parapheur(req: Request, res: Response) {
   const { id_Societe, Matricule } = req.params;
   const rsl =
     await lireSql(`select Intitule as 'Type de documents',Valeur_Index as Référence, case when Typ_Signature ='L' then 'Lignes' else 'Entête' end 'Type de signature',
-  Operande_Signature as 'Opérande', t.Statut, Name_Ecran, Index_Ecran,Typ_Document from dbo.Sys_Parapheur_Signature('${Matricule}','${id_Societe}') s
+  Operande_Signature as 'Opérande', t.Statut, Name_Ecran, Index_Ecran,Typ_Document from dbo.Sys_Parapheur_Signature(@p_Matricule,@p_id_Societe) s
   outer apply (select Membre as Statut from Param_Rubriques where Nom_Controle = 'Statut_Signature' and Valeur=s.Statut) t
-  order by Intitule,Valeur_Index`);
+  order by Intitule,Valeur_Index`,
+    [
+      { param: "p_Matricule", sqlType: NVarChar, valeur: Matricule },
+      { param: "p_id_Societe", sqlType: Int, valeur: id_Societe },
+    ]);
   return res.send(rsl);
 }

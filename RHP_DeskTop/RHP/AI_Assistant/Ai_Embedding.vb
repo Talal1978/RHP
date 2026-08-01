@@ -248,7 +248,7 @@ Public Class Ai_Embedding
         If String.IsNullOrEmpty(Config.ApiKey) Then Return
 
         Select Case Config.Provider.ToUpper()
-            Case "OPENAI", "MISTRAL", "COHERE", "VOYAGEAI", "HUGGINGFACE"
+            Case "OPENAI", "MISTRAL", "COHERE", "VOYAGEAI", "HUGGINGFACE", "KIMI", "MOONSHOT"
                 request.Headers.Add("Authorization", "Bearer " & Config.ApiKey)
 
             Case "AZUREOPENAI"

@@ -40,7 +40,7 @@ const DiverseEditions = () => {
             <Grid container spacing={3}>
                 {editions.map((edition, index) => (
                     <Grow in={true} timeout={(index + 1) * 200} key={edition.Cod_Report}>
-                        <Grid item xs={12} sm={6} md={4} lg={3}>
+                        <Grid xs={12} sm={6} md={4} lg={3}>
                             <Card
                                 onClick={() => handleCardClick(edition)}
                                 sx={{

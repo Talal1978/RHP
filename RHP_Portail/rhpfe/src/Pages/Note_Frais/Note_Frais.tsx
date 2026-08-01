@@ -74,8 +74,8 @@ const Note_Frais = () => {
   const [entete, setEntete] = useState<TEntete>(iniEntete);
   const [canSave, setCanSave] = useState(false);
   const [detail, setDetail] = useState<TDetail[]>([iniDetail]);
-  const enteteRef = useRef<TEntete>();
-  const detailRef = useRef<TDetail[]>();
+  const enteteRef = useRef<TEntete | undefined>(undefined);
+  const detailRef = useRef<TDetail[] | undefined>(undefined);
   const [natureFrais, setNatureFrais] = useState<ObjetGenerique[]>([]);
   async function ondelete(e: { rowIndex: number; row: ObjetGenerique }) {
     const rsl = await msgBox({
@@ -569,7 +569,7 @@ const Note_Frais = () => {
         sx={{
           "& .grpDiv": {
             padding: "2em 5px 5px 5px",
-            width: "90vw",
+            width: "100%",
             minHeight: "10em",
           },
         }}

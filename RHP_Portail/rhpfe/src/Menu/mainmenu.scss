@@ -7,9 +7,10 @@ $sidebar-breakpoint01: 1000px;
   position: absolute;
   top: 0;
   left: 0;
-  width: 100vw;
+  width: 100%;
   height: 100%;
-  overflow: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
   .menuNavBar {
     width: 100%;
     height: $navbar-height;
@@ -20,25 +21,35 @@ $sidebar-breakpoint01: 1000px;
     z-index: 999;
   }
   .corps {
-    height: calc(100% - $navbar-height);
     width: 100%;
+    min-height: calc(100% - $navbar-height);
+    margin-top: $navbar-height;
+    padding-bottom: 3em;
     background-color: variables.$bgColorBase01;
-    position: absolute;
-    top: $navbar-height;
+    position: relative;
     left: 0;
+    box-sizing: border-box;
+    overflow-x: hidden;
+    display: flex;
+    justify-content: center;
     .ecran {
       display: flex;
       flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      position: absolute;
-      top: 0;
-      left: $sidebar-collapsed-width;
+      justify-content: flex-start;
+      align-items: stretch;
+      position: relative;
+      width: 100%;
+      max-width: 1800px;
+      margin: 0 auto;
       padding: 1em;
-      width: calc(100% - $sidebar-collapsed-width);
-      @media (max-width: $sidebar-breakpoint01) {
-        left: 0;
-        width: 100%;
+      min-width: 0;
+      box-sizing: border-box;
+      overflow-x: hidden;
+      @media (max-width: 1000px) {
+        padding: 1em 0.5em;
+      }
+      @media (min-width: 1001px) {
+        width: calc(100% - $sidebar-collapsed-width);
       }
     }
     .Separateur {

@@ -1,4 +1,6 @@
-import { Button, TextField, Backdrop, CircularProgress, FormControlLabel, Switch } from "@mui/material";
+import { Button, TextField, Backdrop, CircularProgress, FormControlLabel, Switch, InputAdornment, IconButton } from "@mui/material";
+import Visibility from "@mui/icons-material/Visibility";
+import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import "./login.scss";
 import {
   Agent,
@@ -28,6 +30,7 @@ export const Login = () => {
   const showAlert = useAlert();
   const [isLoading, setIsLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     const storedToken = localStorage.getItem("auth_token");
@@ -76,6 +79,7 @@ export const Login = () => {
       login: credention.login,
     });
     setIsLoading(false);
+    console.log(rsl);
 
     if (rsl?.data?.result) {
       showAlert({
@@ -172,10 +176,10 @@ export const Login = () => {
   );
 
   return (
-    <div className="container">
+    <div className="login-page-container">
       <div className="login">
         <img
-          src={`${process.env.PUBLIC_URL}/logo.png`}
+          src={`${import.meta.env.BASE_URL}logo.png`}
           width={"50%"}
           alt="Logo"
         />
@@ -183,7 +187,7 @@ export const Login = () => {
           De la gestion de la <span>paie</span> à la gestion des{" "}
           <span>talents</span>
         </span>
-        <form className="txt" onKeyUp={(e) => keyUpEv(e)} autoComplete="off">
+        <form className="txt" onKeyUp={(e) => keyUpEv(e)} onSubmit={(e) => e.preventDefault()} autoComplete="off">
           {/* Prevent browser autocomplete - Decoy Inputs */}
           <input type="text" style={{ display: "none" }} />
           <input type="password" style={{ display: "none" }} />
@@ -220,12 +224,26 @@ export const Login = () => {
             label="Votre mot de passe"
             variant="standard"
             className="textBox"
-            type={credention.password ? "password" : "text"}
+            type={showPassword ? "text" : "password"}
             autoComplete="new-password"
             value={credention.password}
             onFocus={(event) => {
               event.target.removeAttribute("readonly");
-              (event.target as HTMLInputElement).type = "password";
+            }}
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    aria-label={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    onMouseDown={(e) => e.preventDefault()}
+                    edge="end"
+                    sx={{ color: colorBase.foreColorBase01 }}
+                  >
+                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              ),
             }}
             inputProps={{
               readOnly: true,
@@ -253,6 +271,7 @@ export const Login = () => {
         </form>
         <div className="btn">
           <Bouton
+            type="button"
             className="bouton"
             label="Accédez au portail"
             variant="contained"

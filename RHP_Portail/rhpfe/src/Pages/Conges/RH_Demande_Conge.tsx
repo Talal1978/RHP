@@ -65,7 +65,7 @@ const RH_Demande_Conge = () => {
   const [calculerConge, setCalculerConge] = useState(true);
   const [droitsConge, setDroitsConge] = useState<TConge>(iniConge);
   const [canSave, setCanSave] = useState(false);
-  const enteteRef = useRef<TEntete>();
+  const enteteRef = useRef<TEntete | undefined>(undefined);
   const myAxios = useAxiosPost();
   const { isXs, isSm, isLg, isXl } = useContext(cntX);
   function stateChange(champs: string, valeur: any) {
@@ -574,7 +574,7 @@ const RH_Demande_Conge = () => {
         sx={{
           "& .grpDiv": {
             padding: "2em 5px 5px 5px",
-            width: "90vw",
+            width: "100%",
             maxWidth: "1200px",
             minHeight: "10em",
           },
@@ -628,6 +628,7 @@ const RH_Demande_Conge = () => {
                 valeur={entete?.Commentaire || ""}
                 style={{ width: "100%" }}
                 onchange={stateChange}
+                InputLabelProps={{ shrink: true }}
               />
             </Grid>
             <Grid
@@ -635,7 +636,7 @@ const RH_Demande_Conge = () => {
               sm={12}
               lg={6}
               xl={6}
-              sx={{ display: "flex", gap: "3px" }}
+              sx={{ display: "flex", gap: "8px", alignItems: "flex-end" }}
             >
               <CalendarZoom
                 nomControle="Dat_Deb_Conge"
@@ -643,7 +644,7 @@ const RH_Demande_Conge = () => {
                 valeur={entete?.Dat_Deb_Conge}
                 onchange={stateChange}
                 sx={{
-                  width: "60%",
+                  flex: 1,
                   "& input": { fontSize: { xs: "0.85em", sm: "1em" } },
                 }}
                 onClear={() => stateChange("Dat_Deb_Conge", "")}
@@ -655,7 +656,8 @@ const RH_Demande_Conge = () => {
                 onchange={stateChange}
                 rubrique="am_pm"
                 style={{
-                  width: "45%",
+                  width: "150px",
+                  flexShrink: 0,
                 }}
               />
             </Grid>
@@ -664,7 +666,7 @@ const RH_Demande_Conge = () => {
               sm={12}
               lg={6}
               xl={6}
-              sx={{ display: "flex", gap: "3px" }}
+              sx={{ display: "flex", gap: "8px", alignItems: "flex-end" }}
             >
               <CalendarZoom
                 nomControle="Dat_Fin_Conge"
@@ -672,7 +674,7 @@ const RH_Demande_Conge = () => {
                 valeur={entete?.Dat_Fin_Conge}
                 onchange={stateChange}
                 sx={{
-                  width: "60%",
+                  flex: 1,
                   "& input": { fontSize: { xs: "0.85em", sm: "1em" } },
                 }}
                 onClear={() => stateChange("Dat_Fin_Conge", "")}
@@ -684,7 +686,8 @@ const RH_Demande_Conge = () => {
                 onchange={stateChange}
                 rubrique="am_pm"
                 style={{
-                  width: "45%",
+                  width: "150px",
+                  flexShrink: 0,
                 }}
               />
             </Grid>

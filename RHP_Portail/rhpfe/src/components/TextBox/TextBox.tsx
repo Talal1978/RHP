@@ -18,6 +18,7 @@ function TextBox({
   onchange = () => { },
   style,
   findlibelle,
+  InputLabelProps,
   ...props
 }: TextFieldProps & {
   nomControle: string;
@@ -66,11 +67,17 @@ function TextBox({
         ...style,
       }}
       sx={{
+        minWidth: 0,
+        width: "100%",
+        overflow: "hidden",
         "& .MuiInputBase-input": {
           textAlign:
             type === "number" || type === "integer" ? "right" : "left",
           fontSize: { xs: "1rem", sm: "1rem" },
           colorScheme: theme.palette.mode,
+          whiteSpace: "nowrap",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
         },
         "& .MuiInputLabel-root": {
           fontSize: { xs: "1rem", sm: "1rem" },
@@ -84,6 +91,7 @@ function TextBox({
       }}
       InputLabelProps={{
         style: estErreur ? styleLabelError : styleLabel,
+        ...InputLabelProps,
       }}
       InputProps={{
         readOnly: readonly || !!findlibelle,

@@ -13,6 +13,17 @@
             .Titre_lbl.Text = MsgTitre
             .Msg_txt.Text = MsgTexte
             .Theme = MsgIcon
+            ' En cas d'avertissement, le bouton Annuler est activé par défaut
+            If MsgIcon = msgIcon.Warning Then
+                Select Case MsgButton
+                    Case MessageBoxButtons.OKCancel
+                        msgDefaultButton = MessageBoxDefaultButton.Button1 ' Annuler
+                    Case MessageBoxButtons.YesNoCancel
+                        msgDefaultButton = MessageBoxDefaultButton.Button2 ' Annuler
+                    Case MessageBoxButtons.YesNo
+                        msgDefaultButton = MessageBoxDefaultButton.Button1 ' Non (pas de bouton Annuler)
+                End Select
+            End If
             Select Case MsgButton
                 Case MessageBoxButtons.OKCancel
                     .btn_02_ud.Visible = False

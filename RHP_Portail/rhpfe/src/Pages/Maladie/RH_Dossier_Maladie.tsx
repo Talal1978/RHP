@@ -58,7 +58,7 @@ const RH_Dossier_Maladie = () => {
   }, [num]);
   const [entete, setEntete] = useState<TEntete>(iniEntete);
   const [canSave, setCanSave] = useState(false);
-  const enteteRef = useRef<TEntete>();
+  const enteteRef = useRef<TEntete | undefined>(undefined);
   const myAxios = useAxiosPost();
   const { isXs, isSm, isLg, isXl } = useContext(cntX);
   function stateChange(champs: string, valeur: any) {
@@ -422,7 +422,7 @@ const RH_Dossier_Maladie = () => {
         sx={{
           "& .grpDiv": {
             padding: "2em 5px 5px 5px",
-            width: "90vw",
+            width: "100%",
             maxWidth: "1000px",
             minHeight: "10em",
           },

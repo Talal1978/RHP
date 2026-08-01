@@ -242,16 +242,21 @@ const TOOLS: any = {
 
 // Initialize AI Context (Called at Server Start)
 export const initAiContext = async (idSociete: number = 101) => {
+    const idSocNum = Number(idSociete);
+    if (isNaN(idSocNum) || idSocNum <= 0) {
+        console.error("[AI] Invalid idSociete:", idSociete);
+        return;
+    }
     if (isAiLoading) return; // Prevent double init
     isAiLoading = true;
     isAiLoaded = false;
 
     try {
 
-
         // 1. Load Agent Config
         const resAgent = await lireSql(
-            `SELECT TOP 1 * FROM Ai_Agent WHERE ISNULL(NULLIF(id_Societe, -1), ${idSociete}) = ${idSociete}`
+            `SELECT TOP 1 * FROM Ai_Agent WHERE ISNULL(NULLIF(id_Societe, -1), @p_idSociete) = @p_idSociete`,
+            [{ param: "p_idSociete", sqlType: Int, valeur: idSocNum }]
         );
         if (resAgent.result && resAgent.data.length > 0) {
             AgentConfig = resAgent.data[0];
@@ -262,7 +267,8 @@ export const initAiContext = async (idSociete: number = 101) => {
 
         // 2. Load Embedding Config
         const resEmbed = await lireSql(
-            `SELECT TOP 1 * FROM Ai_Embedding WHERE ISNULL(NULLIF(id_Societe, -1), ${idSociete}) = ${idSociete}`
+            `SELECT TOP 1 * FROM Ai_Embedding WHERE ISNULL(NULLIF(id_Societe, -1), @p_idSociete) = @p_idSociete`,
+            [{ param: "p_idSociete", sqlType: Int, valeur: idSocNum }]
         );
         if (resEmbed.result && resEmbed.data.length > 0) {
             EmbeddingConfig = resEmbed.data[0];
@@ -273,7 +279,8 @@ export const initAiContext = async (idSociete: number = 101) => {
 
         // 3. Load Knowledge Base
         const resKB = await lireSql(
-            `SELECT Id, Source, TextChunk, Embedding FROM Ai_KnowledgeBase WHERE ISNULL(NULLIF(id_Societe, -1), ${idSociete}) = ${idSociete}`
+            `SELECT Id, Source, TextChunk, Embedding FROM Ai_KnowledgeBase WHERE ISNULL(NULLIF(id_Societe, -1), @p_idSociete) = @p_idSociete`,
+            [{ param: "p_idSociete", sqlType: Int, valeur: idSocNum }]
         );
 
         if (resKB.result && resKB.data.length > 0) {
@@ -319,6 +326,52 @@ const cosineSimilarity = (vecA: number[], vecB: number[]) => {
     return dotProduct / (magA * magB);
 };
 
+// Generic Chat Provider Call (used for the main answer AND the Re-Act analysis)
+const callAgentChat = async (chatMessages: { role: string; content: string }[], timeoutMs: number = 90000): Promise<string> => {
+    if (!AgentConfig) return "";
+
+    const provider = AgentConfig.Provider.toUpperCase();
+    let url = AgentConfig.aiUrl.replace("{MODEL}", AgentConfig.Modele);
+    const headers: any = { "Content-Type": "application/json" };
+    let payload: any = {};
+
+    if (provider === "GEMINI") {
+        url += `?key=${AgentConfig.ApiKey}`;
+        // Gemini only supports 'user' and 'model' roles -> map system/assistant accordingly
+        // and merge consecutive same-role messages
+        const contents: any[] = [];
+        for (const m of chatMessages) {
+            const role = m.role === "assistant" ? "model" : "user";
+            const last = contents[contents.length - 1];
+            if (last && last.role === role) {
+                last.parts[0].text += "\n\n" + m.content;
+            } else {
+                contents.push({ role, parts: [{ text: m.content }] });
+            }
+        }
+        payload = { contents };
+    } else if (provider === "OLLAMA") {
+        payload = {
+            model: AgentConfig.Modele,
+            prompt: chatMessages
+                .map(m => `${m.role === "user" ? "User" : (m.role === "system" ? "Instructions" : "Assistant")}: ${m.content}`)
+                .join("\n\n"),
+            stream: false
+        };
+    } else {
+        // OpenAI Standard
+        headers["Authorization"] = `Bearer ${AgentConfig.ApiKey}`;
+        if (provider === "AZUREOPENAI") headers["api-key"] = AgentConfig.ApiKey;
+        payload = { model: AgentConfig.Modele, messages: chatMessages };
+    }
+
+    const chatRes = await axios.post(url, payload, { headers, timeout: timeoutMs });
+
+    if (provider === "GEMINI") return chatRes.data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+    if (provider === "OLLAMA") return chatRes.data.response || "";
+    return chatRes.data.choices?.[0]?.message?.content || "";
+};
+
 // Intent Classification Helper
 const classifyIntent = async (question: string, conversationHistory: any[]): Promise<'ACTION' | 'KNOWLEDGE'> => {
     if (!AgentConfig) return 'KNOWLEDGE';
@@ -355,6 +408,13 @@ Réponds UNIQUEMENT par "ACTION" ou "KNOWLEDGE", sans explication.`;
         let classificationPayload: any = {};
         const provider = AgentConfig.Provider.toUpperCase();
 
+        // Use a fast (non-reasoning) model for classification when possible.
+        // Reasoning models (kimi-k2.x, kimi-k3, ...) waste ~7s "thinking" for a binary answer.
+        const isMoonshot = provider === "KIMI" || AgentConfig.aiUrl.includes("moonshot");
+        const classificationModel = (isMoonshot && provider !== "GEMINI" && provider !== "OLLAMA")
+            ? "moonshot-v1-8k"
+            : AgentConfig.Modele;
+
         if (provider === "GEMINI") {
             classificationUrl += `?key=${AgentConfig.ApiKey}`;
             classificationPayload = {
@@ -370,12 +430,23 @@ Réponds UNIQUEMENT par "ACTION" ou "KNOWLEDGE", sans explication.`;
             classificationHeaders["Authorization"] = `Bearer ${AgentConfig.ApiKey}`;
             if (provider === "AZUREOPENAI") classificationHeaders["api-key"] = AgentConfig.ApiKey;
             classificationPayload = {
-                model: AgentConfig.Modele,
+                model: classificationModel,
                 messages: [{ role: "user", content: classificationPrompt }]
             };
         }
 
-        const classificationRes = await axios.post(classificationUrl, classificationPayload, { headers: classificationHeaders });
+        let classificationRes;
+        try {
+            classificationRes = await axios.post(classificationUrl, classificationPayload, { headers: classificationHeaders, timeout: 30000 });
+        } catch (fastErr) {
+            // Fallback to the configured model if the fast one is unavailable
+            if (classificationModel !== AgentConfig.Modele) {
+                classificationPayload.model = AgentConfig.Modele;
+                classificationRes = await axios.post(classificationUrl, classificationPayload, { headers: classificationHeaders, timeout: 60000 });
+            } else {
+                throw fastErr;
+            }
+        }
 
         let classification = "";
         if (provider === "GEMINI") {
@@ -396,8 +467,92 @@ Réponds UNIQUEMENT par "ACTION" ou "KNOWLEDGE", sans explication.`;
     }
 };
 
+// Get Embedding vector for a question
+const getQuestionEmbedding = async (question: string): Promise<number[]> => {
+    let embedUrl = EmbeddingConfig!.aiUrl.replace("{MODEL}", EmbeddingConfig!.Modele);
+    let embedHeaders: any = { "Content-Type": "application/json" };
+    let embedPayload: any = {};
+
+    const providerEmb = EmbeddingConfig!.Provider.toUpperCase();
+
+    if (providerEmb === "GEMINI") {
+        embedUrl += `?key=${EmbeddingConfig!.ApiKey}`;
+        // Gemini embedContent uses 'content' (singular)
+        embedPayload = { content: { parts: [{ text: question }] } };
+    } else if (providerEmb === "OLLAMA") {
+        embedPayload = { model: EmbeddingConfig!.Modele, prompt: question };
+    } else {
+        // OpenAI Standard
+        embedHeaders["Authorization"] = `Bearer ${EmbeddingConfig!.ApiKey}`;
+        if (providerEmb === "AZUREOPENAI") embedHeaders["api-key"] = EmbeddingConfig!.ApiKey;
+        embedPayload = { input: question, model: EmbeddingConfig!.Modele };
+    }
+
+    try {
+        // Call Embedding API
+        const embRes = await axios.post(embedUrl, embedPayload, { headers: embedHeaders, timeout: 30000 });
+
+        if (providerEmb === "GEMINI") {
+            return embRes.data.embedding.values;
+        } else if (providerEmb === "OLLAMA") {
+            return embRes.data.embedding;
+        } else {
+            return embRes.data.data[0].embedding;
+        }
+    } catch (embeddingError: any) {
+        console.error("[AI] Embedding API Error:", embeddingError?.response?.data || embeddingError.message);
+        throw new Error("Embedding API: " + (embeddingError?.response?.status || 500));
+    }
+};
+
+// Fetch rich user profile (poste, grade, entité, manager...) for prompt context
+const fetchRichUserData = async (currentUser: any, idSocNum: number): Promise<any> => {
+    if (!currentUser.Matricule) return {};
+    try {
+        const rsUser = await lireSql(`
+            SELECT
+                a.Nom_Agent, a.Prenom_Agent, a.Sexe, a.Dat_Naissance, a.Dat_Entree,
+                a.Cod_Entite, a.Cod_Poste, a.Cod_Grade,
+                g.Lib_Grade,
+                p.Lib_Poste,
+                e.Lib_Entite,
+                mgr.Nom_Agent as Mgr_Nom, mgr.Prenom_Agent as Mgr_Prenom
+            FROM Rh_Agent a
+            LEFT JOIN Org_Entite e ON a.id_Societe = e.id_Societe AND a.Cod_Entite = e.Cod_Entite
+            LEFT JOIN Rh_Agent mgr ON e.Responsable = mgr.Matricule AND e.id_Societe = mgr.id_Societe
+            LEFT JOIN Org_Poste p ON a.id_Societe = p.id_Societe AND a.Cod_Poste = p.Cod_Poste
+            LEFT JOIN Org_Grade g ON a.id_Societe = g.id_Societe AND a.Cod_Grade = g.Cod_Grade
+            WHERE a.id_Societe = @p_idSociete AND a.Matricule = @p_Matricule
+        `, [
+            { param: "p_Matricule", sqlType: NVarChar, valeur: currentUser.Matricule },
+            { param: "p_idSociete", sqlType: Int, valeur: idSocNum }
+        ]);
+
+        if (rsUser.result && rsUser.data.length > 0) {
+            const data = rsUser.data[0];
+            // Calculate Age
+            if (data.Dat_Naissance) {
+                const dob = new Date(data.Dat_Naissance);
+                const diffMs = Date.now() - dob.getTime();
+                const ageDt = new Date(diffMs);
+                data.Age = Math.abs(ageDt.getUTCFullYear() - 1970);
+            }
+            return data;
+        }
+    } catch (err) {
+        console.error("[AI] Error fetching rich user data:", err);
+    }
+    return {};
+};
+
 export const ask_ai_assistant = async (req: Request, res: Response) => {
     const { question, history } = req.body;
+    const { id_Societe } = req.params;
+    const idSocNum = Number(id_Societe);
+    if (isNaN(idSocNum) || idSocNum <= 0) {
+        res.send({ result: false, message: "id_Societe invalide" });
+        return;
+    }
 
     if (!question) {
         res.send({ result: false, message: "Question vide" });
@@ -453,48 +608,15 @@ export const ask_ai_assistant = async (req: Request, res: Response) => {
         // ===== STEP 0: CLASSIFY INTENT =====
         const maxHistory = AgentConfig.nb_Msg_Memory || 10;
         const conversationHistory = Array.isArray(history) ? history.slice(-maxHistory) : [];
+        const currentUser = req.params; // Validate middleware puts user info here
 
-        const intent = await classifyIntent(question, conversationHistory);
-
-
-        // 1. Get Embedding for Question (only for KNOWLEDGE intent)
-        let qVec: number[] = [];
-        try {
-            // Assuming Config URL is compatible (needs replacement logic similar to Desktop)
-            let embedUrl = EmbeddingConfig.aiUrl.replace("{MODEL}", EmbeddingConfig.Modele);
-            let embedHeaders: any = { "Content-Type": "application/json" };
-            let embedPayload: any = {};
-
-            const providerEmb = EmbeddingConfig.Provider.toUpperCase();
-
-            if (providerEmb === "GEMINI") {
-                embedUrl += `?key=${EmbeddingConfig.ApiKey}`;
-                // Gemini embedContent uses 'content' (singular)
-                embedPayload = { content: { parts: [{ text: question }] } };
-            } else if (providerEmb === "OLLAMA") {
-                embedPayload = { model: EmbeddingConfig.Modele, prompt: question };
-            } else {
-                // OpenAI Standard
-                embedHeaders["Authorization"] = `Bearer ${EmbeddingConfig.ApiKey}`;
-                if (providerEmb === "AZUREOPENAI") embedHeaders["api-key"] = EmbeddingConfig.ApiKey;
-                embedPayload = { input: question, model: EmbeddingConfig.Modele };
-            }
-
-
-            // Call Embedding API
-            const embRes = await axios.post(embedUrl, embedPayload, { headers: embedHeaders });
-
-            if (providerEmb === "GEMINI") {
-                qVec = embRes.data.embedding.values;
-            } else if (providerEmb === "OLLAMA") {
-                qVec = embRes.data.embedding;
-            } else {
-                qVec = embRes.data.data[0].embedding;
-            }
-        } catch (embeddingError: any) {
-            console.error("[AI] Embedding API Error:", embeddingError?.response?.data || embeddingError.message);
-            throw new Error("Embedding API: " + (embeddingError?.response?.status || 500));
-        }
+        // Run the 3 independent steps in PARALLEL to minimize latency:
+        // intent classification (LLM), question embedding (LLM), user profile (SQL)
+        const [intent, qVec, richUserData] = await Promise.all([
+            classifyIntent(question, conversationHistory),
+            getQuestionEmbedding(question),
+            fetchRichUserData(currentUser, idSocNum)
+        ]);
 
         // 2. Search Knowledge Base
         let docs = KnowledgeBase
@@ -508,45 +630,6 @@ export const ask_ai_assistant = async (req: Request, res: Response) => {
 
         // 3. Prepare System Prompt with Tools (or KB only for KNOWLEDGE intent)
         const toolsDesc = Object.entries(TOOLS).map(([name, def]: any) => `- ${name}: ${def.description}`).join("\n");
-        const currentUser = req.params; // Validate middleware puts user info here
-
-        // Rich User Data Fetching
-        let richUserData: any = {};
-        if (currentUser.Matricule) {
-            try {
-                const rsUser = await lireSql(`
-                    SELECT 
-                        a.Nom_Agent, a.Prenom_Agent, a.Sexe, a.Dat_Naissance, a.Dat_Entree,
-                        a.Cod_Entite, a.Cod_Poste, a.Cod_Grade,
-                        g.Lib_Grade,
-                        p.Lib_Poste,
-                        e.Lib_Entite,
-                        mgr.Nom_Agent as Mgr_Nom, mgr.Prenom_Agent as Mgr_Prenom
-                    FROM Rh_Agent a
-                    LEFT JOIN Org_Entite e ON a.id_Societe = e.id_Societe AND a.Cod_Entite = e.Cod_Entite
-                    LEFT JOIN Rh_Agent mgr ON e.Responsable = mgr.Matricule AND e.id_Societe = mgr.id_Societe
-                    LEFT JOIN Org_Poste p ON a.id_Societe = p.id_Societe AND a.Cod_Poste = p.Cod_Poste
-                    LEFT JOIN Org_Grade g ON a.id_Societe = g.id_Societe AND a.Cod_Grade = g.Cod_Grade
-                    WHERE a.id_Societe = @idSoc AND a.Matricule = @Matricule
-                `, [
-                    { param: "Matricule", sqlType: NVarChar, valeur: currentUser.Matricule },
-                    { param: "idSoc", sqlType: Int, valeur: currentUser.id_Societe || 101 }
-                ]);
-
-                if (rsUser.result && rsUser.data.length > 0) {
-                    richUserData = rsUser.data[0];
-                    // Calculate Age
-                    if (richUserData.Dat_Naissance) {
-                        const dob = new Date(richUserData.Dat_Naissance);
-                        const diffMs = Date.now() - dob.getTime();
-                        const ageDt = new Date(diffMs);
-                        richUserData.Age = Math.abs(ageDt.getUTCFullYear() - 1970);
-                    }
-                }
-            } catch (err) {
-                console.error("[AI] Error fetching rich user data:", err);
-            }
-        }
 
         const userContextPrompt = `
 User Context:
@@ -583,6 +666,7 @@ Instead, output a JSON Action Block exactly like this:
 Rules:
 - Use French in conversation.
 - If data is needed, use ###ACTION###.
+- The closing tag must be EXACTLY ###ACTION### (3 '#' before and after) and the JSON must be valid (double quotes).
 - Otherwise, use the Context below to answer.
 - IMPORTANT: NEVER mention the internal tool names (e.g. 'get_conge_droits', 'rh_agent') in your final answer text.
 - IMPORTANT: NEVER list sources or say "D'après les sources..." if you executed an action.
@@ -590,6 +674,7 @@ Rules:
 Rules:
 - Use French in conversation.
 - Provide informative answers based on the Context below.
+- NEVER invent procedures, rules or figures that are not present in the Context.
 - If you don't find relevant information in the Context, say so.
 `;
 
@@ -597,61 +682,16 @@ Rules:
         const fullSystemPrompt = `${systemInstruction}\n${userContextPrompt}\n${toolPrompt}\n\nContexte:\n${contextText}`;
 
         // 4. Ask Agent (Chat)
-        let agentUrl = AgentConfig.aiUrl.replace("{MODEL}", AgentConfig.Modele);
-        let agentHeaders: any = { "Content-Type": "application/json" };
-        let agentPayload: any = {};
-
-        const providerAgent = AgentConfig.Provider.toUpperCase();
-
-        if (providerAgent === "GEMINI") {
-            agentUrl += `?key=${AgentConfig.ApiKey}`;
-            // Gemini Structure - Build contents array with history
-            const contents = conversationHistory.map(msg => ({
-                role: msg.role === 'user' ? 'user' : 'model', // Gemini uses 'model' instead of 'assistant'
-                parts: [{ text: msg.content }]
-            }));
-            // Add current question
-            contents.push({ role: 'user', parts: [{ text: `${fullSystemPrompt}\n\nQuestion: ${question}` }] });
-            agentPayload = { contents };
-        } else if (providerAgent === "OLLAMA") {
-            // Ollama doesn't support multi-turn - append history to prompt
-            let historyText = conversationHistory.map(msg => `${msg.role === 'user' ? 'User' : 'Assistant'}: ${msg.content}`).join('\n');
-            agentPayload = {
-                model: AgentConfig.Modele,
-                prompt: `${fullSystemPrompt}\n\nHistorique:\n${historyText}\n\nQuestion: ${question}`,
-                stream: false
-            };
-        } else {
-            // OpenAI Standard
-            agentHeaders["Authorization"] = `Bearer ${AgentConfig.ApiKey}`;
-            if (providerAgent === "AZUREOPENAI") agentHeaders["api-key"] = AgentConfig.ApiKey;
-
-            const messages = [
-                { role: "system", content: fullSystemPrompt },
-                ...conversationHistory.map(msg => ({ role: msg.role, content: msg.content })),
-                { role: "user", content: question }
-            ];
-            agentPayload = { model: AgentConfig.Modele, messages };
-        }
-
-
-
+        let answer = "";
         try {
-            const chatRes = await axios.post(agentUrl, agentPayload, { headers: agentHeaders });
-
-
-            let answer = "";
-            if (providerAgent === "GEMINI") {
-                answer = chatRes.data.candidates?.[0]?.content?.parts?.[0]?.text;
-            } else if (providerAgent === "OLLAMA") {
-                answer = chatRes.data.response;
-            } else {
-                answer = chatRes.data.choices?.[0]?.message?.content;
-            }
-
+            answer = await callAgentChat([
+                { role: "system", content: fullSystemPrompt },
+                ...conversationHistory,
+                { role: "user", content: question }
+            ]);
 
             if (!answer) {
-                console.error("[AI] Empty answer received from provider. Dump:", JSON.stringify(chatRes.data).substring(0, 500));
+                console.error("[AI] Empty answer received from provider.");
             }
 
             // --- PERSONAL CONTEXT CLEANUP ---
@@ -664,81 +704,100 @@ Rules:
 
             // --- AGENTIC EXECUTION LOGIC ---
             let apiData = null;
-            // Improved Regex to be more robust (spaces, case insensitive, dotAll)
-            // Matches: ###ACTION### {json} ###ACTION###
-            // Or: ### ACTION ### {json} ### ACTION ###
-            const actionRegex = /###\s*ACTION\s*###\s*(\{[\s\S]*?\})\s*###\s*ACTION\s*###/i;
-            const match = answer.match(actionRegex);
 
-            if (match) {
+            // Détection tolérante du bloc d'action :
+            // - balises avec 2 '#' ou plus, espaces tolérés (###ACTION###, ###ACTION##, ## ACTION ##...)
+            // - balise fermante optionnelle (le modèle l'omet ou l'écrit mal parfois)
+            // - JSON extrait par comptage d'accolades (supporte "params" imbriqué)
+            let actionJson: any = null;
+            const actionOpenMatch = answer.match(/#{2,}\s*ACTION\s*#{2,}/i);
+            if (actionOpenMatch) {
+                const blockStart = actionOpenMatch.index ?? 0;
+                const jsonStart = answer.indexOf('{', blockStart + actionOpenMatch[0].length);
+                let blockEnd = blockStart + actionOpenMatch[0].length;
+                if (jsonStart !== -1) {
+                    let depth = 0, jsonEnd = -1, inString = false, escaped = false;
+                    for (let i = jsonStart; i < answer.length; i++) {
+                        const ch = answer[i];
+                        if (inString) {
+                            if (escaped) escaped = false;
+                            else if (ch === '\\') escaped = true;
+                            else if (ch === '"') inString = false;
+                        } else if (ch === '"') inString = true;
+                        else if (ch === '{') depth++;
+                        else if (ch === '}' && --depth === 0) { jsonEnd = i; break; }
+                    }
+                    if (jsonEnd !== -1) {
+                        try {
+                            actionJson = JSON.parse(answer.substring(jsonStart, jsonEnd + 1));
+                        } catch (jsonErr) {
+                            console.error("[AI] Failed to parse Action JSON:", jsonErr);
+                        }
+                        // Inclure la balise fermante éventuelle dans le bloc à supprimer
+                        const actionCloseMatch = answer.substring(jsonEnd + 1).match(/^\s*#{0,}\s*ACTION\s*#{0,}/i);
+                        blockEnd = jsonEnd + 1 + (actionCloseMatch ? actionCloseMatch[0].length : 0);
+                    } else {
+                        blockEnd = answer.length; // JSON jamais fermé : tout le reste appartient au bloc
+                    }
+                }
+                // Ne JAMAIS afficher le bloc brut ; une action prévue rend les sources KB hors sujet
+                answer = (answer.substring(0, blockStart) + answer.substring(blockEnd)).trim();
+                docs = [];
+            }
+
+            if (actionOpenMatch) {
                 try {
-                    const actionJson = JSON.parse(match[1]);
+                    if (!actionJson) throw new Error("Bloc ###ACTION### invalide ou JSON illisible");
                     const toolName = actionJson.tool;
                     const toolParams = actionJson.params;
 
-
-
                     if (TOOLS[toolName]) {
-                        // Remove the Action Block from the text answer
-                        answer = answer.replace(match[0], "").trim();
-                        if (answer.length === 0) answer = "Voici les informations demandées :";
-
                         try {
-                            // console.log(`[AI] Executing tool ${toolName} with params:`, JSON.stringify(toolParams));
                             apiData = await TOOLS[toolName].execute(toolParams, req);
-                            // console.log(`[AI] Tool ${toolName} execution completed. Success: ${apiData?.result}, Rows: ${apiData?.data?.length || 0}`);
 
                             if (!apiData || !apiData.result) {
-                                console.error(`[AI] Tool ${toolName} returned error:`, apiData?.sort || 'Unknown error');
+                                console.error(`[AI] Tool ${toolName} returned error:`, apiData?.sort || apiData?.message || 'Unknown error');
                                 answer = `Je ne peux pas accéder à cette information pour le moment (erreur technique).`;
                                 docs = [];
-                            } else if (!apiData.data || apiData.data.length === 0) {
-                                console.warn(`[AI] Tool ${toolName} returned empty data`);
-                                answer = `Aucune donnée disponible pour cette requête.`;
-                                docs = [];
+                                apiData = null;
                             } else {
                                 // Clear sources if action is successful
                                 docs = [];
-                                // UX: Replace any preamble with standard success text
-                                answer = "Voici les informations demandées :";
 
-                                // --- RE-ACT LOOP: Feed Tool Result back to AI for Analysis ---
-                                // We do this to allow the AI to "read" the data (e.g. Organigram) and answer specific questions
-                                // instead of just dumping the table.
+                                // Normalize tool rows
+                                let rows: any[] = [];
+                                if (Array.isArray(apiData.data)) rows = apiData.data;
+                                else if (apiData.data) rows = [apiData.data];
 
+                                let skipReact = false;
 
-                                // SMART FILTERING FOR ORGANIGRAM: Reduce data size for "my entity" queries
-                                let filteredData = apiData?.data || apiData;
-                                if (toolName === 'getOrganigramme' && Array.isArray(filteredData) && filteredData.length > 10) {
+                                // --- ORGANIGRAMME: SMART FILTERING + DIRECT ANSWER (BYPASS AI) ---
+                                if (toolName === 'getOrganigramme' && rows.length > 10) {
                                     const userCodEntite = richUserData?.Cod_Entite || currentUser.Cod_Entite;
                                     if (userCodEntite && (question.toLowerCase().includes('mon') || question.toLowerCase().includes('ma'))) {
-
-
                                         // Find user's entity
-                                        const userEntity = filteredData.find((e: any) => e.Cod_Entite === userCodEntite);
+                                        const userEntity = rows.find((e: any) => e.Cod_Entite === userCodEntite);
                                         if (userEntity) {
                                             const parentCode = userEntity.Parent;
 
                                             // DIRECT ANSWER FOR ATTACHMENT QUESTIONS - BYPASS AI
                                             if (question.toLowerCase().includes('attach') || question.toLowerCase().includes('dépend')) {
                                                 if (!parentCode || parentCode === '') {
-                                                    answer = `Votre entité **${userEntity.Lib_Entite}** est une entité de niveau racine.###PERSONAL_CONTEXT###`;
-                                                    docs = [];
-                                                    filteredData = null; // Skip Re-Act
+                                                    answer = `Votre entité **${userEntity.Lib_Entite}** est une entité de niveau racine.`;
+                                                    skipReact = true;
                                                 } else {
-                                                    const parentEntity = filteredData.find((e: any) => e.Cod_Entite === parentCode);
+                                                    const parentEntity = rows.find((e: any) => e.Cod_Entite === parentCode);
                                                     if (parentEntity) {
-                                                        answer = `Votre entité **${userEntity.Lib_Entite}** dépend de **${parentEntity.Lib_Entite}**.###PERSONAL_CONTEXT###`;
-                                                        docs = [];
-                                                        filteredData = null; // Skip Re-Act
+                                                        answer = `Votre entité **${userEntity.Lib_Entite}** dépend de **${parentEntity.Lib_Entite}**.`;
+                                                        skipReact = true;
                                                     }
                                                 }
+                                                if (skipReact) rows = []; // No data table for direct answers
                                             }
 
-                                            // If not direct answer, filter for Re-Act
-                                            if (filteredData) {
-                                                // Keep: user entity + parent + siblings (same parent) + children
-                                                filteredData = filteredData.filter((e: any) =>
+                                            // If not direct answer, keep only: user entity + parent + siblings + children
+                                            if (!skipReact) {
+                                                rows = rows.filter((e: any) =>
                                                     e.Cod_Entite === userCodEntite || // User's entity
                                                     e.Cod_Entite === parentCode || // Parent
                                                     e.Parent === parentCode || // Siblings
@@ -747,12 +806,17 @@ Rules:
                                             }
                                         }
                                     }
+                                }
 
-                                    // Only proceed with Re-Act if filteredData is not null (not already answered)
-                                    if (filteredData && Array.isArray(filteredData) && filteredData.length > 0) {
-                                        const toolResultStr = JSON.stringify(filteredData).substring(0, 50000); // Increased limit
-                                        const followUpSystem = `
-RÉSULTAT DE L'OUTIL (${toolName}):
+                                // --- RE-ACT LOOP (ALL TOOLS): Feed Tool Result back to AI for Analysis ---
+                                // The AI reads the data and formulates a natural answer adapted to the question.
+                                if (!skipReact) {
+                                    const toolResultStr = rows.length > 0
+                                        ? JSON.stringify(rows).substring(0, 30000)
+                                        : "[] (AUCUNE LIGNE RETOURNÉE)";
+
+                                    const followUpSystem = `
+RÉSULTAT DE L'OUTIL "${toolName}" (${TOOLS[toolName].description}):
 ${toolResultStr}
 
 INSTRUCTIONS SPÉCIFIQUES:
@@ -772,108 +836,64 @@ POUR TROUVER L'ENTITÉ PARENTE (attachement):
 4. Retourne le **Lib_Entite** de cet objet parent
 
 Si Parent est vide/null, dis que c'est une entité de niveau racine (Direction Générale).
-
-EXEMPLE:
-Question: "Quelle est l'entité d'attachement de mon entité ?"
-→ Cherche {Cod_Entite: "${richUserData.Cod_Entite || currentUser.Cod_Entite}"}
-→ Parent = "DIR_COM"
-→ Cherche {Cod_Entite: "DIR_COM"}
-→ Réponse: "Votre entité dépend de **[Lib_Entite trouvé]**"
 ` : `
 Utilise les données JSON ci-dessus pour répondre PRÉCISÉMENT à la question.
 `}
 
 RÈGLES:
-- NE DIS JAMAIS "J'ai consulté", "D'après", "Selon les données". Donne DIRECTEMENT la réponse.
-- Si introuvable: "Je ne trouve pas cette information dans l'organigramme."
-- Format: Markdown (**gras**)
-- MAX 2 phrases
+- Si le résultat est VIDE (aucune ligne): réponds naturellement qu'il n'y a rien, en ADAPTANT la formulation à la question posée (ex: pour une question sur les documents à signer → "Vous n'avez aucun document en attente de signature."). N'utilise JAMAIS la phrase "Aucune donnée disponible pour cette requête".
+- Si le résultat contient des données: synthétise l'essentiel en 1 à 3 phrases (les données détaillées seront affichées en tableau sous ta réponse).
+- NE DIS JAMAIS "J'ai consulté", "D'après les données", "Selon l'outil". Donne DIRECTEMENT la réponse.
+- NE GÉNÈRE AUCUN bloc ###ACTION###. Réponds uniquement en texte naturel.
+- Format: Markdown (**gras**).
 `;
-                                        // Re-Call AI with new context
-                                        // We reuse the existing configuration 'AgentConfig'
-                                        if (AgentConfig) {
-                                            try {
-                                                const newHistory = [...conversationHistory, { role: 'user', content: question }];
-                                                let newPayload: any = {};
-                                                let newUrl = AgentConfig.aiUrl.replace("{MODEL}", AgentConfig.Modele);
+                                    try {
+                                        const reactAnswer = await callAgentChat([
+                                            { role: "system", content: `${systemInstruction}\n${userContextPrompt}` },
+                                            ...conversationHistory,
+                                            { role: "user", content: question },
+                                            { role: "system", content: followUpSystem }
+                                        ], 45000);
 
-                                                if (providerAgent === "GEMINI") {
-                                                    newUrl += `?key=${AgentConfig.ApiKey}`;
-                                                    const contents = newHistory.map(msg => ({
-                                                        role: msg.role === 'user' ? 'user' : 'model',
-                                                        parts: [{ text: msg.content }]
-                                                    }));
-                                                    // Add Tool Context
-                                                    contents.push({ role: 'user', parts: [{ text: followUpSystem }] });
-                                                    newPayload = { contents };
-                                                } else if (providerAgent === "OLLAMA") {
-                                                    newPayload = {
-                                                        model: AgentConfig.Modele,
-                                                        prompt: `${fullSystemPrompt}\n${followUpSystem}\nQuestion: ${question}`, // Simplified for Ollama
-                                                        stream: false
-                                                    };
-                                                } else {
-                                                    // OpenAI
-                                                    const messages = [
-                                                        { role: "system", content: fullSystemPrompt },
-                                                        ...newHistory,
-                                                        { role: "system", content: followUpSystem }
-                                                    ];
-                                                    newPayload = { model: AgentConfig.Modele, messages };
-                                                }
-
-                                                console.log("[AI] Re-Act Loop Call...");
-                                                const followupRes = await axios.post(newUrl, newPayload, {
-                                                    headers: agentHeaders,
-                                                    timeout: 30000 // 30 second timeout
-                                                });
-
-                                                let newAnswer = "";
-                                                if (providerAgent === "GEMINI") newAnswer = followupRes.data.candidates?.[0]?.content?.parts?.[0]?.text;
-                                                else if (providerAgent === "OLLAMA") newAnswer = followupRes.data.response;
-                                                else newAnswer = followupRes.data.choices?.[0]?.message?.content;
-
-                                                if (newAnswer) {
-                                                    answer = newAnswer;
-                                                    console.log("[AI] Re-Act Answer generated.");
-                                                } else {
-                                                    console.warn("[AI] Re-Act returned empty answer");
-                                                    answer = `Voici les données de l'organigramme (analyse automatique échouée) :`;
-                                                }
-                                            } catch (reActErr: any) {
-                                                console.error("[AI] Re-Act Loop Failed:", reActErr.message || reActErr);
-                                                // Fallback: Show data table without AI interpretation
-                                                answer = `Voici les informations disponibles :`;
-                                                answer = `Voici les informations demandées (Analyse auto échouée) :`;
-                                            }
+                                        if (reactAnswer && reactAnswer.trim().length > 0) {
+                                            answer = reactAnswer.trim();
+                                            // Sécurité : purger tout bloc ###ACTION### que le modèle aurait régénéré malgré la consigne
+                                            answer = answer
+                                                .replace(/#{2,}\s*ACTION\s*#{2,}[\s\S]*?#{2,}\s*ACTION\s*#{0,}/gi, "")
+                                                .replace(/#{2,}\s*ACTION\s*#{0,}/gi, "")
+                                                .trim();
+                                        } else {
+                                            console.warn("[AI] Re-Act returned empty answer");
+                                            answer = rows.length === 0
+                                                ? "Je n'ai trouvé aucun élément correspondant à votre demande."
+                                                : "Voici les informations demandées :";
                                         }
-                                        // -------------------------------------------------------------
-
-                                        // SPECIAL HANDLING FOR LEAVE BALANCE (Legacy/Helper) - Append if not already in answer
-                                        if (toolName === 'get_conge_droits' && apiData && apiData.data && apiData.data.length > 0) {
-                                            // Context is usually handled by LLM now, but we keep specific logic if needed
-                                        }
-
-                                        if (apiData && apiData.data && Array.isArray(apiData.data)) {
-                                            apiData = apiData.data;
-                                        } else if (apiData && apiData.data) {
-                                            apiData = [apiData.data];
-                                        }
+                                    } catch (reActErr: any) {
+                                        console.error("[AI] Re-Act Loop Failed:", reActErr.message || reActErr);
+                                        answer = rows.length === 0
+                                            ? "Je n'ai trouvé aucun élément correspondant à votre demande."
+                                            : "Voici les informations demandées :";
                                     }
-                                } // Close if (filteredData && Array.isArray(filteredData)...)
-                            } // Close else (Success block)
+                                }
+
+                                // Attach rows for the frontend table (null if empty)
+                                apiData = rows.length > 0 ? rows : null;
+                            }
                         } catch (toolExecErr: any) {
                             console.error(`[AI] Tool ${toolName} execution failed:`, toolExecErr);
                             answer = `Erreur lors de l'exécution de l'outil : ${toolExecErr.message}`;
                             docs = [];
+                            apiData = null;
                         }
 
                     } else {
                         console.warn(`[AI] Unknown tool requested: ${toolName}`);
+                        answer = `Je ne peux pas accéder à cette information pour le moment (erreur technique).`;
                     }
 
-                } catch (jsonErr) {
-                    console.error("[AI] Failed to parse Action JSON:", jsonErr);
+                } catch (actionErr) {
+                    console.error("[AI] Invalid Action block:", actionErr);
+                    answer = `Je ne peux pas accéder à cette information pour le moment (erreur technique).`;
                 }
             }
             // -----------------------------
@@ -882,7 +902,8 @@ RÈGLES:
                 result: true,
                 data: {
                     answer: answer || "Désolé, je n'ai reçu aucune réponse du fournisseur d'IA.",
-                    sources: [...new Set(docs.map((d: any) => d.Source))], // Return unique sources
+                    // Sources affichées uniquement pour les questions de connaissances (jamais pour les actions sur données personnelles)
+                    sources: intent === 'KNOWLEDGE' ? [...new Set(docs.map((d: any) => d.Source))] : [],
                     sqlData: apiData // Attach Tool Data (reusing proposed field name)
                 }
             });

@@ -53,14 +53,18 @@ const RH_Declaration_AT_Liste = lazy(() => import("../Pages/Accident_Travail/RH_
 const Dashboard = lazy(() => import("../Pages/Dashboard/Dashboard"));
 const Communication_Blogs_Liste = lazy(() => import("../Pages/Communication/Communication_Blogs_Liste"));
 const Communication_Blog = lazy(() => import("../Pages/Communication/Communication_Blog"));
+const Outillage_Mouvement_Liste = lazy(() => import("../Pages/Outillage/Outillage_Mouvement_Liste"));
+const Outillage_Mouvement = lazy(() => import("../Pages/Outillage/Outillage_Mouvement"));
 
 const Ecran = ({ style }: { style?: React.CSSProperties }) => {
   const { tbnMenu, settbnMenu, showSignature, signatureProps } =
     useContext(cntX);
   const { ecran } = useParams<{ ecran: string }>();
   const [currentEcran, setEcran] = useState<React.ReactNode>();
+  console.log("[Ecran] render, ecran=", ecran);
 
   useEffect(() => {
+    console.log("[Ecran] useEffect ecran changed:", ecran);
     settbnMenu([]);
     switch (ecran) {
       case "RH_Agent":
@@ -166,6 +170,12 @@ const Ecran = ({ style }: { style?: React.CSSProperties }) => {
       case "Communication_Blog":
         setEcran(<Communication_Blog />);
         break;
+      case "Outillage_Mouvement_Liste":
+        setEcran(<Outillage_Mouvement_Liste />);
+        break;
+      case "Outillage_Mouvement":
+        setEcran(<Outillage_Mouvement />);
+        break;
       default:
         setEcran(
           <div
@@ -183,7 +193,7 @@ const Ecran = ({ style }: { style?: React.CSSProperties }) => {
             }}
           >
             <img
-              src={`${process.env.PUBLIC_URL}/logo.png`}
+              src={`${import.meta.env.BASE_URL}logo.png`}
               alt="Rh-P"
               style={{ maxWidth: "50vw", height: "100%", objectFit: "contain" }}
             />

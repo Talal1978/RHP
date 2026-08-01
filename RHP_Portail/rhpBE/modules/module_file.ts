@@ -1,11 +1,21 @@
 import { Response, NextFunction, Request } from "express";
 import { ecrireSql, lireSql } from "./module_sqlRW";
 import path from "node:path";
-import { BigInt, NVarChar } from "mssql";
+import { BigInt, NVarChar, Int } from "mssql";
 import fs from "fs";
 import { toSqlDateFormat } from "./module_format";
 import { VGLOBALES } from "./module_initialisation";
 import { findLibelle } from "./module_findLibelle";
+
+function resolveUploadSafe(targetPath: string): string {
+  const uploads = VGLOBALES.UPLOADS_PATH;
+  const resolved = path.resolve(uploads, targetPath);
+  if (!resolved.startsWith(uploads)) {
+    throw new Error("Path traversal détecté");
+  }
+  return resolved;
+}
+
 export default class fileClass {
   static upload = async (req: Request, res: Response, next: NextFunction) => {
     if (req.file) {
@@ -16,6 +26,30 @@ export default class fileClass {
         ? req.body.filename.replace(/ /g, "_")
         : req.file.originalname.replace(/ /g, "_");
       const finalFileName = `${seq}_${originalName}`;
+      const tempFilePath = path.resolve(
+        process.cwd(),
+        "tmp",
+        req.file.filename
+      );
+
+      const allowedMimeTypes = [
+        "image/", "application/pdf", "text/", "audio/", "video/",
+        "application/vnd.openxmlformats", "application/msword",
+        "application/vnd.ms-excel", "application/vnd.ms-powerpoint",
+      ];
+      const fileMime = req.file.mimetype || "";
+      const isAllowed = allowedMimeTypes.some(t => fileMime.startsWith(t) || fileMime === t);
+      if (!isAllowed && fileMime !== "application/octet-stream") {
+        if (fs.existsSync(tempFilePath)) fs.unlinkSync(tempFilePath);
+        return res.status(400).send({ message: "Type de fichier non autorisé." });
+      }
+
+      // Validation taille max 50MB
+      const MAX_SIZE = 50 * 1024 * 1024;
+      if (req.file.size > MAX_SIZE) {
+        if (fs.existsSync(tempFilePath)) fs.unlinkSync(tempFilePath);
+        return res.status(400).send({ message: "Fichier trop volumineux (max 50MB)." });
+      }
 
       if (!fs.existsSync(path.resolve(process.cwd(), "tmp"))) {
         return res.status(209).send({
@@ -29,13 +63,8 @@ export default class fileClass {
             "Dossier 'upload' inexistent :" + path.resolve(cheminUploads),
         });
       }
-      const tempFilePath = path.resolve(
-        process.cwd(),
-        "tmp",
-        req.file.filename
-      );
 
-      const finalFilePath = path.resolve(cheminUploads + "/" + finalFileName);
+      const finalFilePath = resolveUploadSafe(finalFileName);
       fs.rename(tempFilePath, finalFilePath, async (err) => {
         if (err) {
           return res
@@ -59,7 +88,7 @@ export default class fileClass {
             file_path: finalFilePath,
             parent_dir: req.body.parent_dir,
             created_by: created_by,
-            dat_crea: toSqlDateFormat(new Date(), true),
+            dat_crea: toSqlDateFormat(new Date()),
           };
           let rsl = await ecrireSql({
             tableName: "Param_GED",
@@ -98,7 +127,7 @@ export default class fileClass {
       const seq: number = Number(Date.now());
       const cheminUploads = VGLOBALES.UPLOADS_PATH;
       const audioBuffer = Buffer.from(audio, "base64");
-      const filePath = path.resolve(cheminUploads + "/" + filename);
+      const filePath = resolveUploadSafe(filename);
 
       await fs.promises.writeFile(filePath, audioBuffer as unknown as Uint8Array);
 
@@ -112,7 +141,7 @@ export default class fileClass {
         media_duration,
         parent_dir: 0,
         created_by: created_by,
-        dat_crea: toSqlDateFormat(new Date(), true),
+        dat_crea: toSqlDateFormat(new Date()),
       };
 
       let rsl = await ecrireSql({
@@ -142,8 +171,7 @@ export default class fileClass {
   static readFile = async (req: Request, res: Response) => {
     try {
       const { fd_name } = req.body;
-      const cheminUploads = VGLOBALES.UPLOADS_PATH;
-      const file_name = path.resolve(cheminUploads + "\\" + fd_name);
+      const file_name = resolveUploadSafe(fd_name);
       const buff = fs.readFileSync(file_name, "base64");
       const rsl = await lireSql(
         `select FD_id as fd_id,FD_Alias as fd_alias,isnull(Media_Duration,0) as duration from Param_GED where FD_Alias=@fd_name`,
@@ -165,14 +193,12 @@ export default class fileClass {
     filename = String(filename || "");
     filename = filename.replace(/ /g, "_");
     const cheminUploads = VGLOBALES.UPLOADS_PATH;
-    let file_name = path.resolve(cheminUploads, String(filename));
-    console.log("Download Request:", {
-      queryFilename: req.query.filename,
-      processedFilename: filename,
-      uploadsPath: cheminUploads,
-      resolvedPath: file_name,
-      exists: fs.existsSync(file_name)
-    });
+    let file_name: string;
+    try {
+      file_name = resolveUploadSafe(filename);
+    } catch (e) {
+      return res.status(400).send({ erreur: "Nom de fichier invalide." });
+    }
 
     if (!fs.existsSync(file_name)) {
       let files: string[] = [];
@@ -201,19 +227,11 @@ export default class fileClass {
     const id_Societe = req.params.id_Societe;
     try {
       if (typ === "F") {
-        const cheminUploads = VGLOBALES.UPLOADS_PATH;
-        let file_oldName = path.resolve(
-          cheminUploads,
-          `${fd_id}_${fd_name.replace(/ /g, "_")}`
-        );
-        let file_newName = path.resolve(
-          cheminUploads,
-          `${fd_id}_${new_name.replace(/ /g, "_")}`
-        );
+        let file_oldName = resolveUploadSafe(`${fd_id}_${fd_name.replace(/ /g, "_")}`);
+        let file_newName = resolveUploadSafe(`${fd_id}_${new_name.replace(/ /g, "_")}`);
 
         if (fs.existsSync(file_oldName)) {
           try {
-            // Renommer le fichier
             await fs.promises.rename(file_oldName, file_newName);
           } catch (err) {
             return res.status(209).send({
@@ -221,15 +239,15 @@ export default class fileClass {
               err,
             });
           }
-        } else {
-
         }
-
       }
       const rsl = await lireSql(
-        `declare @fd_id bigint = ${fd_id}
-       update Param_GED set FD_Alias=@new_name where id_Societe=${id_Societe} and FD_id=@fd_id`,
-        [{ param: "new_name", sqlType: NVarChar, valeur: new_name }]
+        `update Param_GED set FD_Alias=@new_name where id_Societe=@id_Societe and FD_id=@fd_id`,
+        [
+          { param: "new_name", sqlType: NVarChar, valeur: new_name },
+          { param: "id_Societe", sqlType: Int, valeur: Number(id_Societe) },
+          { param: "fd_id", sqlType: BigInt, valeur: Number(fd_id) },
+        ]
       );
       if (rsl.result) {
         return res.status(200).send({ data: "Succès" });
@@ -246,16 +264,23 @@ export default class fileClass {
   static delete_file = async (req: Request, res: Response) => {
     let { fd_name, fd_id } = req.body;
     const id_Societe = req.params.id_Societe;
-    const cheminUploads = VGLOBALES.UPLOADS_PATH;
-    let file_name = path.resolve(cheminUploads + "\\" + fd_name);
+    let file_name: string;
+    try {
+      file_name = resolveUploadSafe(fd_name);
+    } catch (e) {
+      return res.status(400).send({ data: `Nom de fichier invalide.` });
+    }
     fs.unlink(file_name, async (err) => {
       if (err) {
         if (fs.existsSync(file_name))
           return res.status(209).send({ data: `Suppression impossible` });
       }
       let rsl = await lireSql(
-        `delete from Param_GED where id_Societe=${id_Societe} and FD_id=@fd_id`,
-        [{ param: "fd_id", sqlType: BigInt, valeur: fd_id }]
+        `delete from Param_GED where id_Societe=@id_Societe and FD_id=@fd_id`,
+        [
+          { param: "fd_id", sqlType: BigInt, valeur: fd_id },
+          { param: "id_Societe", sqlType: Int, valeur: Number(id_Societe) },
+        ]
       );
       if (rsl.result) {
         return res.status(200).send({ data: `Supprimé avec succès` });
@@ -271,15 +296,19 @@ export default class fileClass {
       const id_Societe = req.params.id_Societe;
       let { fd_id } = req.body;
       const cheminUploads = VGLOBALES.UPLOADS_PATH;
-      const rsl =
-        await lireSql(`declare @dir bigint = ${fd_id}, @idSoc int = ${id_Societe}
-;
+      const rsl = await lireSql(
+        `declare @dir bigint = @fd_id, @idSoc int = @id_Societe;
 with Tbl (fd,alias, typ, parent)
 as (select FD_id,FD_Alias, Typ, Parent_Dir from Param_GED where id_Societe=@idSoc and Typ='D' and FD_id=@dir
 union all
 select FD_id,FD_Alias, g.Typ, Parent_Dir 
 from Param_GED g inner join Tbl t on t.fd=g.Parent_Dir where id_Societe=@idSoc )
-select fd,alias,typ from Tbl`);
+select fd,alias,typ from Tbl`,
+        [
+          { param: "fd_id", sqlType: BigInt, valeur: Number(fd_id) },
+          { param: "id_Societe", sqlType: Int, valeur: Number(id_Societe) },
+        ]
+      );
       if (rsl.result) {
         const files = rsl.data as { fd: number; alias: string; typ: string }[];
         const deletedFiles: { fd: number; alias: string }[] = [];
@@ -306,22 +335,30 @@ select fd,alias,typ from Tbl`);
         ) {
           return res.status(209).send({ data: `Suppression impossible` });
         } else if (deletedFiles.length > 0 && failedDeletes.length > 0) {
-          await lireSql(
-            `delete from Param_Ged where id_Societe=${id_Societe} and FD_id in (${deletedFiles
-              .map((f) => f.fd)
-              .join(", ")})`
-          );
+          for (const f of deletedFiles) {
+            await lireSql(
+              `delete from Param_Ged where id_Societe=@p_idSoc and FD_id=@p_fd`,
+              [
+                { param: "p_idSoc", sqlType: Int, valeur: Number(id_Societe) },
+                { param: "p_fd", sqlType: BigInt, valeur: f.fd },
+              ]
+            );
+          }
           return res.status(209).send({
             data: `Certains fichiers non supprimés :\n ${failedDeletes
               .map((obj) => obj.alias)
               .join(", ")}`,
           });
         } else {
-          await lireSql(
-            `delete from Param_Ged where id_Societe=${id_Societe} and FD_id in (${files
-              .map((f) => f.fd)
-              .join(", ")})`
-          );
+          for (const f of files) {
+            await lireSql(
+              `delete from Param_Ged where id_Societe=@p_idSoc and FD_id=@p_fd`,
+              [
+                { param: "p_idSoc", sqlType: Int, valeur: Number(id_Societe) },
+                { param: "p_fd", sqlType: BigInt, valeur: f.fd },
+              ]
+            );
+          }
           return res.status(200).send({ data: `Supprimé avec succès` });
         }
       } else {
@@ -364,7 +401,7 @@ select fd,alias,typ from Tbl`);
       file_path: "",
       parent_dir: req.body.parent_dir,
       created_by: req.params.Matricule,
-      dat_crea: toSqlDateFormat(new Date(), true),
+      dat_crea: toSqlDateFormat(new Date()),
     };
     let rsl = await ecrireSql({
       tableName: "Param_GED",

@@ -100,7 +100,7 @@ const Formation_Evaluation_Liste = () => {
                 sx={{
                     "& .grpDiv": {
                         padding: "2em 5px",
-                        width: "90vw",
+                        width: "100%",
                         minHeight: "10em",
                     },
                 }}
@@ -184,10 +184,10 @@ const Formation_Evaluation_Liste = () => {
                     margin: "auto",
                     padding: "2em 5px",
                     width: {
-                        xs: "95vw",
-                        sm: "90vw",
-                        md: "90vw",
-                        lg: "90vw"
+                        xs: "100%",
+                        sm: "100%",
+                        md: "100%",
+                        lg: "100%"
                     },
                     overflow: "scroll",
                 }}

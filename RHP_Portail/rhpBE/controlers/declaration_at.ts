@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { estDate, toSqlDateFormat } from "../modules/module_format";
 import { lireSql, controleInjection } from "../modules/module_sqlRW";
-import { NVarChar, SmallDateTime } from "mssql";
+import { Int, NVarChar, SmallDateTime } from "mssql";
 
 export async function declarationATListe(req: Request, res: Response) {
     let { Matricule, Cod_Entite, Statut, Dat_Du, Dat_Au } = req.body;
@@ -12,18 +12,16 @@ export async function declarationATListe(req: Request, res: Response) {
 
     const { processId, ...theAgent } = req.params;
     const TblRef = "RH_Declaration_AT";
-    let idSoc = theAgent?.id_Societe || "3068";
+    const idSocNum = Number(theAgent?.id_Societe || "3068");
+    if (isNaN(idSocNum) || idSocNum <= 0) {
+        return res.send({ result: false, message: "id_Societe invalide" });
+    }
 
-    // Security Filter logic (similar to Note_Frais)
-    let MatriculeWhere = "";
     if (theAgent.TeamLeader) {
-        MatriculeWhere = `exists(select Matricule from Rh_Agent _agt where id_Societe=${theAgent.id_Societe} and _agt.Cod_Entite in (
-        select  Cod_Entite from Sys_Org_Entite s where 
-        ';'+isnull(Racine+';'+s.Cod_Entite,'')+';' like '%;'+isnull(nullif('${theAgent.Cod_Entite}',''),'8787uhuhunjj')+';%' and id_Societe=_agt.id_Societe))`;
+        // MatriculeWhere supprime car non utilise dans la requete de liste
     } else {
         Matricule = theAgent.Matricule;
         Cod_Entite = theAgent.Cod_Entite;
-        MatriculeWhere = `(${TblRef}.id_Societe=${theAgent.id_Societe} and ${TblRef}.Matricule='${theAgent.Matricule}')`;
     }
 
     Dat_Du = estDate(Dat_Du)
@@ -34,7 +32,7 @@ export async function declarationATListe(req: Request, res: Response) {
         : toSqlDateFormat(new Date(2045, 11, 31));
     Statut = Statut || "";
 
-    let sqlStr = `SELECT Num_Declaration as 'N° Déclaration', Dat_Accident as 'Date Accident', 
+    let sqlStr = `SELECT TOP 50 Num_Declaration as 'N° Déclaration', Dat_Accident as 'Date Accident', 
                 ${Matricule === theAgent.Matricule ? "Matricule,Nom, " : ""} 
                 isnull(Statut,'') as Statut, 
                 isnull(Cloture,0) as Cloture
@@ -42,12 +40,13 @@ export async function declarationATListe(req: Request, res: Response) {
                 FROM RH_Declaration_AT v
                 outer apply (select Nom_Agent + ' ' +Prenom_Agent as Nom, Cod_Entite from RH_Agent where id_Societe=v.id_Societe and Matricule=v.Matricule) r
                 outer apply (select Lib_Entite from Org_Entite where id_Societe=v.id_Societe and Cod_Entite=r.Cod_Entite) e
-                where id_Societe='${idSoc}' and Matricule like '%'+@Matricule and Dat_Accident between @Dat_Du and @Dat_Au and isnull(Statut,'') like '${Statut}%' 
+                where id_Societe=@p_id_Societe and Matricule like '%'+@Matricule and Dat_Accident between @Dat_Du and @Dat_Au and isnull(Statut,'') like @p_Statut + '%' 
                 Order by Dat_Accident desc`;
 
     const rsl = await lireSql(sqlStr, [
+        { param: "p_id_Societe", sqlType: Int, valeur: idSocNum },
         { param: "Matricule", sqlType: NVarChar, valeur: Matricule },
-        { param: "Statut", sqlType: NVarChar, valeur: Statut },
+        { param: "p_Statut", sqlType: NVarChar, valeur: Statut },
         { param: "Dat_Du", sqlType: SmallDateTime, valeur: Dat_Du },
         { param: "Dat_Au", sqlType: SmallDateTime, valeur: Dat_Au },
     ]);
@@ -57,22 +56,26 @@ export async function declarationATListe(req: Request, res: Response) {
 export async function get_declaration_at(req: Request, res: Response) {
     const { num_declaration } = req.body;
     const { processId, ...theAgent } = req.params;
-    let idSoc = theAgent.id_Societe || "3068";
+    const idSocNum = Number(theAgent.id_Societe || "3068");
+    if (isNaN(idSocNum) || idSocNum <= 0) {
+        return res.send({ result: false, message: "id_Societe invalide" });
+    }
 
-    let sqlStr = `SELECT * FROM RH_Declaration_AT where Num_Declaration=@num_decl and id_Societe=${idSoc}`;
+    let sqlStr = `SELECT * FROM RH_Declaration_AT where Num_Declaration=@num_decl and id_Societe=@p_id_Societe`;
     const rsl = await lireSql(sqlStr, [
         { param: "num_decl", sqlType: NVarChar, valeur: num_declaration },
+        { param: "p_id_Societe", sqlType: Int, valeur: idSocNum },
     ]);
 
     if (rsl.result) {
-        // Get Details
         sqlStr = `select Typ_Certificat, Dat_Certificat, Dat_Debut_Arret, Dat_Fin_Arret, Nbr_Jours, Valide, Commentaire as Comment, RowId
               from RH_Declaration_AT_Detail
-              where Num_Declaration=@num_decl and id_Societe=${idSoc}
+              where Num_Declaration=@num_decl and id_Societe=@p_id_Societe
               order by RowId `;
 
         const rslDetail = await lireSql(sqlStr, [
             { param: "num_decl", sqlType: NVarChar, valeur: num_declaration },
+            { param: "p_id_Societe", sqlType: Int, valeur: idSocNum },
         ]);
 
         if (rslDetail.result) {

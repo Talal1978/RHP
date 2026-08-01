@@ -417,7 +417,7 @@ const Ged = (props: TGed) => {
                   <ListItemAvatar>
                     <Avatar>
                       <img
-                        src={`${process.env.PUBLIC_URL}/${getImg(
+                        src={`${import.meta.env.BASE_URL}${getImg(
                           doc.FD_Alias || ""
                         )}`}
                         alt="img"

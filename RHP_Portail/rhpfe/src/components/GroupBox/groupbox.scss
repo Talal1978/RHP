@@ -1,5 +1,6 @@
 @use "../../variables";
 .groupbox {
+  min-width: 0;
   .chip {
     min-width: 15em !important;
     background-color: variables.$chipBg;
@@ -16,6 +17,7 @@
     position: relative;
     background-color: variables.$bgInput;
     padding: 2em 0.5em;
+    min-width: 0;
     &.withBorders {
       border: 2px solid #c8c8c8;
       border-radius: 10px;

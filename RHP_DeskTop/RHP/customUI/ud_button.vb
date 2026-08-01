@@ -153,8 +153,10 @@ Public Class ud_button
         Set(value As Boolean)
             _isDefault = value
             If Not value Then
+                img_pb.Image = _img
                 txt_lbl.ForeColor = colorBase01
-                BackColor = colorBase01
+                BackColor = If(_borderColor.IsEmpty, colorBase01, _borderColor)
+                tbl_pnl.BackColor = Color.FromArgb(250, 250, 250)
             Else
                 onMouseOn()
             End If
@@ -213,6 +215,13 @@ Public Class ud_button
             Return
         End If
         RaiseEvent Click(Me, e)
+    End Sub
+    ' Déclenche le clic du bouton par code (ex : touche Entrée)
+    Public Sub PerformClick()
+        If Not _enabled Then
+            Return
+        End If
+        RaiseEvent Click(Me, EventArgs.Empty)
     End Sub
     Sub New()
         Me.SuspendLayout()

@@ -1,9 +1,10 @@
 import axios, { AxiosResponse } from "axios";
+import { useCallback } from "react";
 import { Connexion, myJwt, setJwt } from "../modules/module_general";
 import { ObjetGenerique } from "../types";
 
 const useAxiosPost = () => {
-  const myAxios = async (
+  const myAxios = useCallback(async (
     apiStr: string,
     bdy: ObjetGenerique,
     hdr?: ObjetGenerique,
@@ -57,7 +58,7 @@ const useAxiosPost = () => {
       console.error(apiStr, err);
       return { data: null, error: err, status: -1, headers: null };
     }
-  };
+  }, []);
   return myAxios;
 };
 

@@ -25,9 +25,49 @@
                 ' Remplacer 'NomDuLabel' par le nom réel de votre contrôle label
                 Clipboard.SetText(Msg_txt.Text)
                 Return True ' Indique que la touche a été traitée
+            Case Keys.Enter
+                ' Entrée : clique le bouton activé
+                Dim btn = BoutonActif()
+                If btn IsNot Nothing Then btn.PerformClick()
+                Return True
+            Case Keys.Left, Keys.Up
+                ' Défilement : déplace l'activation vers le bouton visible précédent
+                DeplacerActivation(-1)
+                Return True
+            Case Keys.Right, Keys.Down
+                ' Défilement : déplace l'activation vers le bouton visible suivant
+                DeplacerActivation(1)
+                Return True
         End Select
         Return MyBase.ProcessCmdKey(msg, keyData)
     End Function
+    ' Boutons visibles dans l'ordre visuel (gauche -> droite)
+    Private Function BoutonsVisibles() As List(Of ud_button)
+        Dim lst As New List(Of ud_button)
+        If btn_03_ud.Visible Then lst.Add(btn_03_ud)
+        If btn_02_ud.Visible Then lst.Add(btn_02_ud)
+        If btn_01_ud.Visible Then lst.Add(btn_01_ud)
+        Return lst
+    End Function
+    ' Bouton actuellement activé (mis en évidence), le premier visible sinon
+    Private Function BoutonActif() As ud_button
+        Dim btns = BoutonsVisibles()
+        For Each b In btns
+            If b.isDefault Then Return b
+        Next
+        Return If(btns.Count > 0, btns(0), Nothing)
+    End Function
+    ' Déplace l'activation au bouton visible suivant/précédent (désélectionne les autres)
+    Private Sub DeplacerActivation(sens As Integer)
+        Dim btns = BoutonsVisibles()
+        If btns.Count = 0 Then Return
+        Dim idx = btns.IndexOf(BoutonActif())
+        If idx < 0 Then idx = 0
+        idx = (idx + sens + btns.Count) Mod btns.Count
+        For i = 0 To btns.Count - 1
+            btns(i).isDefault = (i = idx)
+        Next
+    End Sub
     Public Property Theme As msgIcon
         Get
             Return _defaultTheme

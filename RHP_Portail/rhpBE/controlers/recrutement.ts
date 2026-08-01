@@ -8,20 +8,23 @@ import { IsNull } from "../modules/module_general";
 export async function get_recrutement_demande(req: Request, res: Response) {
     const { Num_DR } = req.body;
     const { id_Societe } = req.params;
+    const idSocNum = Number(id_Societe);
+    if (isNaN(idSocNum) || idSocNum <= 0) {
+        return res.send({ result: false, message: "id_Societe invalide" });
+    }
 
     if (controleInjection(Num_DR).result === false) return res.send({ result: false, message: "Injection détectée dans Num_DR" });
-    if (controleInjection(id_Societe).result === false) return res.send({ result: false, message: "Injection détectée dans id_Societe" });
 
     const sqlStr = `
         SELECT v.*, r.Nom 
         FROM Recrutement_Demande v
         OUTER APPLY (SELECT Nom_Agent + ' ' + Prenom_Agent as Nom FROM RH_Agent WHERE id_Societe=v.id_Societe AND Matricule=v.Matricule) r
-        WHERE v.Num_DR = @Num_DR AND v.id_Societe = @id_Societe
+        WHERE v.Num_DR = @p_Num_DR AND v.id_Societe = @p_idSociete
     `;
 
     const rsl = await lireSql(sqlStr, [
-        { param: "Num_DR", sqlType: NVarChar, valeur: Num_DR },
-        { param: "id_Societe", sqlType: Int, valeur: id_Societe },
+        { param: "p_Num_DR", sqlType: NVarChar, valeur: Num_DR },
+        { param: "p_idSociete", sqlType: Int, valeur: idSocNum },
     ]);
 
     return res.send(rsl);
@@ -30,12 +33,17 @@ export async function get_recrutement_demande(req: Request, res: Response) {
 export async function get_recrutement_demande_liste(req: Request, res: Response) {
     const { Matricule, Cod_Entite, Statut, Dat_Du, Dat_Au } = req.body;
     const { id_Societe } = req.params;
-    let sWhere = "v.id_Societe=@id_Societe";
-    let params: any[] = [{ param: "id_Societe", sqlType: Int, valeur: id_Societe }];
+    const idSocNum = Number(id_Societe);
+    if (isNaN(idSocNum) || idSocNum <= 0) {
+        return res.send({ result: false, message: "id_Societe invalide" });
+    }
+
+    let sWhere = "v.id_Societe=@p_idSociete";
+    let params: any[] = [{ param: "p_idSociete", sqlType: Int, valeur: idSocNum }];
 
     if (Matricule) {
-        sWhere += " AND v.Matricule=@Matricule";
-        params.push({ param: "Matricule", sqlType: NVarChar, valeur: Matricule });
+        sWhere += " AND v.Matricule=@p_Matricule";
+        params.push({ param: "p_Matricule", sqlType: NVarChar, valeur: Matricule });
     }
 
     if (Cod_Entite) {
@@ -43,26 +51,26 @@ export async function get_recrutement_demande_liste(req: Request, res: Response)
         // The VB logic was: exists(select Matricule from RH_Agent where ... isnull(Cod_Entite,'') = Cod_Entite_txt)
         // I will implement a direct filter on Cod_Entite_DR or implicit permission logic if required, 
         // but typically for the list based on filter input 'Cod_Entite', we filter the requests made by that entity or for that entity? 
-        // VB Logic: and exists(select Matricule from RH_Agent where id_Societe=v.id_Societe and Matricule=v.Matricule and isnull(Cod_Entite,'') ='" & Cod_Entite_txt.Text & "')"
+        // VB Logic: and exists(select Matricule from RH_Agent where id_Societe=v.id_Societe and Matricule=v.Matricule and isnull(Cod_Entite,'') ='" & Cod_Entite_txt.Text & "')
         // This suggests filtering requests where the *REQUESTER* (`v.Matricule`) belongs to the selected `Cod_Entite`.
 
-        sWhere += " AND EXISTS (SELECT 1 FROM RH_Agent a WHERE a.id_Societe=v.id_Societe AND a.Matricule=v.Matricule AND ISNULL(a.Cod_Entite,'') = @Cod_Entite)";
-        params.push({ param: "Cod_Entite", sqlType: NVarChar, valeur: Cod_Entite });
+        sWhere += " AND EXISTS (SELECT 1 FROM RH_Agent a WHERE a.id_Societe=v.id_Societe AND a.Matricule=v.Matricule AND ISNULL(a.Cod_Entite,'') = @p_Cod_Entite)";
+        params.push({ param: "p_Cod_Entite", sqlType: NVarChar, valeur: Cod_Entite });
     }
 
     if (Dat_Du) {
-        sWhere += " AND v.Dat_DR >= @Dat_Du";
-        params.push({ param: "Dat_Du", sqlType: SmallDateTime, valeur: toSqlDateFormat(Dat_Du) });
+        sWhere += " AND v.Dat_DR >= @p_Dat_Du";
+        params.push({ param: "p_Dat_Du", sqlType: SmallDateTime, valeur: toSqlDateFormat(Dat_Du) });
     }
 
     if (Dat_Au) {
-        sWhere += " AND v.Dat_DR <= @Dat_Au";
-        params.push({ param: "Dat_Au", sqlType: SmallDateTime, valeur: toSqlDateFormat(Dat_Au) });
+        sWhere += " AND v.Dat_DR <= @p_Dat_Au";
+        params.push({ param: "p_Dat_Au", sqlType: SmallDateTime, valeur: toSqlDateFormat(Dat_Au) });
     }
 
     if (Statut) {
-        sWhere += " AND ISNULL(v.Statut,'') = @Statut";
-        params.push({ param: "Statut", sqlType: NVarChar, valeur: Statut });
+        sWhere += " AND ISNULL(v.Statut,'') = @p_Statut";
+        params.push({ param: "p_Statut", sqlType: NVarChar, valeur: Statut });
     }
 
     const sqlStr = `
@@ -94,6 +102,10 @@ export async function get_recrutement_demande_liste(req: Request, res: Response)
 export async function save_recrutement_demande(req: Request, res: Response) {
     const { entete } = req.body;
     const { id_Societe, Matricule } = req.params;
+    const idSocNum = Number(id_Societe);
+    if (isNaN(idSocNum) || idSocNum <= 0) {
+        return res.send({ result: false, message: "id_Societe invalide" });
+    }
 
     let { Num_DR } = entete;
 
@@ -130,16 +142,16 @@ export async function save_recrutement_demande(req: Request, res: Response) {
         from Recrutement_Demande 
         outer apply(select charindex('_',Num_DR,1)-1 aa)a
         outer apply(select case when aa<0 then RIGHT(Num_DR,6) else RIGHT(left(Num_DR,aa),6) end as racine)n
-        where id_Societe=@id_Societe and year(Dat_DR)=@year
+        where id_Societe=@p_idSociete and year(Dat_DR)=@p_year
     )f`;
         const rsNum = await lireSql(sqlRacine, [
-            { param: "id_Societe", sqlType: Int, valeur: id_Societe },
-            { param: "year", sqlType: Int, valeur: year }
+            { param: "p_idSociete", sqlType: Int, valeur: idSocNum },
+            { param: "p_year", sqlType: Int, valeur: year }
         ]);
         const racine = (rsNum.data && rsNum.data.length > 0) ? rsNum.data[0].racine : 0;
         const nextVal = parseInt(racine) + 1;
         const formattedVal = nextVal.toString().padStart(6, '0');
-        Num_DR = `DR${id_Societe}-${year}${formattedVal}`;
+        Num_DR = `DR${idSocNum}-${year}${formattedVal}`;
     }
 
     const oDat = new Date();
@@ -148,7 +160,7 @@ export async function save_recrutement_demande(req: Request, res: Response) {
     const fields = {
         ...entete,
         Num_DR,
-        id_Societe,
+        id_Societe: idSocNum,
         Dat_Modif: oDat,
         Modified_By: Matricule, // utilizing the logged-in user
         Dat_Crea: entete.Dat_Crea ? entete.Dat_Crea : oDat,
@@ -182,7 +194,7 @@ export async function save_recrutement_demande(req: Request, res: Response) {
 
     if (rsEnt.result) {
         if (entete.Statut === "SS") {
-            await sousmettre_signature("DR", Num_DR, id_Societe, Matricule);
+            await sousmettre_signature("DR", Num_DR, String(idSocNum), Matricule);
         }
         return res.send({ result: true, data: Num_DR, message: "Enregistré avec succès" });
     } else {
@@ -193,18 +205,22 @@ export async function save_recrutement_demande(req: Request, res: Response) {
 export async function delete_recrutement_demande(req: Request, res: Response) {
     const { Num_DR } = req.body;
     const { id_Societe, Matricule } = req.params;
+    const idSocNum = Number(id_Societe);
+    if (isNaN(idSocNum) || idSocNum <= 0) {
+        return res.send({ result: false, message: "id_Societe invalide" });
+    }
 
     // Insert into mouchard first (as per VB code)
-    await lireSql(`insert into Mouchard_Suppression (Nom_Table, Nom_Champs, Valeur_Champs, Deleted_by, Deleted_Date) values ('Recrutement_Demande', 'Num_DR', @Num_DR, @Deleted_by, getdate())`, [
-        { param: "Num_DR", sqlType: NVarChar, valeur: Num_DR },
-        { param: "Deleted_by", sqlType: NVarChar, valeur: Matricule } // Assuming Matricule or ID is used
+    await lireSql(`insert into Mouchard_Suppression (Nom_Table, Nom_Champs, Valeur_Champs, Deleted_by, Deleted_Date) values ('Recrutement_Demande', 'Num_DR', @p_Num_DR, @p_Deleted_by, getdate())`, [
+        { param: "p_Num_DR", sqlType: NVarChar, valeur: Num_DR },
+        { param: "p_Deleted_by", sqlType: NVarChar, valeur: Matricule } // Assuming Matricule or ID is used
     ]);
 
     const rsl = await lireSql(
-        `delete from Recrutement_Demande where Num_DR=@Num_DR and id_Societe=@id_Societe`,
+        `delete from Recrutement_Demande where Num_DR=@p_Num_DR and id_Societe=@p_idSociete`,
         [
-            { param: "Num_DR", sqlType: NVarChar, valeur: Num_DR },
-            { param: "id_Societe", sqlType: Int, valeur: id_Societe }
+            { param: "p_Num_DR", sqlType: NVarChar, valeur: Num_DR },
+            { param: "p_idSociete", sqlType: Int, valeur: idSocNum }
         ]
     );
 

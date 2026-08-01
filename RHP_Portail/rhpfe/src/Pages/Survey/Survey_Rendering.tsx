@@ -53,7 +53,7 @@ interface TProps {
     evaluateur: string
     typ_survey: 'E' | 'R' | 'F'
     ref_evaluation: string
-    refChild: React.RefObject<ChildHandle>
+    refChild: React.RefObject<ChildHandle | null>
     readOnly?: boolean
 }
 

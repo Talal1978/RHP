@@ -1,14 +1,14 @@
-import { Dispatch, SetStateAction, createContext, useState } from "react";
+import { Dispatch, SetStateAction, createContext, useMemo, useState } from "react";
 import MenuNavBar from "./MenuNavBar";
 import MenuSideBar from "./MenuSideBar";
 import "./mainmenu.scss";
 import Ecran from "./Ecran";
 import { TAlert, TGed, TMenuBtn, TMsgBox, TSignature } from "../types";
-import MsgBox from "../components/MsgBox/MsgBox";
 import { Box, useMediaQuery, useTheme } from "@mui/material";
 import Ged from "../Pages/GED/Ged";
 import Loading from "../components/Loading/Loading";
 import MyAlert from "../components/MyAlert/MyAlert";
+
 export const cntX = createContext<{
   setShowLoading: Dispatch<SetStateAction<boolean>>;
   setShowGED: Dispatch<SetStateAction<boolean>>;
@@ -32,21 +32,21 @@ export const cntX = createContext<{
   isLg: boolean;
   isXl: boolean;
 }>({
-  setShowLoading: () => { },
-  setShowGED: () => { },
+  setShowLoading: () => {},
+  setShowGED: () => {},
   GEDprops: { name_ecran: "", valeur_index: "" },
-  setGEDprops: () => { },
+  setGEDprops: () => {},
   isOpen: false,
-  setIsOpen: () => { },
+  setIsOpen: () => {},
   tbnMenu: [],
-  settbnMenu: () => { },
+  settbnMenu: () => {},
   signatureProps: { typ_document: "", valeur_index: "" },
-  setAlertProps: () => { },
-  setSignatureProps: () => { },
-  setShowSignature: () => { },
+  setAlertProps: () => {},
+  setSignatureProps: () => {},
+  setShowSignature: () => {},
   showAlert: false,
   showSignature: false,
-  setShowAlert: () => { },
+  setShowAlert: () => {},
   isSmall: false,
   isXs: false,
   isSm: false,
@@ -54,6 +54,7 @@ export const cntX = createContext<{
   isMd: false,
   isXl: false,
 });
+
 export const MenuMain = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [showSignature, setShowSignature] = useState(false);
@@ -70,43 +71,61 @@ export const MenuMain = () => {
     name_ecran: "",
     valeur_index: "",
   });
-  const isSmall = useMediaQuery("(max-width:1000px)");
+
   const theme = useTheme();
+  const isSmall = useMediaQuery("(max-width:1000px)");
   const isXs = useMediaQuery(theme.breakpoints.down("sm"));
   const isSm = useMediaQuery(theme.breakpoints.between("sm", "md"));
   const isMd = useMediaQuery(theme.breakpoints.between("md", "lg"));
   const isLg = useMediaQuery(theme.breakpoints.between("lg", "xl"));
   const isXl = useMediaQuery(theme.breakpoints.up("xl"));
+
+  const contextValue = useMemo(
+    () => ({
+      setShowLoading,
+      setShowGED,
+      GEDprops,
+      setGEDprops,
+      setSignatureProps,
+      isOpen,
+      setIsOpen,
+      tbnMenu,
+      settbnMenu,
+      showSignature,
+      setShowSignature,
+      signatureProps,
+      showAlert,
+      setShowAlert,
+      setAlertProps,
+      isSmall,
+      isLg,
+      isSm,
+      isXs,
+      isMd,
+      isXl,
+    }),
+    [
+      isOpen,
+      showSignature,
+      showLoading,
+      showAlert,
+      tbnMenu,
+      alertProps,
+      signatureProps,
+      showGED,
+      GEDprops,
+      isSmall,
+      isXs,
+      isSm,
+      isMd,
+      isLg,
+      isXl,
+    ]
+  );
+
   return (
-    <cntX.Provider
-      value={{
-        setShowLoading,
-        setShowGED,
-        GEDprops,
-        setGEDprops,
-        setSignatureProps,
-        isOpen,
-        setIsOpen,
-        tbnMenu,
-        settbnMenu,
-        showSignature,
-        setShowSignature,
-        signatureProps,
-        showAlert,
-        setShowAlert,
-        setAlertProps,
-        isSmall,
-        isLg,
-        isSm,
-        isXs,
-        isMd,
-        isXl,
-      }}
-    >
-      <Box
-        className="mainMenu"
-        sx={{ fontSize: { xs: "0.7em", sm: "0.8em", md: "1em" } }}
-      >
+    <cntX.Provider value={contextValue}>
+      <Box className="mainMenu" sx={{ fontSize: { xs: "0.7em", sm: "0.8em", md: "1em" } }}>
         <div>
           <MenuNavBar />
         </div>

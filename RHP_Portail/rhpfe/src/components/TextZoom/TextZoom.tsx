@@ -52,16 +52,21 @@ const TextZoom = ({
       style={{
         display: "flex",
         position: "relative",
+        minWidth: 0,
+        overflow: "hidden",
         ...style,
       }}
       className="textZoomContainer"
     >
       <TextField
         className="textZoom"
-        style={{ flexGrow: 1 }}
+        style={{ flex: 1, minWidth: 0 }}
         sx={{
           "& .MuiInputBase-input": {
             fontSize: { xs: "1rem", sm: "1rem" },
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
             ...style
           },
           "& .MuiInputLabel-root": {
@@ -87,11 +92,12 @@ const TextZoom = ({
       {!readonly && (
         <div
           className="zoomIcon"
+          style={{ position: "absolute", right: "4px", top: "50%", transform: "translateY(-50%)" }}
           onClick={() => {
             setShowZoom((zm) => !zm);
           }}
         >
-          <DragIndicatorOutlined style={{ color: "#ffffff" }} />
+          <DragIndicatorOutlined style={{ color: colorBase.colorBase01 }} />
         </div>
       )}
       <div hidden={!showZoom} className="overlay"></div>

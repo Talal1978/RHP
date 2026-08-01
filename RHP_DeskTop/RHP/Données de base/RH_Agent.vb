@@ -222,8 +222,13 @@ where a.Matricule='" & Matricule_Text.Text & "' and a.id_Societe=" & Societe.id_
         End If
         GRD("select Dat_Deb_Conge as 'Du', Dat_Fin_Conge as 'Au', Duree_Globale as 'Durée totale',
 Repos_Hebdomadaire as 'Repos hebdo.', Jours_Feries as 'Jrs fériés', Duree_Conge as 'Consomé du congé'
-from RH_Conge_Suivi where Matricule='" & Matricule_Text.Text & "' and id_Societe=" & Societe.id_Societe & " 
+from RH_Conge_Suivi where Matricule='" & Matricule_Text.Text & "' and id_Societe=" & Societe.id_Societe & "
 order by Dat_Deb_Conge desc", Grd_Conge)
+        'Outillages / matériels détenus par l'agent
+        GRD("select Cod_Outillage as 'Code', Lib_Outillage as 'Désignation', dbo.FindRubrique('Typ_Outillage',Typ_Outillage) as 'Type',
+Num_Serie as 'N° Série', Qte_Detenus as 'Quantité détenue'
+from RH_Outillage_Agent where Matricule='" & Matricule_Text.Text & "' and id_Societe=" & Societe.id_Societe & "
+and Qte_Detenus > 0 order by Cod_Outillage", Grd_Outillage)
 
     End Sub
     Private Sub is_AD_chk_Click(sender As Object, e As EventArgs) Handles is_AD_chk.Cliquer

@@ -345,14 +345,14 @@ const Recrutement_Demande = () => {
             sx={{
                 "& .grpDiv": {
                     padding: "2em 5px 5px 5px",
-                    width: "90vw",
+                    width: "100%",
                     maxWidth: "1200px",
                     minHeight: "10em",
                 },
             }}
         >
             <Grid container spacing={2}>
-                <Grid item xs={12} sm={3}>
+                <Grid xs={12} sm={3}>
                     <TextZoom
                         numZoom="MS162"
                         nomControle="Num_DR"
@@ -361,7 +361,7 @@ const Recrutement_Demande = () => {
                         onchange={(_: any, val: any) => loadDemande(val)}
                     />
                 </Grid>
-                <Grid item xs={12} sm={3}>
+                <Grid xs={12} sm={3}>
                     <CalendarZoom
                         nomControle="Dat_DR"
                         label="Date Demande"
@@ -378,7 +378,7 @@ const Recrutement_Demande = () => {
                         readOnly={isLocked}
                     />
                 </Grid>
-                <Grid item xs={12} sm={3} sx={{ display: "flex", alignItems: "flex-end" }}>
+                <Grid xs={12} sm={3} sx={{ display: "flex", alignItems: "flex-end" }}>
                     <Typography variant="subtitle1" sx={{ fontWeight: 'bold', color: colorBase.colorBase01, display: 'flex', alignItems: 'center' }}>
                         Statut:
                         {(() => {
@@ -418,7 +418,7 @@ const Recrutement_Demande = () => {
                     </Typography>
                 </Grid>
 
-                <Grid item xs={12}>
+                <Grid xs={12}>
                     <Divider sx={{ my: 1 }}>
                         <Chip
                             label="Demandeur"
@@ -427,7 +427,7 @@ const Recrutement_Demande = () => {
                     </Divider>
                 </Grid>
 
-                <Grid item xs={12} sm={4}>
+                <Grid xs={12} sm={4}>
                     <TextZoom
                         numZoom="MS018"
                         nomControle="Matricule"
@@ -442,10 +442,10 @@ const Recrutement_Demande = () => {
                         readonly={entete.Num_DR !== ""}
                     />
                 </Grid>
-                <Grid item xs={12} sm={4}>
+                <Grid xs={12} sm={4}>
                     <TextBox nomControle="Titre" label="Titre" valeur={entete.Titre} readonly />
                 </Grid>
-                <Grid item xs={12} sm={4}>
+                <Grid xs={12} sm={4}>
                     <TextBox nomControle="Cod_Entite"
                         label="Entité" valeur={entete.Cod_Entite} readonly
                         findlibelle={{
@@ -455,7 +455,7 @@ const Recrutement_Demande = () => {
                         }} />
                 </Grid>
 
-                <Grid item xs={12}>
+                <Grid xs={12}>
                     {!isSmall && (
                         <>
                             <Divider sx={{ my: 1 }} />
@@ -473,23 +473,23 @@ const Recrutement_Demande = () => {
                     showTitre={isSmall}
                     display={tabIndex === 0 || isSmall ? undefined : "none"}
                 >
-                    <Grid item xs={12} container spacing={2}>
-                        <Grid item xs={12} sm={6}>
+                    <Grid xs={12} container spacing={2}>
+                        <Grid xs={12} sm={6}>
                             <TextBox nomControle="Titre_DR" label="Intitulé du poste demandé" valeur={entete.Titre_DR} onchange={handleChange} readonly={isLocked} />
                         </Grid>
-                        <Grid item xs={12} sm={6}>
+                        <Grid xs={12} sm={6}>
                             <TextZoom numZoom="MS016" nomControle="Cod_Poste_DR" label="Poste Type" valeur={entete.Cod_Poste_DR} onchange={handleChange} readonly={isLocked} />
                         </Grid>
-                        <Grid item xs={12} sm={6}>
+                        <Grid xs={12} sm={6}>
                             <TextZoom numZoom="MS015" nomControle="Cod_Grade_DR" label="Grade" valeur={entete.Cod_Grade_DR} onchange={handleChange} readonly={isLocked} />
                         </Grid>
-                        <Grid item xs={12} sm={6}>
+                        <Grid xs={12} sm={6}>
                             <TextZoom numZoom="MS010" nomControle="Cod_Entite_DR" label="Entité d'affectation" valeur={entete.Cod_Entite_DR} onchange={handleChange} readonly={isLocked} />
                         </Grid>
 
-                        <Grid item xs={12}><Divider sx={{ my: 1 }} /></Grid>
+                        <Grid xs={12}><Divider sx={{ my: 1 }} /></Grid>
 
-                        <Grid item xs={12} sm={4}>
+                        <Grid xs={12} sm={4}>
                             <FormControl component="fieldset">
                                 <FormLabel component="legend">Durée</FormLabel>
                                 <RadioGroup row value={entete.Duree_Indeterminee ? "Indeterminee" : "Determinee"} onChange={(e) => handleBooleanChange("Duree_Indeterminee", e.target.value === "Indeterminee")}>
@@ -500,21 +500,21 @@ const Recrutement_Demande = () => {
                         </Grid>
                         {!entete.Duree_Indeterminee && (
                             <>
-                                <Grid item xs={12} sm={4}>
+                                <Grid xs={12} sm={4}>
                                     <TextBox nomControle="Duree_Du" label="Du" type="date" valeur={entete.Duree_Du} onchange={handleChange} readonly={isLocked} />
                                 </Grid>
-                                <Grid item xs={12} sm={4}>
+                                <Grid xs={12} sm={4}>
                                     <TextBox nomControle="Duree_Au" label="Au" type="date" valeur={entete.Duree_Au} onchange={handleChange} readonly={isLocked} />
                                 </Grid>
                             </>
                         )}
 
-                        <Grid item xs={12}><Divider sx={{ my: 1 }} /></Grid>
+                        <Grid xs={12}><Divider sx={{ my: 1 }} /></Grid>
 
-                        <Grid item xs={12} sm={6}>
+                        <Grid xs={12} sm={6}>
                             <TextBox nomControle="Nb_Personne" label="Nombre de personnes" type="number" valeur={entete.Nb_Personne} onchange={handleChange} readonly={isLocked} />
                         </Grid>
-                        <Grid item xs={12} sm={6}>
+                        <Grid xs={12} sm={6}>
                             <TextBox nomControle="Buget_Salaire" label="Budget Salaire (Est.)" type="number" valeur={entete.Buget_Salaire} onchange={handleChange} readonly={isLocked} />
                         </Grid>
                     </Grid>
@@ -525,8 +525,8 @@ const Recrutement_Demande = () => {
                     showTitre={isSmall}
                     display={tabIndex === 1 || isSmall ? undefined : "none"}
                 >
-                    <Grid item xs={12} container spacing={2}>
-                        <Grid item xs={12} sm={6}>
+                    <Grid xs={12} container spacing={2}>
+                        <Grid xs={12} sm={6}>
                             <FormControl component="fieldset">
                                 <FormLabel component="legend">Sexe</FormLabel>
                                 <RadioGroup row value={entete.Sexe || ""} onChange={(e) => handleChange("Sexe", e.target.value)}>
@@ -536,7 +536,7 @@ const Recrutement_Demande = () => {
                                 </RadioGroup>
                             </FormControl>
                         </Grid>
-                        <Grid item xs={12} sm={6}>
+                        <Grid xs={12} sm={6}>
                             <FormControl component="fieldset">
                                 <FormLabel component="legend">Age</FormLabel>
                                 <RadioGroup row value={entete.Age_Determine ? "Determine" : "Indifferent"} onChange={(e) => handleBooleanChange("Age_Determine", e.target.value === "Determine")}>
@@ -547,18 +547,18 @@ const Recrutement_Demande = () => {
                         </Grid>
                         {entete.Age_Determine && (
                             <>
-                                <Grid item xs={12} sm={3}>
+                                <Grid xs={12} sm={3}>
                                     <TextBox nomControle="Age_Du" label="Age Min" type="number" valeur={entete.Age_Du} onchange={handleChange} readonly={isLocked} />
                                 </Grid>
-                                <Grid item xs={12} sm={3}>
+                                <Grid xs={12} sm={3}>
                                     <TextBox nomControle="Age_Au" label="Age Max" type="number" valeur={entete.Age_Au} onchange={handleChange} readonly={isLocked} />
                                 </Grid>
                             </>
                         )}
 
-                        <Grid item xs={12}><Divider sx={{ my: 1 }} /></Grid>
+                        <Grid xs={12}><Divider sx={{ my: 1 }} /></Grid>
 
-                        <Grid item xs={12} sm={4}>
+                        <Grid xs={12} sm={4}>
                             <TextField
                                 select
                                 label="Niveau d'étude"
@@ -575,19 +575,19 @@ const Recrutement_Demande = () => {
                                 ))}
                             </TextField>
                         </Grid>
-                        <Grid item xs={12} sm={4}>
+                        <Grid xs={12} sm={4}>
                             <TextBox nomControle="Experience" label="Expérience (Années)" type="number" valeur={entete.Experience} onchange={handleChange} readonly={isLocked} />
                         </Grid>
-                        <Grid item xs={12} sm={4}>
+                        <Grid xs={12} sm={4}>
                             <TextBox nomControle="Etablissement" label="Etablissement cible" valeur={entete.Etablissement} onchange={handleChange} readonly={isLocked} />
                         </Grid>
-                        <Grid item xs={12}>
+                        <Grid xs={12}>
                             <TextBox nomControle="Parcours" label="Parcours / Diplôme" multiline maxRows={2} valeur={entete.Parcours} onchange={handleChange} readonly={isLocked} />
                         </Grid>
 
-                        <Grid item xs={12}><Divider sx={{ my: 2 }} /></Grid>
+                        <Grid xs={12}><Divider sx={{ my: 2 }} /></Grid>
 
-                        <Grid item xs={12}>
+                        <Grid xs={12}>
                             <Typography variant="h6" gutterBottom>Compétences Requises</Typography>
                             <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', mb: 1 }}>
                                 <TextField
@@ -626,8 +626,8 @@ const Recrutement_Demande = () => {
                     showTitre={isSmall}
                     display={tabIndex === 2 || isSmall ? undefined : "none"}
                 >
-                    <Grid item xs={12} container spacing={2}>
-                        <Grid item xs={12} sm={6}>
+                    <Grid xs={12} container spacing={2}>
+                        <Grid xs={12} sm={6}>
                             <TextField
                                 select
                                 label="Motif du recrutement"
@@ -645,7 +645,7 @@ const Recrutement_Demande = () => {
                                 ))}
                             </TextField>
                         </Grid>
-                        <Grid item xs={12}>
+                        <Grid xs={12}>
                             <TextBox
                                 nomControle="Narratif"
                                 label="Narratif / Justification"

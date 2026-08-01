@@ -651,6 +651,18 @@
     <Compile Include="Descipline\RH_Discipline_Liste.vb">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="Outillage\RH_Outillage.Designer.vb">
+      <DependentUpon>RH_Outillage.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Outillage\RH_Outillage.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Outillage\RH_Outillage_Mouvement.Designer.vb">
+      <DependentUpon>RH_Outillage_Mouvement.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Outillage\RH_Outillage_Mouvement.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Documents\Demande_Doc_Administratif\Demande_Doc_Admin.Designer.vb">
       <DependentUpon>Demande_Doc_Admin.vb</DependentUpon>
     </Compile>
@@ -2078,6 +2090,12 @@
     <EmbeddedResource Include="Descipline\RH_Discipline_Liste.resx">
       <DependentUpon>RH_Discipline_Liste.vb</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Outillage\RH_Outillage.resx">
+      <DependentUpon>RH_Outillage.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Outillage\RH_Outillage_Mouvement.resx">
+      <DependentUpon>RH_Outillage_Mouvement.vb</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Documents\Accident_Travail\RH_Declaration_AT.resx">
       <DependentUpon>RH_Declaration_AT.vb</DependentUpon>
     </EmbeddedResource>
@@ -2996,6 +3014,7 @@
     <None Include="Resources\btn_execute_w.png" />
     <None Include="Resources\coller_presspapier.png" />
     <Content Include="ILLink\ILLink.Descriptors.LibraryBuild.xml" />
+    <Content Include="Outillage\Script_SQL_Outillage.sql" />
     <None Include="Resources\btn_copy.png" />
     <None Include="Resources\btn_mode_agent_w.png" />
     <None Include="Resources\btn_python.png" />

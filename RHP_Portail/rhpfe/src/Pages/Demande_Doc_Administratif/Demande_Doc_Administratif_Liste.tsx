@@ -42,7 +42,7 @@ const Demande_Doc_Administratif_Liste = () => {
                 sx={{
                     "& .grpDiv": {
                         padding: "2em 5px",
-                        width: "90vw",
+                        width: "100%",
                         minHeight: "10em",
                     },
                 }}
@@ -93,6 +93,7 @@ const Demande_Doc_Administratif_Liste = () => {
                             <Box
                                 sx={{
                                     display: "flex",
+                                    flexWrap: { xs: "wrap", sm: "nowrap" },
                                     paddingRight: "5px",
                                     gap: { xs: "5px", sm: "1em", md: "1.5em", lg: "2em" },
                                 }}
@@ -110,7 +111,8 @@ const Demande_Doc_Administratif_Liste = () => {
                                     }
                                     onchange={stateChange}
                                     sx={{
-                                        width: "100%",
+                    flex: 1,
+                    minWidth: 0,
                                         "& input": { fontSize: { xs: "0.85em", sm: "1em" } },
                                     }}
                                     onClear={() => stateChange("Dat_Du", "")}
@@ -121,7 +123,8 @@ const Demande_Doc_Administratif_Liste = () => {
                                     valeur={criteres?.Dat_Au || date}
                                     onchange={stateChange}
                                     sx={{
-                                        width: "100%",
+                    flex: 1,
+                    minWidth: 0,
                                         "& input": { fontSize: { xs: "0.85em", sm: "1em" } },
                                     }}
                                     onClear={() => stateChange("Dat_Au", "")}

@@ -74,7 +74,7 @@ const Org_Poste = () => {
         <Box className="org-poste-container">
             <Typography variant="h6" gutterBottom sx={{ color: colorBase.colorBase02 }}>Poste</Typography>
             <Grid container spacing={2}>
-                <Grid item xs={12} sm={3}>
+                <Grid xs={12} sm={3}>
                     <TextZoom
                         numZoom="MS016"
                         nomControle="Cod_Poste"
@@ -84,7 +84,7 @@ const Org_Poste = () => {
                         style={{ width: "100%", color: colorBase.colorBase01 }}
                     />
                 </Grid>
-                <Grid item xs={12} sm={9}>
+                <Grid xs={12} sm={9}>
                     <Typography variant="h5" gutterBottom sx={{ fontWeight: "bold", color: colorBase.colorBase01, display: "flex", alignItems: "center", justifyContent: "flex-start", paddingTop: "15px" }}>
                         {poste.Lib_Poste} ({poste.Cod_Poste})
                     </Typography>
@@ -92,19 +92,19 @@ const Org_Poste = () => {
             </Grid>
             <Divider sx={{ my: 2 }} />
             <Grid container spacing={2}>
-                <Grid item xs={12} sm={6}>
+                <Grid xs={12} sm={6}>
                     <Typography gutterBottom sx={{ color: colorBase.colorBase01 }}><span style={{ fontWeight: "bold" }}>Grade : </span>{grade.find((g) => g.value === poste.Cod_Grade)?.label || poste.Cod_Grade}</Typography>
                 </Grid>
-                <Grid item xs={12} sm={6}>
+                <Grid xs={12} sm={6}>
                     <Typography gutterBottom sx={{ color: colorBase.colorBase01 }}><span style={{ fontWeight: "bold" }}>Expérience minimum : </span>{poste.nb_Annees_Experience === 1 ? poste.nb_Annees_Experience + ' an' : poste.nb_Annees_Experience + ' ans'}</Typography>
                 </Grid>
-                <Grid item xs={12} sm={6}>
+                <Grid xs={12} sm={6}>
                     <Typography gutterBottom sx={{ color: colorBase.colorBase01 }}><span style={{ fontWeight: "bold" }}>Background Académique : </span>{background_academique.find((g) => g.value === poste.Background_Academique)?.label || poste.Background_Academique}</Typography>
                 </Grid>
-                <Grid item xs={12} sm={6}>
+                <Grid xs={12} sm={6}>
                     <Typography gutterBottom sx={{ color: colorBase.colorBase01 }}><span style={{ fontWeight: "bold" }}>Dépendance Hiérarchique : </span>{postes.find((g) => g.value === poste.Dependance_Hierarchique)?.label || poste.Dependance_Hierarchique}</Typography>
                 </Grid>
-                <Grid item xs={12} sm={6}>
+                <Grid xs={12} sm={6}>
                     <Typography gutterBottom sx={{ color: colorBase.colorBase01 }}><span style={{ fontWeight: "bold" }}>Dépendance fonctionnelle : </span>{postes.find((g) => g.value === poste.Dependance_fonctionnelle)?.label || poste.Dependance_fonctionnelle}</Typography>
                 </Grid>
             </Grid>

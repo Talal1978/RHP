@@ -357,7 +357,7 @@ ORDER BY CONVERT(int, Rang)")
         End With
         '  PreparerTableauOrdreLbl()
     End Sub
-    Sub rubrique_search_txt_textChanged(sender As TextBox, e As EventArgs) Handles rubrique_search_txt.TextChanged
+    Sub rubrique_search_txt_textChanged(sender As ud_TextBox, e As EventArgs) Handles rubrique_search_txt.TextChanged
         For i = 0 To dicRub.Values.Count - 1
             dicRub.Values(i).Visible = (dicRub.Values(i).Name.ToUpper.Contains(rubrique_search_txt.Text.Trim.ToUpper) Or dicRub.Values(i).Text.ToUpper.Contains(rubrique_search_txt.Text.Trim.ToUpper))
             dicRub.Values(i).canMove = (rubrique_search_txt.Text = "")

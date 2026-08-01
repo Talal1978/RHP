@@ -1,7 +1,7 @@
 import { Response, Request } from "express";
 import { encrypt } from "../modules/module_encrypt";
 import { lireSql, controleInjection } from "../modules/module_sqlRW";
-import { NVarChar } from "mssql";
+import { NVarChar, VarBinary } from "mssql";
 import { getToken } from "../modules/module_jwt";
 import { envoiMail } from "../modules/module_sendMail";
 import {
@@ -21,11 +21,10 @@ export const authentication = async (req: Request, res: Response) => {
     from Rh_Agent a
     outer apply (select count(*) as estTeamLeader from Sys_Org_Entite where Cod_Entite=isnull(a.Cod_Entite,'ui5465deu_è_è_çè') and Responsable=a.Matricule)o
     outer apply (select top 1 Typ_Role from Controle_Users where isnull(Mail,'')=a.Mail)u
-    where HashBytes('SHA1',upper(Mail))=HashBytes('SHA1',@lg) and Pw='${encrypt(
-    pwd
-  )}'`;
+    where HashBytes('SHA1',upper(Mail))=HashBytes('SHA1',@lg) and Pw=@pw`;
   const rsl = await lireSql(sqlStr, [
     { param: "login", sqlType: NVarChar, valeur: login },
+    { param: "pw", sqlType: NVarChar, valeur: encrypt(pwd) },
   ]);
   if (rsl.result && rsl.data.length > 0) {
     const myJwt = getToken(
@@ -58,16 +57,20 @@ export const authentication = async (req: Request, res: Response) => {
     });
     await lireSql(
       `insert into Controle_Users_Process (Login_User, Nom_User, hostname, Process_Id, Dat)
-          values ('${rsl.data[0].Login}','${rsl.data[0].nom + " " + rsl.data[0].prenom
-      }','web','${req.params.processId}',getdate())`,
-      []
+          values (@Login,@Nom,'web',@ProcessId,getdate())`,
+      [
+        { param: "Login", sqlType: NVarChar, valeur: rsl.data[0].Login },
+        { param: "Nom", sqlType: NVarChar, valeur: (rsl.data[0].nom || "") + " " + (rsl.data[0].prenom || "") },
+        { param: "ProcessId", sqlType: NVarChar, valeur: req.params.processId },
+      ]
     );
 
     // Set Refresh Token as HttpOnly Cookie
+    const isProd = process.env.NODE_ENV === 'production';
     res.cookie('jwt', myJwt.refreshToken, {
       httpOnly: true,
-      secure: true,
-      sameSite: 'none',
+      secure: isProd,
+      sameSite: isProd ? 'none' : 'lax',
       maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
     });
 
@@ -105,10 +108,11 @@ export const refreshToken = async (req: Request, res: Response) => {
   );
 
   // Update Cookie
+  const isProdRefresh = process.env.NODE_ENV === 'production';
   res.cookie('jwt', newTokens.refreshToken, {
     httpOnly: true,
-    secure: true,
-    sameSite: 'none',
+    secure: isProdRefresh,
+    sameSite: isProdRefresh ? 'none' : 'lax',
     maxAge: 7 * 24 * 60 * 60 * 1000
   });
 
@@ -143,15 +147,12 @@ export const getNewPwd = async (req: Request, res: Response) => {
     let userData = result.data[0] as userDataFormat;
 
 
-    sqlStr = `update RH_Agent set is_Temp ='true', PW='${encrypt(
-      password
-    )}' where Mail=@login
-    update Controle_Users set Pwd_User='${encrypt(
-      password
-    )}' where isnull(Mail,'')=@login
-    `;
+    const encryptedPwd = encrypt(password);
+    sqlStr = `update RH_Agent set is_Temp ='true', PW=@pw where Mail=@login;
+    update Controle_Users set Pwd_User=@pw where isnull(Mail,'')=@login`;
     await lireSql(sqlStr, [
       { param: "login", sqlType: NVarChar, valeur: login },
+      { param: "pw", sqlType: NVarChar, valeur: encryptedPwd },
     ]);
     const mailOptions = {
       from: VGLOBALES.SMTP_USERNAME || "",
@@ -161,6 +162,7 @@ export const getNewPwd = async (req: Request, res: Response) => {
       html: `Bonjour ${userData.Nom}<BR/>Vous avez réinitialisé votre mot de passe<BR/>Ci-après votre nouveau mot de pass : <b>${password}</b>.`,
       headers: {},
     };
+    console.log("mailOptions", mailOptions)
     let info = await envoiMail(mailOptions);
     return res.send({ result: info.accepted.length > 0, data: info.accepted });
   } catch (err) {
@@ -171,11 +173,11 @@ export const setPwd = async (req: Request, res: Response) => {
   try {
     const { pwd, Login, id_Societe } = req.body;
     const db = req.body.db || "";
-    const sqlStr = `update RH_Agent set is_Temp='false',PW='${encrypt(
-      pwd
-    )}'  where Matricule=@login and id_Societe='${id_Societe}'`;
+    const sqlStr = `update RH_Agent set is_Temp='false',PW=@pw where Matricule=@login and id_Societe=@id_Societe`;
     const rsl = await lireSql(sqlStr, [
       { param: "login", sqlType: NVarChar, valeur: Login },
+      { param: "pw", sqlType: NVarChar, valeur: encrypt(pwd) },
+      { param: "id_Societe", sqlType: require("mssql").Int, valeur: Number(id_Societe) },
     ]);
     return res.send({ result: rsl.result, data: [] });
   } catch (err) {

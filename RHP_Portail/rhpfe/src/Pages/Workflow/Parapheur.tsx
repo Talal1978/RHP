@@ -43,7 +43,7 @@ const Parapheur = () => {
         colonnes["Opérande"].visible = false;
         const donnees = dt.data.data.map((dt: ObjetGenerique) => {
           return {
-            signature: `${process.env.PUBLIC_URL}/signature.png`,
+            signature: `${import.meta.env.BASE_URL}signature.png`,
             ...dt,
           };
         });
@@ -67,8 +67,8 @@ const Parapheur = () => {
         alignItems: "center",
         gap: "1em",
         width: {
-          xs: "90vw",
-          sm: "90vw",
+          xs: "100%",
+          sm: "100%",
           md: "80vw",
         },
         overflow: "scroll",

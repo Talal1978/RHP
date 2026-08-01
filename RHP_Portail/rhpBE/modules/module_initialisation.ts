@@ -44,7 +44,7 @@ export const VGLOBALES: {
   SMTP_NOM: "",
   SMTP_FROM: "",
   UPLOADS_PATH: "",
-  JWT_KEY: "Afuguyezf456456464ezfrfrnjgtgitjgtgjitgjitjg8dx48d4dccrcrcoAZCFrlf",
+  JWT_KEY: process.env.JWT_KEY || "",
   VERSION: "2023.000.12",
   ACTIVE_PROCESSES: [],
 };

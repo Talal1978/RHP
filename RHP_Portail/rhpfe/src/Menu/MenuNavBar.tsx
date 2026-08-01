@@ -83,7 +83,7 @@ export default function MenuNavBar() {
           </Box>
           <Avatar
             alt="Remy Sharp"
-            src={`${process.env.PUBLIC_URL}/${themeMode === 'light' ? 'logoRHPBlanc.png' : 'logoRHPBlanc.png'}`}
+            src={`${import.meta.env.BASE_URL}${themeMode === 'light' ? 'logoRHPBlanc.png' : 'logoRHPBlanc.png'}`}
             sx={{ ml: 2 }}
             onClick={(event: React.MouseEvent<HTMLElement>) => {
               navigate("/myspace")

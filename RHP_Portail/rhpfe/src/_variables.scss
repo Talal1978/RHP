@@ -41,8 +41,13 @@ body.dark-mode {
     color: var(--fore-color-base-01) !important;
   }
   
+  // Placeholder-like labels (non-shrink) in dark mode
+  .MuiInputLabel-root:not(.MuiInputLabel-shrink) {
+      color: #9ca3af !important;
+  }
+
   // Title differentiation
-  .MuiInputLabel-root,
+  .MuiInputLabel-root.MuiInputLabel-shrink,
   .MuiTypography-h1, .MuiTypography-h2, .MuiTypography-h3, 
   .MuiTypography-h4, .MuiTypography-h5, .MuiTypography-h6,
   .titre, .title {

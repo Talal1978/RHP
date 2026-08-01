@@ -198,35 +198,35 @@ const Formation = () => {
             sx={{
                 "& > .grpDiv": {
                     padding: "2em 5px 5px 5px",
-                    width: "90vw",
+                    width: "100%",
                     maxWidth: "1200px",
                     minHeight: "10em",
                 },
             }}
         >
             <Grid container spacing={2}>
-                <Grid item xs={12} sm={3}>
+                <Grid xs={12} sm={3}>
                     <TextBox nomControle="Cod_Formation" label="Code" valeur={entete.Cod_Formation} readonly />
                 </Grid>
-                <Grid item xs={12} sm={6}>
+                <Grid xs={12} sm={6}>
                     <TextBox nomControle="Lib_Formation" label="Intitulé" valeur={entete.Lib_Formation} onchange={handleChange} readonly={isLocked} />
                 </Grid>
-                <Grid item xs={12} sm={3} sx={{ display: "flex", alignItems: "flex-end" }}>
+                <Grid xs={12} sm={3} sx={{ display: "flex", alignItems: "flex-end" }}>
                     <Chip label={entete.Statut_Formation} color={entete.Statut_Formation === 'Validee' ? "success" : "default"} />
                 </Grid>
 
-                <Grid item xs={12}><Divider /></Grid>
+                <Grid xs={12}><Divider /></Grid>
 
-                <Grid item xs={12} sm={3}>
+                <Grid xs={12} sm={3}>
                     <TextBox nomControle="Dat_Du" label="Du" type="date" valeur={entete.Dat_Du} onchange={handleChange} readonly={isLocked} />
                 </Grid>
-                <Grid item xs={12} sm={3}>
+                <Grid xs={12} sm={3}>
                     <TextBox nomControle="Dat_Au" label="Au" type="date" valeur={entete.Dat_Au} onchange={handleChange} readonly={isLocked} />
                 </Grid>
-                <Grid item xs={12} sm={3}>
+                <Grid xs={12} sm={3}>
                     <TextBox nomControle="Budget" label="Budget" type="number" valeur={entete.Budget} onchange={handleChange} readonly={isLocked} />
                 </Grid>
-                <Grid item xs={12} sm={3}>
+                <Grid xs={12} sm={3}>
                     <TextField
                         select
                         label="Genre"
@@ -240,7 +240,7 @@ const Formation = () => {
                     </TextField>
                 </Grid>
 
-                <Grid item xs={12} sm={6}>
+                <Grid xs={12} sm={6}>
                     <FormControl component="fieldset">
                         <FormLabel component="legend">Nature</FormLabel>
                         <RadioGroup row value={entete.Nature_Formation} onChange={(e) => handleChange("Nature_Formation", parseInt(e.target.value))}>
@@ -249,7 +249,7 @@ const Formation = () => {
                         </RadioGroup>
                     </FormControl>
                 </Grid>
-                <Grid item xs={12} sm={6}>
+                <Grid xs={12} sm={6}>
                     <FormControl component="fieldset">
                         <FormLabel component="legend">Lieu</FormLabel>
                         <RadioGroup row value={entete.Typ_Lieu} onChange={(e) => handleChange("Typ_Lieu", parseInt(e.target.value))}>
@@ -261,11 +261,11 @@ const Formation = () => {
                 </Grid>
 
                 {entete.Nature_Formation === 2 && (
-                    <Grid item xs={12} sm={6}>
+                    <Grid xs={12} sm={6}>
                         <TextZoom numZoom="MS150" nomControle="Cod_Cabinet" label="Cabinet" valeur={entete.Cod_Cabinet} onchange={handleChange} readonly={isLocked} />
                     </Grid>
                 )}
-                <Grid item xs={12} sm={6}>
+                <Grid xs={12} sm={6}>
                     <TextZoom
                         numZoom={entete.Nature_Formation === 1 ? "MS152" : "MS153"}
                         nomControle="Cod_Formateur"
@@ -276,7 +276,7 @@ const Formation = () => {
                     />
                 </Grid>
 
-                <Grid item xs={12}>
+                <Grid xs={12}>
                     <Tabs
                         value={tabIndex}
                         onChange={(_, v) => setTabIndex(v)}
@@ -293,7 +293,7 @@ const Formation = () => {
                 </Grid>
 
                 {/* Modules Tab */}
-                <Grid item xs={12} sx={{ display: tabIndex === 0 ? "block" : "none" }}>
+                <Grid xs={12} sx={{ display: tabIndex === 0 ? "block" : "none" }}>
                     <GroupBox label="Modules">
                         {/* Placeholder for Add Module Button */}
                         <Grille dataSource={modules} Colonnes={moduleCols} className="laGrille" />
@@ -301,7 +301,7 @@ const Formation = () => {
                 </Grid>
 
                 {/* Participants Tab */}
-                <Grid item xs={12} sx={{ display: tabIndex === 1 ? "block" : "none" }}>
+                <Grid xs={12} sx={{ display: tabIndex === 1 ? "block" : "none" }}>
                     <GroupBox label="Participants">
                         {/* Placeholder for Add Participant Button */}
                         <Grille dataSource={participants} Colonnes={participantCols} className="laGrille" />
@@ -309,7 +309,7 @@ const Formation = () => {
                 </Grid>
 
                 {/* Financement Tab */}
-                <Grid item xs={12} sx={{ display: tabIndex === 2 ? "block" : "none" }}>
+                <Grid xs={12} sx={{ display: tabIndex === 2 ? "block" : "none" }}>
                     <GroupBox label="Financement">
                         {/* Placeholder for Add Finance Button */}
                         <Grille dataSource={financement} Colonnes={finCols} className="laGrille" />
@@ -317,7 +317,7 @@ const Formation = () => {
                 </Grid>
 
                 {/* Contenu Tab */}
-                <Grid item xs={12} sx={{ display: tabIndex === 3 ? "block" : "none" }}>
+                <Grid xs={12} sx={{ display: tabIndex === 3 ? "block" : "none" }}>
                     <GroupBox label="Contenu de la formation">
                         <TextBox
                             nomControle="Contenu"

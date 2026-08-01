@@ -65,7 +65,7 @@ const useAxiosGet = () => {
 
       // Connection cut / Network Error detection
       if (!err.response || err.code === "ERR_NETWORK") {
-        window.location.href = "/";
+        console.error("Network Error - Redirect prevented");
       }
 
       if (axios.isAxiosError(err) && err.response?.status === 500) {

@@ -44,6 +44,8 @@ import {
     ReportProblem,
     Timeline,
     School,
+    Construction,
+    Inventory,
 } from "@mui/icons-material";
 import { SvgIconProps } from "@mui/material";
 import { colorBase } from "../modules/module_general";
@@ -95,6 +97,8 @@ export const menusIcon: MenuIcons = {
     ReportProblem: ReportProblem,
     Timeline: Timeline,
     School: School,
+    Construction: Construction,
+    Inventory: Inventory,
 };
 
 export const GetMenuIcon = ({
@@ -103,7 +107,7 @@ export const GetMenuIcon = ({
 }: {
     name_ecran: string;
     sx?: any;
-}): JSX.Element => {
+}): React.JSX.Element => {
     const IconComponent = menusIcon[name_ecran] || ChevronRight;
     return <IconComponent sx={{ ...sx }} />;
 };

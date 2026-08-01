@@ -98,9 +98,8 @@ export const validate = (req: Request, res: Response, next: NextFunction) => {
       RacineHierarchique,
       id_User,
     } = decod as TJwtSession;
-    const jwtSession = jwtSessions.find((ss) => (ss.processId = processId));
+    const jwtSession = jwtSessions.find((ss) => ss.processId === processId);
     if (!jwtSession) {
-
       return res.status(403).send("5 RHP : Accès non authorisé");
     }
     req.params.processId = processId;

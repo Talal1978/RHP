@@ -1,0 +1,9 @@
+@use "../../variables";
+
+.btns {
+  position: fixed !important;
+  top: calc(100vh - #{variables.$positionFloating} - 4em) !important;
+  right: variables.$positionFloating !important;
+  background-color: variables.$colorBase01 !important;
+  color: #ffffff !important;
+}

@@ -9,7 +9,7 @@ import { Int, NVarChar, SmallDateTime } from "mssql";
 import { sousmettre_signature } from "../modules/module_workflow";
 import { Societes, TSociete } from "../src/types";
 import { getParam, IsNull } from "../modules/module_general";
-import { format } from "date-fns";
+
 export async function demande_conge_liste(req: Request, res: Response) {
   let { Matricule, Cod_Entite, Statut, Dat_Du, Dat_Au } = req.body;
   if (controleInjection(Matricule).result === false) return res.send({ result: false, message: "Injection détectée dans Matricule" });
@@ -18,17 +18,19 @@ export async function demande_conge_liste(req: Request, res: Response) {
 
   const { processId, ...theAgent } = req.params;
   const TblRef = "RH_Conge_Suivi";
-  let idSoc = theAgent?.id_Societe || "3068";
-  let MatriculeWhere = "";
-  if (theAgent.TeamLeader) {
-    MatriculeWhere = `exists(select Matricule from Rh_Agent _agt where id_Societe=${theAgent.id_Societe} and _agt.Cod_Entite in (
-        select  Cod_Entite from Sys_Org_Entite s where 
-                    ';'+isnull(Racine+';'+s.Cod_Entite,'')+';' like '%;'+isnull(nullif('${theAgent.Cod_Entite}',''),'8787uhuhunjj')+';%' and id_Societe=_agt.id_Societe))`;
-  } else {
-    MatriculeWhere = `(${TblRef}.id_Societe=${theAgent.id_Societe} and ${TblRef}.Matricule='${theAgent.Matricule}')`;
+  const idSocNum = Number(theAgent?.id_Societe || 0);
+  if (isNaN(idSocNum) || idSocNum <= 0) {
+    return res.send({ result: false, message: "id_Societe invalide" });
+  }
+
+  let isOwn = false;
+  // MatriculeWhere supprimé (code mort, la requête utilise directement @Matricule et @id_Societe)
+  if (String(theAgent.TeamLeader).toLowerCase() !== "true") {
     Matricule = theAgent.Matricule;
     Cod_Entite = theAgent.Cod_Entite;
+    isOwn = true;
   }
+
   Dat_Du = estDate(Dat_Du)
     ? toSqlDateFormat(Dat_Du)
     : toSqlDateFormat(new Date(1900, 0, 1));
@@ -36,54 +38,64 @@ export async function demande_conge_liste(req: Request, res: Response) {
     ? toSqlDateFormat(Dat_Au)
     : toSqlDateFormat(new Date(2045, 11, 31));
   Statut = Statut || "";
-  let sqlStr = `select Num_Conge 'N° demande', ${Matricule === theAgent.Matricule ? "Matricule,Nom, " : ""
-    }dbo.FindRubrique('Statut_Signature',Statut) as Statut, Dat_Deb_Conge as 'Du', Dat_Fin_Conge as 'Au', 
+
+  let sqlStr = `select TOP 50 Num_Conge 'N° demande', ${isOwn ? "Matricule,Nom, " : ""}
+    dbo.FindRubrique('Statut_Signature',Statut) as Statut, Dat_Deb_Conge as 'Du', Dat_Fin_Conge as 'Au', 
 Duree_Globale 'Durée totale', Repos_Hebdomadaire 'Repos hebdo.', 
-Jours_Feries 'Jours fériés', Duree_Conge 'Congé' ${Cod_Entite === theAgent.Cod_Entite
-      ? ""
-      : ", isnull(Lib_Entite,'') as 'Entité'"
-    }, Commentaire
+Jours_Feries 'Jours fériés', Duree_Conge 'Congé' ${!isOwn ? ", isnull(o.Entité,'') as 'Entité'" : ""}, Commentaire
  from RH_Conge_Suivi c
  outer apply (select Nom_Agent + ' ' +Prenom_Agent as Nom from RH_Agent where id_Societe=c.id_Societe and Matricule=c.Matricule) r
  outer apply (select Lib_Entite as Entité from Org_Entite where id_Societe=c.id_Societe and Cod_Entite=c.Cod_Entite) o
-where id_Societe='${idSoc}' and Matricule like '%'+@Matricule and Dat_Deb_Conge between @Dat_Du and @Dat_Au and isnull(Statut,'') like '${Statut}%' Order by [Du] desc`;
+where id_Societe=@id_Societe and Matricule like '%'+@Matricule and Dat_Deb_Conge between @Dat_Du and @Dat_Au and isnull(Statut,'') like @StatutPrefix Order by [Du] desc`;
+
   const rsl = await lireSql(sqlStr, [
+    { param: "id_Societe", sqlType: Int, valeur: idSocNum },
     { param: "Matricule", sqlType: NVarChar, valeur: Matricule },
-    { param: "Statut", sqlType: NVarChar, valeur: Statut },
+    { param: "StatutPrefix", sqlType: NVarChar, valeur: Statut + "%" },
     { param: "Dat_Du", sqlType: SmallDateTime, valeur: Dat_Du },
     { param: "Dat_Au", sqlType: SmallDateTime, valeur: Dat_Au },
+    ...(isOwn ? [] : [{ param: "Cod_Entite", sqlType: NVarChar, valeur: Cod_Entite }]),
+    ...(isOwn ? [] : [{ param: "AgentMatricule", sqlType: NVarChar, valeur: theAgent.Matricule }]),
   ]);
   res.send(rsl);
 }
+
 export async function get_conge_droits(req: Request, res: Response) {
   const { Dat_Deb_Conge, Matricule } = req.body;
   const { id_Societe } = req.params;
-  const sqlStr = `select p.JourPaie,p.DatDernierePaie,c.* from dbo.Sys_Rh_Conge(${id_Societe},'${Dat_Deb_Conge}') c 
-  outer apply(select top 1 * from RH_Param_Plan_Paie  where id_Societe=${id_Societe} and Cod_Plan_Paie=c.Cod_Plan_Paie)p
-  where Matricule='${Matricule}'`;
+
+  const idSocNum = Number(id_Societe);
+  if (isNaN(idSocNum) || idSocNum <= 0) {
+    return res.send({ result: false, message: "id_Societe invalide" });
+  }
+
+  let dateValue: Date;
+  if (typeof Dat_Deb_Conge === 'string' && Dat_Deb_Conge.includes('/')) {
+    const [d, m, y] = Dat_Deb_Conge.split('/');
+    dateValue = new Date(Number(y), Number(m) - 1, Number(d));
+  } else {
+    dateValue = new Date(Dat_Deb_Conge);
+  }
+
+  const sqlStr = `select p.JourPaie,p.DatDernierePaie,c.* from dbo.Sys_Rh_Conge(@id_Societe,@Dat_Deb_Conge) c 
+  outer apply(select top 1 * from RH_Param_Plan_Paie  where id_Societe=@id_Societe and Cod_Plan_Paie=c.Cod_Plan_Paie)p
+  where Matricule=@Matricule`;
   const rsl = await lireSql(sqlStr, [
-    {
-      param: "Matricule",
-      sqlType: NVarChar,
-      valeur: Matricule,
-    },
-    {
-      param: "Dat_Deb_Conge",
-      sqlType: SmallDateTime,
-      valeur: Dat_Deb_Conge,
-    },
-    {
-      param: "id_Societe",
-      sqlType: Int,
-      valeur: id_Societe,
-    },
+    { param: "Matricule", sqlType: NVarChar, valeur: Matricule },
+    { param: "Dat_Deb_Conge", sqlType: SmallDateTime, valeur: dateValue },
+    { param: "id_Societe", sqlType: Int, valeur: idSocNum },
   ]);
   return res.send(rsl);
 }
+
 export async function get_demande_conge(req: Request, res: Response) {
   const { Num_Conge } = req.body;
   const { processId, ...theAgent } = req.params;
-  let idSoc = theAgent.id_Societe || "3068";
+  const idSocNum = Number(theAgent?.id_Societe || 0);
+  if (isNaN(idSocNum) || idSocNum <= 0) {
+    return res.send({ result: false, message: "id_Societe invalide" });
+  }
+
   let sqlStr = `SELECT Num_Conge,
   Matricule,
   Dat_Deb_Conge,
@@ -99,45 +111,37 @@ export async function get_demande_conge(req: Request, res: Response) {
   isnull(Commentaire,'') Commentaire,
   isnull(Typ_Conge,'CAD') Typ_Conge,
   isnull(Statut,'') Statut
-  FROM RH_Conge_Suivi where  Num_Conge=@Num_Conge and id_Societe=${idSoc}`;
+  FROM RH_Conge_Suivi where Num_Conge=@Num_Conge and id_Societe=@id_Societe`;
   const rsl = await lireSql(sqlStr, [
-    {
-      param: "Num_Conge",
-      sqlType: NVarChar,
-      valeur: Num_Conge,
-    },
+    { param: "Num_Conge", sqlType: NVarChar, valeur: Num_Conge },
+    { param: "id_Societe", sqlType: Int, valeur: idSocNum },
   ]);
   return res.send(rsl);
 }
+
 export async function save_demande_conge(req: Request, res: Response) {
   const { entete: _entete } = req.body;
   const { id_Societe, Matricule } = req.params;
   let { Num_Conge, ...entete } = _entete;
-  // traiter le cas des congés pour des périodes déjà passées et cloturées
+
+  const idSocNum = Number(id_Societe);
+  if (isNaN(idSocNum) || idSocNum <= 0) {
+    return res.send({ result: false, message: "id_Societe invalide" });
+  }
+
   let chk = await lireSql(
-    `select dbo.Sys_Conge_CheckPeriode (${id_Societe},@Dat_Deb_Conge,@Dat_Deb_Conge) as nb`,
+    `select dbo.Sys_Conge_CheckPeriode (@id_Societe,@Dat_Deb_Conge,@Dat_Deb_Conge) as nb`,
     [
-      {
-        param: "Dat_Deb_Conge",
-        sqlType: SmallDateTime,
-        valeur: entete.Dat_Deb_Conge,
-      },
+      { param: "id_Societe", sqlType: Int, valeur: idSocNum },
+      { param: "Dat_Deb_Conge", sqlType: SmallDateTime, valeur: entete.Dat_Deb_Conge },
     ]
   );
   if (!chk.result) {
-    return res.send({
-      result: false,
-      data: "Impossible de vérifier la période",
-    });
+    return res.send({ result: false, data: "Impossible de vérifier la période" });
   } else if (chk.data[0]["nb"] > 0) {
-    return res.send({
-      result: false,
-      data: "Dates de congé correspondant à une période clôturée",
-    });
+    return res.send({ result: false, data: "Dates de congé correspondant à une période clôturée" });
   }
-  const Autoriser_SaisieCongeApresPaie = await getParam(
-    "Autoriser_SaisieCongeApresPaie"
-  );
+  const Autoriser_SaisieCongeApresPaie = await getParam("Autoriser_SaisieCongeApresPaie");
   if (Autoriser_SaisieCongeApresPaie !== "O") {
     if (entete.Dat_Deb_Conge <= entete.LastDatePaie) {
       return res.send({
@@ -146,22 +150,19 @@ export async function save_demande_conge(req: Request, res: Response) {
       });
     }
   }
-  const detail = await Calcul(entete, Number(id_Societe));
+  const detail = await Calcul(entete, idSocNum);
 
   if (detail.length === 0) {
-    return res.send({
-      result: false,
-      data: "Erreur calcul de congé",
-    });
+    return res.send({ result: false, data: "Erreur calcul de congé" });
   }
   const DatDeb = toSqlDateFormat(entete.Dat_Deb_Conge);
   const DatFin = toSqlDateFormat(entete.Dat_Fin_Conge);
   if (!Num_Conge || Num_Conge === "") {
     const rsNum = await lireSql(
-      `select 'C${id_Societe}-${new Date().getFullYear()}'+right('000000'+convert(nvarchar(6),isnull(max(racine),0)+1),6) as racine from (select convert(int,case when isnumeric(ISNULL(racine,''))!=1 then 0 else racine end ) as Racine from RH_Conge_Suivi 
-    outer apply(select RIGHT(Num_Conge,6) as racine)n
-    where id_Societe=${id_Societe} and year(Dat_Deb_Conge)=year('${DatDeb}'))f`,
-      []
+      `select 'C'+convert(nvarchar(10),@id_Societe)+'-'+convert(nvarchar(4),year(getdate()))+right('000000'+convert(nvarchar(6),isnull(max(racine),0)+1),6) as racine from (select convert(int,case when isnumeric(ISNULL(racine,''))!=1 then 0 else racine end ) as Racine from RH_Conge_Suivi 
+      outer apply(select RIGHT(Num_Conge,6) as racine)n
+      where id_Societe=@id_Societe and year(Dat_Deb_Conge)=year(getdate()))f`,
+      [{ param: "id_Societe", sqlType: Int, valeur: idSocNum }]
     );
     Num_Conge = rsNum?.data?.[0]?.racine;
   }
@@ -170,35 +171,22 @@ export async function save_demande_conge(req: Request, res: Response) {
     `exec Sys_Conge_Check @Num_Conge,@Dat_Deb_Conge,@Dat_Fin_Conge,@Matricule,@id_Societe`,
     [
       { param: "Num_Conge", sqlType: NVarChar, valeur: Num_Conge },
-      {
-        param: "Dat_Deb_Conge",
-        sqlType: SmallDateTime,
-        valeur: DatDeb,
-      },
-      {
-        param: "Dat_Fin_Conge",
-        sqlType: SmallDateTime,
-        valeur: DatFin,
-      },
+      { param: "Dat_Deb_Conge", sqlType: SmallDateTime, valeur: DatDeb },
+      { param: "Dat_Fin_Conge", sqlType: SmallDateTime, valeur: DatFin },
       { param: "Matricule", sqlType: NVarChar, valeur: entete.Matricule },
-      { param: "id_Societe", sqlType: Int, valeur: id_Societe },
+      { param: "id_Societe", sqlType: Int, valeur: idSocNum },
     ],
     true
   );
-  if (Sys_Conge_Check.result) {
-    if (Sys_Conge_Check.data.length > 0) {
-
-      return res.send({
-        result: false,
-        data:
-          "Il existe au moins un congé en chevauchement avec cette demande : " +
-          Sys_Conge_Check.data[0]["Num_Conge"],
-      });
-    }
+  if (Sys_Conge_Check.result && Sys_Conge_Check.data.length > 0) {
+    return res.send({
+      result: false,
+      data: "Il existe au moins un congé en chevauchement avec cette demande : " + Sys_Conge_Check.data[0]["Num_Conge"],
+    });
   }
   const rsEnt = await ecrireSql({
     tableName: "RH_Conge_Suivi",
-    fields: { ...entete, Num_Conge, id_Societe },
+    fields: { ...entete, Num_Conge, id_Societe: idSocNum },
     joinFields: ["Num_Conge", "id_Societe"],
     excludeFields: [],
     login: Matricule,
@@ -208,7 +196,7 @@ export async function save_demande_conge(req: Request, res: Response) {
     for (const d of detail) {
       await ecrireSql({
         tableName: "RH_Conge_Suivi_Detail",
-        fields: { ...d, id_Societe, Matricule, Num_Conge, Flag_Maj: flgMaj },
+        fields: { ...d, id_Societe: idSocNum, Matricule, Num_Conge, Flag_Maj: flgMaj },
         joinFields: ["Num_Conge", "id_Societe", "Dat_Deb"],
         excludeFields: ["RowId"],
         login: Matricule,
@@ -216,25 +204,44 @@ export async function save_demande_conge(req: Request, res: Response) {
     }
 
     await lireSql(
-      `delete from RH_Conge_Suivi_Detail where id_Societe=${id_Societe} and Num_Conge='${Num_Conge}' and Flag_Maj!=${flgMaj}`,
-      []
+      `delete from RH_Conge_Suivi_Detail where id_Societe=@id_Societe and Num_Conge=@Num_Conge and Flag_Maj!=@flgMaj`,
+      [
+        { param: "id_Societe", sqlType: Int, valeur: idSocNum },
+        { param: "Num_Conge", sqlType: NVarChar, valeur: Num_Conge },
+        { param: "flgMaj", sqlType: Int, valeur: flgMaj },
+      ]
     );
-    await lireSql(`exec Sys_Conge_MajConso '${Matricule}',${id_Societe}`);
+    await lireSql(`exec Sys_Conge_MajConso @Matricule,@id_Societe`, [
+      { param: "Matricule", sqlType: NVarChar, valeur: Matricule },
+      { param: "id_Societe", sqlType: Int, valeur: idSocNum },
+    ]);
     if (entete.Statut === "SS")
-      await sousmettre_signature("C", Num_Conge, id_Societe, Matricule);
+      await sousmettre_signature("C", Num_Conge, String(idSocNum), Matricule);
     return res.send(rsEnt);
   }
 }
+
 export async function delete_demande_conge(req: Request, res: Response) {
   const { Num_Conge } = req.body;
+  const { id_Societe } = req.params;
+
+  const idSocNum = Number(id_Societe);
+  if (isNaN(idSocNum) || idSocNum <= 0) {
+    return res.send({ result: false, message: "id_Societe invalide" });
+  }
+
   const rsl = await lireSql(
-    `delete from RH_Conge_Suivi where Num_Conge=@Num_Conge and id_Societe='${req.params.id_Societe}'`,
-    [{ param: "Num_Conge", sqlType: NVarChar, valeur: Num_Conge }]
+    `delete from RH_Conge_Suivi where Num_Conge=@Num_Conge and id_Societe=@id_Societe`,
+    [
+      { param: "Num_Conge", sqlType: NVarChar, valeur: Num_Conge },
+      { param: "id_Societe", sqlType: Int, valeur: idSocNum },
+    ]
   );
   if (rsl.result) {
     return res.send({ result: true, data: Num_Conge });
   } else return res.send({ result: false, data: rsl.sort });
 }
+
 type TEntete = {
   Num_Conge: string;
   Matricule: string;
@@ -253,6 +260,7 @@ type TEntete = {
   Typ_Conge?: string;
   Statut?: string;
 };
+
 type ligDemande = {
   Dat_Deb: Date;
   Dat_Fin: Date;
@@ -261,16 +269,21 @@ type ligDemande = {
   Jours_Feries: number;
   Duree_Conge: number;
 };
+
 export async function calcul_conge(req: Request, res: Response) {
   const { entete } = req.body;
   const { id_Societe } = req.params;
-  const lignes = await Calcul(entete, Number(id_Societe));
+
+  const idSocNum = Number(id_Societe);
+  if (isNaN(idSocNum) || idSocNum <= 0) {
+    return res.send({ result: false, message: "id_Societe invalide" });
+  }
+
+  const lignes = await Calcul(entete, idSocNum);
   return res.send({ lignes, entete });
 }
-async function Calcul(
-  entete: TEntete,
-  id_Societe: number
-): Promise<ligDemande[]> {
+
+async function Calcul(entete: TEntete, id_Societe: number): Promise<ligDemande[]> {
   if (entete.Statut !== "" && entete.Statut !== "SS") return [];
 
   const Societe: TSociete = Societes.find((s) => s.id_Societe === id_Societe)!;
@@ -295,7 +308,6 @@ async function Calcul(
   let DureeDetail = 0;
   if (datDeb > datFin) return [];
 
-  // Calcul de la durée globale (nombre de jours)
   DureeGlobal = Math.floor((datFin.getTime() - datDeb.getTime()) / (1000 * 3600 * 24)) + 1;
 
   if (entete.Dat_Deb_am_pm === "pm") DureeGlobal -= 0.5;
@@ -306,10 +318,13 @@ async function Calcul(
   let nbfr = 0;
 
   const jrs = await lireSql(
-    `SELECT * FROM dbo.Sys_JourFeries('${datDeb.toISOString().split('T')[0]}', ${Societe.id_Societe})`
+    `SELECT * FROM dbo.Sys_JourFeries(@datDeb, @id_Societe)`,
+    [
+      { param: "datDeb", sqlType: NVarChar, valeur: datDeb.toISOString().split('T')[0] },
+      { param: "id_Societe", sqlType: Int, valeur: Societe.id_Societe },
+    ]
   );
 
-  // CORRECTION : Convertir les dates SQL en objets Date
   const TblJourFeries: {
     Lib_Jour: string;
     DatDeb: Date;
@@ -342,7 +357,6 @@ async function Calcul(
     deductibleDuConge = IsNull(Tbl_RH_Conge_Type.data[0]["deductibleDuConge"], true);
   }
 
-  // CORRECTION : Comparer les timestamps, pas les références
   while (DatFinPaie.getTime() >= DatDebPaie.getTime() && DatFinPaie.getTime() < datFin.getTime()) {
     const isFirstPeriodPM = DatDebPaie.getTime() === datDeb.getTime() && entete.Dat_Deb_am_pm === "pm";
     const duree = Math.floor((DatFinPaie.getTime() - DatDebPaie.getTime()) / (1000 * 3600 * 24)) + (isFirstPeriodPM ? 0.5 : 1);
@@ -374,7 +388,6 @@ async function Calcul(
     Duree_Conge: 0,
   });
 
-  // Fonction helper pour normaliser une date (minuit)
   const normalizeDate = (d: Date): number => {
     return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
   };
@@ -388,22 +401,18 @@ async function Calcul(
       let estJourRepos = false;
       let estJourFerie = false;
 
-      // Calcul du jour de repos (weekend)
       if (JoursOuvres.length === 7) {
-        // getDay(): 0=Dimanche, 1=Lundi... -> Mapping vers index tableau (0=Lundi)
         const indexJour = oDate.getDay() === 0 ? 6 : oDate.getDay() - 1;
         if (JoursOuvres[indexJour] === 0) {
           estJourRepos = true;
         }
       }
 
-      // Calcul des jours fériés
       const oDateTime = normalizeDate(oDate);
       if (TblJourFeries.some((jf) => oDateTime >= normalizeDate(jf.DatDeb) && oDateTime <= normalizeDate(jf.DatFin))) {
         estJourFerie = true;
       }
 
-      // CORRECTION : Éviter le double comptage
       if (estJourRepos) {
         lng.Repos_Hebdomadaire++;
         nbrp++;

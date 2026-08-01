@@ -37,9 +37,7 @@ export const formatDateFR = (obj: any, ShowTime = false) => {
     return format(obj, "dd/MM/yyyy" + (ShowTime ? " HH:mm" : ""));
   } else return obj;
 };
-export const toSqlDateFormat = (dat: any, ShowTime = false) => {
-  let mydat = estDate(dat)
-    ? format(dat, "MM-dd-yyyy" + (ShowTime ? " HH:mm" : ""))
-    : cDate(dat);
-  return mydat;
+export const toSqlDateFormat = (dat: any) => {
+  if (dat instanceof Date && !isNaN(dat.getTime())) return dat;
+  return cDate(dat);
 };

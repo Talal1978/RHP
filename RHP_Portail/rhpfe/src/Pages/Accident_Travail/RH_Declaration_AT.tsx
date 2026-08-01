@@ -173,7 +173,7 @@ const RH_Declaration_AT = () => {
                 sx={{
                     "& .grpDiv": {
                         padding: "2em 5px 5px 5px",
-                        width: "90vw",
+                        width: "100%",
                         minHeight: "10em",
                     },
                 }}

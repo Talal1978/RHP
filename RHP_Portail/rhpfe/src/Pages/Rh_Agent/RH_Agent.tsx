@@ -6,7 +6,7 @@ import ComboBox from "../../components/ComboBox/ComboBox";
 import "./rh_agent.scss";
 import WidgetsIcon from "@mui/icons-material/Widgets";
 import { ICompetence, ObjetGenerique, TMenuBtn } from "../../types";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { cntX } from "../../Menu/MenuMain";
 import useMsgBox from "../../hooks/useMsgBox";
 import TextBox from "../../components/TextBox/TextBox";
@@ -24,7 +24,18 @@ import Competence from "../../components/Competence/Competence";
 import Grille from "../../components/Grille/Grille";
 import { Agent, colorBase } from "../../modules/module_general";
 import { fromByteArray } from "base64-js";
+
+function getPhotoSrc(photo: any): string | undefined {
+  if (!photo) return undefined;
+  if (typeof photo === "string") return `data:image/png;base64,${photo}`;
+  if (photo instanceof Uint8Array) return `data:image/png;base64,${fromByteArray(photo)}`;
+  if (photo.data instanceof Uint8Array) return `data:image/png;base64,${fromByteArray(photo.data)}`;
+  if (Array.isArray(photo)) return `data:image/png;base64,${fromByteArray(new Uint8Array(photo))}`;
+  if (Array.isArray(photo.data)) return `data:image/png;base64,${fromByteArray(new Uint8Array(photo.data))}`;
+  return undefined;
+}
 const RH_Agent = ({ readonly = false }: { readonly?: boolean }) => {
+  console.log("[RH_Agent] render start");
   const myAxios = useAxiosPost();
   const { settbnMenu, isSmall } = useContext(cntX);
   const msgbox = useMsgBox();
@@ -35,54 +46,63 @@ const RH_Agent = ({ readonly = false }: { readonly?: boolean }) => {
   const [famille, setFamille] = useState<ObjetGenerique[]>([]);
   const [paie, setPaie] = useState<ObjetGenerique[]>([]);
   const [selectedTab, setSelectedTab] = useState<number>(0);
-  const tbnMenu: TMenuBtn[] = [
-    {
-      name: "Enregisrer",
-      disabled: true,
-      libelle: "Enregisrer",
-      action: () => Enregistrer(),
-      icon: <WidgetsIcon />,
-    },
-    {
-      name: "Nouveau",
-      disabled: false,
-      libelle: "Nouveau",
-      action: () => Nouveau(),
-      icon: <WidgetsIcon />,
-    },
-    {
-      name: "Supprimer",
-      disabled: true,
-      libelle: "Supprimer",
-      action: () => {},
-      icon: <WidgetsIcon />,
-    },
-    {
-      name: "Autres",
-      disabled: false,
-      libelle: "Autres",
-      action: () => {},
-      icon: <WidgetsIcon />,
-    },
-  ];
-  function stateChange(champs: string, valeur: any) {
+
+  const stateChange = useCallback((champs: string, valeur: any) => {
+    console.log("[RH_Agent] stateChange called:", champs, valeur);
     setRhAgent((agt: IRH_Agent) => {
       return { ...agt, [champs]: valeur };
     });
-  }
+  }, []);
+
+  const Enregistrer = useCallback(() => {
+    msgbox({
+      titre: "Enregistrer",
+      msg: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Distinctio, quisquam. Alias aliquam quibusdam sapiente suscipit sed ab tempora. Vero veritatis quis animi, quaerat voluptatum perferendis odio nulla ad asperiores deserunt.",
+      typMsg: "warning",
+      typReply: "YesNoCancel",
+      handleOk: async () => {},
+      handleCancel: async () => {},
+    });
+  }, [msgbox]);
+
+  const Nouveau = useCallback(() => {
+    setSelectedTab(0);
+    setRhAgent({});
+    setRhCompetence([]);
+    setRhFormation([]);
+    setExperiences([]);
+    setFamille([]);
+    setPaie([]);
+  }, []);
+
+  const tbnMenu = useMemo<TMenuBtn[]>(
+    () => [
+      { name: "Enregisrer", disabled: true, libelle: "Enregisrer", action: Enregistrer, icon: <WidgetsIcon /> },
+      { name: "Nouveau", disabled: false, libelle: "Nouveau", action: Nouveau, icon: <WidgetsIcon /> },
+      { name: "Supprimer", disabled: true, libelle: "Supprimer", action: () => {}, icon: <WidgetsIcon /> },
+      { name: "Autres", disabled: false, libelle: "Autres", action: () => {}, icon: <WidgetsIcon /> },
+    ],
+    [Enregistrer, Nouveau]
+  );
+
   useEffect(() => {
     settbnMenu(tbnMenu);
-  }, [Nouveau]);
+  }, [settbnMenu, tbnMenu]);
+
+  const lastLoadedMatricule = useRef<string | null>(null);
   useEffect(() => {
-    myAxios("rh_agent", { Matricule: rhAgent?.Matricule })
+    const matricule = rhAgent?.Matricule || Agent.Matricule;
+    if (!matricule || lastLoadedMatricule.current === matricule) return;
+    lastLoadedMatricule.current = matricule;
+    myAxios("rh_agent", { Matricule: matricule })
       .then((dt) => {
-        if (dt.data.result) {
+        if (dt?.data?.result && dt.data.data?.agent?.length > 0) {
           setRhAgent(dt.data.data.agent[0]);
-          setRhCompetence(dt.data.data.competences);
-          setRhFormation(dt.data.data.formations);
-          setExperiences(dt.data.data.experiences);
-          setFamille(dt.data.data.famille);
-          setPaie(dt.data.data.paie);
+          setRhCompetence(dt.data.data.competences || []);
+          setRhFormation(dt.data.data.formations || []);
+          setExperiences(dt.data.data.experiences || []);
+          setFamille(dt.data.data.famille || []);
+          setPaie(dt.data.data.paie || []);
         } else {
           setRhAgent({});
           setRhCompetence([]);
@@ -92,8 +112,7 @@ const RH_Agent = ({ readonly = false }: { readonly?: boolean }) => {
           setPaie([]);
         }
       })
-      .catch((err) => {
-
+      .catch(() => {
         setRhAgent({});
         setRhCompetence([]);
         setRhFormation([]);
@@ -101,30 +120,7 @@ const RH_Agent = ({ readonly = false }: { readonly?: boolean }) => {
         setFamille([]);
         setPaie([]);
       });
-  }, [rhAgent?.Matricule]);
-  function Enregistrer() {
-    msgbox({
-      titre: "Enregistrer",
-      msg: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Distinctio, quisquam. Alias aliquam quibusdam sapiente suscipit sed ab tempora. Vero veritatis quis animi, quaerat voluptatum perferendis odio nulla ad asperiores deserunt.",
-      typMsg: "warning",
-      typReply: "YesNoCancel",
-      handleOk: async () => {
-
-      },
-      handleCancel: async () => {
-
-      },
-    });
-  }
-  function Nouveau() {
-    setSelectedTab(0);
-    setRhAgent({});
-    setRhCompetence([]);
-    setRhFormation([]);
-    setExperiences([]);
-    setFamille([]);
-    setPaie([]);
-  }
+  }, [rhAgent?.Matricule, myAxios]);
   return (
     <div className="rh_Agent" style={{ width: "100%" }}>
       {!isSmall && (
@@ -140,8 +136,6 @@ const RH_Agent = ({ readonly = false }: { readonly?: boolean }) => {
             onChange={(event: React.SyntheticEvent, newValue: number) => {
               setSelectedTab(newValue);
             }}
-            variant="scrollable"
-            scrollButtons="auto"
           >
             {tabPages.map((t, ind) => (
               <Tab key={ind} label={t} />
@@ -155,271 +149,276 @@ const RH_Agent = ({ readonly = false }: { readonly?: boolean }) => {
         display={selectedTab === 0 || isSmall ? undefined : "none"}
         label={tabPages[0]}
       >
-        <>
-          <Grid container columnSpacing={3} rowSpacing={5}>
-            <Grid xs={12} sm={6} lg={4} xl={3}>
-              <div style={{ display: "flex", gap: "10px" }}>
-                <TextZoom
-                  numZoom="MS067"
-                  nomControle="Matricule"
-                  label="Matricule"
-                  valeur={rhAgent?.Matricule || Agent.Matricule}
+        {/* En-tête : champs + photo */}
+        <Box sx={{ display: { md: "flex" }, gap: 3, alignItems: "flex-start" }}>
+          <Box sx={{ flex: 1, order: { xs: 2, md: 1 } }}>
+            <Grid container columnSpacing={3} rowSpacing={5}>
+              <Grid xs={12} sm={6} md={6}>
+                <div style={{ display: "flex", gap: "10px" }}>
+                  <TextZoom
+                    numZoom="MS067"
+                    nomControle="Matricule"
+                    label="Matricule"
+                    valeur={rhAgent?.Matricule || Agent.Matricule}
+                    onchange={stateChange}
+                    style={{ flex: 1, minWidth: 0 }}
+                  />
+                  <ComboBox
+                    readOnly={true}
+                    rubrique="Civilite_Combo"
+                    nomControle="Civilite"
+                    label="Civilité"
+                    valeur={rhAgent?.Civilite || ""}
+                    onchange={stateChange}
+                    style={{ flex: 1, minWidth: 0 }}
+                  />
+                </div>
+              </Grid>
+              <Grid xs={12} sm={6} md={6}>
+                <TextBox
+                  nomControle="Nom_Agent"
+                  label="Nom"
+                  valeur={rhAgent?.Nom_Agent}
+                  readonly={true}
                   onchange={stateChange}
                   style={{ width: "100%" }}
                 />
-                <ComboBox
-                  readOnly={true}
-                  rubrique="Civilite_Combo"
-                  nomControle="Civilite"
-                  label="Civilité"
-                  valeur={rhAgent?.Civilite || ""}
+              </Grid>
+              <Grid xs={12} sm={6} md={6}>
+                <TextBox
+                  nomControle="Prenom_Agent"
+                  label="Prénom"
+                  valeur={rhAgent?.Prenom_Agent}
+                  readonly={true}
                   onchange={stateChange}
                   style={{ width: "100%" }}
                 />
-              </div>
+              </Grid>
             </Grid>
-            <Grid xs={12} sm={6} lg={4} xl={3}>
-              <TextBox
-                nomControle="Nom_Agent"
-                label="Nom"
-                valeur={rhAgent?.Nom_Agent}
-                readonly={true}
-                onchange={stateChange}
-                style={{ width: "100%" }}
-              />
-            </Grid>
-            <Grid xs={12} sm={6} lg={4} xl={3}>
-              <TextBox
-                nomControle="Prenom_Agent"
-                label="Prénom"
-                valeur={rhAgent?.Prenom_Agent}
-                readonly={true}
-                onchange={stateChange}
-                style={{ width: "100%" }}
-              />
-            </Grid>
-            <Grid xs={12} sm={12} lg={12} xl={12}>
-              {rhAgent?.Photo && (
-                <Avatar
-                  sx={{
-                    height: photoDimensions,
-                    width: photoDimensions,
-                    margin: "auto",
-                  }}
-                  src={`data:image/png;base64,${fromByteArray(
-                    rhAgent?.Photo.data
-                  )}`}
-                  alt="agent"
-                />
-              )}
-            </Grid>
-          </Grid>
-          <Divider
-            sx={{
-              m: "3em 0",
-              color: colorBase.colorBase02,
-              fontWeight: "bold",
-            }}
-          >
-            Affectation organisationnelle
-          </Divider>
-          <Grid container columnSpacing={3} rowSpacing={5}>
-            <Grid xs={12} sm={6} lg={4} xl={3}>
-              <TextBox
-                nomControle="Titre"
-                label="Titre"
-                valeur={rhAgent?.Titre}
-                readonly={true}
-                onchange={stateChange}
-                style={{ width: "100%" }}
-              />
-            </Grid>
-            <Grid xs={12} sm={6} lg={4} xl={3}>
-              <ComboBox
-                readOnly={true}
-                numZoom="MS016"
-                nomControle="Cod_Poste"
-                label="Poste"
-                valeur={rhAgent?.Cod_Poste || ""}
-                onchange={stateChange}
-                style={{ width: "100%" }}
-              />
-            </Grid>
-            <Grid xs={12} sm={6} lg={4} xl={3}>
-              <ComboBox
-                readOnly={true}
-                numZoom="MS015"
-                nomControle="Cod_Grade"
-                label="Grade"
-                valeur={rhAgent?.Cod_Grade || ""}
-                onchange={stateChange}
-                style={{ width: "100%" }}
-              />
-            </Grid>{" "}
-            <Grid xs={12} sm={6} lg={4} xl={3}>
-              <ComboBox
-                readOnly={true}
-                numZoom="MS010"
-                nomControle="Cod_Entite"
-                label="Entité"
-                valeur={rhAgent?.Cod_Entite || ""}
-                onchange={stateChange}
-                style={{ width: "100%" }}
-              />
-            </Grid>
-          </Grid>
+          </Box>
+          <Box sx={{ display: { xs: "none", md: "block" }, order: { md: 2 } }} className="agent-photo-container">
+            {(() => {
+              const photoSrc = getPhotoSrc(rhAgent?.Photo);
+              return photoSrc ? (
+                <Avatar src={photoSrc} alt="agent" />
+              ) : null;
+            })()}
+          </Box>
+        </Box>
+        <Box sx={{ display: { md: "none" }, textAlign: "center", my: 2 }} className="agent-photo-container">
+          {(() => {
+            const photoSrc = getPhotoSrc(rhAgent?.Photo);
+            return photoSrc ? (
+              <Avatar src={photoSrc} alt="agent" />
+            ) : null;
+          })()}
+        </Box>
 
-          <Divider
-            sx={{
-              m: "3em 0",
-              color: colorBase.colorBase02,
-              fontWeight: "bold",
-            }}
-          >
-            Fiche personnelle
-          </Divider>
-          <Grid container columnSpacing={3} rowSpacing={5}>
-            <Grid xs={12} sm={6} lg={4} xl={3}>
-              <div style={{ display: "flex", gap: "10px" }}>
-                <CalendarZoom
-                  readOnly={true}
-                  nomControle="Dat_Naissance"
-                  label="Né le"
-                  valeur={rhAgent?.Dat_Naissance || ""}
-                  onchange={stateChange}
-                  sx={{ width: "100%" }}
-                  onClear={() => stateChange("Dat_Naissance", "")}
-                />
-                <ComboBox
-                  readOnly={true}
-                  numZoom="MS145"
-                  conditionZoom="Cod_Pays='MAR'"
-                  nomControle="Lieu_Naissance"
-                  label="A"
-                  valeur={rhAgent?.Lieu_Naissance || ""}
-                  onchange={stateChange}
-                  style={{ width: "100%" }}
-                />
-              </div>
-            </Grid>
-            <Grid xs={12} sm={6} lg={4} xl={3}>
-              <div style={{ display: "flex", gap: "10px" }}>
-                <ComboBox
-                  readOnly={true}
-                  rubrique="Situation"
-                  nomControle="Situation"
-                  label="Situation"
-                  valeur={rhAgent?.Situation || ""}
-                  onchange={stateChange}
-                  style={{ width: "100%" }}
-                />
-                <TextBox
-                  readonly={true}
-                  nomControle="Nbr_Personne_A_Charge"
-                  label="Personnes à charges"
-                  type="integer"
-                  valeur={rhAgent?.Nbr_Personne_A_Charge}
-                  onchange={stateChange}
-                  style={{ width: "100%" }}
-                />
-              </div>
-            </Grid>
-            <Grid xs={12} sm={6} lg={4} xl={3}>
-              <div style={{ display: "flex", gap: "10px" }}>
-                <TextBox
-                  readonly={true}
-                  nomControle="CIN_Agent"
-                  label="N° CIN"
-                  type="cin"
-                  valeur={rhAgent?.CIN_Agent}
-                  onchange={stateChange}
-                  style={{ width: "100%" }}
-                />
-                <TextBox
-                  readonly={true}
-                  nomControle="NumCE"
-                  label="Carte etranger"
-                  valeur={rhAgent?.NumCE}
-                  onchange={stateChange}
-                  style={{ width: "100%" }}
-                />
-              </div>
-            </Grid>
+        <Divider
+          sx={{
+            m: "3em 0",
+            color: colorBase.colorBase02,
+            fontWeight: "bold",
+          }}
+        >
+          Affectation organisationnelle
+        </Divider>
+        <Grid container columnSpacing={3} rowSpacing={5}>
+          <Grid xs={12} sm={6} lg={4} xl={3}>
+            <TextBox
+              nomControle="Titre"
+              label="Titre"
+              valeur={rhAgent?.Titre}
+              readonly={true}
+              onchange={stateChange}
+              style={{ width: "100%" }}
+            />
           </Grid>
-          <Divider
-            sx={{
-              m: "3em 0",
-              color: colorBase.colorBase02,
-              fontWeight: "bold",
-            }}
-          >
-            Coordonnées
-          </Divider>
-          <Grid container columnSpacing={3} rowSpacing={5}>
-            <Grid xs={12} sm={8} md={6}>
-              <TextBox
-                nomControle="Adresse"
-                label="Adresse"
-                valeur={rhAgent?.Adresse}
-                readonly={true}
+          <Grid xs={12} sm={6} lg={4} xl={3}>
+            <ComboBox
+              readOnly={true}
+              numZoom="MS016"
+              nomControle="Cod_Poste"
+              label="Poste"
+              valeur={rhAgent?.Cod_Poste || ""}
+              onchange={stateChange}
+              style={{ width: "100%" }}
+            />
+          </Grid>
+          <Grid xs={12} sm={6} lg={4} xl={3}>
+            <ComboBox
+              readOnly={true}
+              numZoom="MS015"
+              nomControle="Cod_Grade"
+              label="Grade"
+              valeur={rhAgent?.Cod_Grade || ""}
+              onchange={stateChange}
+              style={{ width: "100%" }}
+            />
+          </Grid>{" "}
+          <Grid xs={12} sm={6} lg={4} xl={3}>
+            <ComboBox
+              readOnly={true}
+              numZoom="MS010"
+              nomControle="Cod_Entite"
+              label="Entité"
+              valeur={rhAgent?.Cod_Entite || ""}
+              onchange={stateChange}
+              style={{ width: "100%" }}
+            />
+          </Grid>
+        </Grid>
+
+        <Divider
+          sx={{
+            m: "3em 0",
+            color: colorBase.colorBase02,
+            fontWeight: "bold",
+          }}
+        >
+          Fiche personnelle
+        </Divider>
+        <Grid container columnSpacing={3} rowSpacing={5}>
+          <Grid xs={12} sm={6} lg={4} xl={3}>
+            <div style={{ display: "flex", gap: "10px" }}>
+              <CalendarZoom
+                readOnly={true}
+                nomControle="Dat_Naissance"
+                label="Né le"
+                valeur={rhAgent?.Dat_Naissance || ""}
                 onchange={stateChange}
-                multiline={isSmall}
-                rows={4}
-                style={{ width: "100%" }}
+                sx={{ flex: 1, minWidth: 0 }}
+                onClear={() => stateChange("Dat_Naissance", "")}
               />
-            </Grid>
-            <Grid xs={12} sm={6} lg={4} xl={3}>
               <ComboBox
                 readOnly={true}
                 numZoom="MS145"
                 conditionZoom="Cod_Pays='MAR'"
-                nomControle="Cod_Ville"
-                label="Ville"
-                valeur={rhAgent?.Cod_Ville || ""}
+                nomControle="Lieu_Naissance"
+                label="A"
+                valeur={rhAgent?.Lieu_Naissance || ""}
                 onchange={stateChange}
-                style={{ width: "100%" }}
+                style={{ flex: 1, minWidth: 0 }}
               />
-            </Grid>
-            <Grid
-              xs={12}
-              sm={6}
-              md={4}
-              xl={3}
-              display="flex"
-              justifyContent="space-between"
-              alignItems="center"
-              gap={2}
-            >
-              <TextBox
-                readonly={true}
-                nomControle="Gsm"
-                label="Tél 1"
-                valeur={rhAgent?.Gsm}
-                onchange={stateChange}
-                style={{ width: "100%" }}
-              />
-              <TextBox
-                readonly={true}
-                nomControle="Fixe"
-                label="Tél 2"
-                valeur={rhAgent?.Fixe}
-                onchange={stateChange}
-                style={{ width: "100%" }}
-              />
-            </Grid>
-            <Grid xs={12} sm={6} lg={4} xl={3}>
-              <TextBox
-                nomControle="Mail"
-                label="Mail"
-                type="email"
-                valeur={rhAgent?.Mail}
-                readonly={true}
-                onchange={stateChange}
-                style={{ width: "100%" }}
-              />
-            </Grid>
+            </div>
           </Grid>
-        </>
+          <Grid xs={12} sm={6} lg={4} xl={3}>
+            <div style={{ display: "flex", gap: "10px" }}>
+              <ComboBox
+                readOnly={true}
+                rubrique="Situation"
+                nomControle="Situation"
+                label="Situation"
+                valeur={rhAgent?.Situation || ""}
+                onchange={stateChange}
+                style={{ flex: 1, minWidth: 0 }}
+              />
+              <TextBox
+                readonly={true}
+                nomControle="Nbr_Personne_A_Charge"
+                label="Personnes à charges"
+                type="integer"
+                valeur={rhAgent?.Nbr_Personne_A_Charge}
+                onchange={stateChange}
+                style={{ flex: 1, minWidth: 0 }}
+              />
+            </div>
+          </Grid>
+          <Grid xs={12} sm={6} lg={4} xl={3}>
+            <div style={{ display: "flex", gap: "10px" }}>
+              <TextBox
+                readonly={true}
+                nomControle="CIN_Agent"
+                label="N° CIN"
+                type="cin"
+                valeur={rhAgent?.CIN_Agent}
+                onchange={stateChange}
+                style={{ flex: 1, minWidth: 0 }}
+              />
+              <TextBox
+                readonly={true}
+                nomControle="NumCE"
+                label="Carte etranger"
+                valeur={rhAgent?.NumCE}
+                onchange={stateChange}
+                style={{ flex: 1, minWidth: 0 }}
+              />
+            </div>
+          </Grid>
+        </Grid>
+        <Divider
+          sx={{
+            m: "3em 0",
+            color: colorBase.colorBase02,
+            fontWeight: "bold",
+          }}
+        >
+          Coordonnées
+        </Divider>
+        <Grid container columnSpacing={3} rowSpacing={5}>
+          <Grid xs={12} sm={8} md={6}>
+            <TextBox
+              nomControle="Adresse"
+              label="Adresse"
+              valeur={rhAgent?.Adresse}
+              readonly={true}
+              onchange={stateChange}
+              multiline={isSmall}
+              rows={4}
+              style={{ width: "100%" }}
+            />
+          </Grid>
+          <Grid xs={12} sm={6} lg={4} xl={3}>
+            <ComboBox
+              readOnly={true}
+              numZoom="MS145"
+              conditionZoom="Cod_Pays='MAR'"
+              nomControle="Cod_Ville"
+              label="Ville"
+              valeur={rhAgent?.Cod_Ville || ""}
+              onchange={stateChange}
+              style={{ width: "100%" }}
+            />
+          </Grid>
+          <Grid
+            xs={12}
+            sm={6}
+            md={4}
+            xl={3}
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+            gap={2}
+          >
+            <TextBox
+              readonly={true}
+              nomControle="Gsm"
+              label="Tél 1"
+              valeur={rhAgent?.Gsm}
+              onchange={stateChange}
+              style={{ width: "100%" }}
+            />
+            <TextBox
+              readonly={true}
+              nomControle="Fixe"
+              label="Tél 2"
+              valeur={rhAgent?.Fixe}
+              onchange={stateChange}
+              style={{ width: "100%" }}
+            />
+          </Grid>
+          <Grid xs={12} sm={6} lg={4} xl={3}>
+            <TextBox
+              nomControle="Mail"
+              label="Mail"
+              type="email"
+              valeur={rhAgent?.Mail}
+              readonly={true}
+              onchange={stateChange}
+              style={{ width: "100%" }}
+            />
+          </Grid>
+        </Grid>
       </GroupBox>
       <GroupBox
         showTitre={isSmall}
@@ -708,7 +707,6 @@ const RH_Agent = ({ readonly = false }: { readonly?: boolean }) => {
 };
 
 export default RH_Agent;
-const photoDimensions = { xs: "80vw", sm: "45vw", md: "35vw", lg: "300px" };
 interface IRH_Agent {
   Matricule?: string;
   Nom_Agent?: string;

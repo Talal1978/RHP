@@ -4,7 +4,7 @@ import {
   MenuItem,
   Select,
 } from "@mui/material";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { memo, useEffect, useMemo, useState } from "react";
 import { IsNull, colorBase, getRandomKey } from "../../modules/module_general";
 import useAxiosPost from "../../hooks/useAxiosPost";
 import "./combobox.scss";
@@ -16,6 +16,7 @@ type TComboBoxProps = {
   numZoom?: string;
   conditionZoom?: string;
   rubrique?: string;
+  dataSource?: ObjetGenerique[];
   nomControle: string;
   label: string;
   valeur?: string;
@@ -29,6 +30,7 @@ function ComboBox({
   nomControle,
   label,
   rubrique,
+  dataSource: propDataSource,
   valeur = "",
   onchange,
   readOnly = false,
@@ -41,6 +43,10 @@ function ComboBox({
   );
   const myAxios = useAxiosPost();
   useEffect(() => {
+    if (propDataSource && propDataSource.length > 0) {
+      setDataSource(propDataSource);
+      return;
+    }
     let donnees: ObjetGenerique[] = [];
     if (IsNull(numZoom, "") !== "") {
       myAxios("zoom", { numZoom, conditionZoom })
@@ -57,18 +63,25 @@ function ComboBox({
     } else if (rubrique && rubrique !== "") {
       setDataSource(listRubriques(rubrique));
     }
-  }, [numZoom, rubrique]);
+  }, [numZoom, rubrique, propDataSource]);
   return (
     <FormControl
       variant="standard"
       className="comboBoxContainer"
-      style={style}
+      style={{ minWidth: 0, overflow: "hidden", ...style }}
     >
       <InputLabel id="demo-simple-select-standard-label" style={styleLabel}>
         {label}
       </InputLabel>
       <Select
-        sx={{ fontSize: { xs: "1rem", sm: "1rem" } }}
+        sx={{
+          fontSize: { xs: "1rem", sm: "1rem" },
+          "& .MuiSelect-select": {
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+          },
+        }}
         className="comboBox"
         labelId="demo-simple-select-standard-label"
         variant="standard"
@@ -101,4 +114,4 @@ function ComboBox({
   );
 }
 
-export default ComboBox;
+export default memo(ComboBox);

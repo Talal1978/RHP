@@ -104,7 +104,7 @@ const RH_Discipline = () => {
                 sx={{
                     "& .grpDiv": {
                         padding: "2em 5px 5px 5px",
-                        width: "90vw",
+                        width: "100%",
                         maxWidth: "1200px",
                         minHeight: "10em",
                     },

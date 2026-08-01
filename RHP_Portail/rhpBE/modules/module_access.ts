@@ -1,13 +1,16 @@
 import { Request, Response } from "express";
 import { IsNull } from "./module_general";
 import { lireSql } from "./module_sqlRW";
-import { NVarChar } from "mssql";
+import { Int, NVarChar } from "mssql";
 import { VGLOBALES } from "./module_initialisation";
 
 export async function isPaieEncours(req: Request, res: Response) {
-  const idSoc = IsNull(req.params.id_Societe, "3068");
-  const sqlStr = `Select count(*) as nb from Controle_Access where Name_Ecran='RH_Preparation_Paie' and id_Societe=${idSoc}`;
-  const rsl = await lireSql(sqlStr, []);
+  const idSoc = Number(IsNull(req.params.id_Societe, "3068"));
+  const sqlStr = `Select count(*) as nb from Controle_Access where Name_Ecran=@p_nameEcran and id_Societe=@p_idSoc`;
+  const rsl = await lireSql(sqlStr, [
+    { param: "p_nameEcran", sqlType: NVarChar, valeur: "RH_Preparation_Paie" },
+    { param: "p_idSoc", sqlType: Int, valeur: idSoc },
+  ]);
   if (rsl.result) {
     return res.send(rsl.data[0]["nb"] > 0);
   }
@@ -21,12 +24,7 @@ export const isAccessible = async (
   processId: string,
   id_Societe: string
 ) => {
-  let sqlStr = `declare @nameEcran nvarchar(50),@equiv nvarchar(50), @idEcran nvarchar(50),@login nvarchar(50), @processId int,@Taken_By_User nvarchar(50), @currentProcessId int,@idSoc int
-    set @nameEcran='${nameEcran}'
-    set @idEcran ='${IsNull(idEcran, "")}'
-    set @processId ='${processId}'
-    set @login ='${username}'
-    set @idSoc ='${id_Societe}'
+  let sqlStr = `declare @nameEcran nvarchar(50)=@p_nameEcran,@equiv nvarchar(50), @idEcran nvarchar(50)=@p_idEcran,@login nvarchar(50)=@p_login, @processId int=@p_processId,@Taken_By_User nvarchar(50), @currentProcessId int,@idSoc int=@p_idSoc
     select top 1 @currentProcessId= Process_Id, @Taken_By_User= Taken_By_User
     from Controle_Access a
     where Name_Ecran=@nameEcran and [Value]=@idEcran 
@@ -47,7 +45,13 @@ export const isAccessible = async (
     select convert(bit, case when @currentProcessId=@processId and @Taken_By_User=@login then 'true' when isnull(@idEcran,'')='' then 'true' else 'false' end) as canModify,@Taken_By_User as Taken_By_User,@currentProcessId as Process_Id
     end`;
 
-  let rsl = await lireSql(sqlStr, []);
+  let rsl = await lireSql(sqlStr, [
+    { param: "p_nameEcran", sqlType: NVarChar, valeur: nameEcran },
+    { param: "p_idEcran", sqlType: NVarChar, valeur: IsNull(idEcran, "") },
+    { param: "p_login", sqlType: NVarChar, valeur: username },
+    { param: "p_processId", sqlType: NVarChar, valeur: processId },
+    { param: "p_idSoc", sqlType: NVarChar, valeur: id_Societe },
+  ]);
   return rsl.data[0];
 };
 export const releaseAccessible = async (
@@ -57,21 +61,20 @@ export const releaseAccessible = async (
   processId: string,
   id_Societe: string
 ) => {
-  let activeSessions =
-    VGLOBALES.ACTIVE_PROCESSES.length > 0
-      ? `'${VGLOBALES.ACTIVE_PROCESSES.join("','")}'`
-      : "";
-  let sqlStr = `declare @login nvarchar(50), @processId int,@Taken_By_User nvarchar(50), @currentProcessId int
-    set @processId ='${processId}'
-    set @login ='${username}'
+  const validatedActiveSessions = VGLOBALES.ACTIVE_PROCESSES.filter(pid => /^\d+$/.test(String(pid)));
+  let activeSessions = validatedActiveSessions.length > 0 ? validatedActiveSessions.join(",") : "";
+  let sqlStr = `declare @login nvarchar(50)=@p_login, @processId int=@p_processId,@Taken_By_User nvarchar(50), @currentProcessId int
     delete from Controle_Access
     where ((Name_Ecran= case when isnull(@nameEcran,'')!='' then @nameEcran else [Name_Ecran] end and [Value]=case when isnull(@idEcran,'')!='' then @idEcran else [Value] end and Process_Id=@processId and Taken_By_User=@login)
-     ${activeSessions ? ` and ( Process_Id in (${activeSessions}))` : ""} ) and id_Societe=${id_Societe}
+     ${activeSessions ? ` and ( Process_Id in (${activeSessions}))` : ""} ) and id_Societe=@p_id_Societe
  
     `;
   let rsl = await lireSql(sqlStr, [
     { param: "nameEcran", sqlType: NVarChar, valeur: nameEcran || "" },
     { param: "idEcran", sqlType: NVarChar, valeur: idEcran || "" },
+    { param: "p_login", sqlType: NVarChar, valeur: username },
+    { param: "p_processId", sqlType: NVarChar, valeur: processId },
+    { param: "p_id_Societe", sqlType: Int, valeur: Number(id_Societe) || 0 },
   ]);
   return rsl;
 };

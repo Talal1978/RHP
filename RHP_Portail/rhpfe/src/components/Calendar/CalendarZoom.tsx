@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import { DesktopDatePicker } from "@mui/x-date-pickers";
 import {
   estDate,
@@ -8,6 +9,12 @@ import { colorBase } from "../../modules/module_general";
 import "./calendarZoom.scss";
 import { styleLabel } from "../../types";
 import { SxProps } from "@mui/material";
+
+function parseValue(v: any): Date | null {
+  if (v instanceof Date) return v;
+  if (estDate(v)) return parse(formatDateFR(v), "dd/MM/yyyy", new Date());
+  return null;
+}
 
 const CalendarZoom = ({
   onClear,
@@ -26,22 +33,18 @@ const CalendarZoom = ({
   readOnly?: boolean;
   sx?: SxProps;
 }) => {
-  return (
+  const lastEmitted = useRef<number | null>(null);
 
+  const parsedValue = parseValue(valeur);
+
+  return (
     <DesktopDatePicker
       className={`calendarZoom ${readOnly ? "inactif" : "actif"}`}
-      // CORRECTION ICI : "minWidth" est placé AVANT "...sx" pour permettre la surcharge
-      sx={{ minWidth: "175px", ...sx }}
+      sx={{ minWidth: { xs: "120px", sm: "175px" }, ...sx }}
       readOnly={readOnly}
       label={label}
       format="dd/MM/yyyy"
-      value={
-        valeur instanceof Date
-          ? valeur
-          : estDate(valeur)
-            ? parse(formatDateFR(valeur), "dd/MM/yyyy", new Date())
-            : valeur
-      }
+      value={parsedValue}
       slotProps={{
         openPickerButton: {
           style: {
@@ -56,28 +59,27 @@ const CalendarZoom = ({
             sx: { fontSize: { xs: "1rem", sm: "1rem" } },
           },
           sx: {
+            minWidth: 0,
+            width: "100%",
             "& .MuiInputBase-input": {
               fontSize: { xs: "1rem", sm: "1rem" },
             },
           },
         },
-
         field: {
           clearable: !readOnly,
         },
       }}
       onChange={(e) => {
-        if (Boolean(onchange) && !readOnly)
-          if (estDate(e)) {
-            // const laDate = e.toLocaleDateString("en-US", {
-            //   year: "numeric",
-            //   month: "2-digit",
-            //   day: "2-digit",
-            // });
-            onchange(nomControle, e);
-          } else {
-
+        if (!onchange || readOnly) return;
+        if (estDate(e)) {
+          const ts = new Date(e).getTime();
+          if (lastEmitted.current === ts) {
+            return;
           }
+          lastEmitted.current = ts;
+          onchange(nomControle, e);
+        }
       }}
     />
   );

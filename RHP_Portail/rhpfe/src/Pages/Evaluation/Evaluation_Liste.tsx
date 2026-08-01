@@ -122,7 +122,7 @@ const Evaluation_Liste = () => {
                 sx={{
                     "& .grpDiv": {
                         padding: "2em 5px",
-                        width: "90vw",
+                        width: "100%",
                         minHeight: "10em",
                     },
                 }}
@@ -229,6 +229,7 @@ const Evaluation_Liste = () => {
                         <Box
                             sx={{
                                 display: "flex",
+                                flexWrap: { xs: "wrap", sm: "nowrap" },
                                 paddingRight: "5px",
                                 gap: { xs: "5px", sm: "1em", md: "1.5em", lg: "2em" },
                             }}
@@ -250,7 +251,8 @@ const Evaluation_Liste = () => {
                                     stateChange(name, val);
                                 }}
                                 sx={{
-                                    width: "100%",
+                    flex: 1,
+                    minWidth: 0,
                                     "& input": { fontSize: { xs: "0.85em", sm: "1em" } },
                                 }}
                                 onClear={() => stateChange("Dat_Du", "")}
@@ -261,7 +263,8 @@ const Evaluation_Liste = () => {
                                 valeur={criteres?.Dat_Au || date}
                                 onchange={stateChange}
                                 sx={{
-                                    width: "100%",
+                    flex: 1,
+                    minWidth: 0,
                                     "& input": { fontSize: { xs: "0.85em", sm: "1em" } },
                                 }}
                                 onClear={() => stateChange("Dat_Au", "")}
@@ -316,10 +319,10 @@ const Evaluation_Liste = () => {
                     margin: "auto",
                     padding: "2em 5px",
                     width: {
-                        xs: "95vw",
-                        sm: "90vw",
-                        md: "90vw",
-                        lg: "90vw"
+                        xs: "100%",
+                        sm: "100%",
+                        md: "100%",
+                        lg: "100%"
                     },
                     overflow: "scroll",
                 }}

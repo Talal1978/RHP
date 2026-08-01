@@ -5,7 +5,7 @@ import {
     toSqlDateFormat,
 } from "../modules/module_format";
 import { lireSql, controleInjection } from "../modules/module_sqlRW";
-import { NVarChar, SmallDateTime } from "mssql";
+import { NVarChar, SmallDateTime, Int } from "mssql";
 
 export async function discipline_liste(req: Request, res: Response) {
     let { Matricule, Typ_Sanction, Dat_Du, Dat_Au } = req.body;
@@ -15,7 +15,10 @@ export async function discipline_liste(req: Request, res: Response) {
 
     const { processId, ...theAgent } = req.params;
     const TblRef = "RH_Discipline";
-    let idSoc = theAgent?.id_Societe || "3068";
+    let idSocNum = Number(theAgent?.id_Societe || "3068");
+    if (isNaN(idSocNum) || idSocNum <= 0) {
+        return res.send({ result: false, message: "id_Societe invalide" });
+    }
 
     if (theAgent.TeamLeader) {
         // Access control logic for team leaders if needed, for now standard access
@@ -30,19 +33,21 @@ export async function discipline_liste(req: Request, res: Response) {
     Typ_Sanction = Typ_Sanction || "";
     Matricule = Matricule || "";
 
-    let sqlStr = `SELECT Cod_Sanction as Code, Lib_Sanction as Intitulé, d.Matricule, a.Nom_Agent + ' ' + a.Prenom_Agent as Nom, d.Dat_Faute as 'Date faute', d.Dat_Decision as 'Date décision', dbo.FindRubrique('Sanctions',d.Typ_Sanction) as Type, d.Motif 
+    let sqlStr = `SELECT TOP 50 Cod_Sanction as Code, Lib_Sanction as Intitulé, d.Matricule, a.Nom_Agent + ' ' + a.Prenom_Agent as Nom, d.Dat_Faute as 'Date faute', d.Dat_Decision as 'Date décision', dbo.FindRubrique('Sanctions',d.Typ_Sanction) as Type, d.Motif 
     FROM RH_Discipline d 
     LEFT JOIN RH_Agent a ON d.Matricule = a.Matricule AND d.id_Societe = a.id_Societe 
-    WHERE d.id_Societe='${idSoc}'
+    WHERE d.id_Societe=@p_id_Societe
     AND d.Matricule LIKE '%'+@Matricule
     AND d.Dat_Faute BETWEEN @Dat_Du AND @Dat_Au
-    AND d.Typ_Sanction LIKE '${Typ_Sanction}%'
+    AND d.Typ_Sanction LIKE @p_Typ_Sanction + '%'
     ORDER BY d.Dat_Faute DESC`;
 
     const rsl = await lireSql(sqlStr, [
+        { param: "p_id_Societe", sqlType: Int, valeur: idSocNum },
         { param: "Matricule", sqlType: NVarChar, valeur: Matricule },
         { param: "Dat_Du", sqlType: SmallDateTime, valeur: Dat_Du },
         { param: "Dat_Au", sqlType: SmallDateTime, valeur: Dat_Au },
+        { param: "p_Typ_Sanction", sqlType: NVarChar, valeur: Typ_Sanction },
     ]);
     res.send(rsl);
 }
@@ -50,15 +55,19 @@ export async function discipline_liste(req: Request, res: Response) {
 export async function get_discipline(req: Request, res: Response) {
     const { Cod_Sanction } = req.body;
     const { processId, ...theAgent } = req.params;
-    let idSoc = theAgent.id_Societe || "3068";
+    let idSocNum = Number(theAgent.id_Societe || "3068");
+    if (isNaN(idSocNum) || idSocNum <= 0) {
+        return res.send({ result: false, message: "id_Societe invalide" });
+    }
 
-    let sqlStr = `SELECT * FROM RH_Discipline where Cod_Sanction=@Cod_Sanction and id_Societe=${idSoc}`;
+    let sqlStr = `SELECT * FROM RH_Discipline where Cod_Sanction=@Cod_Sanction and id_Societe=@p_id_Societe`;
     const rsl = await lireSql(sqlStr, [
         {
             param: "Cod_Sanction",
             sqlType: NVarChar,
             valeur: Cod_Sanction,
         },
+        { param: "p_id_Societe", sqlType: Int, valeur: idSocNum },
     ]);
     return res.send(rsl);
 }

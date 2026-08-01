@@ -4,7 +4,7 @@ import {
 } from "@mui/icons-material";
 import { TGrilleCell, cntx } from "./Grille";
 import { formatDateForInput, formatDateFR } from "../../modules/module_formats";
-import { useContext, useRef } from "react";
+import { memo, useContext, useRef } from "react";
 
 const GrilleCell = ({
   row,
@@ -184,4 +184,4 @@ const GrilleCell = ({
   return <>{composant()}</>;
 };
 
-export default GrilleCell;
+export default memo(GrilleCell);

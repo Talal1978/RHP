@@ -1,6 +1,6 @@
 import { DeleteOutline } from "@mui/icons-material";
 import { TableCell, TableRow } from "@mui/material";
-import { useContext } from "react";
+import { memo, useContext } from "react";
 import { colorBase } from "../../modules/module_general";
 import { TGrilleRow, cntx } from "./Grille";
 import GrilleCell from "./GrilleCell";
@@ -96,4 +96,4 @@ const GrilleRow = ({
   );
 };
 
-export default GrilleRow;
+export default memo(GrilleRow);

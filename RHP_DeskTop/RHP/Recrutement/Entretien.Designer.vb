@@ -51,12 +51,28 @@ Partial Class Entretien
         Me.Cloture_pb = New System.Windows.Forms.PictureBox()
         Me.lbl_lbl = New System.Windows.Forms.Label()
         Me.RC_btn = New RHP.ud_button()
+        Me.pnl_note = New System.Windows.Forms.TableLayoutPanel()
+        Me.TableLayoutPanel4 = New System.Windows.Forms.TableLayoutPanel()
+        Me.note_totale_txt = New System.Windows.Forms.TextBox()
+        Me.Label7 = New System.Windows.Forms.Label()
+        Me.TableLayoutPanel3 = New System.Windows.Forms.TableLayoutPanel()
+        Me.coef_txt = New System.Windows.Forms.TextBox()
+        Me.Label6 = New System.Windows.Forms.Label()
+        Me.TableLayoutPanel2 = New System.Windows.Forms.TableLayoutPanel()
+        Me.note_txt = New System.Windows.Forms.TextBox()
+        Me.Label5 = New System.Windows.Forms.Label()
+        Me.Cod_Reply_txt = New RHP.ud_TextBox()
+        Me.Label4 = New System.Windows.Forms.Label()
         Me.pnl_Top.SuspendLayout()
         Me.ent_pnl.SuspendLayout()
         CType(Me.PictureBox1, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.Close_pb, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.Save_pb, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.Cloture_pb, System.ComponentModel.ISupportInitialize).BeginInit()
+        Me.pnl_note.SuspendLayout()
+        Me.TableLayoutPanel4.SuspendLayout()
+        Me.TableLayoutPanel3.SuspendLayout()
+        Me.TableLayoutPanel2.SuspendLayout()
         Me.SuspendLayout()
         '
         'pnl_Content
@@ -105,9 +121,194 @@ Partial Class Entretien
         Me.Preambule_rtb.Text = ""
         Me.Preambule_rtb.Visible = False
         '
+        'pnl_note
+        '
+        Me.pnl_note.Anchor = CType((((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) _
+            Or System.Windows.Forms.AnchorStyles.Left) _
+            Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.pnl_note.AutoSize = True
+        Me.pnl_note.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink
+        Me.pnl_note.ColumnCount = 1
+        Me.pnl_note.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50.0!))
+        Me.pnl_note.Controls.Add(Me.TableLayoutPanel4, 0, 2)
+        Me.pnl_note.Controls.Add(Me.TableLayoutPanel3, 0, 1)
+        Me.pnl_note.Controls.Add(Me.TableLayoutPanel2, 0, 0)
+        Me.pnl_note.Location = New System.Drawing.Point(740, 5)
+        Me.pnl_note.Margin = New System.Windows.Forms.Padding(2)
+        Me.pnl_note.MaximumSize = New System.Drawing.Size(194, 111)
+        Me.pnl_note.MinimumSize = New System.Drawing.Size(194, 111)
+        Me.pnl_note.Name = "pnl_note"
+        Me.pnl_note.RowCount = 3
+        Me.pnl_note.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 49.45055!))
+        Me.pnl_note.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50.54945!))
+        Me.pnl_note.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 35.0!))
+        Me.pnl_note.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20.0!))
+        Me.pnl_note.Size = New System.Drawing.Size(194, 111)
+        Me.pnl_note.TabIndex = 260
+        Me.pnl_note.Visible = False
+        '
+        'TableLayoutPanel4
+        '
+        Me.TableLayoutPanel4.ColumnCount = 2
+        Me.TableLayoutPanel4.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50.0!))
+        Me.TableLayoutPanel4.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50.0!))
+        Me.TableLayoutPanel4.Controls.Add(Me.note_totale_txt, 1, 0)
+        Me.TableLayoutPanel4.Controls.Add(Me.Label7, 0, 0)
+        Me.TableLayoutPanel4.Dock = System.Windows.Forms.DockStyle.Fill
+        Me.TableLayoutPanel4.Location = New System.Drawing.Point(2, 77)
+        Me.TableLayoutPanel4.Margin = New System.Windows.Forms.Padding(2)
+        Me.TableLayoutPanel4.Name = "TableLayoutPanel4"
+        Me.TableLayoutPanel4.RowCount = 1
+        Me.TableLayoutPanel4.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50.0!))
+        Me.TableLayoutPanel4.Size = New System.Drawing.Size(190, 32)
+        Me.TableLayoutPanel4.TabIndex = 3
+        '
+        'note_totale_txt
+        '
+        Me.note_totale_txt.Anchor = System.Windows.Forms.AnchorStyles.None
+        Me.note_totale_txt.BorderStyle = System.Windows.Forms.BorderStyle.None
+        Me.note_totale_txt.Font = New System.Drawing.Font("Microsoft Sans Serif", 13.8!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.note_totale_txt.ForeColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
+        Me.note_totale_txt.Location = New System.Drawing.Point(110, 2)
+        Me.note_totale_txt.Margin = New System.Windows.Forms.Padding(2)
+        Me.note_totale_txt.Name = "note_totale_txt"
+        Me.note_totale_txt.Size = New System.Drawing.Size(64, 27)
+        Me.note_totale_txt.TabIndex = 0
+        Me.note_totale_txt.Text = "0"
+        Me.note_totale_txt.TextAlign = System.Windows.Forms.HorizontalAlignment.Center
+        '
+        'Label7
+        '
+        Me.Label7.Dock = System.Windows.Forms.DockStyle.Fill
+        Me.Label7.ForeColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
+        Me.Label7.Location = New System.Drawing.Point(2, 0)
+        Me.Label7.Margin = New System.Windows.Forms.Padding(2, 0, 2, 0)
+        Me.Label7.Name = "Label7"
+        Me.Label7.Size = New System.Drawing.Size(91, 32)
+        Me.Label7.TabIndex = 1
+        Me.Label7.Text = "Note totale"
+        Me.Label7.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
+        '
+        'TableLayoutPanel3
+        '
+        Me.TableLayoutPanel3.ColumnCount = 2
+        Me.TableLayoutPanel3.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50.0!))
+        Me.TableLayoutPanel3.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50.0!))
+        Me.TableLayoutPanel3.Controls.Add(Me.coef_txt, 1, 0)
+        Me.TableLayoutPanel3.Controls.Add(Me.Label6, 0, 0)
+        Me.TableLayoutPanel3.Dock = System.Windows.Forms.DockStyle.Fill
+        Me.TableLayoutPanel3.Location = New System.Drawing.Point(2, 39)
+        Me.TableLayoutPanel3.Margin = New System.Windows.Forms.Padding(2)
+        Me.TableLayoutPanel3.Name = "TableLayoutPanel3"
+        Me.TableLayoutPanel3.RowCount = 1
+        Me.TableLayoutPanel3.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50.0!))
+        Me.TableLayoutPanel3.Size = New System.Drawing.Size(190, 34)
+        Me.TableLayoutPanel3.TabIndex = 2
+        '
+        'coef_txt
+        '
+        Me.coef_txt.Anchor = System.Windows.Forms.AnchorStyles.None
+        Me.coef_txt.BorderStyle = System.Windows.Forms.BorderStyle.None
+        Me.coef_txt.Font = New System.Drawing.Font("Microsoft Sans Serif", 13.8!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.coef_txt.ForeColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
+        Me.coef_txt.Location = New System.Drawing.Point(110, 3)
+        Me.coef_txt.Margin = New System.Windows.Forms.Padding(2)
+        Me.coef_txt.Name = "coef_txt"
+        Me.coef_txt.Size = New System.Drawing.Size(64, 27)
+        Me.coef_txt.TabIndex = 0
+        Me.coef_txt.Text = "0"
+        Me.coef_txt.TextAlign = System.Windows.Forms.HorizontalAlignment.Center
+        '
+        'Label6
+        '
+        Me.Label6.Dock = System.Windows.Forms.DockStyle.Fill
+        Me.Label6.ForeColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
+        Me.Label6.Location = New System.Drawing.Point(2, 0)
+        Me.Label6.Margin = New System.Windows.Forms.Padding(2, 0, 2, 0)
+        Me.Label6.Name = "Label6"
+        Me.Label6.Size = New System.Drawing.Size(91, 34)
+        Me.Label6.TabIndex = 1
+        Me.Label6.Text = "Coef."
+        Me.Label6.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
+        '
+        'TableLayoutPanel2
+        '
+        Me.TableLayoutPanel2.ColumnCount = 2
+        Me.TableLayoutPanel2.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50.0!))
+        Me.TableLayoutPanel2.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50.0!))
+        Me.TableLayoutPanel2.Controls.Add(Me.note_txt, 1, 0)
+        Me.TableLayoutPanel2.Controls.Add(Me.Label5, 0, 0)
+        Me.TableLayoutPanel2.Dock = System.Windows.Forms.DockStyle.Fill
+        Me.TableLayoutPanel2.Location = New System.Drawing.Point(2, 2)
+        Me.TableLayoutPanel2.Margin = New System.Windows.Forms.Padding(2)
+        Me.TableLayoutPanel2.Name = "TableLayoutPanel2"
+        Me.TableLayoutPanel2.RowCount = 1
+        Me.TableLayoutPanel2.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50.0!))
+        Me.TableLayoutPanel2.Size = New System.Drawing.Size(190, 33)
+        Me.TableLayoutPanel2.TabIndex = 1
+        '
+        'note_txt
+        '
+        Me.note_txt.Anchor = System.Windows.Forms.AnchorStyles.None
+        Me.note_txt.BorderStyle = System.Windows.Forms.BorderStyle.None
+        Me.note_txt.Font = New System.Drawing.Font("Microsoft Sans Serif", 13.8!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.note_txt.ForeColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
+        Me.note_txt.Location = New System.Drawing.Point(110, 3)
+        Me.note_txt.Margin = New System.Windows.Forms.Padding(2)
+        Me.note_txt.Name = "note_txt"
+        Me.note_txt.Size = New System.Drawing.Size(64, 27)
+        Me.note_txt.TabIndex = 0
+        Me.note_txt.Text = "0"
+        Me.note_txt.TextAlign = System.Windows.Forms.HorizontalAlignment.Center
+        '
+        'Label5
+        '
+        Me.Label5.Dock = System.Windows.Forms.DockStyle.Fill
+        Me.Label5.ForeColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
+        Me.Label5.Location = New System.Drawing.Point(2, 0)
+        Me.Label5.Margin = New System.Windows.Forms.Padding(2, 0, 2, 0)
+        Me.Label5.Name = "Label5"
+        Me.Label5.Size = New System.Drawing.Size(91, 33)
+        Me.Label5.TabIndex = 1
+        Me.Label5.Text = "Note"
+        Me.Label5.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
+        '
+        'Cod_Reply_txt
+        '
+        Me.Cod_Reply_txt.AccessibleDescription = "A"
+        Me.Cod_Reply_txt.CharacterCasing = System.Windows.Forms.CharacterCasing.Normal
+        Me.Cod_Reply_txt.Font = New System.Drawing.Font("Century Gothic", 8.25!)
+        Me.Cod_Reply_txt.Location = New System.Drawing.Point(860, 110)
+        Me.Cod_Reply_txt.Margin = New System.Windows.Forms.Padding(6, 5, 6, 5)
+        Me.Cod_Reply_txt.MaxLength = 32767
+        Me.Cod_Reply_txt.Multiline = False
+        Me.Cod_Reply_txt.Name = "Cod_Reply_txt"
+        Me.Cod_Reply_txt.Padding = New System.Windows.Forms.Padding(1, 0, 1, 0)
+        Me.Cod_Reply_txt.PasswordChar = "" & Global.Microsoft.VisualBasic.ChrW(0)
+        Me.Cod_Reply_txt.ReadOnly = True
+        Me.Cod_Reply_txt.ScrollBars = System.Windows.Forms.ScrollBars.None
+        Me.Cod_Reply_txt.SelectionStart = 0
+        Me.Cod_Reply_txt.Size = New System.Drawing.Size(95, 21)
+        Me.Cod_Reply_txt.TabIndex = 259
+        Me.Cod_Reply_txt.TabStop = False
+        Me.Cod_Reply_txt.TextAlign = System.Windows.Forms.HorizontalAlignment.Left
+        Me.Cod_Reply_txt.UseSystemPasswordChar = False
+        '
+        'Label4
+        '
+        Me.Label4.AutoSize = True
+        Me.Label4.Location = New System.Drawing.Point(760, 113)
+        Me.Label4.Name = "Label4"
+        Me.Label4.Size = New System.Drawing.Size(107, 16)
+        Me.Label4.TabIndex = 258
+        Me.Label4.Text = "Code réponse"
+        '
         'pnl_Top
         '
         Me.pnl_Top.BackColor = System.Drawing.Color.FromArgb(CType(CType(250, Byte), Integer), CType(CType(250, Byte), Integer), CType(CType(250, Byte), Integer))
+        Me.pnl_Top.Controls.Add(Me.pnl_note)
+        Me.pnl_Top.Controls.Add(Me.Cod_Reply_txt)
+        Me.pnl_Top.Controls.Add(Me.Label4)
         Me.pnl_Top.Controls.Add(Me.RC_btn)
         Me.pnl_Top.Controls.Add(Me.Cv_btn)
         Me.pnl_Top.Controls.Add(Me.Interne_chk)
@@ -523,6 +724,14 @@ Partial Class Entretien
         CType(Me.Close_pb, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.Save_pb, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.Cloture_pb, System.ComponentModel.ISupportInitialize).EndInit()
+        Me.TableLayoutPanel2.ResumeLayout(False)
+        Me.TableLayoutPanel2.PerformLayout()
+        Me.TableLayoutPanel3.ResumeLayout(False)
+        Me.TableLayoutPanel3.PerformLayout()
+        Me.TableLayoutPanel4.ResumeLayout(False)
+        Me.TableLayoutPanel4.PerformLayout()
+        Me.pnl_note.ResumeLayout(False)
+        Me.pnl_note.PerformLayout()
         Me.ResumeLayout(False)
 
     End Sub
@@ -555,4 +764,16 @@ Partial Class Entretien
     Friend WithEvents Cv_btn As ud_button
     Friend WithEvents PictureBox1 As PictureBox
     Friend WithEvents RC_btn As ud_button
+    Friend WithEvents pnl_note As TableLayoutPanel
+    Friend WithEvents TableLayoutPanel4 As TableLayoutPanel
+    Friend WithEvents note_totale_txt As TextBox
+    Friend WithEvents Label7 As Label
+    Friend WithEvents TableLayoutPanel3 As TableLayoutPanel
+    Friend WithEvents coef_txt As TextBox
+    Friend WithEvents Label6 As Label
+    Friend WithEvents TableLayoutPanel2 As TableLayoutPanel
+    Friend WithEvents note_txt As TextBox
+    Friend WithEvents Label5 As Label
+    Friend WithEvents Cod_Reply_txt As ud_TextBox
+    Friend WithEvents Label4 As Label
 End Class
