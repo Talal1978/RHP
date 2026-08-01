@@ -30,10 +30,10 @@ const GroupBox = ({
       minHeight={100}
       mb={5}
       sx={{
-        ...sx,
         marginInline: { xs: 0, sm: 0, md: 0, lg: "2em", xl: "3em" },
         overflow: "hidden",
         // paddingInline: { xs: 0, sm: 0, md: 0, lg: "2em", xl: "3em" },
+        ...sx,
       }}
       className={`groupbox ${className}`}
       onClick={onClick}

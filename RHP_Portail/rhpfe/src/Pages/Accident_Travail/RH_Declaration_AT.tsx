@@ -171,10 +171,13 @@ const RH_Declaration_AT = () => {
                 showBorders={!isSmall}
                 showTitre={true}
                 sx={{
+                    width: "100%",
+                    marginInline: "auto",
                     "& .grpDiv": {
                         padding: "2em 5px 5px 5px",
                         width: "100%",
                         minHeight: "10em",
+                        marginInline: "auto",
                     },
                 }}
             >
@@ -265,11 +268,7 @@ const RH_Declaration_AT = () => {
                 sx={{
                     margin: "auto",
                     padding: "5px",
-                    width: {
-                        xs: "96vw",
-                        sm: "96vw",
-                        md: "80vw",
-                    },
+                    width: "100%",
                     overflow: "scroll",
                 }}
             >

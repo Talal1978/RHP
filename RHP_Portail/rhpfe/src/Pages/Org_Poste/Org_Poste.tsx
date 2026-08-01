@@ -1,13 +1,14 @@
-import { Box, Chip, Divider, Grid, Rating, Typography } from "@mui/material";
+import { Box, Chip, Divider, Rating, Typography } from "@mui/material";
+import Grid from "@mui/material/Unstable_Grid2";
 import { useContext, useEffect, useState } from "react";
 import useAxiosPost from "../../hooks/useAxiosPost";
 import useMsgBox from "../../hooks/useMsgBox";
 import { cntX } from "../../Menu/MenuMain";
 import TextBox from "../../components/TextBox/TextBox";
 import { Agent, colorBase } from "../../modules/module_general";
-import "./Org_Poste.scss";
 import useCombo from "../../hooks/useCombo";
 import TextZoom from "../../components/TextZoom/TextZoom";
+import GroupBox from "../../components/GroupBox/GroupBox";
 
 // Reusing Competence component logic but inline or adapted if needed.
 // Competence component expects { competence, intitule, note, showNote }
@@ -71,8 +72,22 @@ const Org_Poste = () => {
     if (!poste) return <Typography>Aucune donnée à afficher</Typography>;
 
     return (
-        <Box className="org-poste-container">
-            <Typography variant="h6" gutterBottom sx={{ color: colorBase.colorBase02 }}>Poste</Typography>
+        <GroupBox
+            label="Fiche de poste"
+            showBorders={!isSmall}
+            showTitre={true}
+            sx={{
+                width: "100%",
+                marginInline: "auto",
+                "& .grpDiv": {
+                    padding: "2em 5px 5px 2em",
+                    width: "100%",
+                    maxWidth: "1200px",
+                    minHeight: "10em",
+                    marginInline: "auto",
+                },
+            }}
+        >
             <Grid container spacing={2}>
                 <Grid xs={12} sm={3}>
                     <TextZoom
@@ -155,7 +170,7 @@ const Org_Poste = () => {
                 ))}
             </Box>
 
-        </Box>
+        </GroupBox>
     );
 };
 

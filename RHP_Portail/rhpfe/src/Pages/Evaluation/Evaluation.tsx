@@ -59,7 +59,7 @@ const Evaluation = () => {
         nameEcran: "Evaluation",
         idEcran: evaluationKey,
       }).then((dt) => {
-        setAccessible(dt.data);
+        if (dt?.data && typeof dt.data === "object") setAccessible(dt.data);
       });
 
       return () => {
@@ -116,7 +116,7 @@ const Evaluation = () => {
       } else {
         alert({
           titre: "Enregistrement",
-          msg: rsl.data && rsl.data.length > 0 ? (typeof rsl.data[0] === 'object' ? JSON.stringify(rsl.data[0]) : String(rsl.data[0])) : "Enregistrement echoué" + rsl.data.sort,
+          msg: rsl.data && rsl.data.length > 0 ? (typeof rsl.data[0] === 'object' ? JSON.stringify(rsl.data[0]) : String(rsl.data[0])) : "Enregistrement echoué",
           typMsg: "error",
           timeOut: 3000,
         });

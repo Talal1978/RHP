@@ -6,9 +6,9 @@ import IconButton from "@mui/material/IconButton";
 import Badge from "@mui/material/Badge";
 import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
-import { PersonOutlineOutlined, Notifications } from "@mui/icons-material";
+import { PersonOutlineOutlined, Notifications, SpaceDashboard } from "@mui/icons-material";
 import { cntX } from "./MenuMain";
-import { Avatar, Typography } from "@mui/material";
+import { Avatar, Tooltip, Typography } from "@mui/material";
 import MenuProfile from "./MenuProfile";
 import { useNavigate, useParams } from "react-router-dom";
 import "./mainmenu.scss";
@@ -50,6 +50,17 @@ export default function MenuNavBar() {
           </IconButton>
           <Typography>{titre}</Typography>
           <Box sx={{ flexGrow: 1 }} />
+
+          <Tooltip title="Tableau de bord">
+            <IconButton
+              size="large"
+              color="inherit"
+              aria-label="tableau de bord"
+              onClick={() => navigate("/myspace/Dashboard/Tableau de bord")}
+            >
+              <SpaceDashboard />
+            </IconButton>
+          </Tooltip>
 
           <ThemeToggle />
 

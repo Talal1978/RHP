@@ -1,7 +1,7 @@
 
 import { Request, Response } from "express";
-import { lireSql } from "../modules/module_sqlRW";
-import { Int, NVarChar } from "mssql";
+import { ecrireSql, lireSql } from "../modules/module_sqlRW";
+import { Int, NVarChar, Float, Bit } from "mssql";
 
 export const formation_evaluation_context = async (req: Request, res: Response) => {
     const { processId, ...theAgent } = req.params;
@@ -237,7 +237,7 @@ export const get_formation = async (req: Request, res: Response) => {
                     fm.Domaines_Competence,
                     dc.Lib_Domaines_Competence,
                     fm.Typ_Formation,
-                    tf.Typ_Formation
+                    tf.Typ_Formation as Lib_Typ_Formation
                 from Formation_Modules fm
                 left join GPEC_Domaines_Competence dc on dc.Domaines_Competence=fm.Domaines_Competence and dc.id_Societe=fm.id_Societe
                 left join Formation_Typ_Formation tf on tf.RowId=fm.Typ_Formation 
@@ -264,5 +264,125 @@ export const get_formation = async (req: Request, res: Response) => {
 
     } catch (error: any) {
         res.send({ result: false, message: error.message });
+    }
+}
+
+// Saving logic adapted from desktop Formation.vb Enregistrer()
+export const save_formation = async (req: Request, res: Response) => {
+    const { processId, ...theAgent } = req.params;
+    const { entete: _entete, modules = [], participants = [], financement = [] } = req.body;
+    const idSoc = Number(theAgent?.id_Societe);
+    if (isNaN(idSoc) || idSoc <= 0) {
+        return res.send({ result: false, message: "id_Societe invalide" });
+    }
+    const Matricule = (theAgent as any)?.Matricule || "";
+
+    let { Cod_Formation } = _entete;
+
+    // Validations
+    if (!_entete.Lib_Formation || String(_entete.Lib_Formation).trim() === "") {
+        return res.send({ result: false, message: "Veuillez renseigner l'intitulé de la formation." });
+    }
+
+    // New code via Sys_Compteur (same as desktop)
+    if (!Cod_Formation || Cod_Formation === "") {
+        await lireSql(`exec Sys_Compteur 'Formation', @p_idSoc`, [
+            { param: "p_idSoc", sqlType: Int, valeur: idSoc },
+        ]);
+        const rsCode = await lireSql(
+            `select Last_Code from Param_Compteur where Fichier='Formation'`,
+            []
+        );
+        Cod_Formation = rsCode?.data?.[0]?.Last_Code;
+        if (!Cod_Formation) {
+            return res.send({ result: false, message: "Erreur de numérotation (Param_Compteur / Formation)." });
+        }
+    }
+
+    // Only editable fields are written (whitelist, avoids overwriting audit/status columns)
+    const enteteFields: { [key: string]: any } = {};
+    const editableFields = [
+        "Lib_Formation", "Dat_Du", "Dat_Au", "Action_Formation", "Genre_Formation",
+        "Nature_Formation", "Budget", "Cod_Cabinet", "Cod_Formateur", "Typ_Lieu",
+        "Lieu", "Statut_Formation", "Cod_Survey", "Contenu", "Formation_Planifiee",
+    ];
+    for (const f of editableFields) {
+        if (_entete[f] !== undefined) enteteFields[f] = _entete[f];
+    }
+
+    try {
+        const rsEnt = await ecrireSql({
+            tableName: "Formation",
+            fields: { ...enteteFields, Cod_Formation, id_Societe: idSoc },
+            joinFields: ["Cod_Formation", "id_Societe"],
+            excludeFields: [],
+            login: Matricule,
+        });
+        if (!rsEnt.result) return res.send(rsEnt);
+
+        const paramsHeader = [
+            { param: "p_Cod_Formation", sqlType: NVarChar, valeur: Cod_Formation },
+            { param: "p_idSoc", sqlType: Int, valeur: idSoc },
+        ];
+
+        // Modules (delete + re-insert, like desktop)
+        await lireSql(
+            `delete from Formation_Modules where Cod_Formation=@p_Cod_Formation and id_Societe=@p_idSoc`,
+            paramsHeader
+        );
+        for (const m of modules) {
+            if (!m?.Domaines_Competence) continue;
+            const typ = m?.Typ_Formation;
+            await lireSql(
+                `insert into Formation_Modules (id_Societe, Cod_Formation, Domaines_Competence, Typ_Formation)
+                 values (@p_idSoc, @p_Cod_Formation, @p_Domaine, @p_Typ)`,
+                [
+                    ...paramsHeader,
+                    { param: "p_Domaine", sqlType: NVarChar, valeur: m.Domaines_Competence },
+                    { param: "p_Typ", sqlType: Int, valeur: typ !== undefined && typ !== null && typ !== "" && Number(typ) >= 0 ? Number(typ) : null },
+                ]
+            );
+        }
+
+        // Financement (delete + re-insert, like desktop)
+        await lireSql(
+            `delete from Formation_Financement where Cod_Formation=@p_Cod_Formation and id_Societe=@p_idSoc`,
+            paramsHeader
+        );
+        for (const f of financement) {
+            if (!f?.Organisme) continue;
+            await lireSql(
+                `insert into Formation_Financement (id_Societe, Cod_Formation, Organisme, Montant)
+                 values (@p_idSoc, @p_Cod_Formation, @p_Organisme, @p_Montant)`,
+                [
+                    ...paramsHeader,
+                    { param: "p_Organisme", sqlType: NVarChar, valeur: f.Organisme },
+                    { param: "p_Montant", sqlType: Float, valeur: Number(f.Montant) || 0 },
+                ]
+            );
+        }
+
+        // Participants (delete + re-insert, like desktop)
+        await lireSql(
+            `delete from Formation_Participants where Cod_Formation=@p_Cod_Formation and id_Societe=@p_idSoc`,
+            paramsHeader
+        );
+        for (const p of participants) {
+            if (!p?.Matricule) continue;
+            const present = p.Present === "OK" || p.Present === true || p.Present === "true" || p.Present === 1;
+            await lireSql(
+                `insert into Formation_Participants (id_Societe, Cod_Formation, Matricule, Present)
+                 values (@p_idSoc, @p_Cod_Formation, @p_Matricule, @p_Present)`,
+                [
+                    ...paramsHeader,
+                    { param: "p_Matricule", sqlType: NVarChar, valeur: p.Matricule },
+                    { param: "p_Present", sqlType: Bit, valeur: present },
+                ]
+            );
+        }
+
+        return res.send({ result: true, data: [{ Cod_Formation }], message: "Enregistré avec succès" });
+    } catch (error: any) {
+        return res.send({ result: false, message: error.message });
     }
 }

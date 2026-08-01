@@ -206,7 +206,7 @@ const Note_Frais = () => {
           nameEcran: "Note_Frais",
           idEcran: currentNum,
         }).then((dt) => {
-          setAccessible(dt.data);
+          if (dt?.data && typeof dt.data === "object") setAccessible(dt.data);
         });
       } else {
         await myAxios("release_accessible", {

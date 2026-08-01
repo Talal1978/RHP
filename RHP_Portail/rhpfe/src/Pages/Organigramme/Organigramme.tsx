@@ -45,16 +45,28 @@ const Organigramme = () => {
     const [loading, setLoading] = useState(true);
     const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
 
-    const treeRef = React.useRef<HTMLDivElement>(null);
+    const containerRef = React.useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         loadData();
+
+        // L'organigramme occupe toute la page : désactive le scroll de la page
+        // (un seul scroll vertical/horizontal, géré par .organigramme-container)
+        const mainMenu = document.querySelector<HTMLElement>('.mainMenu');
+        if (mainMenu) {
+            const prevOverflow = mainMenu.style.overflow;
+            mainMenu.style.overflow = 'hidden';
+            return () => {
+                mainMenu.style.overflow = prevOverflow;
+            };
+        }
     }, []);
 
     useEffect(() => {
-        if (!loading && treeData && treeRef.current) {
-            // Scroll to center the tree
-            treeRef.current.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+        if (!loading && treeData && containerRef.current) {
+            // Center the chart horizontally inside the scrollable container
+            const el = containerRef.current;
+            el.scrollLeft = (el.scrollWidth - el.clientWidth) / 2;
         }
     }, [loading, treeData]);
 
@@ -218,13 +230,13 @@ const Organigramme = () => {
     if (loading) return <Loading />;
 
     return (
-        <div className="organigramme-container">
-            <Box sx={{ minWidth: '100%', width: 'max-content', padding: '100px', display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+        <div className="organigramme-container" ref={containerRef}>
+            <div className="organigramme-content">
                 <Typography variant="h4" sx={{ mb: 4, color: colorBase.colorBase01, fontWeight: 'bold' }}>
                     Organigramme
                 </Typography>
 
-                <div className="tree" ref={treeRef} style={{ left: window.innerWidth < 768 ? '3px' : '30px' }}>
+                <div className="tree">
                     {treeData ? (
                         <ul>
                             <RecursiveTree node={treeData} />
@@ -233,7 +245,7 @@ const Organigramme = () => {
                         <Typography>Aucune donnée disponible</Typography>
                     )}
                 </div>
-            </Box>
+            </div>
             <Modal
                 open={!!selectedPhoto}
                 onClose={() => setSelectedPhoto(null)}

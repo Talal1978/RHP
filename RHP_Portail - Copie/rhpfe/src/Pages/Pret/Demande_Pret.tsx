@@ -102,7 +102,7 @@ const Demande_Pret = () => {
           nameEcran: "RH_Demande_Pret",
           idEcran: currentNum,
         }).then((dt) => {
-          setAccessible(dt.data);
+          if (dt?.data && typeof dt.data === "object") setAccessible(dt.data);
         });
       } else {
         await myAxios("release_accessible", {

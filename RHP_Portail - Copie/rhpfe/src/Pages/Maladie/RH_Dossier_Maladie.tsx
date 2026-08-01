@@ -96,7 +96,7 @@ const RH_Dossier_Maladie = () => {
           nameEcran: "RH_Dossier_Maladie",
           idEcran: currentNum,
         }).then((dt) => {
-          setAccessible(dt.data);
+          if (dt?.data && typeof dt.data === "object") setAccessible(dt.data);
         });
       } else {
         await myAxios("release_accessible", {

@@ -1,11 +1,21 @@
-*.bak
-*.tmp
-*.log
-*.suo
-*.user
-bin/
-obj/
+# Visual Studio / VB.NET
 .vs/
-Debug/
-Release/
-packages/"RHP_Portail - Copie.7z" 
+[Bb]in/
+[Oo]bj/
+packages/
+*.user
+*.suo
+*.pdb
+
+# Node
+node_modules/
+
+# Fichiers temporaires
+tmp/
+*.tmp
+
+# Archives
+*.7z
+*.zip
+*.rar
+*.bak

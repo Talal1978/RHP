@@ -206,7 +206,7 @@ const Note_Frais = () => {
           nameEcran: "Note_Frais",
           idEcran: currentNum,
         }).then((dt) => {
-          setAccessible(dt.data);
+          if (dt?.data && typeof dt.data === "object") setAccessible(dt.data);
         });
       } else {
         await myAxios("release_accessible", {
@@ -334,7 +334,7 @@ const Note_Frais = () => {
         }
         alert({
           titre: "Enregistrer",
-          msg: "Enegistré avce succès",
+          msg: "Enregistré avec succès",
           typMsg: "success",
           timeOut: -1,
         });
@@ -444,18 +444,13 @@ const Note_Frais = () => {
       return;
     }
     if (["SG", "RJ", "SP", "VA"].includes(entete?.Statut || "")) {
-      if (
-        (await msgBox({
-          titre: "Supprimer",
-          msg: "Note de frais traitée. Suppression impossible",
-          typMsg: "warning",
-          typReply: "OkOnly",
-          async handleCancel() {
-            return;
-          },
-        })) === "Cancel"
-      )
-        return;
+      await msgBox({
+        titre: "Supprimer",
+        msg: "Note de frais traitée. Suppression impossible",
+        typMsg: "warning",
+        typReply: "OkOnly",
+      });
+      return;
     }
     const rslSave = await myAxios("delete_note_frais", {
       Num_NF: entete.Num_NF,
@@ -494,9 +489,9 @@ const Note_Frais = () => {
         visible: !isAccessible?.canModify ? "visible" : "none",
       },
       {
-        name: "Enregisrer",
+        name: "Enregistrer",
         disabled: !_canSave,
-        libelle: "Enregisrer",
+        libelle: "Enregistrer",
         action: Enregistrer,
         icon: <SaveAsOutlined />,
       },
@@ -567,10 +562,13 @@ const Note_Frais = () => {
         showBorders={!isSmall}
         showTitre={true}
         sx={{
+          width: "100%",
+          marginInline: "auto",
           "& .grpDiv": {
             padding: "2em 5px 5px 5px",
             width: "100%",
             minHeight: "10em",
+            marginInline: "auto",
           },
         }}
       >
@@ -613,7 +611,7 @@ const Note_Frais = () => {
                   width: "100%",
                   "& input": { fontSize: { xs: "0.85em", sm: "1em" } },
                 }}
-                onClear={() => stateChange("Dat_Du", "")}
+                onClear={() => stateChange("Dat_NF", "")}
               />
             </Grid>
             <Grid xs={12} sm={6} lg={3} xl={3}>
@@ -680,11 +678,7 @@ const Note_Frais = () => {
         sx={{
           margin: "auto",
           padding: "5px",
-          width: {
-            xs: "96vw",
-            sm: "96vw",
-            md: "80vw",
-          },
+          width: "100%",
           overflow: "scroll",
         }}
       >

@@ -69,7 +69,7 @@ const Parapheur = () => {
         width: {
           xs: "100%",
           sm: "100%",
-          md: "80vw",
+          md: "100%",
         },
         overflow: "scroll",
         " ::-webkit-scrollbar": {

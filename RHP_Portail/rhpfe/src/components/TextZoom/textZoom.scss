@@ -1,5 +1,13 @@
 @use "../../variables";
 .textZoomContainer {
+  .textZoom {
+    // La ligne horizontale s'arrête 2px avant l'icône du zoom
+    // (icône : right 4px + marge 0.5rem + largeur 24px)
+    .MuiInput-underline::before,
+    .MuiInput-underline::after {
+      right: calc(4px + 0.5rem + 24px + 2px);
+    }
+  }
   .overlay {
     position: fixed;
     top: 0;

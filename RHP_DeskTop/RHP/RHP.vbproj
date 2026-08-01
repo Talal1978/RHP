@@ -718,6 +718,73 @@
     <Compile Include="Documents\Accident_Travail\RH_Declaration_AT.vb">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="Sante\Module_Sante.vb" />
+    <Compile Include="Sante\RH_Sante_Dossier.Designer.vb">
+      <DependentUpon>RH_Sante_Dossier.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Sante\RH_Sante_Dossier.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Sante\RH_Sante_Aptitude.Designer.vb">
+      <DependentUpon>RH_Sante_Aptitude.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Sante\RH_Sante_Aptitude.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Sante\RH_Sante_Consultation.Designer.vb">
+      <DependentUpon>RH_Sante_Consultation.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Sante\RH_Sante_Consultation.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Sante\RH_Sante_Examen.Designer.vb">
+      <DependentUpon>RH_Sante_Examen.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Sante\RH_Sante_Examen.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Sante\RH_Sante_Maladie_Pro.Designer.vb">
+      <DependentUpon>RH_Sante_Maladie_Pro.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Sante\RH_Sante_Maladie_Pro.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Sante\RH_Sante_Visite.Designer.vb">
+      <DependentUpon>RH_Sante_Visite.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Sante\RH_Sante_Visite.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Sante\RH_Sante_Visite_Liste.Designer.vb">
+      <DependentUpon>RH_Sante_Visite_Liste.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Sante\RH_Sante_Visite_Liste.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Sante\RH_Sante_Aptitude_Liste.Designer.vb">
+      <DependentUpon>RH_Sante_Aptitude_Liste.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Sante\RH_Sante_Aptitude_Liste.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Sante\RH_Sante_Consultation_Liste.Designer.vb">
+      <DependentUpon>RH_Sante_Consultation_Liste.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Sante\RH_Sante_Consultation_Liste.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Sante\RH_Sante_Examen_Liste.Designer.vb">
+      <DependentUpon>RH_Sante_Examen_Liste.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Sante\RH_Sante_Examen_Liste.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Sante\RH_Sante_Maladie_Pro_Liste.Designer.vb">
+      <DependentUpon>RH_Sante_Maladie_Pro_Liste.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Sante\RH_Sante_Maladie_Pro_Liste.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Documents\Note de frais\Note_Frais.Designer.vb">
       <DependentUpon>Note_Frais.vb</DependentUpon>
     </Compile>
@@ -2101,6 +2168,39 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Documents\Accident_Travail\RH_Declaration_AT_Liste.resx">
       <DependentUpon>RH_Declaration_AT_Liste.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Sante\RH_Sante_Visite.resx">
+      <DependentUpon>RH_Sante_Visite.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Sante\RH_Sante_Dossier.resx">
+      <DependentUpon>RH_Sante_Dossier.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Sante\RH_Sante_Aptitude.resx">
+      <DependentUpon>RH_Sante_Aptitude.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Sante\RH_Sante_Consultation.resx">
+      <DependentUpon>RH_Sante_Consultation.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Sante\RH_Sante_Examen.resx">
+      <DependentUpon>RH_Sante_Examen.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Sante\RH_Sante_Maladie_Pro.resx">
+      <DependentUpon>RH_Sante_Maladie_Pro.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Sante\RH_Sante_Visite_Liste.resx">
+      <DependentUpon>RH_Sante_Visite_Liste.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Sante\RH_Sante_Aptitude_Liste.resx">
+      <DependentUpon>RH_Sante_Aptitude_Liste.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Sante\RH_Sante_Consultation_Liste.resx">
+      <DependentUpon>RH_Sante_Consultation_Liste.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Sante\RH_Sante_Examen_Liste.resx">
+      <DependentUpon>RH_Sante_Examen_Liste.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Sante\RH_Sante_Maladie_Pro_Liste.resx">
+      <DependentUpon>RH_Sante_Maladie_Pro_Liste.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Documents\Demande de remboursement Assurances\RH_Dossier_Maladie_Liste.resx">
       <DependentUpon>RH_Dossier_Maladie_Liste.vb</DependentUpon>

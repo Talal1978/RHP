@@ -614,19 +614,30 @@ export const ask_ai_assistant = async (req: Request, res: Response) => {
         // intent classification (LLM), question embedding (LLM), user profile (SQL)
         const [intent, qVec, richUserData] = await Promise.all([
             classifyIntent(question, conversationHistory),
-            getQuestionEmbedding(question),
+            // Tolérance aux pannes : si l'API d'embedding est indisponible,
+            // on continue sans la base de connaissances au lieu de faire échouer toute la requête
+            getQuestionEmbedding(question).catch((embErr: any) => {
+                console.error("[AI] Embedding failed, continuing without knowledge base:", embErr?.message || embErr);
+                return [] as number[];
+            }),
             fetchRichUserData(currentUser, idSocNum)
         ]);
 
         // 2. Search Knowledge Base
-        let docs = KnowledgeBase
+        // Seuil de pertinence : en dessous, le chunk est hors sujet (ex: question conversationnelle)
+        // -> on ne l'injecte ni dans le contexte, ni dans les sources affichées.
+        const MIN_SIMILARITY_SCORE = 0.5;
+        let docs = qVec.length > 0 ? KnowledgeBase
             .map(chunk => ({ ...chunk, score: cosineSimilarity(qVec, chunk.Embedding) }))
+            .filter(chunk => chunk.score >= MIN_SIMILARITY_SCORE)
             .sort((a, b) => b.score - a.score)
-            .slice(0, 5); // Top 5 relevant chunks
+            .slice(0, 5) // Top 5 relevant chunks
+            : [];
 
 
 
-        const contextText = docs.map(d => d.TextChunk).join("\n\n---\n\n");
+        // Contexte avec sources numérotées : permet au modèle de citer uniquement celles réellement utilisées
+        const contextText = docs.map((d, i) => `[Source ${i + 1}: ${d.Source}]\n${d.TextChunk}`).join("\n\n---\n\n");
 
         // 3. Prepare System Prompt with Tools (or KB only for KNOWLEDGE intent)
         const toolsDesc = Object.entries(TOOLS).map(([name, def]: any) => `- ${name}: ${def.description}`).join("\n");
@@ -676,6 +687,7 @@ Rules:
 - Provide informative answers based on the Context below.
 - NEVER invent procedures, rules or figures that are not present in the Context.
 - If you don't find relevant information in the Context, say so.
+- IMPORTANT: The Context blocks are labeled [Source N: filename]. If (and ONLY if) your answer actually uses information from a Context block, append at the very end of your answer: '###USED_SOURCES###' followed by the number(s) of the source(s) used (ex: ###USED_SOURCES### 1, 3). If your answer does NOT use the Context (greetings, small talk, general knowledge), do NOT append anything.
 `;
 
         const systemInstruction = AgentConfig.Instructions || "Tu es un assistant utile.";
@@ -699,6 +711,22 @@ Rules:
                 console.log("[AI] Answer based on Personal Context - Clearing Sources.");
                 answer = answer.replace("###PERSONAL_CONTEXT###", "").trim();
                 docs = []; // Prevent listing irrelevant sources
+            }
+            // --------------------------------
+
+            // --- USED SOURCES : ne garder QUE les sources explicitement citées par le modèle ---
+            // Règle déterministe : pas de citation ###USED_SOURCES### => la réponse n'utilise
+            // aucun vecteur de la base de connaissances => aucune source affichée.
+            const usedSourcesMatch = answer ? answer.match(/###\s*USED_SOURCES\s*###\s*([\d\s,;]*)/i) : null;
+            if (usedSourcesMatch) {
+                answer = answer.replace(usedSourcesMatch[0], "").trim();
+                const cited = usedSourcesMatch[1]
+                    .split(/[,;\s]+/)
+                    .map((n: string) => parseInt(n, 10))
+                    .filter((n: number) => !isNaN(n) && n >= 1 && n <= docs.length);
+                docs = cited.map((n: number) => docs[n - 1]);
+            } else {
+                docs = [];
             }
             // --------------------------------
 

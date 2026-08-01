@@ -72,6 +72,7 @@ const Formation = () => {
     const myAxios = useAxiosPost();
     const { settbnMenu, isSmall, setShowGED, setGEDprops } = useContext(cntX);
     const msgbox = useMsgBox();
+    const alert = useAlert();
     const { num } = useParams();
     const [entete, setEntete] = useState<IEntete>(defaultEntete);
     const [tabIndex, setTabIndex] = useState(0);
@@ -125,6 +126,13 @@ const Formation = () => {
     // Menu logic
     useEffect(() => {
         settbnMenu([
+            {
+                name: "Enregistrer",
+                libelle: "Enregistrer",
+                icon: <Save />,
+                action: enregistrer,
+                disabled: !canSave
+            },
             {
                 name: "Nouveau",
                 libelle: "Nouveau",
@@ -188,6 +196,38 @@ const Formation = () => {
         setParticipants([]);
         setModules([]);
         setFinancement([]);
+    };
+
+    const enregistrer = async () => {
+        if (!entete.Lib_Formation || String(entete.Lib_Formation).trim() === "") {
+            msgbox({ titre: "Enregistrer", msg: "Veuillez renseigner l'intitulé de la formation.", typMsg: "warning", typReply: "OkOnly" });
+            return;
+        }
+        const rsl = await myAxios("save_formation", {
+            entete,
+            modules,
+            participants,
+            financement,
+        });
+        if (rsl.data?.result) {
+            const numN = rsl.data.data?.[0]?.Cod_Formation;
+            if (numN && numN !== entete.Cod_Formation) {
+                setEntete((prev) => ({ ...prev, Cod_Formation: numN }));
+            }
+            alert({
+                titre: "Enregistrer",
+                msg: "Enregistré avec succès",
+                typMsg: "success",
+                timeOut: -1,
+            });
+        } else {
+            alert({
+                titre: "Enregistrer",
+                msg: rsl.data?.message || "Erreur lors de l'enregistrement",
+                typMsg: "error",
+                timeOut: -1,
+            });
+        }
     };
 
     return (
@@ -267,7 +307,7 @@ const Formation = () => {
                 )}
                 <Grid xs={12} sm={6}>
                     <TextZoom
-                        numZoom={entete.Nature_Formation === 1 ? "MS152" : "MS153"}
+                        numZoom={entete.Nature_Formation === 1 ? "MS155" : "MS153"}
                         nomControle="Cod_Formateur"
                         label="Formateur"
                         valeur={entete.Cod_Formateur}

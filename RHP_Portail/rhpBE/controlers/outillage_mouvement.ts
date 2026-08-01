@@ -153,12 +153,14 @@ export async function save_outillage_mouvement(req: Request, res: Response) {
                     { param: "p_flgMaj", sqlType: Int, valeur: flgMaj },
                 ]
             );
-            if (entete.Statut === "SS" || entete.Statut === "VA")
+            if (entete.Statut === "SS")
                 await sousmettre_signature("OTM", Num_Mouvement, idSocNum.toString(), Matricule);
             return res.send(rsEnt);
         } else {
             return res.send({ result: false, message: "Error saving details", error: detailError });
         }
+    } else {
+        return res.send(rsEnt);
     }
 }
 

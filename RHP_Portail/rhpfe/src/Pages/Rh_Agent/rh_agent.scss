@@ -24,14 +24,11 @@
         height: 260px;
       }
 
-      @media (min-width: 1200px) {
-        width: 300px;
-        height: 300px;
-      }
-
-      @media (min-width: 1536px) {
-        width: 340px;
-        height: 340px;
+      // Desktop (md et +) : photo à droite, taille adaptée à la hauteur
+      // du bloc de champs pour éviter le vide en dessous
+      @media (min-width: 900px) {
+        width: 180px;
+        height: 180px;
       }
 
       img {

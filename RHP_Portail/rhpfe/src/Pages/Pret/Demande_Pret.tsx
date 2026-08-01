@@ -55,7 +55,7 @@ const Demande_Pret = () => {
   const myAxios = useAxiosPost();
   const { isXs, isSm, isLg, isXl } = useContext(cntX);
   useEffect(() => {
-    myAxios("get_mnt_Prets_encours", { Matricule: entete?.Matricule })
+    myAxios("get_mnt_prets_encours", { Matricule: entete?.Matricule })
       .then((dt) => {
         if (dt.data.result) {
           setInfo(dt.data.data[0]);
@@ -78,7 +78,7 @@ const Demande_Pret = () => {
   }
   const Request = useCallback(async () => {
     if (currentNum !== "" && currentNum !== "new") {
-      await myAxios("get_demande_Pret", { Num_Demande_Pret: currentNum })
+      await myAxios("get_demande_pret", { Num_Demande_Pret: currentNum })
         .then((dt) => {
           if (dt.data && dt.data?.result) {
             setEntete(dt.data.data[0]);
@@ -102,7 +102,7 @@ const Demande_Pret = () => {
           nameEcran: "RH_Demande_Pret",
           idEcran: currentNum,
         }).then((dt) => {
-          setAccessible(dt.data);
+          if (dt?.data && typeof dt.data === "object") setAccessible(dt.data);
         });
       } else {
         await myAxios("release_accessible", {
@@ -178,7 +178,7 @@ const Demande_Pret = () => {
       }
       let _entete = { ...entete };
       if (Statut === "SS") _entete = { ..._entete, Statut };
-      const rslSave = await myAxios("save_demande_Pret", {
+      const rslSave = await myAxios("save_demande_pret", {
         entete: _entete,
       });
       if (rslSave.data.result) {
@@ -190,8 +190,15 @@ const Demande_Pret = () => {
         }
         alert({
           titre: "Enregistrer",
-          msg: "Enegistré avce succès",
+          msg: "Enregistré avec succès",
           typMsg: "success",
+          timeOut: -1,
+        });
+      } else {
+        alert({
+          titre: "Enregistrer",
+          msg: "Erreur : " + (rslSave.data?.data ?? rslSave.data?.message ?? "Enregistrement impossible"),
+          typMsg: "error",
           timeOut: -1,
         });
       }
@@ -221,12 +228,14 @@ const Demande_Pret = () => {
       )
         return;
     }
-    await myAxios("release_accessible", {
-      nameEcran: "RH_Demande_Pret",
-      idEcran: currentNum,
-    });
+    if (currentNum !== "" && currentNum !== "new") {
+      await myAxios("release_accessible", {
+        nameEcran: "RH_Demande_Pret",
+        idEcran: currentNum,
+      });
+    }
     navigate(`/myspace/RH_Demande_Pret/Demande de prêt/new`);
-  }, [entete]);
+  }, [entete, currentNum]);
   const SoumettreEnSignature = useCallback(async () => {
     if (!currentNum) return;
     if (entete.Statut === "" || entete.Statut === "NSS") {
@@ -289,20 +298,15 @@ const Demande_Pret = () => {
       return;
     }
     if (["SG", "RJ", "SP", "VA"].includes(entete?.Statut || "")) {
-      if (
-        (await msgBox({
-          titre: "Supprimer",
-          msg: "Demande traitée. Suppression impossible",
-          typMsg: "warning",
-          typReply: "OkOnly",
-          async handleCancel() {
-            return;
-          },
-        })) === "Cancel"
-      )
-        return;
+      await msgBox({
+        titre: "Supprimer",
+        msg: "Demande traitée. Suppression impossible",
+        typMsg: "warning",
+        typReply: "OkOnly",
+      });
+      return;
     }
-    const rslSave = await myAxios("delete_Demande_Pret", {
+    const rslSave = await myAxios("delete_demande_pret", {
       Num_Demande_Pret: entete.Num_Demande_Pret,
     });
     if (rslSave.data.result) {
@@ -340,9 +344,9 @@ const Demande_Pret = () => {
         visible: !isAccessible?.canModify ? "visible" : "none",
       },
       {
-        name: "Enregisrer",
+        name: "Enregistrer",
         disabled: !_canSave,
-        libelle: "Enregisrer",
+        libelle: "Enregistrer",
         action: Enregistrer,
         icon: <SaveAsOutlined />,
       },
@@ -415,11 +419,14 @@ const Demande_Pret = () => {
         showBorders={!isSmall}
         showTitre={true}
         sx={{
+          width: "100%",
+          marginInline: "auto",
           "& .grpDiv": {
             padding: "2em 5px 5px 5px",
             width: "100%",
             maxWidth: "1000px",
             minHeight: "10em",
+            marginInline: "auto",
           },
         }}
       >
@@ -494,16 +501,16 @@ const Demande_Pret = () => {
                   width: "100%",
                   "& input": { fontSize: { xs: "0.85em", sm: "1em" } },
                 }}
-                onClear={() => stateChange("Dat_Demande", "")}
+                onClear={() => stateChange("Premiere_Echeance", "")}
               />
             </Grid>
             <Grid xs={12} sm={12} lg={6} xl={6}>
               <TextBox
-                nomControle="montant_Prets_encours"
+                nomControle="montant_prets_encours"
                 disabled={true}
                 label="Prets en cours"
                 type="number"
-                valeur={info?.montant_Prets_encours ?? 0}
+                valeur={info?.montant_prets_encours ?? 0}
                 //onchange={stateChange}
                 style={{ width: "100%" }}
               />
@@ -570,5 +577,5 @@ export const iniEntete: TEntete = {
   Premiere_Echeance: new Date(),
 };
 
-type TInfo = { montant_Prets_encours: number; dernier_salaire: number };
-const initInfo: TInfo = { montant_Prets_encours: 0, dernier_salaire: 0 };
+type TInfo = { montant_prets_encours: number; dernier_salaire: number };
+const initInfo: TInfo = { montant_prets_encours: 0, dernier_salaire: 0 };

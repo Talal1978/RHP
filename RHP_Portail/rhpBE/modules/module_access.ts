@@ -52,6 +52,9 @@ export const isAccessible = async (
     { param: "p_processId", sqlType: NVarChar, valeur: processId },
     { param: "p_idSoc", sqlType: NVarChar, valeur: id_Societe },
   ]);
+  if (!rsl.result || !rsl.data?.length) {
+    return { canModify: true, Taken_By_User: "", Process_Id: processId };
+  }
   return rsl.data[0];
 };
 export const releaseAccessible = async (
@@ -90,7 +93,7 @@ export const releaseAccessibleApi = async (req: Request, res: Response) => {
 export const checkAccessible = async (req: Request, res: Response) => {
   let { nameEcran, idEcran } = req.body;
   let username = req.params.Login || "";
-  const id_Societe = req.params.id_Societe
+  const id_Societe = IsNull(req.params.id_Societe, "3068");
   let processId = req.params.processId || "0";
   await releaseAccessible("", "", username, processId, id_Societe);
   return res.send(

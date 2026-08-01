@@ -104,7 +104,7 @@ const Demande_Avance = () => {
           nameEcran: "RH_Demande_Avance",
           idEcran: currentNum,
         }).then((dt) => {
-          setAccessible(dt.data);
+          if (dt?.data && typeof dt.data === "object") setAccessible(dt.data);
         });
       } else {
         await myAxios("release_accessible", {

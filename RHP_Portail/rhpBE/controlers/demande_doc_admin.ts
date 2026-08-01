@@ -152,6 +152,8 @@ export async function save_demande_doc_admin(req: Request, res: Response) {
         } else {
             return res.send({ result: false, message: "Error saving details", error: detailError });
         }
+    } else {
+        return res.send(rsEnt);
     }
 }
 export async function delete_demande_doc_admin(req: Request, res: Response) {

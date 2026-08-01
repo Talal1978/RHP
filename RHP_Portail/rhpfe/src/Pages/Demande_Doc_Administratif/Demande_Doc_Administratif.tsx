@@ -196,6 +196,8 @@ const Demande_Doc_Administratif = () => {
         } else {
             setEntete(iniEntete);
             setDetail([iniDetail]);
+            enteteRef.current = iniEntete;
+            detailRef.current = [iniDetail];
         }
     }, [currentNum]);
 
@@ -206,7 +208,7 @@ const Demande_Doc_Administratif = () => {
                     nameEcran: "Demande_Doc_Admin",
                     idEcran: currentNum,
                 }).then((dt) => {
-                    setAccessible(dt.data);
+                    if (dt?.data && typeof dt.data === "object") setAccessible(dt.data);
                 });
             } else {
                 await myAxios("release_accessible", {
@@ -407,18 +409,13 @@ const Demande_Doc_Administratif = () => {
             return;
         }
         if (["SG", "RJ", "SP", "VA"].includes(entete?.Statut || "")) {
-            if (
-                (await msgBox({
-                    titre: "Supprimer",
-                    msg: "Demande traitée. Suppression impossible",
-                    typMsg: "warning",
-                    typReply: "OkOnly",
-                    async handleCancel() {
-                        return;
-                    },
-                })) === "Cancel"
-            )
-                return;
+            await msgBox({
+                titre: "Supprimer",
+                msg: "Demande traitée. Suppression impossible",
+                typMsg: "warning",
+                typReply: "OkOnly",
+            });
+            return;
         }
         const rslSave = await myAxios("delete_demande_doc_admin", {
             Num_Demande: entete.Num_Demande,
@@ -518,10 +515,13 @@ const Demande_Doc_Administratif = () => {
                 showBorders={!isSmall}
                 showTitre={true}
                 sx={{
+                    width: "100%",
+                    marginInline: "auto",
                     "& .grpDiv": {
                         padding: "2em 5px 5px 5px",
                         width: "100%",
                         minHeight: "10em",
+                        marginInline: "auto",
                     },
                 }}
             >
@@ -530,8 +530,8 @@ const Demande_Doc_Administratif = () => {
                         <Grid xs={12} sm={12} lg={4} xl={3}>
                             <TextZoom
                                 readonly={true}
-                                numZoom="MS091"
-                                nomControle="Num_Demande"
+                             numZoom="MS030"
+                             nomControle="Num_Demande"
                                 label="N° demande"
                                 valeur={entete?.Num_Demande}
                                 onchange={stateChange}
@@ -663,11 +663,7 @@ const Demande_Doc_Administratif = () => {
                 sx={{
                     margin: "auto",
                     padding: "5px",
-                    width: {
-                        xs: "96vw",
-                        sm: "96vw",
-                        md: "80vw",
-                    },
+                    width: "100%",
                     overflow: "scroll",
                 }}
             >

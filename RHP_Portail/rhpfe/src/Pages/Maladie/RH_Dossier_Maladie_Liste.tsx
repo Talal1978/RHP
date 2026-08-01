@@ -13,7 +13,7 @@ import Bouton from "../../components/Bouton/Bouton";
 import useAxiosPost from "../../hooks/useAxiosPost";
 import { useNavigate } from "react-router-dom";
 import { cntX } from "../../Menu/MenuMain";
-const Demande_Pret_Liste = () => {
+const RH_Dossier_Maladie_Liste = () => {
   const navigate = useNavigate();
   const [criteres, setCriteres] = useState<TCriteres>(initialiserCriteres);
   const [ds, setDs] = useState<ObjetGenerique[]>([]);
@@ -181,11 +181,7 @@ const Demande_Pret_Liste = () => {
         sx={{
           margin: "auto",
           padding: "2em 5px",
-          width: {
-            xs: "96vw",
-            sm: "96vw",
-            md: "80vw",
-          },
+          width: "100%",
           overflow: "scroll",
           //   " ::-webkit-scrollbar": {
           //     display: "none",
@@ -224,7 +220,7 @@ const Demande_Pret_Liste = () => {
   );
 };
 
-export default Demande_Pret_Liste;
+export default RH_Dossier_Maladie_Liste;
 type TCriteres = {
   Matricule?: string;
   Cod_Entite?: string;

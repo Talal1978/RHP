@@ -104,7 +104,7 @@ const Demande_Avance = () => {
           nameEcran: "RH_Demande_Avance",
           idEcran: currentNum,
         }).then((dt) => {
-          setAccessible(dt.data);
+          if (dt?.data && typeof dt.data === "object") setAccessible(dt.data);
         });
       } else {
         await myAxios("release_accessible", {
@@ -192,8 +192,15 @@ const Demande_Avance = () => {
         }
         alert({
           titre: "Enregistrer",
-          msg: "Enegistré avce succès",
+          msg: "Enregistré avec succès",
           typMsg: "success",
+          timeOut: -1,
+        });
+      } else {
+        alert({
+          titre: "Enregistrer",
+          msg: "Erreur : " + (rslSave.data?.data ?? rslSave.data?.message ?? "Enregistrement impossible"),
+          typMsg: "error",
           timeOut: -1,
         });
       }
@@ -293,21 +300,16 @@ const Demande_Avance = () => {
       return;
     }
     if (["SG", "RJ", "SP", "VA"].includes(entete?.Statut || "")) {
-      if (
-        (await msgBox({
-          titre: "Supprimer",
-          msg: "Demande traitée. Suppression impossible",
-          typMsg: "warning",
-          typReply: "OkOnly",
-          async handleCancel() {
-            return;
-          },
-        })) === "Cancel"
-      )
-        return;
+      await msgBox({
+        titre: "Supprimer",
+        msg: "Demande traitée. Suppression impossible",
+        typMsg: "warning",
+        typReply: "OkOnly",
+      });
+      return;
     }
-    const rslSave = await myAxios("delete_Demande_Avance", {
-      num_avance: entete.Num_Avance,
+    const rslSave = await myAxios("delete_demande_avance", {
+      Num_Avance: entete.Num_Avance,
     });
     if (rslSave.data.result) {
       setCurrentNum("");
@@ -343,9 +345,9 @@ const Demande_Avance = () => {
         visible: !isAccessible?.canModify ? "visible" : "none",
       },
       {
-        name: "Enregisrer",
+        name: "Enregistrer",
         disabled: !_canSave,
-        libelle: "Enregisrer",
+        libelle: "Enregistrer",
         action: Enregistrer,
         icon: <SaveAsOutlined />,
       },
@@ -418,11 +420,14 @@ const Demande_Avance = () => {
         showBorders={!isSmall}
         showTitre={true}
         sx={{
+          width: "100%",
+          marginInline: "auto",
           "& .grpDiv": {
             padding: "2em 5px 5px 5px",
             width: "100%",
             maxWidth: "1000px",
             minHeight: "10em",
+            marginInline: "auto",
           },
         }}
       >

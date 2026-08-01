@@ -1,9 +1,9 @@
-import { Box, IconButton, Stack, Typography } from "@mui/material";
-import { Refresh, WavingHand } from "@mui/icons-material";
+import { Box, IconButton, Stack, Tooltip, Typography } from "@mui/material";
+import { Refresh, Settings, WavingHand } from "@mui/icons-material";
 import { colorBase } from "../../../modules/module_general";
 import type { WelcomeSectionProps } from "./SectionTypes";
 
-const WelcomeSection = ({ firstName, onRefresh }: WelcomeSectionProps) => {
+const WelcomeSection = ({ firstName, onRefresh, onOpenConfig }: WelcomeSectionProps) => {
   return (
     <Box
       sx={{
@@ -12,7 +12,6 @@ const WelcomeSection = ({ firstName, onRefresh }: WelcomeSectionProps) => {
         alignItems: { xs: "center", md: "flex-start" },
         justifyContent: "space-between",
         gap: 2,
-        mt: 2,
       }}
     >
       <Box sx={{ flex: 1, textAlign: { xs: "center", md: "left" } }}>
@@ -34,9 +33,16 @@ const WelcomeSection = ({ firstName, onRefresh }: WelcomeSectionProps) => {
         </Typography>
       </Box>
       <Stack direction="row" spacing={2} alignItems="center" sx={{ alignSelf: { xs: "flex-start", md: "center" } }}>
-        <IconButton onClick={onRefresh} color="primary" sx={{ bgcolor: "background.paper", boxShadow: "0 1px 3px rgba(0,0,0,0.08)" }}>
-          <Refresh fontSize="small" />
-        </IconButton>
+        <Tooltip title="Rafraîchir">
+          <IconButton onClick={onRefresh} color="primary" sx={{ bgcolor: "background.paper", boxShadow: "0 1px 3px rgba(0,0,0,0.08)" }}>
+            <Refresh fontSize="small" />
+          </IconButton>
+        </Tooltip>
+        <Tooltip title="Personnaliser">
+          <IconButton onClick={onOpenConfig} color="primary" sx={{ bgcolor: "background.paper", boxShadow: "0 1px 3px rgba(0,0,0,0.08)" }}>
+            <Settings fontSize="small" />
+          </IconButton>
+        </Tooltip>
       </Stack>
     </Box>
   );

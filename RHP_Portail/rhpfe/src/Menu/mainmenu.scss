@@ -38,18 +38,21 @@ $sidebar-breakpoint01: 1000px;
       justify-content: flex-start;
       align-items: stretch;
       position: relative;
-      width: 100%;
-      max-width: 1800px;
-      margin: 0 auto;
-      padding: 1em;
+      width: 96vw;
+      max-width: 1200px;
+      margin: 1em auto;
+      padding: 20px;
       min-width: 0;
       box-sizing: border-box;
       overflow-x: hidden;
+      background-color: variables.$bgInput;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px var(--shadow-color);
       @media (max-width: 1000px) {
         padding: 1em 0.5em;
       }
       @media (min-width: 1001px) {
-        width: calc(100% - $sidebar-collapsed-width);
+        width: 80vw;
       }
     }
     .Separateur {

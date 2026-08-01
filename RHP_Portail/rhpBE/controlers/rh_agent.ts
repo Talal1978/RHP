@@ -46,9 +46,20 @@ export const rh_agent = async (req: Request, res: Response) => {
     ]
   );
   const rsPaie = await lireSql(
-    `select Lib_Rubrique as Rubrique,Valeur as Montant from RH_Agent_Element_Paie a 
-    outer apply (select Lib_Rubrique,Typ_Retour from RH_Paie_Rubrique where Cod_Rubrique=a.Cod_Rubrique 
+    `select Lib_Rubrique as Rubrique,Valeur as Montant from RH_Agent_Element_Paie a
+    outer apply (select Lib_Rubrique,Typ_Retour from RH_Paie_Rubrique where Cod_Rubrique=a.Cod_Rubrique
     and  isnull(Nullif(id_Societe,-1),@idSoc)=@idSoc) o  where Matricule=@Matricule and id_Societe=@idSoc`,
+    [
+      { param: "Matricule", sqlType: NVarChar, valeur: Matricule },
+      { param: "idSoc", sqlType: Int, valeur: idSoc },
+    ]
+  );
+  //Outillages / matériels détenus par l'agent
+  const rsOutillage = await lireSql(
+    `select Cod_Outillage as Code, Lib_Outillage as Désignation, dbo.FindRubrique('Typ_Outillage',Typ_Outillage) as Type,
+Num_Serie as 'N° Série', Qte_Detenus as 'Quantité détenue'
+from RH_Outillage_Agent where Matricule=@Matricule and id_Societe=@idSoc
+and Qte_Detenus > 0 order by Cod_Outillage`,
     [
       { param: "Matricule", sqlType: NVarChar, valeur: Matricule },
       { param: "idSoc", sqlType: Int, valeur: idSoc },
@@ -63,6 +74,7 @@ export const rh_agent = async (req: Request, res: Response) => {
       experiences: rsExperiences.result ? rsExperiences.data : [],
       famille: rsFamille.result ? rsFamille.data : [],
       paie: rsPaie.result ? rsPaie.data : [],
+      outillage: rsOutillage.result ? rsOutillage.data : [],
     },
   });
 };

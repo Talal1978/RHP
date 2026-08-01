@@ -35,7 +35,7 @@ const MenuSideBarContent = () => {
     navigate(`/myspace/${nameEcran}/${textEcran}`);
   };
   const mnus = controleMenus
-    .filter((mnu) => mnu.parent === "")
+    .filter((mnu) => mnu.parent === "" && mnu.name_ecran !== "Dashboard")
     .sort((a, b) => a.rang - b.rang);
   return (
     <List>

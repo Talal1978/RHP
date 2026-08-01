@@ -12,6 +12,7 @@ import useMsgBox from "../../hooks/useMsgBox";
 import TextBox from "../../components/TextBox/TextBox";
 import {
   Avatar,
+  Dialog,
   Divider,
   FormControlLabel,
   Switch,
@@ -45,7 +46,9 @@ const RH_Agent = ({ readonly = false }: { readonly?: boolean }) => {
   const [experiences, setExperiences] = useState<ObjetGenerique[]>([]);
   const [famille, setFamille] = useState<ObjetGenerique[]>([]);
   const [paie, setPaie] = useState<ObjetGenerique[]>([]);
+  const [outillage, setOutillage] = useState<ObjetGenerique[]>([]);
   const [selectedTab, setSelectedTab] = useState<number>(0);
+  const [photoZoomOpen, setPhotoZoomOpen] = useState<boolean>(false);
 
   const stateChange = useCallback((champs: string, valeur: any) => {
     console.log("[RH_Agent] stateChange called:", champs, valeur);
@@ -65,7 +68,9 @@ const RH_Agent = ({ readonly = false }: { readonly?: boolean }) => {
     });
   }, [msgbox]);
 
+  const lastLoadedMatricule = useRef<string | null>(null);
   const Nouveau = useCallback(() => {
+    lastLoadedMatricule.current = null;
     setSelectedTab(0);
     setRhAgent({});
     setRhCompetence([]);
@@ -73,14 +78,15 @@ const RH_Agent = ({ readonly = false }: { readonly?: boolean }) => {
     setExperiences([]);
     setFamille([]);
     setPaie([]);
+    setOutillage([]);
   }, []);
 
   const tbnMenu = useMemo<TMenuBtn[]>(
     () => [
-      { name: "Enregisrer", disabled: true, libelle: "Enregisrer", action: Enregistrer, icon: <WidgetsIcon /> },
+      { name: "Enregistrer", disabled: true, libelle: "Enregistrer", action: Enregistrer, icon: <WidgetsIcon /> },
       { name: "Nouveau", disabled: false, libelle: "Nouveau", action: Nouveau, icon: <WidgetsIcon /> },
       { name: "Supprimer", disabled: true, libelle: "Supprimer", action: () => {}, icon: <WidgetsIcon /> },
-      { name: "Autres", disabled: false, libelle: "Autres", action: () => {}, icon: <WidgetsIcon /> },
+      { name: "Autres", disabled: true, libelle: "Autres", action: () => {}, icon: <WidgetsIcon /> },
     ],
     [Enregistrer, Nouveau]
   );
@@ -89,7 +95,6 @@ const RH_Agent = ({ readonly = false }: { readonly?: boolean }) => {
     settbnMenu(tbnMenu);
   }, [settbnMenu, tbnMenu]);
 
-  const lastLoadedMatricule = useRef<string | null>(null);
   useEffect(() => {
     const matricule = rhAgent?.Matricule || Agent.Matricule;
     if (!matricule || lastLoadedMatricule.current === matricule) return;
@@ -103,6 +108,7 @@ const RH_Agent = ({ readonly = false }: { readonly?: boolean }) => {
           setExperiences(dt.data.data.experiences || []);
           setFamille(dt.data.data.famille || []);
           setPaie(dt.data.data.paie || []);
+          setOutillage(dt.data.data.outillage || []);
         } else {
           setRhAgent({});
           setRhCompetence([]);
@@ -110,6 +116,7 @@ const RH_Agent = ({ readonly = false }: { readonly?: boolean }) => {
           setExperiences([]);
           setFamille([]);
           setPaie([]);
+          setOutillage([]);
         }
       })
       .catch(() => {
@@ -119,10 +126,20 @@ const RH_Agent = ({ readonly = false }: { readonly?: boolean }) => {
         setExperiences([]);
         setFamille([]);
         setPaie([]);
+        setOutillage([]);
       });
   }, [rhAgent?.Matricule, myAxios]);
+  const photoSrc = useMemo(() => getPhotoSrc(rhAgent?.Photo), [rhAgent?.Photo]);
   return (
-    <div className="rh_Agent" style={{ width: "100%" }}>
+    <div
+      className="rh_Agent"
+      style={{
+        width: "100%",
+        maxWidth: "1200px",
+        marginInline: "auto",
+        boxSizing: "border-box",
+      }}
+    >
       {!isSmall && (
         <Box
           sx={{
@@ -197,21 +214,25 @@ const RH_Agent = ({ readonly = false }: { readonly?: boolean }) => {
             </Grid>
           </Box>
           <Box sx={{ display: { xs: "none", md: "block" }, order: { md: 2 } }} className="agent-photo-container">
-            {(() => {
-              const photoSrc = getPhotoSrc(rhAgent?.Photo);
-              return photoSrc ? (
-                <Avatar src={photoSrc} alt="agent" />
-              ) : null;
-            })()}
+            {photoSrc && (
+              <Avatar
+                src={photoSrc}
+                alt="agent"
+                onClick={() => setPhotoZoomOpen(true)}
+                sx={{ cursor: "pointer" }}
+              />
+            )}
           </Box>
         </Box>
-        <Box sx={{ display: { md: "none" }, textAlign: "center", my: 2 }} className="agent-photo-container">
-          {(() => {
-            const photoSrc = getPhotoSrc(rhAgent?.Photo);
-            return photoSrc ? (
-              <Avatar src={photoSrc} alt="agent" />
-            ) : null;
-          })()}
+        <Box sx={{ display: { xs: "flex", md: "none" }, justifyContent: "center", my: 2 }} className="agent-photo-container">
+          {photoSrc && (
+            <Avatar
+              src={photoSrc}
+              alt="agent"
+              onClick={() => setPhotoZoomOpen(true)}
+              sx={{ cursor: "pointer" }}
+            />
+          )}
         </Box>
 
         <Divider
@@ -459,12 +480,13 @@ const RH_Agent = ({ readonly = false }: { readonly?: boolean }) => {
             sx={{
               margin: "auto",
               width: {
-                xs: "96vw",
-                sm: "96vw",
+                xs: "100%",
+                sm: "100%",
                 md: "60vw",
                 lg: "50vw",
                 xl: "50vw",
               },
+              maxWidth: "100%",
               overflow: "scroll",
             }}
           >
@@ -487,12 +509,13 @@ const RH_Agent = ({ readonly = false }: { readonly?: boolean }) => {
             sx={{
               margin: "auto",
               width: {
-                xs: "96vw",
-                sm: "96vw",
+                xs: "100%",
+                sm: "100%",
                 md: "60vw",
                 lg: "50vw",
                 xl: "50vw",
               },
+              maxWidth: "100%",
               overflow: "scroll",
             }}
           >
@@ -511,12 +534,13 @@ const RH_Agent = ({ readonly = false }: { readonly?: boolean }) => {
             sx={{
               margin: "auto",
               width: {
-                xs: "96vw",
-                sm: "96vw",
+                xs: "100%",
+                sm: "100%",
                 md: "60vw",
                 lg: "50vw",
                 xl: "50vw",
               },
+              maxWidth: "100%",
               overflow: "scroll",
             }}
           >
@@ -658,7 +682,7 @@ const RH_Agent = ({ readonly = false }: { readonly?: boolean }) => {
       <GroupBox
         showTitre={isSmall}
         display={selectedTab === 3 || isSmall ? undefined : "none"}
-        label={tabPages[1]}
+        label={tabPages[3]}
       >
         <>
           <Divider
@@ -674,12 +698,13 @@ const RH_Agent = ({ readonly = false }: { readonly?: boolean }) => {
             sx={{
               margin: "auto",
               width: {
-                xs: "96vw",
-                sm: "96vw",
+                xs: "100%",
+                sm: "100%",
                 md: "60vw",
                 lg: "50vw",
                 xl: "50vw",
               },
+              maxWidth: "100%",
               overflow: "scroll",
             }}
           >
@@ -702,6 +727,51 @@ const RH_Agent = ({ readonly = false }: { readonly?: boolean }) => {
           </Box>
         </>
       </GroupBox>
+      <GroupBox
+        showTitre={isSmall}
+        display={selectedTab === 4 || isSmall ? undefined : "none"}
+        label={tabPages[4]}
+      >
+        <Box
+          sx={{
+            margin: "auto",
+            width: {
+              xs: "100%",
+              sm: "100%",
+              md: "60vw",
+              lg: "50vw",
+              xl: "50vw",
+            },
+            maxWidth: "100%",
+            overflow: "scroll",
+          }}
+        >
+          <Grille readonly={true} dataSource={outillage} />
+        </Box>
+      </GroupBox>
+      {/* Modale : photo zoomée */}
+      <Dialog
+        open={photoZoomOpen}
+        onClose={() => setPhotoZoomOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        {photoSrc && (
+          <Box
+            component="img"
+            src={photoSrc}
+            alt="agent"
+            onClick={() => setPhotoZoomOpen(false)}
+            sx={{
+              display: "block",
+              width: "100%",
+              maxHeight: "80vh",
+              objectFit: "contain",
+              cursor: "zoom-out",
+            }}
+          />
+        )}
+      </Dialog>
     </div>
   );
 };
@@ -824,4 +894,10 @@ const initialState: IRH_Agent = {
   Domaines_Competence: "",
   Ref_Candidature: "",
 };
-const tabPages = ["Fiche agent", "Profil", "Contrat", "Rémunération"];
+const tabPages = [
+  "Fiche agent",
+  "Profil",
+  "Contrat",
+  "Rémunération",
+  "Outillage / Matériel",
+];

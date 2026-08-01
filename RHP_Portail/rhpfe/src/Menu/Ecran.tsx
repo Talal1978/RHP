@@ -205,7 +205,6 @@ const Ecran = ({ style }: { style?: React.CSSProperties }) => {
 
   return (
     <div className="ecran" style={style}>
-      <br />
       {currentEcran}
       <div className="Separateur" />
       {tbnMenu.length > 0 && <FloatMenu btnMenus={tbnMenu} />}

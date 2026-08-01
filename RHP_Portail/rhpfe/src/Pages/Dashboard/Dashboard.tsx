@@ -1,18 +1,18 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Box, Button, Grid, Paper, Typography } from "@mui/material";
+import { Box, Grid, Paper, Stack, Typography } from "@mui/material";
 import {
   NotificationsOutlined,
   WbSunnyOutlined,
   RateReviewOutlined,
   SchoolOutlined,
+  WidgetsOutlined,
   WorkOutline,
   CreateOutlined,
-  Settings,
 } from "@mui/icons-material";
 import { useDashboardWidgets } from "./widgets/useDashboardWidgets";
 import { WidgetBuilder } from "./widgets/WidgetBuilder";
 import { WidgetRenderer } from "./widgets/WidgetRenderer";
-import { Agent } from "../../modules/module_general";
+import { Agent, colorBase } from "../../modules/module_general";
 import { useNavigate } from "react-router-dom";
 import useAxiosPost from "../../hooks/useAxiosPost";
 import {
@@ -227,6 +227,7 @@ const Dashboard = () => {
       welcome: {
         firstName: Agent.Nom?.split(" ")[0] || "",
         onRefresh: handleRefresh,
+        onOpenConfig: () => setConfigOpen(true),
       },
       profile: {
         fullName: Agent.Nom,
@@ -269,30 +270,19 @@ const Dashboard = () => {
         width: "100%",
         maxWidth: 1500,
         mx: "auto",
-        pt: { xs: 3, sm: 4, md: 5 },
+        pt: { xs: 1, md: 1.5 },
         pb: { xs: 5, sm: 6 },
         px: { xs: 1, sm: 3, md: 4 },
-        backgroundColor: "#f6f7f9",
-        minHeight: "100vh",
+        backgroundColor: "transparent",
       }}
     >
-      <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
-        <Button
-          variant="outlined"
-          size="small"
-          startIcon={<Settings />}
-          onClick={() => setConfigOpen(true)}
-        >
-          Personnaliser
-        </Button>
-      </Box>
       <Grid container spacing={{ xs: 1, sm: 3, md: 0 }} rowSpacing={{ md: 4 }} justifyContent="center" alignItems="stretch">
         {visibleSections.map((section) => {
           const definition = DASHBOARD_SECTION_DEFINITION_MAP[section.id];
           const SectionComponent = dashboardSectionRegistry[section.id];
 
           return (
-            <Grid key={section.id} xs={12} md={definition.desktopSpan} sx={{ mb: { xs: 1, sm: 0 }, px: { md: 0.5 } }}>
+            <Grid item key={section.id} xs={12} md={definition.desktopSpan} sx={{ mb: { xs: 1, sm: 0 }, px: { md: 0.5 } }}>
               <React.Suspense
                 fallback={
                   <Paper sx={{ p: 3, borderRadius: 2, border: "1px solid", borderColor: "divider", boxShadow: "none", bgcolor: "background.paper" }}>
@@ -309,12 +299,20 @@ const Dashboard = () => {
 
       {isLoaded && userWidgets.length > 0 && (
         <>
-          <Typography variant="h6" fontWeight="bold" sx={{ mt: 4, mb: 2, color: "text.primary" }}>
-            Mes widgets
-          </Typography>
+          <Stack
+            direction="row"
+            alignItems="center"
+            spacing={1}
+            sx={{ mt: 4, mb: 2, justifyContent: { xs: "center", sm: "flex-start" } }}
+          >
+            <WidgetsOutlined sx={{ fontSize: 22, color: colorBase.colorBase01 }} />
+            <Typography variant="h6" fontWeight="bold" sx={{ color: colorBase.colorBase01 }}>
+              Mes widgets
+            </Typography>
+          </Stack>
           <Grid container spacing={{ xs: 1, sm: 3, md: 0 }} rowSpacing={{ md: 4 }} justifyContent="center" alignItems="stretch">
             {userWidgets.map((uw) => (
-              <Grid key={uw.instanceId} xs={12} md={uw.span} sx={{ mb: { xs: 1, sm: 0 }, px: { md: 0.5 } }}>
+              <Grid item key={uw.instanceId} xs={12} md={uw.span} sx={{ mb: { xs: 1, sm: 0 }, px: { md: 0.5 } }}>
                 <WidgetRenderer
                   definition={{
                     id: uw.widgetId,

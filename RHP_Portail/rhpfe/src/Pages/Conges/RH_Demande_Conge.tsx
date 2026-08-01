@@ -99,6 +99,7 @@ const RH_Demande_Conge = () => {
         });
     } else {
       setEntete(iniEntete);
+      enteteRef.current = iniEntete;
       setLigne([]);
     }
     if (canSave) {
@@ -107,7 +108,7 @@ const RH_Demande_Conge = () => {
           nameEcran: "RH_Demande_Conge",
           idEcran: currentNum,
         }).then((dt) => {
-          setAccessible(dt.data);
+          if (dt?.data && typeof dt.data === "object") setAccessible(dt.data);
         });
       } else {
         await myAxios("release_accessible", {
@@ -210,10 +211,9 @@ const RH_Demande_Conge = () => {
         }
       })
       .catch((err) => {
-        setEntete(iniEntete);
-        enteteRef.current = iniEntete;
+        setDroitsConge(iniConge);
       });
-  }, [calculerConge]);
+  }, [calculerConge, entete?.Matricule, entete?.Dat_Deb_Conge]);
   const calcul_conge = useCallback(() => {
     if (!entete.Statut)
       myAxios("calcul_conge", { entete }).then((dt) => {
@@ -340,7 +340,7 @@ const RH_Demande_Conge = () => {
         }
         alert({
           titre: "Enregistrer",
-          msg: "Enegistré avce succès",
+          msg: "Enregistré avec succès",
           typMsg: "success",
           timeOut: -1,
         });
@@ -378,12 +378,14 @@ const RH_Demande_Conge = () => {
       )
         return;
     }
-    await myAxios("release_accessible", {
-      nameEcran: "RH_Demande_Conge",
-      idEcran: currentNum,
-    });
+    if (currentNum !== "" && currentNum !== "new") {
+      await myAxios("release_accessible", {
+        nameEcran: "RH_Demande_Conge",
+        idEcran: currentNum,
+      });
+    }
     navigate(`/myspace/RH_Demande_Conge/Demande de congé/new`);
-  }, [entete]);
+  }, [entete, currentNum]);
   const SoumettreEnSignature = useCallback(async () => {
     if (!currentNum) return;
     if (entete.Statut === "" || entete.Statut === "NSS") {
@@ -446,18 +448,13 @@ const RH_Demande_Conge = () => {
       return;
     }
     if (["SG", "RJ", "SP", "VA"].includes(entete?.Statut || "")) {
-      if (
-        (await msgBox({
-          titre: "Supprimer",
-          msg: "Demande traitée. Suppression impossible",
-          typMsg: "warning",
-          typReply: "OkOnly",
-          async handleCancel() {
-            return;
-          },
-        })) === "Cancel"
-      )
-        return;
+      await msgBox({
+        titre: "Supprimer",
+        msg: "Demande traitée. Suppression impossible",
+        typMsg: "warning",
+        typReply: "OkOnly",
+      });
+      return;
     }
     const rslSave = await myAxios("delete_demande_conge", {
       Num_Conge: entete.Num_Conge,
@@ -496,9 +493,9 @@ const RH_Demande_Conge = () => {
         visible: !isAccessible?.canModify ? "visible" : "none",
       },
       {
-        name: "Enregisrer",
+        name: "Enregistrer",
         disabled: !_canSave,
-        libelle: "Enregisrer",
+        libelle: "Enregistrer",
         action: Enregistrer,
         icon: <SaveAsOutlined />,
       },
@@ -572,11 +569,14 @@ const RH_Demande_Conge = () => {
         showBorders={!isSmall}
         showTitre={true}
         sx={{
+          width: "100%",
+          marginInline: "auto",
           "& .grpDiv": {
             padding: "2em 5px 5px 5px",
             width: "100%",
             maxWidth: "1200px",
             minHeight: "10em",
+            marginInline: "auto",
           },
         }}
       >
@@ -749,11 +749,7 @@ const RH_Demande_Conge = () => {
         sx={{
           margin: "auto",
           padding: "5px",
-          width: {
-            xs: "96vw",
-            sm: "96vw",
-            md: "80vw",
-          },
+          width: "100%",
           overflow: "scroll",
         }}
       >

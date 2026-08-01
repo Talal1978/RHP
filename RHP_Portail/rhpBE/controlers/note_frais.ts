@@ -136,6 +136,8 @@ export async function save_note_frais(req: Request, res: Response) {
     } else {
       return res.send({ result: false, message: "Error saving details", error: detailError });
     }
+  } else {
+    return res.send(rsEnt);
   }
 }
 export async function delete_note_frais(req: Request, res: Response) {

@@ -13,6 +13,7 @@ export const getEvaluationListe = async (req: Request, res: Response) => {
         Cod_Grade,
         Cod_Evaluation,
         Statut_Evaluation,
+        Statut_Effectue,
         Rd1,
         Rd2,
     } = req.body;
@@ -71,11 +72,11 @@ export const getEvaluationListe = async (req: Request, res: Response) => {
         params.push({ param: "p_Statut_Evaluation", sqlType: NVarChar, valeur: Statut_Evaluation });
     }
 
-    if (Rd1 === true || Rd1 === 'true') {
-        swhere += ` and nb = 0 `;
+    if (Statut_Effectue === "NonEffectuee" || Rd1 === true || Rd1 === 'true') {
+        swhere += ` and isnull(v.Cod_Reply,'') = '' `;
     }
-    if (Rd2 === true || Rd2 === 'true') {
-        swhere += ` and nb > 0 `;
+    if (Statut_Effectue === "Effectuee" || Rd2 === true || Rd2 === 'true') {
+        swhere += ` and isnull(v.Cod_Reply,'') <> '' `;
     }
 
     let sqlStr = `

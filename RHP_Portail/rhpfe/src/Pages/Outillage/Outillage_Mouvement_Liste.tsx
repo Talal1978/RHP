@@ -182,11 +182,7 @@ const Outillage_Mouvement_Liste = () => {
                 sx={{
                     margin: "auto",
                     padding: "2em 5px",
-                    width: {
-                        xs: "96vw",
-                        sm: "96vw",
-                        md: "80vw",
-                    },
+                    width: "100%",
                     overflow: "scroll",
                 }}
             >

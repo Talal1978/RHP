@@ -218,6 +218,8 @@ export async function save_demande_conge(req: Request, res: Response) {
     if (entete.Statut === "SS")
       await sousmettre_signature("C", Num_Conge, String(idSocNum), Matricule);
     return res.send(rsEnt);
+  } else {
+    return res.send(rsEnt);
   }
 }
 

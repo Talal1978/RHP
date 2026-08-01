@@ -118,8 +118,8 @@ export async function save_demande_pret(req: Request, res: Response) {
   if (rsEnt.result) {
     if (entete.Statut === "SS")
       await sousmettre_signature("DP", Num_Demande_Pret, String(idSocNum), Matricule);
-    return res.send(rsEnt);
   }
+  return res.send(rsEnt);
 }
 
 export async function delete_demande_pret(req: Request, res: Response) {

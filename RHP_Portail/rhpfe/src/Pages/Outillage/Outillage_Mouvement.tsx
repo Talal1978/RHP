@@ -195,7 +195,7 @@ const Outillage_Mouvement = () => {
         if (champs === "Num_Mouvement" && currentNum !== valeur) {
             setCurrentNum(valeur);
         }
-        if (champs === "Matricule" && !currentNum) {
+        if (champs === "Matricule" && (!currentNum || currentNum === "new")) {
             setAgentInfo({});
             if (valeur) {
                 myAxios("rh_agent", { Matricule: valeur }).then((dt) => {
@@ -274,6 +274,8 @@ const Outillage_Mouvement = () => {
         } else {
             setEntete(iniEntete);
             setDetail([]);
+            enteteRef.current = iniEntete;
+            detailRef.current = [];
         }
     }, [currentNum]);
 
@@ -281,14 +283,14 @@ const Outillage_Mouvement = () => {
         if (canSave) {
             if (currentNum !== "" && currentNum !== "new") {
                 await myAxios("check_accessible", {
-                    nameEcran: "Outillage_Mouvement",
+                    nameEcran: "RH_Outillage_Mouvement",
                     idEcran: currentNum,
                 }).then((dt) => {
-                    setAccessible(dt.data);
+                    if (dt?.data && typeof dt.data === "object") setAccessible(dt.data);
                 });
             } else {
                 await myAxios("release_accessible", {
-                    nameEcran: "Outillage_Mouvement",
+                    nameEcran: "RH_Outillage_Mouvement",
                     idEcran: currentNum,
                 });
             }
@@ -301,7 +303,7 @@ const Outillage_Mouvement = () => {
         return () => {
             if (currentNum !== "" && currentNum !== "new") {
                 myAxios("release_accessible", {
-                    nameEcran: "Outillage_Mouvement",
+                    nameEcran: "RH_Outillage_Mouvement",
                     idEcran: currentNum,
                 });
             }
@@ -536,7 +538,7 @@ const Outillage_Mouvement = () => {
         }
         if (currentNum !== "" && currentNum !== "new") {
             await myAxios("release_accessible", {
-                nameEcran: "Outillage_Mouvement",
+                nameEcran: "RH_Outillage_Mouvement",
                 idEcran: currentNum,
             });
         }
@@ -682,7 +684,7 @@ const Outillage_Mouvement = () => {
                 libelle: "Pièces jointes",
                 action: () => {
                     if (currentNum) {
-                        setGEDprops({ name_ecran: "Outillage_Mouvement", valeur_index: currentNum });
+                        setGEDprops({ name_ecran: "RH_Outillage_Mouvement", valeur_index: currentNum });
                         setShowGED(true);
                     }
                 },
@@ -705,10 +707,13 @@ const Outillage_Mouvement = () => {
                 showBorders={!isSmall}
                 showTitre={true}
                 sx={{
+                    width: "100%",
+                    marginInline: "auto",
                     "& .grpDiv": {
                         padding: "2em 5px 5px 5px",
                         width: "100%",
                         minHeight: "10em",
+                        marginInline: "auto",
                     },
                 }}
             >
@@ -717,7 +722,7 @@ const Outillage_Mouvement = () => {
                         <Grid xs={12} sm={12} lg={4} xl={3}>
                             <TextZoom
                                 readonly={true}
-                                numZoom="MS214"
+                                numZoom="MS213"
                                 nomControle="Num_Mouvement"
                                 label="N° Mouvement"
                                 valeur={entete?.Num_Mouvement}
@@ -848,11 +853,7 @@ const Outillage_Mouvement = () => {
                 sx={{
                     margin: "auto",
                     padding: "5px",
-                    width: {
-                        xs: "96vw",
-                        sm: "96vw",
-                        md: "80vw",
-                    },
+                    width: "100%",
                     overflow: "scroll",
                 }}
             >

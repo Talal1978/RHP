@@ -96,7 +96,7 @@ const RH_Dossier_Maladie = () => {
           nameEcran: "RH_Dossier_Maladie",
           idEcran: currentNum,
         }).then((dt) => {
-          setAccessible(dt.data);
+          if (dt?.data && typeof dt.data === "object") setAccessible(dt.data);
         });
       } else {
         await myAxios("release_accessible", {
@@ -196,8 +196,15 @@ const RH_Dossier_Maladie = () => {
         }
         alert({
           titre: "Enregistrer",
-          msg: "Enegistré avce succès",
+          msg: "Enregistré avec succès",
           typMsg: "success",
+          timeOut: -1,
+        });
+      } else {
+        alert({
+          titre: "Enregistrer",
+          msg: "Erreur : " + (rslSave.data?.data ?? "Enregistrement impossible"),
+          typMsg: "error",
           timeOut: -1,
         });
       }
@@ -227,12 +234,14 @@ const RH_Dossier_Maladie = () => {
       )
         return;
     }
-    await myAxios("release_accessible", {
-      nameEcran: "RH_Dossier_Maladie",
-      idEcran: currentNum,
-    });
+    if (currentNum !== "" && currentNum !== "new") {
+      await myAxios("release_accessible", {
+        nameEcran: "RH_Dossier_Maladie",
+        idEcran: currentNum,
+      });
+    }
     navigate(`/myspace/RH_Dossier_Maladie/Dossier de maladie/new`);
-  }, [entete]);
+  }, [entete, currentNum]);
   const SoumettreEnSignature = useCallback(async () => {
     if (!currentNum) return;
     if (entete.Statut === "" || entete.Statut === "NSS") {
@@ -295,18 +304,13 @@ const RH_Dossier_Maladie = () => {
       return;
     }
     if (["SG", "RJ", "SP", "VA"].includes(entete?.Statut || "")) {
-      if (
-        (await msgBox({
-          titre: "Supprimer",
-          msg: "Demande traitée. Suppression impossible",
-          typMsg: "warning",
-          typReply: "OkOnly",
-          async handleCancel() {
-            return;
-          },
-        })) === "Cancel"
-      )
-        return;
+      await msgBox({
+        titre: "Supprimer",
+        msg: "Demande traitée. Suppression impossible",
+        typMsg: "warning",
+        typReply: "OkOnly",
+      });
+      return;
     }
     const rslSave = await myAxios("delete_dossier_maladie", {
       Num_Dossier: entete.Num_Dossier,
@@ -345,9 +349,9 @@ const RH_Dossier_Maladie = () => {
         visible: !isAccessible?.canModify ? "visible" : "none",
       },
       {
-        name: "Enregisrer",
+        name: "Enregistrer",
         disabled: !_canSave,
-        libelle: "Enregisrer",
+        libelle: "Enregistrer",
         action: Enregistrer,
         icon: <SaveAsOutlined />,
       },
@@ -420,11 +424,14 @@ const RH_Dossier_Maladie = () => {
         showBorders={!isSmall}
         showTitre={true}
         sx={{
+          width: "100%",
+          marginInline: "auto",
           "& .grpDiv": {
             padding: "2em 5px 5px 5px",
             width: "100%",
             maxWidth: "1000px",
             minHeight: "10em",
+            marginInline: "auto",
           },
         }}
       >
@@ -459,7 +466,7 @@ const RH_Dossier_Maladie = () => {
             <Grid xs={12} sm={12} lg={6} xl={6}>
               <FormControl>
                 <FormLabel id="demo-row-radio-buttons-group-label">
-                  Gender
+                  Le malade
                 </FormLabel>
                 <RadioGroup
                   row
@@ -501,7 +508,7 @@ const RH_Dossier_Maladie = () => {
                 </RadioGroup>
               </FormControl>
             </Grid>
-            {entete?.Lien !== "" && (
+            {(entete?.Lien ?? "") !== "" && (
               <Grid xs={12} sm={12} lg={6} xl={6}>
                 <ComboBox
                   label="Le malade"
@@ -596,8 +603,8 @@ const RH_Dossier_Maladie = () => {
                 >
                   {` ${Arrondi(
                     (entete?.Mnt_Engage ?? 0) > 0
-                      ? (entete?.Mnt_Remboursement ?? 0) /
-                      (entete!.Mnt_Engage ?? 1)
+                      ? ((entete?.Mnt_Remboursement ?? 0) /
+                          (entete!.Mnt_Engage ?? 1)) * 100
                       : 0,
                     2
                   )}%`}

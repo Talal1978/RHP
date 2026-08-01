@@ -1,16 +1,35 @@
 /* Organigramme Tree SCSS */
 .organigramme-container {
-    background-color: var(--bg-home);
-  min-height: 100vh;
-  width: 100%;
-position: relative;
+  /* Occupe toute la page : sous la navbar (3em), à droite du sidebar (4rem) */
+  position: fixed;
+  top: 3em;
+  left: 4rem;
+  right: 0;
+  bottom: 0;
+  z-index: 5;
+  background-color: var(--bg-home);
+  /* Un seul conteneur scrollable, horizontalement et verticalement */
+  overflow: auto;
+  box-sizing: border-box;
+
+  @media (max-width: 1000px) {
+    left: 0; /* sidebar masqué sur petit écran */
+  }
+}
+
+.organigramme-content {
+  /* Centré quand étroit, scrollable depuis le bord gauche quand large */
+  width: max-content;
+  min-width: 100%;
+  margin: 0 auto;
+  padding: 20px;
+  text-align: center;
+  box-sizing: border-box;
 }
 
 .tree {
-position: absolute;
-white-space: nowrap;
+  white-space: nowrap;
   display: inline-block;
-  overflow: auto;
   padding: 20px;
   ul {
     padding-top: 20px;
@@ -184,10 +203,11 @@ white-space: nowrap;
   opacity: 0;
   overflow: hidden;
   transition: all 0.5s ease-in-out;
-  
+
   &.expanded {
-    max-height: 3000px;
-    max-width: 3000px;
+    /* Pas de borne : un max-width/max-height fixe clipperait les grands arbres */
+    max-height: none;
+    max-width: none;
     opacity: 1;
   }
 }

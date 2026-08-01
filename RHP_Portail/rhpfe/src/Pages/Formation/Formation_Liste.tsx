@@ -61,7 +61,7 @@ const Formation_Liste = () => {
                     <Grid container spacing={5}>
                         <Grid xs={12} sm={12} lg={4} xl={3}>
                             <TextZoom
-                                numZoom="MS152"
+                                numZoom="MS155"
                                 nomControle="Matricule"
                                 label="Formateur (Interne)"
                                 valeur={criteres?.Matricule}
@@ -173,11 +173,7 @@ const Formation_Liste = () => {
                 sx={{
                     margin: "auto",
                     padding: "2em 5px",
-                    width: {
-                        xs: "96vw",
-                        sm: "96vw",
-                        md: "80vw",
-                    },
+                    width: "100%",
                     overflow: "scroll",
                 }}
             >
@@ -188,7 +184,7 @@ const Formation_Liste = () => {
                     className="laGrille"
                     onclick={({ colIndex, value }) => {
                         if (colIndex === 0) {
-                            navigate(`/myspace/Formation_Evaluation/Formation/${value}`);
+                            navigate(`/myspace/Formation/Formation/${value}`);
                         }
                     }}
                     sx={{

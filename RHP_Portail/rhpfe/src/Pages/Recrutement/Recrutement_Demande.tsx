@@ -104,6 +104,7 @@ const Recrutement_Demande = () => {
     const myAxios = useAxiosPost();
     const { settbnMenu, isSmall } = useContext(cntX);
     const msgbox = useMsgBox();
+    const alert = useAlert();
     const { num } = useParams();
     const [entete, setEntete] = useState<IEntete>(defaultEntete);
     const [tabIndex, setTabIndex] = useState(0);
@@ -343,11 +344,14 @@ const Recrutement_Demande = () => {
             showBorders={!isSmall}
             showTitre={true}
             sx={{
+                width: "100%",
+                marginInline: "auto",
                 "& .grpDiv": {
                     padding: "2em 5px 5px 5px",
                     width: "100%",
                     maxWidth: "1200px",
                     minHeight: "10em",
+                    marginInline: "auto",
                 },
             }}
         >

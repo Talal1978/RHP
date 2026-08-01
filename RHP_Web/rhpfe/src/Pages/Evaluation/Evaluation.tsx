@@ -59,7 +59,7 @@ const Evaluation = () => {
         nameEcran: "Evaluation",
         idEcran: evaluationKey,
       }).then((dt) => {
-        setAccessible(dt.data);
+        if (dt?.data && typeof dt.data === "object") setAccessible(dt.data);
       });
 
       return () => {

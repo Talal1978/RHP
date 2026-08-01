@@ -117,8 +117,8 @@ export async function save_demande_avance(req: Request, res: Response) {
   if (rsEnt.result) {
     if (entete.Statut === "SS")
       await sousmettre_signature("AV", Num_Avance, String(idSocNum), Matricule);
-    return res.send(rsEnt);
   }
+  return res.send(rsEnt);
 }
 
 export async function delete_demande_avance(req: Request, res: Response) {

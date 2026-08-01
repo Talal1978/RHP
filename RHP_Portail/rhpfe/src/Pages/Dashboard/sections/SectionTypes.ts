@@ -36,6 +36,7 @@ export type DashboardNotificationColorGetter = (type: string) => {
 export interface WelcomeSectionProps {
   firstName: string;
   onRefresh: () => void;
+  onOpenConfig: () => void;
 }
 
 export interface ProfileSectionProps {

@@ -146,7 +146,7 @@ const Demande_Pret_Liste = () => {
               label="Interroger"
               startIcon={<CloudSyncOutlined />}
               onClick={() => {
-                myAxios("demande_Pret_liste", criteres)
+                myAxios("demande_pret_liste", criteres)
                   .then((dt) => {
                     if (dt.data && dt.data?.result) {
                       setDs(dt.data.data);
@@ -179,11 +179,7 @@ const Demande_Pret_Liste = () => {
         sx={{
           margin: "auto",
           padding: "2em 5px",
-          width: {
-            xs: "96vw",
-            sm: "96vw",
-            md: "80vw",
-          },
+          width: "100%",
           overflow: "scroll",
           //   " ::-webkit-scrollbar": {
           //     display: "none",

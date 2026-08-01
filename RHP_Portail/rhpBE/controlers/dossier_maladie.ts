@@ -98,8 +98,8 @@ export async function save_dossier_maladie(req: Request, res: Response) {
   if (rsEnt.result) {
     if (entete.Statut === "SS")
       await sousmettre_signature("DM", Num_Dossier, idSocStr, Matricule);
-    return res.send(rsEnt);
   }
+  return res.send(rsEnt);
 }
 export async function delete_dossier_maladie(req: Request, res: Response) {
   const { Num_Dossier } = req.body;

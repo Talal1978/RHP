@@ -61,7 +61,7 @@ const Formation_Evaluation = () => {
                 nameEcran: "Formation_Evaluation",
                 idEcran: evaluationKey,
             }).then((dt) => {
-                setAccessible(dt.data);
+                if (dt?.data && typeof dt.data === "object") setAccessible(dt.data);
             });
 
             return () => {
