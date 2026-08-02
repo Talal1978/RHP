@@ -87,6 +87,14 @@ Public Class ud_ComboBox
             innerComboBox.DroppedDown = value
         End Set
     End Property
+    Public Property DropDownStyle As ComboBoxStyle
+        Get
+            Return innerComboBox.DropDownStyle
+        End Get
+        Set(value As ComboBoxStyle)
+            innerComboBox.DropDownStyle = value
+        End Set
+    End Property
     Public Property Items As ComboBox.ObjectCollection
         Get
             Return innerComboBox.Items

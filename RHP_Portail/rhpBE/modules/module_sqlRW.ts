@@ -145,7 +145,10 @@ export const ecrireSql = async (args: {
     .join(", ");
   const insertCols = insertableKeys.join(", ");
   const insertVals = insertableKeys.map((k) => `src.${k}`).join(", ");
-  const whereClause = insertableKeys
+  // Le SELECT final doit filtrer sur les clés (joinFields) uniquement :
+  // comparer tous les champs échoue pour les dates smalldatetime (arrondies
+  // à la minute alors que le paramètre DateTime contient les secondes).
+  const whereClause = joinFields
     .map((k) => `${k} = @${paramPrefix}${k}`)
     .join(" and ");
 

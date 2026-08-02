@@ -24,6 +24,7 @@ const CATEGORIES = [
   { id: "all", label: "Tous" },
   { id: "standard", label: "Standards" },
   { id: "backend", label: "Données backend" },
+  { id: "query", label: "Requêtes" },
 ];
 
 export const WidgetLibrary = ({ availableWidgets, onAdd }: WidgetLibraryProps) => {

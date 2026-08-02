@@ -14,11 +14,12 @@ import {
 } from "@mui/material";
 import { Info } from "@mui/icons-material";
 import { colorBase } from "../../../modules/module_general";
-import type { UserDashboardWidget, WidgetType, ChartType, StandardWidgetId } from "./types";
+import type { UserDashboardWidget, WidgetType, ChartType, StandardWidgetId, WidgetSection } from "./types";
 import { STANDARD_WIDGET_OPTIONS, BACKEND_OBJECT_OPTIONS } from "./types";
 
 interface WidgetSettingsProps {
   widget: UserDashboardWidget;
+  sections: WidgetSection[];
   onChange: (updates: Partial<UserDashboardWidget>) => void;
 }
 
@@ -64,7 +65,7 @@ const AGGREGATION_OPTIONS = [
   { value: "value", label: "Valeur" },
 ];
 
-export const WidgetSettings = ({ widget, onChange }: WidgetSettingsProps) => {
+export const WidgetSettings = ({ widget, sections, onChange }: WidgetSettingsProps) => {
   return (
     <Box sx={{ p: 2 }}>
       {/* Visibility toggle */}
@@ -310,6 +311,30 @@ export const WidgetSettings = ({ widget, onChange }: WidgetSettingsProps) => {
         valueLabelDisplay="auto"
         sx={{ mb: 2 }}
       />
+
+      <Divider sx={{ my: 2 }} />
+
+      {/* Section */}
+      <Typography variant="subtitle2" fontWeight="bold" sx={{ mb: 1 }}>
+        Section
+      </Typography>
+      <FormControl fullWidth size="small" sx={{ mb: 2 }}>
+        <InputLabel>Section</InputLabel>
+        <Select
+          value={widget.sectionId ?? ""}
+          label="Section"
+          onChange={(e) => onChange({ sectionId: e.target.value === "" ? null : e.target.value })}
+        >
+          <MenuItem value="">
+            <em>Aucune</em>
+          </MenuItem>
+          {sections.map((section) => (
+            <MenuItem key={section.id} value={section.id}>
+              {section.title || "Sans titre"}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
     </Box>
   );
 };

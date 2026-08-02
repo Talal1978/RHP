@@ -2005,6 +2005,9 @@
     <Compile Include="Requeteur\Param_Query.vb">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="Requeteur\Widget_Icones_Picker.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Requeteur\Param_Query_Saisi.designer.vb">
       <DependentUpon>Param_Query_Saisi.vb</DependentUpon>
     </Compile>

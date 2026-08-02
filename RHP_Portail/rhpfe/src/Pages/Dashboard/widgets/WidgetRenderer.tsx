@@ -20,7 +20,7 @@ const CARD_SX = {
 
 export const WidgetRenderer = ({ definition }: WidgetRendererProps) => {
   const isBackendWidget =
-    definition.sourceType === "backend" &&
+    (definition.sourceType === "backend" || definition.sourceType === "query") &&
     (definition.type === "kpi" || definition.type === "chart" || definition.type === "table");
   const { data, loading, error } = useWidgetData(definition, isBackendWidget);
 

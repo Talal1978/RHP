@@ -22,7 +22,11 @@ export const useWidgetData = (definition: WidgetDefinition, enabled: boolean): W
     setLoading(true);
     setError(null);
 
-    myAxiosPost("dashboard_widget", { widgetId: definition.id })
+    // sourceType "query" : requête Param_Query exécutée par le backend avec
+    // les paramètres du contexte JWT ; "backend" : requêtes fixes en liste blanche.
+    const endpoint = definition.sourceType === "query" ? "dashboard_widget_exec" : "dashboard_widget";
+
+    myAxiosPost(endpoint, { widgetId: definition.id })
       .then((resp) => {
         if (cancelled) return;
         const payload = resp?.data;
@@ -42,7 +46,7 @@ export const useWidgetData = (definition: WidgetDefinition, enabled: boolean): W
     return () => {
       cancelled = true;
     };
-  }, [definition.id, enabled, myAxiosPost]);
+  }, [definition.id, definition.sourceType, enabled, myAxiosPost]);
 
   return { data, loading, error };
 };

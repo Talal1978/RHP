@@ -12,6 +12,7 @@ import {
 import { useDashboardWidgets } from "./widgets/useDashboardWidgets";
 import { WidgetBuilder } from "./widgets/WidgetBuilder";
 import { WidgetRenderer } from "./widgets/WidgetRenderer";
+import type { UserDashboardWidget } from "./widgets/types";
 import { Agent, colorBase } from "../../modules/module_general";
 import { useNavigate } from "react-router-dom";
 import useAxiosPost from "../../hooks/useAxiosPost";
@@ -49,7 +50,7 @@ const Dashboard = () => {
   );
   const [weather, setWeather] = useState<DashboardWeather | null>(null);
   const [configOpen, setConfigOpen] = useState(false);
-  const { availableWidgets, userWidgets, saveWidgets, isLoaded } = useDashboardWidgets();
+  const { availableWidgets, userWidgets, userSections, saveWidgets, saveSections, isLoaded } = useDashboardWidgets();
 
   const formatDate = (dateStr: string) => {
     if (!dateStr) return "";
@@ -266,7 +267,37 @@ const Dashboard = () => {
 
   const visibleSections = sectionPreferences.filter((section) => section.visible);
 
-  const hasWidgets = isLoaded && userWidgets.length > 0;
+  // Sections de la zone "Mes widgets" : pleine largeur, empilées (flex column),
+  // widgets affectés placés à l'intérieur en flex row centré.
+  const dashboardWidgetSections = [...userSections]
+    .sort((a, b) => a.position - b.position)
+    .map((section) => ({
+      ...section,
+      widgets: userWidgets.filter((w) => w.sectionId === section.id),
+    }))
+    .filter((section) => section.widgets.length > 0);
+  const unsectionedWidgets = userWidgets.filter(
+    (w) => !w.sectionId || !userSections.some((s) => s.id === w.sectionId)
+  );
+
+  const renderUserWidget = (uw: UserDashboardWidget) => (
+    <WidgetRenderer
+      definition={{
+        id: uw.widgetId,
+        title: uw.title,
+        type: uw.type,
+        chartType: uw.chartType,
+        sourceType: uw.sourceType,
+        standardId: uw.standardId,
+        icon: uw.icon,
+        color: uw.color,
+        defaultSpan: uw.span,
+        dataConfig: uw.dataConfig,
+      }}
+    />
+  );
+
+  const hasWidgets = isLoaded && (unsectionedWidgets.length > 0 || dashboardWidgetSections.length > 0);
   const lastTopSectionIndex = visibleSections.reduce(
     (lastIndex, section, index) => (TOP_SECTION_IDS.includes(section.id) ? index : lastIndex),
     -1
@@ -323,26 +354,57 @@ const Dashboard = () => {
               Mes widgets
             </Typography>
           </Stack>
-          <Grid container spacing={{ xs: 1, sm: 3, md: 0 }} rowSpacing={{ md: 4 }} justifyContent="center" alignItems="stretch" sx={{ mb: { xs: 1, md: 2 } }}>
-            {userWidgets.map((uw) => (
-              <Grid item key={uw.instanceId} xs={12} md={uw.span} sx={{ mb: { xs: 1, sm: 0 }, px: { md: 0.5 } }}>
-                <WidgetRenderer
-                  definition={{
-                    id: uw.widgetId,
-                    title: uw.title,
-                    type: uw.type,
-                    chartType: uw.chartType,
-                    sourceType: uw.sourceType,
-                    standardId: uw.standardId,
-                    icon: uw.icon,
-                    color: uw.color,
-                    defaultSpan: uw.span,
-                    dataConfig: uw.dataConfig,
+
+          {dashboardWidgetSections.length > 0 && (
+            <Stack direction="column" spacing={2} sx={{ width: "100%", mb: unsectionedWidgets.length > 0 ? 4 : 0 }}>
+              {dashboardWidgetSections.map((section) => (
+                <Paper
+                  key={section.id}
+                  sx={{
+                    width: "100%",
+                    p: 2.5,
+                    borderRadius: 2,
+                    border: "1px solid rgba(0,0,0,0.06)",
+                    boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
+                    bgcolor: "background.paper",
                   }}
-                />
-              </Grid>
-            ))}
-          </Grid>
+                >
+                  <Typography variant="subtitle1" fontWeight="bold" sx={{ mb: 2, color: colorBase.colorBase01 }}>
+                    {section.title}
+                  </Typography>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      flexDirection: "row",
+                      justifyContent: "center",
+                      flexWrap: "wrap",
+                      gap: 2,
+                      width: "100%",
+                    }}
+                  >
+                    {section.widgets.map((uw) => (
+                      <Box
+                        key={uw.instanceId}
+                        sx={{ width: { xs: "100%", md: `calc(${(uw.span / 12) * 100}% - 16px)` } }}
+                      >
+                        {renderUserWidget(uw)}
+                      </Box>
+                    ))}
+                  </Box>
+                </Paper>
+              ))}
+            </Stack>
+          )}
+
+          {unsectionedWidgets.length > 0 && (
+            <Grid container spacing={{ xs: 1, sm: 3, md: 0 }} rowSpacing={{ md: 4 }} justifyContent="center" alignItems="stretch" sx={{ mb: { xs: 1, md: 2 } }}>
+              {unsectionedWidgets.map((uw) => (
+                <Grid item key={uw.instanceId} xs={12} md={uw.span} sx={{ mb: { xs: 1, sm: 0 }, px: { md: 0.5 } }}>
+                  {renderUserWidget(uw)}
+                </Grid>
+              ))}
+            </Grid>
+          )}
         </>
       )}
 
@@ -357,10 +419,12 @@ const Dashboard = () => {
         onClose={() => setConfigOpen(false)}
         availableWidgets={availableWidgets}
         userWidgets={userWidgets}
+        userSections={userSections}
         onSave={(widgets) => {
           saveWidgets(widgets);
           setConfigOpen(false);
         }}
+        onSaveSections={saveSections}
       />
     </Box>
   );

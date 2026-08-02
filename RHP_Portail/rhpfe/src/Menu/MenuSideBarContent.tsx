@@ -80,7 +80,7 @@ const MenuSideBarContent = () => {
                   ))}
               </ListItemButton>
             </ListItem>
-            {
+            {isOpen && (
               <Collapse
                 in={showDetail && currentMnu === mnu.name_ecran}
                 timeout={"auto"}
@@ -120,7 +120,7 @@ const MenuSideBarContent = () => {
                   ))}
                 </List>
               </Collapse>
-            }
+            )}
           </Fragment>
         );
       })}

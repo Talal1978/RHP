@@ -177,4 +177,9 @@
   <metadata name="DataGridViewTextBoxColumn6.UserAddedColumn" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>True</value>
   </metadata>
+  <data name="Widget_LblInfo.Text" xml:space="preserve">
+    <value>La visibilité du widget par profil est gérée par les droits (Controle_Droit) sur cette requête.
+Paramètres de contexte alimentés automatiquement par le portail : @idSoc, @Matricule, @CodEntite,
+@CodPoste, @Login, @idUser, @CodProfile, @DatJour, @DebMois, @FinMois.</value>
+  </data>
 </root>

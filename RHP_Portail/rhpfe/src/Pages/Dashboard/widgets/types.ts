@@ -2,7 +2,7 @@ export type WidgetType = "kpi" | "chart" | "table" | "list";
 
 export type ChartType = "bar" | "line" | "pie" | "area";
 
-export type WidgetSourceType = "standard" | "backend";
+export type WidgetSourceType = "standard" | "backend" | "query";
 
 export type StandardWidgetId =
   | "blogs"
@@ -50,6 +50,13 @@ export interface UserDashboardWidget {
   sourceType: WidgetSourceType;
   standardId?: StandardWidgetId;
   dataConfig?: WidgetDataConfig;
+  sectionId?: string | null;
+}
+
+export interface WidgetSection {
+  id: string;
+  title: string;
+  position: number;
 }
 
 export interface KpiData {

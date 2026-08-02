@@ -84,6 +84,7 @@ import {
 import { declarationATListe, get_declaration_at } from "../controlers/declaration_at";
 import { getDashboardData } from "../controlers/dashboard";
 import { getDashboardWidgetData } from "../controlers/dashboard_widgets";
+import { execDashboardQueryWidget, getDashboardQueryWidgetCatalog } from "../controlers/dashboard_query_widgets";
 import { get_communication_blog, get_communication_blogs_liste } from "../controlers/communication";
 import { ask_ai_assistant } from "../controlers/ai_assistant";
 import {
@@ -243,6 +244,8 @@ mainRooting.post("/declarationATListe", validate, declarationATListe);
 mainRooting.post("/get_declaration_at", validate, get_declaration_at);
 mainRooting.post("/dashboard", validate, getDashboardData);
 mainRooting.post("/dashboard_widget", validate, getDashboardWidgetData);
+mainRooting.post("/dashboard_widget_catalog", validate, getDashboardQueryWidgetCatalog);
+mainRooting.post("/dashboard_widget_exec", validate, execDashboardQueryWidget);
 mainRooting.post("/communication_blogs_liste", validate, get_communication_blogs_liste);
 mainRooting.post("/get_communication_blog", validate, get_communication_blog);
 mainRooting.post("/ask_ai", validate, ask_ai_assistant);

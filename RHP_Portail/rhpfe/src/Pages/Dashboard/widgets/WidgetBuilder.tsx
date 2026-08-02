@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import {
   Box,
   Button,
@@ -9,6 +9,7 @@ import {
   Tabs,
   Tab,
   Paper,
+  TextField,
 } from "@mui/material";
 import {
   Close,
@@ -21,7 +22,7 @@ import {
   ExpandLess,
   ExpandMore,
 } from "@mui/icons-material";
-import type { UserDashboardWidget, WidgetDefinition } from "./types";
+import type { UserDashboardWidget, WidgetDefinition, WidgetSection } from "./types";
 import { WidgetRenderer } from "./WidgetRenderer";
 import { WidgetLibrary } from "./WidgetLibrary";
 import { WidgetSettings } from "./WidgetSettings";
@@ -31,7 +32,9 @@ interface WidgetBuilderProps {
   onClose: () => void;
   availableWidgets: WidgetDefinition[];
   userWidgets: UserDashboardWidget[];
+  userSections: WidgetSection[];
   onSave: (widgets: UserDashboardWidget[]) => void;
+  onSaveSections: (sections: WidgetSection[]) => void;
 }
 
 export const WidgetBuilder = ({
@@ -39,12 +42,29 @@ export const WidgetBuilder = ({
   onClose,
   availableWidgets,
   userWidgets,
+  userSections,
   onSave,
+  onSaveSections,
 }: WidgetBuilderProps) => {
   const [draftWidgets, setDraftWidgets] = useState<UserDashboardWidget[]>(userWidgets);
+  const [draftSections, setDraftSections] = useState<WidgetSection[]>(userSections);
   const [selectedWidgetId, setSelectedWidgetId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState(0);
   const [previewMode, setPreviewMode] = useState(false);
+
+  // Le builder est monté en permanence par le dashboard (avant même que les
+  // widgets existants ne soient chargés depuis localStorage) : le brouillon
+  // doit donc être (re)chargé depuis userWidgets à chaque ouverture du tiroir,
+  // sinon les widgets existants n'apparaissent pas et seraient écrasés au save.
+  useEffect(() => {
+    if (open) {
+      setDraftWidgets(userWidgets);
+      setDraftSections(userSections);
+      setSelectedWidgetId(null);
+      setActiveTab(0);
+      setPreviewMode(false);
+    }
+  }, [open, userWidgets, userSections]);
 
   const selectedWidget = draftWidgets.find((w) => w.instanceId === selectedWidgetId);
 
@@ -104,18 +124,163 @@ export const WidgetBuilder = ({
     });
   }, [draftWidgets.length]);
 
+  // ---- Gestion des sections ----
+  const orderedSections = [...draftSections].sort((a, b) => a.position - b.position);
+
+  const handleAddSection = useCallback(() => {
+    setDraftSections((prev) => [
+      ...prev,
+      {
+        id: `section_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        title: `Section ${prev.length + 1}`,
+        position: prev.length,
+      },
+    ]);
+  }, []);
+
+  const handleRenameSection = useCallback((id: string, title: string) => {
+    setDraftSections((prev) => prev.map((s) => (s.id === id ? { ...s, title } : s)));
+  }, []);
+
+  const handleRemoveSection = useCallback((id: string) => {
+    setDraftSections((prev) => prev.filter((s) => s.id !== id).map((s, i) => ({ ...s, position: i })));
+    // Les widgets de la section supprimée repassent hors section
+    setDraftWidgets((prev) => prev.map((w) => (w.sectionId === id ? { ...w, sectionId: null } : w)));
+  }, []);
+
   const handleSave = () => {
     onSave(draftWidgets);
+    onSaveSections(draftSections);
     onClose();
   };
 
   const handleCancel = () => {
     setDraftWidgets(userWidgets);
+    setDraftSections(userSections);
     setSelectedWidgetId(null);
     setActiveTab(0);
     setPreviewMode(false);
     onClose();
   };
+
+  const unsectionedDraft = draftWidgets.filter(
+    (w) => !w.sectionId || !draftSections.some((s) => s.id === w.sectionId)
+  );
+
+  const renderWidgetItem = (widget: UserDashboardWidget, index: number) => (
+    <Paper
+      key={widget.instanceId}
+      onClick={() => {
+        if (!previewMode) {
+          setSelectedWidgetId(widget.instanceId);
+          setActiveTab(1);
+        }
+      }}
+      sx={{
+        position: "relative",
+        border: selectedWidgetId === widget.instanceId && !previewMode
+          ? "2px solid"
+          : "2px solid transparent",
+        borderColor: selectedWidgetId === widget.instanceId && !previewMode
+          ? widget.color
+          : "transparent",
+        cursor: previewMode ? "default" : "pointer",
+        transition: "all 0.2s",
+        "&:hover": previewMode
+          ? {}
+          : {
+              boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+            },
+      }}
+    >
+      {!previewMode && (
+        <Box
+          sx={{
+            position: "absolute",
+            top: -12,
+            right: 10,
+            display: "flex",
+            gap: 0.5,
+            bgcolor: widget.color,
+            borderRadius: 1,
+            px: 0.5,
+            py: 0.25,
+            zIndex: 10,
+          }}
+        >
+          <IconButton
+            type="button"
+            size="small"
+            sx={{ color: "#fff" }}
+            onMouseDown={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+              handleMoveUp(index);
+            }}
+            disabled={index === 0}
+          >
+            <ExpandLess sx={{ fontSize: 16 }} />
+          </IconButton>
+          <IconButton
+            type="button"
+            size="small"
+            sx={{ color: "#fff" }}
+            onMouseDown={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+              handleMoveDown(index);
+            }}
+            disabled={index === draftWidgets.length - 1}
+          >
+            <ExpandMore sx={{ fontSize: 16 }} />
+          </IconButton>
+          <IconButton
+            type="button"
+            size="small"
+            sx={{ color: "#fff" }}
+            onMouseDown={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+              setSelectedWidgetId(widget.instanceId);
+              setActiveTab(1);
+            }}
+          >
+            <Edit sx={{ fontSize: 16 }} />
+          </IconButton>
+          <IconButton
+            type="button"
+            size="small"
+            sx={{ color: "#fff" }}
+            onMouseDown={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+              handleRemoveWidget(widget.instanceId);
+            }}
+          >
+            <Delete sx={{ fontSize: 16 }} />
+          </IconButton>
+        </Box>
+      )}
+      <Box sx={{ p: 2 }}>
+        <WidgetRenderer definition={{
+          id: widget.widgetId,
+          title: widget.title,
+          type: widget.type,
+          chartType: widget.chartType,
+          sourceType: widget.sourceType,
+          standardId: widget.standardId,
+          icon: widget.icon,
+          color: widget.color,
+          defaultSpan: widget.span,
+          dataConfig: widget.dataConfig,
+        }} />
+      </Box>
+    </Paper>
+  );
 
   return (
     <Drawer
@@ -138,6 +303,7 @@ export const WidgetBuilder = ({
           <Tabs value={activeTab} onChange={(_, v) => setActiveTab(v)} variant="fullWidth">
             <Tab label="Widgets" />
             <Tab label="Réglages" disabled={!selectedWidget} />
+            <Tab label="Sections" />
           </Tabs>
           <Box sx={{ flex: 1, overflow: "auto" }}>
             {activeTab === 0 && (
@@ -149,8 +315,51 @@ export const WidgetBuilder = ({
             {activeTab === 1 && selectedWidget && (
               <WidgetSettings
                 widget={selectedWidget}
+                sections={orderedSections}
                 onChange={(updates) => handleUpdateWidget(selectedWidget.instanceId, updates)}
               />
+            )}
+            {activeTab === 2 && (
+              <Box sx={{ p: 2 }}>
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  size="small"
+                  startIcon={<Add />}
+                  onClick={handleAddSection}
+                  sx={{ mb: 2 }}
+                >
+                  Nouvelle section
+                </Button>
+                <Stack spacing={1.5}>
+                  {orderedSections.map((section) => (
+                    <Paper key={section.id} variant="outlined" sx={{ p: 1.5 }}>
+                      <Stack direction="row" spacing={1} alignItems="center">
+                        <TextField
+                          fullWidth
+                          size="small"
+                          label="Titre de la section"
+                          value={section.title}
+                          onChange={(e) => handleRenameSection(section.id, e.target.value)}
+                        />
+                        <IconButton
+                          size="small"
+                          color="error"
+                          onClick={() => handleRemoveSection(section.id)}
+                        >
+                          <Delete fontSize="small" />
+                        </IconButton>
+                      </Stack>
+                    </Paper>
+                  ))}
+                  {orderedSections.length === 0 && (
+                    <Typography variant="body2" color="text.secondary">
+                      Aucune section. Créez-en une pour regrouper vos widgets, puis affectez-leur
+                      la section depuis l'onglet Réglages.
+                    </Typography>
+                  )}
+                </Stack>
+              </Box>
             )}
           </Box>
         </Box>
@@ -194,7 +403,7 @@ export const WidgetBuilder = ({
 
           {/* Canvas */}
           <Box sx={{ flex: 1, overflow: "auto", p: 4 }}>
-            {draftWidgets.length === 0 ? (
+            {draftWidgets.length === 0 && draftSections.length === 0 ? (
               <Paper
                 sx={{
                   p: 6,
@@ -214,120 +423,38 @@ export const WidgetBuilder = ({
               </Paper>
             ) : (
               <Stack spacing={2}>
-                {draftWidgets.map((widget, index) => (
-                  <Paper
-                    key={widget.instanceId}
-                    onClick={() => {
-                      if (!previewMode) {
-                        setSelectedWidgetId(widget.instanceId);
-                        setActiveTab(1);
-                      }
-                    }}
-                    sx={{
-                      position: "relative",
-                      border: selectedWidgetId === widget.instanceId && !previewMode
-                        ? "2px solid"
-                        : "2px solid transparent",
-                      borderColor: selectedWidgetId === widget.instanceId && !previewMode
-                        ? widget.color
-                        : "transparent",
-                      cursor: previewMode ? "default" : "pointer",
-                      transition: "all 0.2s",
-                      "&:hover": previewMode
-                        ? {}
-                        : {
-                            boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-                          },
-                    }}
-                  >
-                    {!previewMode && (
-                      <Box
-                        sx={{
-                          position: "absolute",
-                          top: -12,
-                          right: 10,
-                          display: "flex",
-                          gap: 0.5,
-                          bgcolor: widget.color,
-                          borderRadius: 1,
-                          px: 0.5,
-                          py: 0.25,
-                          zIndex: 10,
-                        }}
+                {orderedSections.map((section) => {
+                  const sectionWidgets = draftWidgets.filter((w) => w.sectionId === section.id);
+                  return (
+                    <Paper
+                      key={section.id}
+                      variant="outlined"
+                      sx={{ p: 2, borderStyle: "dashed", borderColor: "divider" }}
+                    >
+                      <Typography
+                        variant="subtitle2"
+                        fontWeight="bold"
+                        sx={{ mb: 1.5, color: "text.secondary", textTransform: "uppercase", letterSpacing: 0.5 }}
                       >
-                        <IconButton
-                          type="button"
-                          size="small"
-                          sx={{ color: "#fff" }}
-                          onMouseDown={(e) => e.stopPropagation()}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            e.preventDefault();
-                            handleMoveUp(index);
-                          }}
-                          disabled={index === 0}
-                        >
-                          <ExpandLess sx={{ fontSize: 16 }} />
-                        </IconButton>
-                        <IconButton
-                          type="button"
-                          size="small"
-                          sx={{ color: "#fff" }}
-                          onMouseDown={(e) => e.stopPropagation()}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            e.preventDefault();
-                            handleMoveDown(index);
-                          }}
-                          disabled={index === draftWidgets.length - 1}
-                        >
-                          <ExpandMore sx={{ fontSize: 16 }} />
-                        </IconButton>
-                        <IconButton
-                          type="button"
-                          size="small"
-                          sx={{ color: "#fff" }}
-                          onMouseDown={(e) => e.stopPropagation()}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            e.preventDefault();
-                            setSelectedWidgetId(widget.instanceId);
-                            setActiveTab(1);
-                          }}
-                        >
-                          <Edit sx={{ fontSize: 16 }} />
-                        </IconButton>
-                        <IconButton
-                          type="button"
-                          size="small"
-                          sx={{ color: "#fff" }}
-                          onMouseDown={(e) => e.stopPropagation()}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            e.preventDefault();
-                            handleRemoveWidget(widget.instanceId);
-                          }}
-                        >
-                          <Delete sx={{ fontSize: 16 }} />
-                        </IconButton>
-                      </Box>
-                    )}
-                    <Box sx={{ p: 2 }}>
-                      <WidgetRenderer definition={{
-                        id: widget.widgetId,
-                        title: widget.title,
-                        type: widget.type,
-                        chartType: widget.chartType,
-                        sourceType: widget.sourceType,
-                        standardId: widget.standardId,
-                        icon: widget.icon,
-                        color: widget.color,
-                        defaultSpan: widget.span,
-                        dataConfig: widget.dataConfig,
-                      }} />
-                    </Box>
-                  </Paper>
-                ))}
+                        {section.title || "Sans titre"} ({sectionWidgets.length})
+                      </Typography>
+                      {sectionWidgets.length === 0 ? (
+                        <Typography variant="body2" color="text.disabled">
+                          Aucun widget dans cette section — affectez-en via l'onglet Réglages
+                        </Typography>
+                      ) : (
+                        <Stack spacing={2}>
+                          {sectionWidgets.map((widget) => renderWidgetItem(widget, draftWidgets.indexOf(widget)))}
+                        </Stack>
+                      )}
+                    </Paper>
+                  );
+                })}
+                {unsectionedDraft.length > 0 && (
+                  <Stack spacing={2}>
+                    {unsectionedDraft.map((widget) => renderWidgetItem(widget, draftWidgets.indexOf(widget)))}
+                  </Stack>
+                )}
               </Stack>
             )}
           </Box>

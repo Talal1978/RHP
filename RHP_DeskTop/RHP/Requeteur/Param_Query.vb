@@ -10,6 +10,8 @@
     Dim Del_D As ud_btn
     Dim Dupliquer_D As ud_btn
     Dim Exec_D As ud_btn
+    ' Les contrôles de l'onglet "Widget portail" (Param_Query_Widget) sont
+    ' déclarés dans le designer (Param_Query.designer.vb, onglet TabWidget).
     Sub Chargement()
         If First_D Is Nothing Then
             First_D = dictButtons("First_D")
@@ -50,7 +52,407 @@
         With Securite_Grd
 
         End With
+        InitWidgetTab()
     End Sub
+
+    ''' <summary>
+    ''' Crée l'onglet "Widget portail" permettant de déclarer la requête comme
+    ''' widget du tableau de bord (métadonnées stockées dans Param_Query_Widget).
+    ''' La visibilité par profil reste gérée par les droits (Controle_Droit).
+    ''' Paramètres de contexte alimentés automatiquement par le portail :
+    ''' @idSoc, @Matricule, @CodEntite, @CodPoste, @Login, @idUser, @CodProfile,
+    ''' @DatJour, @DebMois, @FinMois.
+    ''' </summary>
+    ''' <summary>
+    ''' Initialise l'onglet "Widget portail" (contrôles déclarés dans le designer,
+    ''' onglet TabWidget) : branche les gestionnaires d'événements et la pastille couleur.
+    ''' </summary>
+    Private Sub InitWidgetTab()
+        WidgetCombosEnsure()
+        ' Dockage de la zone d'aperçu imposé au runtime (robuste aux régénérations
+        ' du fichier designer qui peuvent réinitialiser la taille des contrôles).
+        Widget_Preview_Pnl.Dock = DockStyle.Bottom
+        AddHandler Widget_Icone_Btn.Click, AddressOf Widget_Icone_Btn_Click
+        AddHandler Widget_Preview_Btn.Click, AddressOf Widget_Preview_Btn_Click
+        AddHandler Widget_Couleur_Btn.Click, AddressOf Widget_Couleur_Btn_Click
+        AddHandler Widget_Couleur_Txt.TextChanged, AddressOf Widget_Couleur_Txt_TextChanged
+        MajCouleurSwatch()
+    End Sub
+
+    ''' <summary>Peuple les combos au runtime : le designer Visual Studio ne sérialise
+    ''' pas les collections Items des contrôles utilisateur (elles seraient perdues
+    ''' à chaque régénération du fichier designer).</summary>
+    Private Sub WidgetCombosEnsure()
+        If Widget_Type_Cmb.Items.Count = 0 Then Widget_Type_Cmb.Items.AddRange(New Object() {"kpi", "chart", "table"})
+        If Widget_ChartType_Cmb.Items.Count = 0 Then Widget_ChartType_Cmb.Items.AddRange(New Object() {"pie", "bar", "line", "area"})
+        If Widget_Span_Cmb.Items.Count = 0 Then Widget_Span_Cmb.Items.AddRange(New Object() {"3", "4", "5", "6", "7", "8", "9", "10", "11", "12"})
+        Widget_Type_Cmb.DropDownStyle = ComboBoxStyle.DropDownList
+        Widget_ChartType_Cmb.DropDownStyle = ComboBoxStyle.DropDownList
+        Widget_Span_Cmb.DropDownStyle = ComboBoxStyle.DropDownList
+    End Sub
+
+    Private Sub Widget_Couleur_Btn_Click(ByVal sender As Object, ByVal e As EventArgs)
+        Dim dlg As New ColorDialog
+        dlg.FullOpen = True
+        Try
+            dlg.Color = ColorTranslator.FromHtml(Widget_Couleur_Txt.Text)
+        Catch ex As Exception
+        End Try
+        If dlg.ShowDialog() = DialogResult.OK Then
+            Widget_Couleur_Txt.Text = String.Format("#{0:X2}{1:X2}{2:X2}", dlg.Color.R, dlg.Color.G, dlg.Color.B)
+        End If
+    End Sub
+
+    Private Sub Widget_Couleur_Txt_TextChanged(ByVal sender As Object, ByVal e As EventArgs)
+        MajCouleurSwatch()
+    End Sub
+
+    Private Sub MajCouleurSwatch()
+        Try
+            Widget_Couleur_Pnl.BackColor = ColorTranslator.FromHtml(Widget_Couleur_Txt.Text)
+        Catch ex As Exception
+            Widget_Couleur_Pnl.BackColor = Color.Transparent
+        End Try
+    End Sub
+
+    Sub ChargerWidgetMeta()
+        If Widget_Chk Is Nothing Then Exit Sub
+        WidgetCombosEnsure()
+        Widget_Chk.Checked = False
+        Widget_Type_Cmb.SelectedIndex = 2
+        Widget_ChartType_Cmb.SelectedIndex = 0
+        Widget_Icone_Txt.Text = "TableChart"
+        Widget_Couleur_Txt.Text = "#1976d2"
+        Widget_Span_Cmb.SelectedItem = "6"
+        Widget_Description_Txt.Text = ""
+        MajCouleurSwatch()
+        Dim Tbl As DataTable = DATA_READER_GRD("select * from Param_Query_Widget where Cod_Query='" & Cod_Query_Text.Text & "'")
+        If Tbl.Rows.Count = 0 Then Exit Sub
+        With Tbl.Rows(0)
+            Widget_Chk.Checked = IsNull(.Item("estWidget"), False)
+            Dim t As String = IsNull(.Item("Widget_Type"), "table")
+            If Widget_Type_Cmb.Items.Contains(t) Then Widget_Type_Cmb.SelectedItem = t
+            Dim ct As String = IsNull(.Item("Widget_ChartType"), "pie")
+            If Widget_ChartType_Cmb.Items.Contains(ct) Then Widget_ChartType_Cmb.SelectedItem = ct
+            Widget_Icone_Txt.Text = IsNull(.Item("Icone"), "TableChart")
+            Widget_Couleur_Txt.Text = IsNull(.Item("Couleur"), "#1976d2")
+            Dim sp As String = CStr(IsNull(.Item("DefaultSpan"), 6))
+            If Widget_Span_Cmb.Items.Contains(sp) Then Widget_Span_Cmb.SelectedItem = sp
+            Widget_Description_Txt.Text = IsNull(.Item("Description"), "")
+        End With
+        MajCouleurSwatch()
+    End Sub
+
+    Sub SauverWidgetMeta()
+        If Widget_Chk Is Nothing Then Exit Sub
+        If Not Widget_Chk.Checked Then
+            CnExecuting("delete from Param_Query_Widget where Cod_Query='" & Cod_Query_Text.Text & "'")
+            Exit Sub
+        End If
+        Dim strType As String = IsNull(Widget_Type_Cmb.SelectedItem, "table")
+        Dim strChart As String = IsNull(Widget_ChartType_Cmb.SelectedItem, "pie")
+        Dim strIcone As String = Widget_Icone_Txt.Text.Replace("'", "''")
+        Dim strCouleur As String = Widget_Couleur_Txt.Text.Replace("'", "''")
+        Dim strDesc As String = Widget_Description_Txt.Text.Replace("'", "''")
+        If CnExecuting("select count(*) from Param_Query_Widget where Cod_Query='" & Cod_Query_Text.Text & "'").Fields(0).Value > 0 Then
+            CnExecuting("update Param_Query_Widget set estWidget='true', Widget_Type='" & strType & "', Widget_ChartType='" & strChart & "', Icone=N'" & strIcone & "', Couleur='" & strCouleur & "', DefaultSpan=" & CInt(IsNull(Widget_Span_Cmb.SelectedItem, "6")) & ", Description=N'" & strDesc & "', Modified_By='" & theUser.Login & "', Dat_Modif=getdate() where Cod_Query='" & Cod_Query_Text.Text & "'")
+        Else
+            CnExecuting("insert into Param_Query_Widget (Cod_Query, estWidget, Widget_Type, Widget_ChartType, Icone, Couleur, DefaultSpan, Description, Created_By, Dat_Crea) values ('" & Cod_Query_Text.Text & "','true','" & strType & "','" & strChart & "',N'" & strIcone & "','" & strCouleur & "'," & CInt(IsNull(Widget_Span_Cmb.SelectedItem, "6")) & ",N'" & strDesc & "','" & theUser.Login & "',getdate())")
+        End If
+    End Sub
+
+    Private Sub Widget_Icone_Btn_Click(ByVal sender As Object, ByVal e As EventArgs)
+        Dim f As New Widget_Icones_Picker
+        If f.ShowDialog() = DialogResult.OK AndAlso f.SelectedIcone <> "" Then
+            Widget_Icone_Txt.Text = f.SelectedIcone
+        End If
+    End Sub
+
+    Private Sub Widget_Preview_Btn_Click(ByVal sender As Object, ByVal e As EventArgs)
+        ApercuWidget()
+    End Sub
+
+    ''' <summary>Paramètres de contexte résolus côté desktop (équivalents de ceux du JWT portail),
+    ''' retournés sous forme de littéraux SQL pour Query_Converter.</summary>
+    Private Function WidgetContextMap() As Dictionary(Of String, String)
+        Dim m As New Dictionary(Of String, String)
+        Dim mat As String = IsNull(theUser.Matricule, "")
+        Dim codEntite As String = ""
+        Dim codPoste As String = ""
+        If mat <> "" Then
+            codEntite = IsNull(FindLibelle("Cod_Entite", "Matricule", mat & "' and id_Societe='" & Societe.id_Societe, "RH_Agent"), "")
+            codPoste = IsNull(FindLibelle("Cod_Poste", "Matricule", mat & "' and id_Societe='" & Societe.id_Societe, "RH_Agent"), "")
+        End If
+        m("@idsoc") = CStr(Societe.id_Societe)
+        m("@matricule") = "'" & mat.Replace("'", "''") & "'"
+        m("@codentite") = "'" & codEntite.Replace("'", "''") & "'"
+        m("@codposte") = "'" & codPoste.Replace("'", "''") & "'"
+        m("@login") = "'" & IsNull(theUser.Login, "").Replace("'", "''") & "'"
+        m("@iduser") = "'" & CStr(IsNull(theUser.id_User, "")).Replace("'", "''") & "'"
+        m("@codprofile") = "'" & CStr(IsNull(theUser.Cod_Profile, "")).Replace("'", "''") & "'"
+        m("@teamleader") = "'" & IsNull(theUser.TeamLeader, "").ToString().Replace("'", "''") & "'"
+        m("@datjour") = "'" & Now.ToString("yyyy-MM-dd") & "'"
+        m("@debmois") = "'" & New Date(Now.Year, Now.Month, 1).ToString("yyyy-MM-dd") & "'"
+        m("@finmois") = "'" & New Date(Now.Year, Now.Month, Date.DaysInMonth(Now.Year, Now.Month)).ToString("yyyy-MM-dd") & "'"
+        Return m
+    End Function
+
+    ''' <summary>Alias GV_* du desktop vers les paramètres de contexte (aligné sur le backend).</summary>
+    Private Function WidgetGvAlias() As Dictionary(Of String, String)
+        Dim m As New Dictionary(Of String, String)
+        m("gv_idsoc") = "@idsoc"
+        m("gv_user") = "@iduser"
+        m("gv_login") = "@login"
+        m("gv_now") = "@datjour"
+        m("gv_debmois") = "@debmois"
+        m("gv_finmois") = "@finmois"
+        Return m
+    End Function
+
+    ''' <summary>Met en forme un littéral SQL selon le type de critère déclaré.</summary>
+    Private Function WidgetSqlLiteral(ByVal typCritere As String, ByVal valeur As String) As String
+        Dim t As String = IsNull(typCritere, "").ToLower()
+        If t.StartsWith("int") Or t.StartsWith("bigint") Or t.StartsWith("smallint") Or t.StartsWith("tinyint") Or
+           t.StartsWith("float") Or t.StartsWith("real") Or t.StartsWith("decimal") Or t.StartsWith("numeric") Or t.StartsWith("money") Then
+            Return valeur.Replace(",", ".")
+        End If
+        If t.Contains("date") Or t.Contains("time") Then
+            Try
+                Return "'" & CDate(valeur).ToString("yyyy-MM-dd") & "'"
+            Catch ex As Exception
+                Return "'" & valeur.Replace("'", "''") & "'"
+            End Try
+        End If
+        Return "'" & valeur.Replace("'", "''") & "'"
+    End Function
+
+    Private Function WidgetCouleur() As Color
+        Try
+            Return ColorTranslator.FromHtml(Widget_Couleur_Txt.Text)
+        Catch ex As Exception
+            Return Color.FromArgb(25, 118, 210)
+        End Try
+    End Function
+
+    ''' <summary>Exécute la requête avec les paramètres de contexte et affiche le rendu final
+    ''' (carte KPI / graphe / grille) dans la zone d'aperçu de l'onglet.</summary>
+    Sub ApercuWidget()
+        If Widget_Preview_Pnl Is Nothing Or Cod_Query_Text.Text = "" Then Exit Sub
+        For Each c As Control In Widget_Preview_Pnl.Controls.OfType(Of Control).ToList()
+            c.Dispose()
+        Next
+
+        ' Résolution des critères : contexte > alias GV_* > Default_Value
+        Dim TblCrit As DataTable = DATA_READER_GRD("select Critere, Typ_Critere, Default_Value from Param_Query_Criteres where Cod_Query='" & Cod_Query_Text.Text & "' order by Rang")
+        Dim ctx As Dictionary(Of String, String) = WidgetContextMap()
+        Dim gvs As Dictionary(Of String, String) = WidgetGvAlias()
+        Dim vars As New List(Of String)
+        For Each rw As DataRow In TblCrit.Rows
+            Dim crit As String = IsNull(rw("Critere"), "")
+            Dim defVal As String = IsNull(rw("Default_Value"), "").Trim
+            Dim key As String = crit.ToLower()
+            Dim gvKey As String = defVal.ToLower()
+            If ctx.ContainsKey(key) Then
+                vars.Add(ctx(key))
+            ElseIf gvKey.StartsWith("gv_") AndAlso gvs.ContainsKey(gvKey) AndAlso ctx.ContainsKey(gvs(gvKey)) Then
+                vars.Add(ctx(gvs(gvKey)))
+            ElseIf defVal <> "" And Not gvKey.StartsWith("gv_") Then
+                vars.Add(WidgetSqlLiteral(IsNull(rw("Typ_Critere"), ""), defVal))
+            Else
+                AfficherMessagePreview("Paramètre non résoluble sans saisie : " & crit)
+                Exit Sub
+            End If
+        Next
+
+        ' Exécution (Declare/Set + Cod_Sql, comme le requêteur)
+        Dim TblData As DataTable
+        Try
+            TblData = DATA_READER_GRD(Query_Converter(Cod_Query_Text.Text, String.Join("#", vars)))
+        Catch ex As Exception
+            AfficherMessagePreview("Erreur d'exécution : " & ex.Message)
+            Exit Sub
+        End Try
+        If TblData Is Nothing OrElse TblData.Columns.Count = 0 Then
+            AfficherMessagePreview("La requête ne retourne aucune colonne.")
+            Exit Sub
+        End If
+
+        ' Rendu selon le type déclaré
+        Dim strType As String = IsNull(Widget_Type_Cmb.SelectedItem, "table")
+        Select Case strType
+            Case "kpi"
+                RenderWidgetKpi(TblData)
+            Case "chart"
+                RenderWidgetChart(TblData)
+            Case Else
+                RenderWidgetTable(TblData)
+        End Select
+    End Sub
+
+    Private Sub AfficherMessagePreview(ByVal msg As String)
+        Dim lbl As New Label
+        With lbl
+            .Text = msg
+            .AutoSize = True
+            .Location = New Point(10, 10)
+            .ForeColor = Color.FromArgb(211, 47, 47)
+        End With
+        Widget_Preview_Pnl.Controls.Add(lbl)
+    End Sub
+
+    Private Function WidgetPreviewTitre() As Label
+        Dim lbl As New Label
+        With lbl
+            .Text = "[" & Widget_Icone_Txt.Text & "]  " & Nom_Query_Text.Text
+            .AutoSize = True
+            .Location = New Point(10, 8)
+            .Font = New Font(.Font.FontFamily, 10, FontStyle.Bold)
+            .ForeColor = WidgetCouleur()
+        End With
+        Return lbl
+    End Function
+
+    Private Sub RenderWidgetKpi(ByVal TblData As DataTable)
+        Dim card As New Panel
+        With card
+            .BackColor = Color.White
+            .BorderStyle = BorderStyle.FixedSingle
+            .Location = New Point(10, 35)
+            .Size = New Size(320, 130)
+        End With
+        Dim valeur As String = ""
+        Dim detail As String = ""
+        If TblData.Rows.Count > 0 Then
+            valeur = IsNull(TblData.Rows(0)(0), "")
+            If TblData.Columns.Count > 1 Then detail = IsNull(TblData.Rows(0)(1), "")
+        End If
+        Dim lblVal As New Label
+        With lblVal
+            .Text = valeur
+            .AutoSize = True
+            .Location = New Point(15, 25)
+            .Font = New Font(.Font.FontFamily, 22, FontStyle.Bold)
+        End With
+        Dim lblDet As New Label
+        With lblDet
+            .Text = detail
+            .AutoSize = True
+            .Location = New Point(17, 75)
+            .ForeColor = Color.Gray
+        End With
+        Dim strip As New Panel
+        With strip
+            .BackColor = WidgetCouleur()
+            .Size = New Size(4, 130)
+            .Location = New Point(0, 0)
+        End With
+        card.Controls.AddRange(New Control() {strip, lblVal, lblDet})
+        Widget_Preview_Pnl.Controls.AddRange(New Control() {WidgetPreviewTitre(), card})
+    End Sub
+
+    ''' <summary>Taille de la carte d'aperçu : largeur proportionnelle à la largeur
+    ''' déclarée (span sur 12), hauteur adaptée à la zone d'aperçu (dockée en bas).</summary>
+    Private Function WidgetPreviewCardSize() As Size
+        Dim largeurDispo As Integer = Math.Max(360, Widget_Preview_Pnl.Width - 20)
+        Dim w As Integer = CInt(Math.Max(320, Math.Min(largeurDispo, largeurDispo * CInt(IsNull(Widget_Span_Cmb.SelectedItem, "6")) / 12)))
+        Dim h As Integer = Math.Max(340, Widget_Preview_Pnl.Height - 45)
+        Return New Size(w, h)
+    End Function
+
+    Private Sub RenderWidgetChart(ByVal TblData As DataTable)
+        Dim strChart As String = IsNull(Widget_ChartType_Cmb.SelectedItem, "pie")
+        Dim chartType As System.Windows.Forms.DataVisualization.Charting.SeriesChartType
+        Select Case strChart
+            Case "bar" : chartType = DataVisualization.Charting.SeriesChartType.Column
+            Case "line" : chartType = DataVisualization.Charting.SeriesChartType.Line
+            Case "area" : chartType = DataVisualization.Charting.SeriesChartType.Area
+            Case Else : chartType = DataVisualization.Charting.SeriesChartType.Pie
+        End Select
+
+        Dim card As New Panel
+        With card
+            .BackColor = Color.White
+            .BorderStyle = BorderStyle.FixedSingle
+            .Location = New Point(10, 35)
+            .Size = WidgetPreviewCardSize()
+        End With
+
+        Dim oChart As New DataVisualization.Charting.Chart
+        With oChart
+            .Dock = DockStyle.Fill
+            .BackColor = Color.White
+        End With
+        Dim ca As New DataVisualization.Charting.ChartArea
+        oChart.ChartAreas.Add(ca)
+        oChart.Legends.Add(New DataVisualization.Charting.Legend)
+
+        Dim labelCol As String = TblData.Columns(0).ColumnName
+        Dim numericCols As New List(Of String)
+        For Each col As DataColumn In TblData.Columns
+            If col.Ordinal = 0 Then Continue For
+            If col.DataType Is GetType(Integer) OrElse col.DataType Is GetType(Long) OrElse
+               col.DataType Is GetType(Double) OrElse col.DataType Is GetType(Decimal) OrElse
+               col.DataType Is GetType(Single) OrElse col.DataType Is GetType(Short) Then
+                numericCols.Add(col.ColumnName)
+            End If
+        Next
+        If numericCols.Count = 0 AndAlso TblData.Columns.Count > 1 Then numericCols.Add(TblData.Columns(1).ColumnName)
+        If chartType = DataVisualization.Charting.SeriesChartType.Pie AndAlso numericCols.Count > 1 Then
+            numericCols = numericCols.Take(1).ToList()
+        End If
+
+        For Each cn As String In numericCols
+            Dim oSerie As New DataVisualization.Charting.Series
+            With oSerie
+                .Name = cn
+                .ChartType = chartType
+                .IsValueShownAsLabel = True
+                .ToolTip = "#VAL"
+            End With
+            For Each rw As DataRow In TblData.Rows
+                Dim y As Double = 0
+                Try
+                    y = CDbl(IsNull(rw(cn), 0))
+                Catch ex As Exception
+                    y = 0
+                End Try
+                oSerie.Points.AddXY(IsNull(rw(labelCol), "").ToString(), y)
+            Next
+            oChart.Series.Add(oSerie)
+        Next
+        card.Controls.Add(oChart)
+        Widget_Preview_Pnl.Controls.AddRange(New Control() {WidgetPreviewTitre(), card})
+    End Sub
+
+    Private Sub RenderWidgetTable(ByVal TblData As DataTable)
+        Dim card As New Panel
+        With card
+            .BackColor = Color.White
+            .BorderStyle = BorderStyle.FixedSingle
+            .Location = New Point(10, 35)
+            .Size = WidgetPreviewCardSize()
+        End With
+        Dim grd As New ud_Grd
+        With grd
+            .Dock = DockStyle.Fill
+            .DataSource = TblData
+            .ReadOnly = True
+            .AllowUserToAddRows = False
+            .AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells
+        End With
+        Dim lblCount As New Label
+        With lblCount
+            .Text = TblData.Rows.Count & " ligne(s)"
+            .Dock = DockStyle.Bottom
+            .Height = 18
+            .TextAlign = ContentAlignment.MiddleRight
+            .ForeColor = Color.Gray
+        End With
+        card.Controls.Add(grd)
+        card.Controls.Add(lblCount)
+        Widget_Preview_Pnl.Controls.AddRange(New Control() {WidgetPreviewTitre(), card})
+    End Sub
+
     Sub Request()
         Dim Cod_Sql As String
         Dim C1, C2, C3, C4, C5, C6, C7, C8, C9, C10 As Object
@@ -122,13 +524,14 @@
         If CnExecuting("Select count(*) from Param_Query where Cod_Query='" & Cod_Query_Text.Text & "'").Fields(0).Value > 0 Then
             CnExecuting("delete from Param_Query where Cod_Query='" & Cod_Query_Text.Text & "'")
         End If
+        CnExecuting("delete from Param_Query_Widget where Cod_Query='" & Cod_Query_Text.Text & "'")
 
         'Supprimer le lien du Procedure
         CnExecuting("delete from Controle_TreeView where Name_Ecran='" & Cod_Query_Text.Text & "' and Typ_Ecran='QRY'")
         CnExecuting("delete from Controle_Menu where Name_Ecran='" & Cod_Query_Text.Text & "' and Typ_Ecran='QRY'")
-            'Supprimer le lien des favoris
-            CnExecuting("delete from Param_Favoris where Form_Name='" & Cod_Query_Text.Text & "'")
-            CnExecuting($"delete from Controle_Def_Ecran_Traitements_Specifiques where Cod_Traitement='{Cod_Query_Text.Text}'")
+        'Supprimer le lien des favoris
+        CnExecuting("delete from Param_Favoris where Form_Name='" & Cod_Query_Text.Text & "'")
+        CnExecuting($"delete from Controle_Def_Ecran_Traitements_Specifiques where Cod_Traitement='{Cod_Query_Text.Text}'")
         Reset_Form(Me)
         '     Reset_Form(Me)
     End Sub
@@ -156,12 +559,12 @@
             If .Rows.Count > 0 Then
                 Nom_Query_Text.Text = .Rows(0)("Nom_Query")
                 Cod_Sql_Text.Text = .Rows(0)("Cod_Sql")
-                HeaderVisible_Check.Checked = .Rows(0)("HeaderVisible")
+                HeaderVisible_Check.Checked = IsNull(.Rows(0)("HeaderVisible"), False)
                 Pivot_chk.Checked = IsNull(.Rows(0)("estPivot"), False)
-                Resume_Check.Checked = .Rows(0)("Resume")
+                Resume_Check.Checked = IsNull(.Rows(0)("Resume"), False)
                 Typ_Query_Text.Text = .Rows(0)("Typ_Query")
-                Afficher_Graphe_Valeur.Checked = .Rows(0)("Afficher_Graphe_Valeur")
-                Afficher3D.Checked = .Rows(0)("Afficher3D")
+                Afficher_Graphe_Valeur.Checked = IsNull(.Rows(0)("Afficher_Graphe_Valeur"), False)
+                Afficher3D.Checked = IsNull(.Rows(0)("Afficher3D"), False)
                 Typ_Graphe.SelectedIndex = IsNull(.Rows(0)("Typ_Graphe"), 0)
                 Largeur_Fixe = IsNull(.Rows(0)("Largeur_Fixe"), "")
                 Separateur_txt.Text = IsNull(.Rows(0)("Separateur"), "")
@@ -188,6 +591,7 @@
                 Largeur_Fixe = ""
             End If
         End With
+        ChargerWidgetMeta()
         If Typ_Query_Text.Text = "S" Then
             Del_D.Enabled = False
             Enabling(Cod_Sql_Text, False)
@@ -296,6 +700,7 @@ Cod_Query_Text.Text.Contains("&") = True Then
         rs("Separateur").Value = IIf(Rd_1.Checked, Separateur_txt.Text.Trim, "")
         rs("Largeur_Fixe").Value = IIf(Rd_0.Checked, Largeur_Fixe, "")
         rs.Update()
+        SauverWidgetMeta()
         rs.Close()
         'Insertion  dans la table génératrice du treeview
         rs1.Open("Select * from Controle_TreeView where Name_Ecran='" & Cod_Query_Text.Text & "'", cn, 2, 2)

@@ -13,6 +13,7 @@ import { useLocation, useParams } from "react-router-dom";
 import useAxiosPost from "../hooks/useAxiosPost";
 import { cntX } from "../Menu/MenuMain";
 import { telecharger } from "../modules/module_filesNfolders";
+import Loading from "../components/Loading/Loading";
 
 export type TReport = { reportName: string; params: ObjetGenerique };
 
@@ -24,6 +25,9 @@ export const ReportViewer = () => {
   const myAxios = useAxiosPost();
   const msgBox = useMsgBox();
   const [rptUrl, setRptUrl] = useState(pdfURL);
+  // La route /viewer est hors de MenuMain : setShowLoading est un no-op ici.
+  // On gère donc un état de chargement local pour informer l'utilisateur.
+  const [loading, setLoading] = useState(!pdfURL && !!report);
 
   // Memoize the options for the default layout plugin
   const layoutPluginOptions = useMemo(() => ({
@@ -51,6 +55,7 @@ export const ReportViewer = () => {
     setShowLoading(true);
     // Guard against report being null/undefined (e.g., direct URL access)
     if (!pdfURL && report) {
+      setLoading(true);
       myAxios(
         `getreport`,
         {
@@ -65,6 +70,7 @@ export const ReportViewer = () => {
             setWithPassword(response.headers["autres"] || "");
             if (response.headers["autres"]) {
               setShowLoading(false);
+              setLoading(false);
               msgBox({
                 titre: "Mot de passe",
                 msg:
@@ -79,6 +85,8 @@ export const ReportViewer = () => {
             } else {
               const url = window.URL.createObjectURL(response.data);
               setRptUrl(url);
+              // Le viewer PDF affiche son propre spinner pendant le chargement du document
+              setLoading(false);
             }
           } else {
             throw (response as any).error || "Erreur inconnue lors de la récupération du rapport";
@@ -86,6 +94,7 @@ export const ReportViewer = () => {
         })
         .catch((err) => {
           setShowLoading(false);
+          setLoading(false);
           msgBox({
             titre: "Génération du rapport",
             msg: "Erreur : " + err,
@@ -100,6 +109,17 @@ export const ReportViewer = () => {
 
   return (
     <>
+      {loading && (
+        <>
+          <Loading />
+          <div className="report-loading-msg">
+            Génération de l'état en cours, veuillez patienter…
+          </div>
+        </>
+      )}
+      {!loading && !rptUrl && (
+        <div className="report-empty">Aucun état à afficher.</div>
+      )}
       {rptUrl && (
         <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.4.120/build/pdf.worker.min.js">
           <Viewer

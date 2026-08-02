@@ -1,5 +1,11 @@
 # Traçabilité exigences → composants → tests, et plan de migration (Phase 1)
 
+## 0ter. Résultats Phases 5 et 6 (01/08/2026)
+
+- **Phase 4 complète** : 14 pages portail (5 listes, 5 fiches, campagne, tableau de bord, suivi AT, espace salarié) — **lint 0 erreur, build OK**.
+- **Phase 5 — Rapports** : `sante_report.ts` (génération PDF via `crexport` + **archivage GED cloisonné** avec droits service médical + référence sur l'objet + audit `IMPR`), 3 endpoints (`sante_aptitude_pdf`, `sante_incident_at_pdf`, `sante_rapport_annuel_pdf`) ; paramétrage `Param_Mod_Edition` + `Controle_Def_Ecran_Mod_Edition` installé (actif dès dépôt des `.rpt`) ; **spécifications complètes** dans `07_Specifications_Rapports.md` (les `.rpt` restent à produire dans Crystal Reports Designer — modèle légal du rapport annuel à valider par le médecin du travail).
+- **Phase 6 — Vérifications** : tests SQL **22/22**, tests API **29/29**, **NR02 OK** (arrêt AT visible de la paie via `Sys_GetCongePris` 9j+10j, solde de congé non impacté) ; installation rejouée (60 batches) ; documentation `06_Installation_Exploitation.md` livrée.
+
 ## 0bis. Résultats Phases 3 et 4 (01/08/2026)
 
 - **Phase 3 — RHP_DeskTop** : `Sante\Module_Sante.vb` (audit paramétré ADODB, contrôle fonctions SANTE_*, verrou CNDP, exécution paramétrée anti-injection) + **20 écrans** (Visite+Liste, Dossier 8 onglets, Aptitude+Liste, Consultation+Liste, Examen+Liste, MaladiePro+Liste, Vaccination, Campagne, Declaration_AT_Suivi, Stats_AT, Tableau_Bord, Audit, Rapport_Annuel, Param). **Compilation VB : 0 erreur** (la copie finale de RHP.exe nécessite de fermer l'application en cours).
@@ -21,18 +27,18 @@
 
 | Capacité (grille) | Tables/API/Écrans/Rapports | Tests prévus | Statut |
 |---|---|---|---|
-| 4.1 Visites, aptitude, périodicités, échéances | `RH_Sante_Visite`, `Param_Sante_Periodicite`, `Sys_Sante_Prochaine_Visite`, `RH_Sante_Dossier` ; écrans `RH_Sante_Visite[_Liste]`, `RH_Sante_Dossier` ; API `sante_visite_*`, `sante_calcul_echeance` | SQL T01–T08 (règles, priorité, historisation, ajustement motivé) ; API T20–T23 | Conception |
-| 4.1 Tableau de bord + exports + cloisonnement | `RH_Sante_Vue_TB_Aptitudes`, `RH_Sante_Tableau_Bord` (+ page portail), export EPPlus | SQL T09 (seuil agrégat) ; API T24 (droits par rôle) ; IHM manuelle | Conception |
-| 4.1 Alertes multi-seuils | Paramétrage `Notifications` (N seuils) | Test RHPServer : événement → `Notification_Events` → envoi | Conception |
-| 4.2 AT : déclaration, certificats, clôture | **Existant** `RH_Declaration_AT[_Detail]` — non modifié | Non-régression NR01 (scénarios existants) | Réutilisé |
-| 4.2 AT : distinction, échéancier, transmissions, destinataires | `Typ_Accident`, `Param_Sante_Destinataire`, `Param_Sante_Etape_AT`, `RH_Declaration_AT_Echeance`, `_Transmission`, `Sys_Sante_AT_Generer_Echeances`, `RH_Declaration_AT_Suivi` | SQL T10–T12 ; API T25 ; Desktop manuel | Conception |
-| 4.2 AT : arrêt → Absences | `Sys_Sante_AT_Generer_Absence`, `RH_Conge_Suivi` (type `AAT`), `Num_Conge` trace | SQL T13–T15 (génération, anti-chevauchement, MajConso) ; **NR02 paie** (bulletin avec arrêt AT) | Conception |
-| 4.2 AT : statistiques TF/TG | `RH_Sante_Vue_Stats_AT`, `RH_Sante_Stats_AT`, API `sante_at_stats` | SQL T16 (jeu contrôlé, calculs vérifiés à la main) | Conception |
-| 4.3 Fiches d'aptitude + versions + PDF + GED | `RH_Sante_Aptitude`, `Sante_Fiche_Aptitude.rpt`, archivage `Param_GED` | SQL T17 (versioning) ; PDF produit + archivé ; API T26 (masse, audit individuel) | Conception |
-| 4.4 Rapport annuel + contrôle sources | `RH_Sante_Rapport_Annuel`, vues agrégées, `Sante_Rapport_Annuel.rpt` | SQL T18 (comptages) ; PDF/Excel ; archivage par version | Conception — **modèle légal à valider** |
-| 4.5 Examens + GED cloisonnée + verrou CNDP + conservation | `RH_Sante_Examen`, GED droits restreints, `Param_Sante_Reglement`, `Sys_Sante_Purge` | SQL T19 (purge simulation) ; API T27 (visibilité MED/AUT, IDOR) ; upload MIME/taille | Conception |
-| 5.x Infirmerie, campagnes, référentiels, MP, vaccinations, postes/risques, recherche multicritère | Tables et écrans dédiés (cf. 01_Conception) | SQL/API par objet | Conception |
-| Sécurité : audit d'accès, no-store, non-exposition Requêteur | `RH_Sante_Audit_Acces`, headers, consigne Requêteur | API T28–T30 (audit écrit, header, refus rôle) ; revue `Param_Query` | Conception |
+| 4.1 Visites, aptitude, périodicités, échéances | `RH_Sante_Visite`, `Param_Sante_Periodicite`, `Sys_Sante_Prochaine_Visite`, `RH_Sante_Dossier` ; écrans `RH_Sante_Visite[_Liste]`, `RH_Sante_Dossier` ; API `sante_visite_*`, `sante_calcul_echeance` | SQL T01–T08 **OK** ; API T20–T23 **OK** | **Livré** |
+| 4.1 Tableau de bord + exports + cloisonnement | `RH_Sante_Vue_TB_Aptitudes`, `RH_Sante_Tableau_Bord` (+ page portail), export EPPlus | SQL T09 **OK** ; API T24 **OK** | **Livré** |
+| 4.1 Alertes multi-seuils | Paramétrage `Notifications` (N seuils) | Paramétrage documenté (§3.9) | **Livré (paramétrage)** |
+| 4.2 AT : déclaration, certificats, clôture | **Existant** `RH_Declaration_AT[_Detail]` — non modifié | NR01 : écran existant non modifié (satellites ajoutés) | **Réutilisé** |
+| 4.2 AT : distinction, échéancier, transmissions, destinataires | `Typ_Accident`, `Param_Sante_Destinataire`, `Param_Sante_Etape_AT`, `RH_Declaration_AT_Echeance`, `_Transmission`, `Sys_Sante_AT_Generer_Echeances`, `RH_Declaration_AT_Suivi` | SQL T10–T12 **OK** ; API T25 **OK** | **Livré** |
+| 4.2 AT : arrêt → Absences | `Sys_Sante_AT_Generer_Absence`, `RH_Conge_Suivi` (type `CAT`), `Num_Conge` trace | SQL T13–T15 **OK** ; **NR02 OK** | **Livré (activable `GENERER_ABSENCE_AT`)** |
+| 4.2 AT : statistiques TF/TG documentées | `RH_Sante_Vue_Stats_AT`, `RH_Sante_Stats_AT`, API `sante_at_stats` | SQL T16 **OK** | **Livré** |
+| 4.3 Fiches d'aptitude + versions + PDF + GED | `RH_Sante_Aptitude`, `Sante_Fiche_Aptitude.rpt` (spec), archivage `Param_GED` | SQL T17 **OK** ; API T26 **OK** ; archivage codé (`.rpt` à produire) | **Livré (code) / `.rpt` à produire** |
+| 4.4 Rapport annuel + contrôle sources | `RH_Sante_Rapport_Annuel`, vues agrégées, `Sante_Rapport_Annuel.rpt` (spec) | SQL T18 **OK** ; contrôle anomalies codé ; **modèle légal à valider** | **Livré (code) / `.rpt` à valider** |
+| 4.5 Examens + GED cloisonnée + verrou CNDP + conservation | `RH_Sante_Examen`, GED droits restreints, `Param_Sante_Reglement`, `Sys_Sante_Purge` | SQL T19 **OK** ; API T27 **OK** ; upload T30 **OK** | **Livré** |
+| 5.x Infirmerie, campagnes, référentiels, MP, vaccinations, postes/risques, recherche multicritère | Tables et écrans dédiés (cf. 01_Conception) | API T26, T31 **OK** | **Livré** |
+| Sécurité : audit d'accès, no-store, non-exposition Requêteur | `RH_Sante_Audit_Acces`, headers, consigne Requêteur | API T28–T30, T32 **OK** | **Livré** |
 
 ## 2. Plan de tests (scripts, sans nouveau framework)
 

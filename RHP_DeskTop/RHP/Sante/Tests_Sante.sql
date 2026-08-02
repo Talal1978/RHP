@@ -81,11 +81,11 @@ VALUES ('TEST-T06R', @SOC, 'FICTIF001', '2026-02-01', 'PRD', 'APTE_RES', 'TEST-T
 SELECT @nb=COUNT(*) FROM RH_Sante_Visite WHERE Num_Visite='TEST-T06R' AND id_Societe=@SOC AND Num_Visite_Rectifiee='TEST-T06V' AND ISNULL(Motif_Rectification,'')<>'';
 INSERT INTO ##SanteTests SELECT 'T06', CASE WHEN @nb=1 THEN 'OK' ELSE 'KO' END, 'Visite rectificative liee et motivee';
 
-/* T07 - Maj dossier apres validation ----------------------------------------- */
+/* T07 - Maj dossier apres validation (agent dedie FICTIF006 pour rejouabilite) */
 INSERT INTO RH_Sante_Visite (Num_Visite, id_Societe, Matricule, Dat_Visite, Typ_Visite, Statut_Aptitude, Dat_Prochaine_Visite, Statut, Dat_Crea, Created_By)
-VALUES ('TEST-T07', @SOC, 'FICTIF001', '2026-03-15', 'PRD', 'APTE_RES', '2028-03-15', 'VA', GETDATE(), 'TEST');
-EXEC Sys_Sante_Maj_Dossier 'FICTIF001', @SOC;
-SELECT @nb=COUNT(*) FROM RH_Sante_Dossier WHERE Matricule='FICTIF001' AND id_Societe=@SOC
+VALUES ('TEST-T07', @SOC, 'FICTIF006', '2026-03-15', 'PRD', 'APTE_RES', '2028-03-15', 'VA', GETDATE(), 'TEST');
+EXEC Sys_Sante_Maj_Dossier 'FICTIF006', @SOC;
+SELECT @nb=COUNT(*) FROM RH_Sante_Dossier WHERE Matricule='FICTIF006' AND id_Societe=@SOC
   AND Dat_Derniere_Visite='2026-03-15' AND Statut_Aptitude_Courant='APTE_RES' AND Dat_Prochaine_Visite='2028-03-15';
 INSERT INTO ##SanteTests SELECT 'T07', CASE WHEN @nb=1 THEN 'OK' ELSE 'KO' END, 'Dossier denormalise mis a jour';
 

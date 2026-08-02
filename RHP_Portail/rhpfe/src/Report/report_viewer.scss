@@ -1,4 +1,28 @@
 @use "../variables";
+
+.report-loading-msg {
+  position: fixed;
+  top: calc(50% + 9vw);
+  left: 0;
+  right: 0;
+  text-align: center;
+  z-index: 9999001;
+  font-weight: bold;
+  font-size: 1.1em;
+  color: variables.$colorBase01;
+  pointer-events: none;
+}
+
+.report-empty {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-size: 1.2em;
+  font-weight: bold;
+  color: variables.$foreColorBase01;
+}
+
 html {
   body {
     > div
