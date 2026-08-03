@@ -50,7 +50,7 @@ export const isAccessible = async (
     { param: "p_idEcran", sqlType: NVarChar, valeur: IsNull(idEcran, "") },
     { param: "p_login", sqlType: NVarChar, valeur: username },
     { param: "p_processId", sqlType: NVarChar, valeur: processId },
-    { param: "p_idSoc", sqlType: NVarChar, valeur: id_Societe },
+    { param: "p_idSoc", sqlType: Int, valeur: Number(id_Societe) || 0 },
   ]);
   if (!rsl.result || !rsl.data?.length) {
     return { canModify: true, Taken_By_User: "", Process_Id: processId };

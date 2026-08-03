@@ -66,6 +66,7 @@ const RH_Demande_Conge = () => {
   const [droitsConge, setDroitsConge] = useState<TConge>(iniConge);
   const [canSave, setCanSave] = useState(false);
   const enteteRef = useRef<TEntete | undefined>(undefined);
+  const calculSeq = useRef(0);
   const myAxios = useAxiosPost();
   const { isXs, isSm, isLg, isXl } = useContext(cntX);
   function stateChange(champs: string, valeur: any) {
@@ -85,17 +86,21 @@ const RH_Demande_Conge = () => {
     if (currentNum !== "" && currentNum !== "new") {
       await myAxios("get_demande_conge", { Num_Conge: currentNum })
         .then((dt) => {
+          calculSeq.current++;
           if (dt.data && dt.data?.result) {
             setEntete(dt.data.data[0]);
             enteteRef.current = dt.data.data[0];
+            setLigne(dt.data.lignes ?? []);
           } else {
             setEntete(iniEntete);
             enteteRef.current = iniEntete;
+            setLigne([]);
           }
         })
         .catch((err) => {
           setEntete(iniEntete);
           enteteRef.current = iniEntete;
+          setLigne([]);
         });
     } else {
       setEntete(iniEntete);
@@ -215,8 +220,10 @@ const RH_Demande_Conge = () => {
       });
   }, [calculerConge, entete?.Matricule, entete?.Dat_Deb_Conge]);
   const calcul_conge = useCallback(() => {
-    if (!entete.Statut)
+    if (!entete.Statut) {
+      const seq = ++calculSeq.current;
       myAxios("calcul_conge", { entete }).then((dt) => {
+        if (seq !== calculSeq.current) return;
         if (Boolean(dt.data)) {
           setLigne(dt.data.lignes);
           setEntete((prv: TEntete) => ({
@@ -228,6 +235,7 @@ const RH_Demande_Conge = () => {
           }));
         }
       });
+    }
   }, [
     entete.Dat_Deb_Conge,
     entete.Dat_Fin_Conge,

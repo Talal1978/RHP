@@ -1,5 +1,6 @@
 import { useCallback, useContext, useEffect, useRef, useState } from 'react'
-import { Typography, Paper, Grid, Box, Chip, CircularProgress } from '@mui/material';
+import { Typography, Paper, Box, Chip, CircularProgress } from '@mui/material';
+import Grid from '@mui/material/Unstable_Grid2';
 import Survey_Rendering from '../Survey/Survey_Rendering'
 import { colorBase, Agent } from '../../modules/module_general';
 import { useLocation, useNavigate } from 'react-router-dom';

@@ -1,4 +1,4 @@
-import { lazy, useContext, useEffect, useRef, useState } from "react";
+import { Fragment, lazy, useContext, useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { cntX } from "./MenuMain";
 import { FloatMenu } from "../components/FloatMenu/FloatMenu";
@@ -71,7 +71,7 @@ const RH_Sante_Maladie_Pro = lazy(() => import("../Pages/Sante/RH_Sante_Maladie_
 const RH_Sante_Campagne = lazy(() => import("../Pages/Sante/RH_Sante_Campagne"));
 
 const Ecran = ({ style }: { style?: React.CSSProperties }) => {
-  const { tbnMenu, settbnMenu, showSignature, signatureProps } =
+  const { tbnMenu, settbnMenu, showSignature, signatureProps, signatureVersion } =
     useContext(cntX);
   const { ecran } = useParams<{ ecran: string }>();
   const [currentEcran, setEcran] = useState<React.ReactNode>();
@@ -268,7 +268,9 @@ const Ecran = ({ style }: { style?: React.CSSProperties }) => {
 
   return (
     <div className="ecran" style={style}>
-      {currentEcran}
+      {/* key=signatureVersion : après une signature, l'écran est re-monté
+          pour recharger le document (libellé Signé / Rejeté à jour) */}
+      <Fragment key={signatureVersion}>{currentEcran}</Fragment>
       <div className="Separateur" />
       {tbnMenu.length > 0 && <FloatMenu btnMenus={tbnMenu} />}
       {showSignature && <Signature {...signatureProps} />}

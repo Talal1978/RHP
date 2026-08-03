@@ -1,7 +1,7 @@
 
 import { Request, Response } from 'express';
 import { lireSql } from "../modules/module_sqlRW";
-import { Int, NVarChar } from "mssql";
+import { Float, Int, NVarChar } from "mssql";
 
 
 export const surveyQuestions = async (req: Request, res: Response) => {
@@ -129,12 +129,6 @@ Evaluateur = @evaluateur, Typ_Evalue = @typEvalue, Evalue = @evalue, Ref_Evaluat
         ]);
     }
 
-    const deleteSql = `delete from Survey_Reply_Detail where Cod_Reply = @cod_reply and isnull(Flg_Maj, 0) <> @flg_maj`;
-    await lireSql(deleteSql, [
-        { param: "cod_reply", sqlType: Int, valeur: currentCodReply },
-        { param: "flg_maj", sqlType: NVarChar, valeur: flg_maj.toString() }
-    ]);
-
     const qstSql2 = `select row_number() over(order by Rang asc) as NumQuestion, * from Survey_Detail d where Cod_Survey = @cod_survey and id_Societe = @idSoc order by isnull(Rang, 0)`;
     const rslQsts2 = await lireSql(qstSql2, [
         { param: "cod_survey", sqlType: NVarChar, valeur: cod_survey },
@@ -206,9 +200,9 @@ values(@cod_reply, @cod_question, @question, @obligatoire, @typ_reponse, @num_so
                 { param: "num_sous", sqlType: NVarChar, valeur: row.num },
                 { param: "reponses", sqlType: NVarChar, valeur: reponseStr },
                 { param: "valeur_reponse", sqlType: NVarChar, valeur: valeurReponse },
-                { param: "note", sqlType: Int, valeur: noteData.note || 0 }, // Float?
-                { param: "coef", sqlType: Int, valeur: noteData.coef || 1 },
-                { param: "note_totale", sqlType: Int, valeur: noteData.note_totale || 0 },
+                { param: "note", sqlType: Float, valeur: noteData.note || 0 },
+                { param: "coef", sqlType: Float, valeur: noteData.coef || 1 },
+                { param: "note_totale", sqlType: Float, valeur: noteData.note_totale || 0 },
                 { param: "rang", sqlType: Int, valeur: rang++ },
                 { param: "flg_maj", sqlType: NVarChar, valeur: flg_maj.toString() }
             ], true).then((res) => {
@@ -225,11 +219,29 @@ values(@cod_reply, @cod_question, @question, @obligatoire, @typ_reponse, @num_so
         const allSuccess = results.every(r => r.result);
 
         if (!allSuccess) {
+            // Annuler le nouveau lot partiel : les anciennes réponses (Flg_Maj différent) sont conservées
+            await lireSql(`delete from Survey_Reply_Detail where Cod_Reply = @cod_reply and Flg_Maj = @flg_maj`, [
+                { param: "cod_reply", sqlType: Int, valeur: currentCodReply },
+                { param: "flg_maj", sqlType: NVarChar, valeur: flg_maj.toString() }
+            ]);
             return res.send({ result: false, data: ["Erreur lors de l'enregistrement de certaines réponses."] });
         }
     } catch (error) {
+        // Annuler le nouveau lot partiel en cas d'exception
+        await lireSql(`delete from Survey_Reply_Detail where Cod_Reply = @cod_reply and Flg_Maj = @flg_maj`, [
+            { param: "cod_reply", sqlType: Int, valeur: currentCodReply },
+            { param: "flg_maj", sqlType: NVarChar, valeur: flg_maj.toString() }
+        ]);
         return res.send({ result: false, data: [error] });
     }
+
+    // Supprimer l'ancien lot uniquement après insertion réussie du nouveau :
+    // en cas d'échec d'insertion, les réponses précédentes sont ainsi conservées
+    const deleteSql = `delete from Survey_Reply_Detail where Cod_Reply = @cod_reply and isnull(Flg_Maj, 0) <> @flg_maj`;
+    await lireSql(deleteSql, [
+        { param: "cod_reply", sqlType: Int, valeur: currentCodReply },
+        { param: "flg_maj", sqlType: NVarChar, valeur: flg_maj.toString() }
+    ]);
 
     return res.send({ result: true, data: [{ Cod_Reply: currentCodReply }] });
 };

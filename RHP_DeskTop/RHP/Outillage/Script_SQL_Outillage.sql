@@ -68,9 +68,27 @@ BEGIN
         id_Societe     int               NOT NULL,
         Cod_Outillage  nvarchar(20)      NULL,
         Qte            float             NULL,
+        Flag_Maj       int               NULL,
+        Dat_Crea       datetime          NULL,
+        Created_By     nvarchar(50)      NULL,
+        Dat_Modif      datetime          NULL,
+        Modified_By    nvarchar(50)      NULL,
         CONSTRAINT PK_RH_Outillage_Mouvement_Detail PRIMARY KEY (RowId)
     );
 END
+GO
+
+-- Mise à niveau des bases existantes (colonnes ajoutées après la 1ère version)
+IF COL_LENGTH('dbo.RH_Outillage_Mouvement_Detail', 'Flag_Maj') IS NULL
+    ALTER TABLE dbo.RH_Outillage_Mouvement_Detail ADD Flag_Maj int NULL;
+IF COL_LENGTH('dbo.RH_Outillage_Mouvement_Detail', 'Dat_Crea') IS NULL
+    ALTER TABLE dbo.RH_Outillage_Mouvement_Detail ADD Dat_Crea datetime NULL;
+IF COL_LENGTH('dbo.RH_Outillage_Mouvement_Detail', 'Created_By') IS NULL
+    ALTER TABLE dbo.RH_Outillage_Mouvement_Detail ADD Created_By nvarchar(50) NULL;
+IF COL_LENGTH('dbo.RH_Outillage_Mouvement_Detail', 'Dat_Modif') IS NULL
+    ALTER TABLE dbo.RH_Outillage_Mouvement_Detail ADD Dat_Modif datetime NULL;
+IF COL_LENGTH('dbo.RH_Outillage_Mouvement_Detail', 'Modified_By') IS NULL
+    ALTER TABLE dbo.RH_Outillage_Mouvement_Detail ADD Modified_By nvarchar(50) NULL;
 GO
 
 /* -------------------------------------------------------------------------- */

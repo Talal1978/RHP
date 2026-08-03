@@ -170,16 +170,21 @@ const Decision_Signataires = ({ v }: ObjetGenerique) => {
   );
 };
 const Btn_Signataires = ({ RowId }: { RowId: number }) => {
-  const { setShowSignature } = useContext(cntX);
+  const { setShowSignature, bumpSignatureVersion } = useContext(cntX);
   const myAxios = useAxiosPost();
   const [Commentaire, setCommentaire] = useState("");
   const decision = useCallback(
     (Decision: string) => {
       myAxios("signer", { RowId, Commentaire, Decision }).then((dt) => {
-        if (dt?.data) setShowSignature(false);
+        if (dt?.data) {
+          // Re-monte l'écran courant : le document est rechargé et le libellé
+          // du bouton de signature affiche le nouveau statut (Signé / Rejeté / ...)
+          if (dt.data?.result) bumpSignatureVersion();
+          setShowSignature(false);
+        }
       });
     },
-    [RowId, Commentaire]
+    [RowId, Commentaire, bumpSignatureVersion, setShowSignature]
   );
   return (
     <div className="btn_signatures">

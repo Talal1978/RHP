@@ -5,7 +5,6 @@ import {
     Button,
     Chip,
     Divider,
-    Grid,
     IconButton,
     InputAdornment,
     MenuItem,
@@ -19,6 +18,7 @@ import {
     FormControl,
     FormLabel
 } from "@mui/material";
+import Grid from "@mui/material/Unstable_Grid2";
 import { Add, Delete, Save, CheckCircle, Cancel, Person, AttachFileOutlined } from "@mui/icons-material";
 import useAxiosPost from "../../hooks/useAxiosPost";
 import useMsgBox from "../../hooks/useMsgBox";
@@ -321,9 +321,6 @@ const Formation = () => {
                         value={tabIndex}
                         onChange={(_, v) => setTabIndex(v)}
                         sx={{ mb: 1, borderBottom: 1, borderColor: "divider" }}
-                        variant="scrollable"
-                        scrollButtons="auto"
-                        allowScrollButtonsMobile
                     >
                         <Tab label="Modules / Compétences" />
                         <Tab label="Participants" />

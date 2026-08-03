@@ -129,9 +129,19 @@ export async function save_outillage_mouvement(req: Request, res: Response) {
         let detailError: any = null;
 
         for (const d of detail) {
+            // NB : ne persister que les colonnes de la table. Lib_Outillage,
+            // Typ_Outillage, Num_Serie et Qte_Dispo sont des champs d'affichage
+            // issus des jointures (RH_Outillage / vues de disponibilité).
             const rsDet = await ecrireSql({
                 tableName: "RH_Outillage_Mouvement_Detail",
-                fields: { ...d, id_Societe: idSocNum, Num_Mouvement, Flag_Maj: flgMaj },
+                fields: {
+                    Cod_Outillage: d.Cod_Outillage,
+                    Qte: d.Qte,
+                    RowId: d.RowId,
+                    id_Societe: idSocNum,
+                    Num_Mouvement,
+                    Flag_Maj: flgMaj,
+                },
                 joinFields: ["Num_Mouvement", "id_Societe", "RowId"],
                 excludeFields: ["RowId"],
                 login: Matricule,

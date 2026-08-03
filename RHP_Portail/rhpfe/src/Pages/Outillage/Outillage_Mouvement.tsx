@@ -74,7 +74,7 @@ const Outillage_Mouvement = () => {
     const [detail, setDetail] = useState<TDetail[]>([]);
     const enteteRef = useRef<TEntete | undefined>(undefined);
     const detailRef = useRef<TDetail[] | undefined>(undefined);
-    const [agentInfo, setAgentInfo] = useState<{ Nom?: string; Cod_Poste?: string; Cod_Entite?: string }>({});
+    const [agentInfo, setAgentInfo] = useState<{ Cod_Poste?: string; Cod_Entite?: string }>({});
     const [codOutillageSel, setCodOutillageSel] = useState("");
     const [typMouvementOptions, setTypMouvementOptions] = useState<ObjetGenerique[]>([]);
     const myAxios = useAxiosPost();
@@ -99,6 +99,24 @@ const Outillage_Mouvement = () => {
                 .catch(() => {});
         }
     }, []);
+
+    // Renseigne automatiquement Poste et Entité dès que le matricule est connu
+    // (saisie manuelle, matricule pré-rempli de l'agent connecté, ou chargement d'un mouvement)
+    useEffect(() => {
+        setAgentInfo({});
+        if (!entete?.Matricule) return;
+        myAxios("rh_agent", { Matricule: entete.Matricule })
+            .then((dt) => {
+                if (dt.data?.result && dt.data.data?.agent?.length > 0) {
+                    const a = dt.data.data.agent[0];
+                    setAgentInfo({
+                        Cod_Poste: a.Cod_Poste || "",
+                        Cod_Entite: a.Cod_Entite || "",
+                    });
+                }
+            })
+            .catch(() => {});
+    }, [entete?.Matricule]);
 
     async function ondelete(e: { rowIndex: number; row: ObjetGenerique }) {
         const rsl = await msgBox({
@@ -196,19 +214,6 @@ const Outillage_Mouvement = () => {
             setCurrentNum(valeur);
         }
         if (champs === "Matricule" && (!currentNum || currentNum === "new")) {
-            setAgentInfo({});
-            if (valeur) {
-                myAxios("rh_agent", { Matricule: valeur }).then((dt) => {
-                    if (dt.data?.result && dt.data.data?.agent?.length > 0) {
-                        const a = dt.data.data.agent[0];
-                        setAgentInfo({
-                            Nom: (a.Nom_Agent || "") + " " + (a.Prenom_Agent || ""),
-                            Cod_Poste: a.Cod_Poste || "",
-                            Cod_Entite: a.Cod_Entite || "",
-                        });
-                    }
-                });
-            }
             if (entete?.Typ_Mouvement === "R") {
                 setDetail([]);
             }
@@ -246,18 +251,6 @@ const Outillage_Mouvement = () => {
                         setDetail(dt.data.detail);
                         enteteRef.current = dt.data.entete;
                         detailRef.current = dt.data.detail;
-                        if (dt.data.entete.Matricule) {
-                            myAxios("rh_agent", { Matricule: dt.data.entete.Matricule }).then((dtA) => {
-                                if (dtA.data?.result && dtA.data.data?.agent?.length > 0) {
-                                    const a = dtA.data.data.agent[0];
-                                    setAgentInfo({
-                                        Nom: (a.Nom_Agent || "") + " " + (a.Prenom_Agent || ""),
-                                        Cod_Poste: a.Cod_Poste || "",
-                                        Cod_Entite: a.Cod_Entite || "",
-                                    });
-                                }
-                            });
-                        }
                     } else {
                         setEntete(iniEntete);
                         setDetail([]);
@@ -746,34 +739,37 @@ const Outillage_Mouvement = () => {
                                 style={{ width: "100%" }}
                             />
                         </Grid>
-                        <Grid xs={12} sm={12} lg={4} xl={3}>
-                            <TextBox
+                        <Grid xs={12} sm={6} lg={4} xl={3}>
+                            <TextZoom
                                 readonly={true}
-                                nomControle="Nom_Agent"
-                                label="Nom Agent"
-                                valeur={agentInfo.Nom || ""}
-                                style={{ width: "100%" }}
-                            />
-                        </Grid>
-                        <Grid xs={12} sm={6} lg={3} xl={3}>
-                            <TextBox
-                                readonly={true}
+                                numZoom=""
                                 nomControle="Cod_Poste"
                                 label="Poste"
                                 valeur={agentInfo.Cod_Poste || ""}
+                                findlibelle={{
+                                    champs: "Lib_Poste",
+                                    code: "Cod_Poste",
+                                    tblName: "Org_Poste",
+                                }}
                                 style={{ width: "100%" }}
                             />
                         </Grid>
-                        <Grid xs={12} sm={6} lg={3} xl={3}>
-                            <TextBox
+                        <Grid xs={12} sm={6} lg={4} xl={3}>
+                            <TextZoom
                                 readonly={true}
+                                numZoom=""
                                 nomControle="Cod_Entite"
                                 label="Entité"
                                 valeur={agentInfo.Cod_Entite || ""}
+                                findlibelle={{
+                                    champs: "Lib_Entite",
+                                    code: "Cod_Entite",
+                                    tblName: "Org_Entite",
+                                }}
                                 style={{ width: "100%" }}
                             />
                         </Grid>
-                        <Grid xs={12} sm={6} lg={3} xl={3}>
+                        <Grid xs={12} sm={6} lg={4} xl={3}>
                             <CalendarZoom
                                 nomControle="Dat_Mouvement"
                                 label="Date Mouvement"
@@ -786,7 +782,7 @@ const Outillage_Mouvement = () => {
                                 onClear={() => stateChange("Dat_Mouvement", "")}
                             />
                         </Grid>
-                        <Grid xs={12} sm={6} lg={3} xl={3}>
+                        <Grid xs={12} sm={6} lg={4} xl={3}>
                             <ComboBox
                                 readOnly={!!currentNum && currentNum !== "new"}
                                 rubrique="Typ_Mouvement_Outillage"
@@ -798,7 +794,7 @@ const Outillage_Mouvement = () => {
                                 style={{ width: "100%" }}
                             />
                         </Grid>
-                        <Grid xs={12} sm={12} lg={6} xl={6}>
+                        <Grid xs={12} sm={12} lg={12} xl={6}>
                             <TextBox
                                 nomControle="Commentaire"
                                 label="Commentaire"
@@ -826,6 +822,11 @@ const Outillage_Mouvement = () => {
                             nomControle="Cod_Outillage_Sel"
                             label="Outillage"
                             valeur={codOutillageSel}
+                            findlibelle={{
+                                champs: "Lib_Outillage",
+                                code: "Cod_Outillage",
+                                tblName: "RH_Outillage",
+                            }}
                             onchange={(champ: string, val: any) => setCodOutillageSel(val)}
                             style={{ flex: 1, minWidth: 200 }}
                         />
@@ -886,7 +887,7 @@ const iniEntete: TEntete = {
     Num_Mouvement: "",
     Matricule: Agent?.Matricule,
     Dat_Mouvement: new Date(),
-    Typ_Mouvement: "",
+    Typ_Mouvement: "A", // Affectation par défaut
     Commentaire: "",
     Statut: "",
 };

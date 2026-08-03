@@ -105,7 +105,7 @@ export async function lireSql(
     console.error("[MSSQL] lireSql error:", err);
     if (params) {
       console.error("[MSSQL] Failed query:", sqlStr.substring(0, 300));
-      console.error("[MSSQL] Params:", params.map(p => ({ param: p.param, type: p.sqlType?.name, valeur: p.valeur instanceof Date ? p.valeur.toISOString() : p.valeur })));
+      console.error("[MSSQL] Params:", params.map(p => ({ param: p.param, type: p.sqlType?.name, valeur: p.valeur instanceof Date ? (isNaN(p.valeur.getTime()) ? "Invalid Date" : p.valeur.toISOString()) : p.valeur })));
     }
     return { result: false, data: [], fields: [], sort: err };
   }

@@ -116,7 +116,24 @@ export async function get_demande_conge(req: Request, res: Response) {
     { param: "Num_Conge", sqlType: NVarChar, valeur: Num_Conge },
     { param: "id_Societe", sqlType: Int, valeur: idSocNum },
   ]);
-  return res.send(rsl);
+  if (rsl.result && rsl.data?.length > 0) {
+    const rslLignes = await lireSql(
+      `SELECT Dat_Deb, Dat_Fin,
+  isnull(Duree_Globale,0) Duree_Globale,
+  isnull(Repos_Hebdomadaire,0) Repos_Hebdomadaire,
+  isnull(Jours_Feries,0) Jours_Feries,
+  isnull(Duree_Conge,0) Duree_Conge
+  FROM RH_Conge_Suivi_Detail
+  WHERE Num_Conge=@Num_Conge and id_Societe=@id_Societe
+  ORDER BY Dat_Deb`,
+      [
+        { param: "Num_Conge", sqlType: NVarChar, valeur: Num_Conge },
+        { param: "id_Societe", sqlType: Int, valeur: idSocNum },
+      ]
+    );
+    return res.send({ ...rsl, lignes: rslLignes.result ? rslLignes.data : [] });
+  }
+  return res.send({ ...rsl, lignes: [] });
 }
 
 export async function save_demande_conge(req: Request, res: Response) {

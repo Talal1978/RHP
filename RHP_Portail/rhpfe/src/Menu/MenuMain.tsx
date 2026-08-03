@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction, createContext, useMemo, useState } from "react";
+import { Dispatch, SetStateAction, createContext, useCallback, useEffect, useMemo, useState } from "react";
 import MenuNavBar from "./MenuNavBar";
 import MenuSideBar from "./MenuSideBar";
 import "./mainmenu.scss";
@@ -8,6 +8,8 @@ import { Box, useMediaQuery, useTheme } from "@mui/material";
 import Ged from "../Pages/GED/Ged";
 import Loading from "../components/Loading/Loading";
 import MyAlert from "../components/MyAlert/MyAlert";
+import useAxiosGet from "../hooks/useAxiosGet";
+import { rubriques, setRubriques } from "../modules/module_rubriques";
 
 export const cntX = createContext<{
   setShowLoading: Dispatch<SetStateAction<boolean>>;
@@ -31,6 +33,8 @@ export const cntX = createContext<{
   isMd: boolean;
   isLg: boolean;
   isXl: boolean;
+  signatureVersion: number;
+  bumpSignatureVersion: () => void;
 }>({
   setShowLoading: () => {},
   setShowGED: () => {},
@@ -53,6 +57,8 @@ export const cntX = createContext<{
   isLg: false,
   isMd: false,
   isXl: false,
+  signatureVersion: 0,
+  bumpSignatureVersion: () => {},
 });
 
 export const MenuMain = () => {
@@ -71,6 +77,29 @@ export const MenuMain = () => {
     name_ecran: "",
     valeur_index: "",
   });
+
+  // Les rubriques (findRubrique/listRubriques) ne sont chargées qu'au login.
+  // Après une restauration de session (localStorage), elles sont vides :
+  // il faut les recharger avant d'afficher l'écran (libellés des menus, ComboBox...).
+  const myAxiosGet = useAxiosGet();
+  const [rubriquesReady, setRubriquesReady] = useState(rubriques.length > 0);
+  useEffect(() => {
+    if (rubriques.length > 0) return;
+    myAxiosGet({ apiStr: "list_rubriques" })
+      .then((r) => {
+        if (r?.data) setRubriques(r.data);
+      })
+      .catch(() => {})
+      .finally(() => setRubriquesReady(true));
+  }, [myAxiosGet]);
+
+  // Incrémenté après chaque signature effectuée depuis le panneau de signature :
+  // Ecran re-monte la page courante pour recharger le document (statut Signé/Rejeté).
+  const [signatureVersion, setSignatureVersion] = useState(0);
+  const bumpSignatureVersion = useCallback(
+    () => setSignatureVersion((v) => v + 1),
+    []
+  );
 
   const theme = useTheme();
   const isSmall = useMediaQuery("(max-width:1000px)");
@@ -103,6 +132,8 @@ export const MenuMain = () => {
       isXs,
       isMd,
       isXl,
+      signatureVersion,
+      bumpSignatureVersion,
     }),
     [
       isOpen,
@@ -120,6 +151,8 @@ export const MenuMain = () => {
       isMd,
       isLg,
       isXl,
+      signatureVersion,
+      bumpSignatureVersion,
     ]
   );
 
@@ -130,7 +163,7 @@ export const MenuMain = () => {
           <MenuNavBar />
         </div>
         <div className="corps">
-          <Ecran />
+          {rubriquesReady ? <Ecran /> : <Loading />}
           <MenuSideBar />
         </div>
       </Box>

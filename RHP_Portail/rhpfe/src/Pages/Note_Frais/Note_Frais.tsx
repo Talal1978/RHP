@@ -617,7 +617,7 @@ const Note_Frais = () => {
             <Grid xs={12} sm={6} lg={3} xl={3}>
               <ComboBox
                 readOnly={true}
-                rubrique="Statut"
+                rubrique="Statut_Signature"
                 nomControle="Statut"
                 label="Statut"
                 valeur={entete?.Statut || ""}

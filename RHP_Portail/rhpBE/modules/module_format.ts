@@ -20,11 +20,10 @@ export function checkDateFormat(date: any): boolean {
   return parsedDate instanceof Date && !isNaN(parsedDate.getTime());
 }
 export const cDate = (strDate: string): Date => {
-  if (
-    rgDateTime.test(strDate) ||
-    rsDateTimeZone.test(strDate) ||
-    rsDateTime.test(strDate)
-  ) {
+  if (rsDateTimeZone.test(strDate) || rsDateTime.test(strDate)) {
+    // Format ISO 8601 (ex: "2026-08-02T00:00:00.000Z") : parsing natif
+    return new Date(strDate);
+  } else if (rgDateTime.test(strDate)) {
     return parse(strDate, "dd/MM/yyyy HH:mm", new Date());
   } else if (rgDate.test(strDate)) {
     return parse(strDate, "dd/MM/yyyy", new Date());
