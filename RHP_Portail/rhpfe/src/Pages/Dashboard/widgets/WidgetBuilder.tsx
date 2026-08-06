@@ -10,6 +10,8 @@ import {
   Tab,
   Paper,
   TextField,
+  Checkbox,
+  FormControlLabel,
 } from "@mui/material";
 import {
   Close,
@@ -26,6 +28,7 @@ import type { UserDashboardWidget, WidgetDefinition, WidgetSection } from "./typ
 import { WidgetRenderer } from "./WidgetRenderer";
 import { WidgetLibrary } from "./WidgetLibrary";
 import { WidgetSettings } from "./WidgetSettings";
+import useMsgBox from "../../../hooks/useMsgBox";
 
 interface WidgetBuilderProps {
   open: boolean;
@@ -51,6 +54,7 @@ export const WidgetBuilder = ({
   const [selectedWidgetId, setSelectedWidgetId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState(0);
   const [previewMode, setPreviewMode] = useState(false);
+  const msgBox = useMsgBox();
 
   // Le builder est monté en permanence par le dashboard (avant même que les
   // widgets existants ne soient chargés depuis localStorage) : le brouillon
@@ -142,10 +146,36 @@ export const WidgetBuilder = ({
     setDraftSections((prev) => prev.map((s) => (s.id === id ? { ...s, title } : s)));
   }, []);
 
-  const handleRemoveSection = useCallback((id: string) => {
+  const handleToggleSectionTitle = useCallback((id: string, showTitle: boolean) => {
+    setDraftSections((prev) => prev.map((s) => (s.id === id ? { ...s, showTitle } : s)));
+  }, []);
+
+  const handleRemoveSection = useCallback(async (id: string) => {
+    // La suppression d'une section entraîne la suppression de son contenu
+    const section = draftSections.find((s) => s.id === id);
+    const nbWidgets = draftWidgets.filter((w) => w.sectionId === id).length;
+    if (nbWidgets > 0) {
+      const reply = await msgBox({
+        titre: "Suppression de section",
+        msg: `Supprimer la section "${section?.title || "Sans titre"}" et ses ${nbWidgets} widget(s) ?`,
+        typMsg: "question",
+        typReply: "OKCancel",
+      });
+      if (reply !== "Ok") return;
+    }
     setDraftSections((prev) => prev.filter((s) => s.id !== id).map((s, i) => ({ ...s, position: i })));
-    // Les widgets de la section supprimée repassent hors section
-    setDraftWidgets((prev) => prev.map((w) => (w.sectionId === id ? { ...w, sectionId: null } : w)));
+    setDraftWidgets((prev) => prev.filter((w) => w.sectionId !== id));
+  }, [draftSections, draftWidgets, msgBox]);
+
+  const handleMoveSection = useCallback((id: string, direction: "up" | "down") => {
+    setDraftSections((prev) => {
+      const ordered = [...prev].sort((a, b) => a.position - b.position);
+      const index = ordered.findIndex((s) => s.id === id);
+      const target = direction === "up" ? index - 1 : index + 1;
+      if (index < 0 || target < 0 || target >= ordered.length) return prev;
+      [ordered[index], ordered[target]] = [ordered[target], ordered[index]];
+      return ordered.map((s, i) => ({ ...s, position: i }));
+    });
   }, []);
 
   const handleSave = () => {
@@ -332,9 +362,27 @@ export const WidgetBuilder = ({
                   Nouvelle section
                 </Button>
                 <Stack spacing={1.5}>
-                  {orderedSections.map((section) => (
+                  {orderedSections.map((section, index) => (
                     <Paper key={section.id} variant="outlined" sx={{ p: 1.5 }}>
                       <Stack direction="row" spacing={1} alignItems="center">
+                        <Stack spacing={0} sx={{ flexShrink: 0 }}>
+                          <IconButton
+                            size="small"
+                            onClick={() => handleMoveSection(section.id, "up")}
+                            disabled={index === 0}
+                            sx={{ p: 0.25 }}
+                          >
+                            <ExpandLess sx={{ fontSize: 18 }} />
+                          </IconButton>
+                          <IconButton
+                            size="small"
+                            onClick={() => handleMoveSection(section.id, "down")}
+                            disabled={index === orderedSections.length - 1}
+                            sx={{ p: 0.25 }}
+                          >
+                            <ExpandMore sx={{ fontSize: 18 }} />
+                          </IconButton>
+                        </Stack>
                         <TextField
                           fullWidth
                           size="small"
@@ -350,6 +398,21 @@ export const WidgetBuilder = ({
                           <Delete fontSize="small" />
                         </IconButton>
                       </Stack>
+                      <FormControlLabel
+                        control={
+                          <Checkbox
+                            size="small"
+                            checked={section.showTitle !== false}
+                            onChange={(e) => handleToggleSectionTitle(section.id, e.target.checked)}
+                          />
+                        }
+                        label={
+                          <Typography variant="caption" color="text.secondary">
+                            Afficher le titre de la section
+                          </Typography>
+                        }
+                        sx={{ ml: 0.5, mt: 0.5 }}
+                      />
                     </Paper>
                   ))}
                   {orderedSections.length === 0 && (
@@ -434,9 +497,16 @@ export const WidgetBuilder = ({
                       <Typography
                         variant="subtitle2"
                         fontWeight="bold"
-                        sx={{ mb: 1.5, color: "text.secondary", textTransform: "uppercase", letterSpacing: 0.5 }}
+                        sx={{
+                          mb: 1.5,
+                          color: "text.secondary",
+                          textTransform: "uppercase",
+                          letterSpacing: 0.5,
+                          opacity: section.showTitle === false ? 0.45 : 1,
+                        }}
                       >
                         {section.title || "Sans titre"} ({sectionWidgets.length})
+                        {section.showTitle === false ? " — titre masqué" : ""}
                       </Typography>
                       {sectionWidgets.length === 0 ? (
                         <Typography variant="body2" color="text.disabled">

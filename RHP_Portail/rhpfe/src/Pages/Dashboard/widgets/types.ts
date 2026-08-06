@@ -11,7 +11,8 @@ export type StandardWidgetId =
   | "notifications"
   | "recentAccess"
   | "profile"
-  | "leaveBalance";
+  | "leaveBalance"
+  | "parapheur";
 
 export interface WidgetDataConfig {
   objectName?: string;
@@ -57,6 +58,8 @@ export interface WidgetSection {
   id: string;
   title: string;
   position: number;
+  /** Afficher le titre de la section sur le portail (défaut : true). */
+  showTitle?: boolean;
 }
 
 export interface KpiData {
@@ -91,6 +94,7 @@ export const STANDARD_WIDGET_OPTIONS = [
   { id: "weather", label: "Météo", icon: "CloudOutlined", color: "#f57c00" },
   { id: "quickActions", label: "Accès Rapide", icon: "Apps", color: "#2e7d32" },
   { id: "notifications", label: "À faire & Notifications", icon: "NotificationsOutlined", color: "#8e24aa" },
+  { id: "parapheur", label: "Parapheur", icon: "CreateOutlined", color: "#d32f2f" },
   { id: "recentAccess", label: "Accès récents", icon: "History", color: "#d32f2f" },
   { id: "profile", label: "Profil", icon: "AccountCircleOutlined", color: "#1976d2" },
   { id: "leaveBalance", label: "Solde de congés", icon: "BeachAccess", color: "#f57c00" },

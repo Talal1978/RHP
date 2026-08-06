@@ -1,17 +1,17 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Box, Grid, Paper, Stack, Typography } from "@mui/material";
 import {
   NotificationsOutlined,
   WbSunnyOutlined,
   RateReviewOutlined,
   SchoolOutlined,
-  WidgetsOutlined,
   WorkOutline,
   CreateOutlined,
 } from "@mui/icons-material";
 import { useDashboardWidgets } from "./widgets/useDashboardWidgets";
 import { WidgetBuilder } from "./widgets/WidgetBuilder";
 import { WidgetRenderer } from "./widgets/WidgetRenderer";
+import { StandardWidgetDataContext } from "./widgets/StandardWidgetDataContext";
 import type { UserDashboardWidget } from "./widgets/types";
 import { Agent, colorBase } from "../../modules/module_general";
 import { useNavigate } from "react-router-dom";
@@ -221,14 +221,15 @@ const Dashboard = () => {
     return "Tendance variable";
   };
 
-  const navigateToSection = (path: string, options?: { state?: unknown }) => {
+  const navigateToSection = useCallback((path: string, options?: { state?: unknown }) => {
     navigate(path, options);
-  };
+  }, [navigate]);
 
   const sectionPropsMap = useMemo<Record<DashboardSectionId, Record<string, unknown>>>(
     () => ({
       welcome: {
-        firstName: Agent.Nom?.split(" ")[0] || "",
+        // Agent.Nom contient déjà le nom complet (Nom_Agent + ' ' + Prenom_Agent)
+        firstName: Agent.Nom || "",
         onRefresh: handleRefresh,
         onOpenConfig: () => setConfigOpen(true),
       },
@@ -263,6 +264,22 @@ const Dashboard = () => {
       },
     }),
     [blogs, notifications, shortcuts, soldeConge, weather]
+  );
+
+  // Données exposées aux widgets "standard" (Accès Rapide, Notifications, Actualités,
+  // Météo, Parapheur) rendus via ListWidget — y compris dans l'aperçu du builder.
+  const standardWidgetData = useMemo<Record<string, Record<string, unknown>>>(
+    () => ({
+      quickActions: sectionPropsMap.quickActions,
+      notifications: sectionPropsMap.notifications,
+      blogs: sectionPropsMap.news,
+      weather: sectionPropsMap.weather,
+      parapheur: {
+        notifications: notifications.filter((n) => n.type === "signature"),
+        onNavigate: navigateToSection,
+      },
+    }),
+    [sectionPropsMap, notifications, navigateToSection]
   );
 
   const visibleSections = sectionPreferences.filter((section) => section.visible);
@@ -326,34 +343,25 @@ const Dashboard = () => {
   };
 
   return (
-    <Box
-      sx={{
-        width: "100%",
-        maxWidth: 1500,
-        mx: "auto",
-        pt: { xs: 1, md: 1.5 },
-        pb: { xs: 5, sm: 6 },
-        px: { xs: 1, sm: 3, md: 4 },
-        backgroundColor: "transparent",
-      }}
-    >
+    <StandardWidgetDataContext.Provider value={standardWidgetData}>
+      <Box
+        sx={{
+          width: "100%",
+          maxWidth: 1500,
+          mx: "auto",
+          pt: { xs: 1, md: 1.5 },
+          pb: { xs: 5, sm: 6 },
+          px: { xs: 1, sm: 3, md: 4 },
+          backgroundColor: "transparent",
+        }}
+      >
       <Grid container spacing={{ xs: 1, sm: 3, md: 0 }} rowSpacing={{ md: 4 }} justifyContent="center" alignItems="stretch">
         {topSections.map(renderSection)}
       </Grid>
 
       {hasWidgets && (
         <>
-          <Stack
-            direction="row"
-            alignItems="center"
-            spacing={1}
-            sx={{ mt: 4, mb: 2, justifyContent: { xs: "center", sm: "flex-start" } }}
-          >
-            <WidgetsOutlined sx={{ fontSize: 22, color: colorBase.colorBase01 }} />
-            <Typography variant="h6" fontWeight="bold" sx={{ color: colorBase.colorBase01 }}>
-              Mes widgets
-            </Typography>
-          </Stack>
+          <Box sx={{ mt: 3 }} />
 
           {dashboardWidgetSections.length > 0 && (
             <Stack direction="column" spacing={2} sx={{ width: "100%", mb: unsectionedWidgets.length > 0 ? 4 : 0 }}>
@@ -362,16 +370,19 @@ const Dashboard = () => {
                   key={section.id}
                   sx={{
                     width: "100%",
-                    p: 2.5,
+                    // Titre masqué : le contenu est placé en haut de la section (top = 5px)
+                    p: section.showTitle === false ? "5px 20px 20px 20px" : 2.5,
                     borderRadius: 2,
                     border: "1px solid rgba(0,0,0,0.06)",
                     boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
                     bgcolor: "background.paper",
                   }}
                 >
-                  <Typography variant="subtitle1" fontWeight="bold" sx={{ mb: 2, color: colorBase.colorBase01 }}>
-                    {section.title}
-                  </Typography>
+                  {section.showTitle !== false && (
+                    <Typography variant="subtitle1" fontWeight="bold" sx={{ mb: 2, color: colorBase.colorBase01 }}>
+                      {section.title}
+                    </Typography>
+                  )}
                   <Box
                     sx={{
                       display: "flex",
@@ -426,7 +437,8 @@ const Dashboard = () => {
         }}
         onSaveSections={saveSections}
       />
-    </Box>
+      </Box>
+    </StandardWidgetDataContext.Provider>
   );
 };
 

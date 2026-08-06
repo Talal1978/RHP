@@ -329,6 +329,27 @@ Public Class Param_Python_Saisi
             Else
                 ' Afficher un message de succès
                 Result_txt.Text &= vbCrLf & "Traitement terminé avec succès."
+                ' Rafraichir la fiche agent si le traitement a enregistre un agent
+                RafraichirFicheAgent(strMsg)
+                ' Traitement scan piece d'identite : fermer cet ecran apres confirmation,
+                ' en ramenant l'ecran precedent (fiche agent) au premier plan
+                If strMsg.ToString.Contains("AGENT_ENREGISTRE:") Then
+                    Try
+                        Dim pnl = leMenu.pnl_PersonnalContent
+                        Dim idx As Integer = pnl.Controls.IndexOf(Me)
+                        If idx >= 0 Then
+                            If pnl.Controls.Count > idx + 1 Then
+                                Dim prevForm As Ecran = TryCast(pnl.Controls(idx + 1), Ecran)
+                                If prevForm IsNot Nothing Then
+                                    prevForm.BringToFront()
+                                    leMenu.currentEcran = prevForm
+                                End If
+                            End If
+                            Me.Close()
+                        End If
+                    Catch ex As Exception
+                    End Try
+                End If
             End If
 
         Catch ex As Exception

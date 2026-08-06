@@ -1,6 +1,6 @@
 ﻿Module Module_Licence
     Public oKle As String = ""
-    Public UriStr0 As String = "http://ray1.ma/apps"
+    Public UriStr0 As String = "https://ray1.ma/apps"
     Dim UriStr As String = ""
     Function GetLiceIdent() As String
         Dim ostr As String = CnExecuting("declare @str varchar(max),@str2 varchar(max),@i int, @month int,@day int
@@ -63,7 +63,7 @@ select substring(@str2,@month,32), @str2").Fields(0).Value
                 Dim srd As New IO.StreamReader("lic\cle.cle")
                 Dim uriTemp As String = IsNull(Decrypt(srd.ReadLine), "").Trim
                 If uriTemp <> "" Then
-                    UriStr0 = uriTemp
+                    UriStr = uriTemp
                     GoTo suite0
                 End If
                 srd.Close()

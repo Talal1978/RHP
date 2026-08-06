@@ -1,6 +1,3 @@
 [
-  { "id": "welcome", "label": "Accueil", "visible": true, "desktopSpan": 12 },
-  { "id": "quickActions", "label": "Accès Rapide", "visible": true, "desktopSpan": 6 },
-  { "id": "notifications", "label": "À faire & Notifications", "visible": true, "desktopSpan": 6 },
-  { "id": "news", "label": "Actualités RH", "visible": true, "desktopSpan": 12 }
+  { "id": "welcome", "label": "Accueil", "visible": true, "desktopSpan": 12 }
 ]

@@ -8,22 +8,21 @@ conn_str = 'DRIVER={ODBC Driver 17 for SQL Server};SERVER=" & Serveur.Replace("\
 conn = pyodbc.connect(conn_str)" & vbCrLf & pythonCode & vbCrLf & "conn.close()" & vbCrLf
     End Function
     Function executerCodePython(pythonCode As String, Message As System.Text.StringBuilder, Optional withConn As Boolean = True) As pyResult
-
+        Dim tmp As String = ""
         Try
             If withConn Then pythonCode = setPythonConn(pythonCode, True)
-            Dim rg As New System.Text.RegularExpressions.Regex("(?<!\\)\""", System.Text.RegularExpressions.RegexOptions.IgnoreCase)
-            ' Escape double quotes within the python code
-            Dim escapedPythonCode As String = pythonCode.Replace("""", "\""")
-            ' Prepare the command line argument
-            Dim commandLineArg As String = "-c """ & escapedPythonCode & """"
-            'Dim f As New Zoom_SqlText
-            'With f
-            '    .Sql_Text.Text = pythonCode
-            '    .ShowDialog()
-            'End With
+            ' Ecrire le code dans un fichier temporaire : evite la limite de 32767 caracteres
+            ' de la ligne de commande (-c) et les problemes d'echappement des guillemets
+            If Not IO.Directory.Exists("TMP") Then IO.Directory.CreateDirectory("TMP")
+            Dim rnd As New Random
+            tmp = IO.Path.Combine(My.Application.Info.DirectoryPath, "TMP\py_exec_" & rnd.Next(12000, 1569221) & ".py")
+            IO.File.WriteAllText(tmp, pythonCode, New System.Text.UTF8Encoding(False))
             Dim psi As New ProcessStartInfo()
             psi.FileName = FindParam("chemin_python") ' Provide the full path if not in PATH
-            psi.Arguments = commandLineArg
+            If Not IO.File.Exists(psi.FileName) Then
+                psi.FileName = "python.exe"
+            End If
+            psi.Arguments = """" & tmp & """"
             psi.UseShellExecute = False
             psi.RedirectStandardOutput = True
             psi.RedirectStandardError = True
@@ -42,8 +41,10 @@ conn = pyodbc.connect(conn_str)" & vbCrLf & pythonCode & vbCrLf & "conn.close()"
                 noError = False
             End While
             process.WaitForExit()
+            If IO.File.Exists(tmp) Then IO.File.Delete(tmp)
             Return New pyResult With {.result = True, .CodeCompiled = pythonCode, .Erreur = ""}
         Catch ex As Exception
+            If tmp <> "" AndAlso IO.File.Exists(tmp) Then IO.File.Delete(tmp)
             Message.AppendLine(ex.Message)
             Return New pyResult With {.result = False, .CodeCompiled = pythonCode, .Erreur = ex.Message}
         End Try
@@ -98,6 +99,30 @@ codeChecking()
         If IO.File.Exists(tmp) Then IO.File.Delete(tmp)
         Return rsl
     End Function
+    Sub RafraichirFicheAgent(strMsg As System.Text.StringBuilder)
+        ' Rafraichit la fiche RH_Agent ouverte quand un traitement python signale
+        ' l'enregistrement d'un agent (ligne "AGENT_ENREGISTRE:<matricule>")
+        Try
+            Dim mat As String = ""
+            For Each line As String In strMsg.ToString().Split({vbCr, vbLf}, StringSplitOptions.RemoveEmptyEntries)
+                If line.StartsWith("AGENT_ENREGISTRE:") Then
+                    mat = line.Substring(17).Trim()
+                    Exit For
+                End If
+            Next
+            If mat = "" Then Return
+            For Each ctrl As Control In leMenu.pnl_PersonnalContent.Controls
+                If TypeOf ctrl Is RH_Agent Then
+                    Dim f As RH_Agent = CType(ctrl, RH_Agent)
+                    f.Matricule_Text.Text = mat
+                    f.request()
+                    Exit For
+                End If
+            Next
+        Catch ex As Exception
+            ' Rafraichissement de confort : ne jamais bloquer le traitement
+        End Try
+    End Sub
     Function TesterPython(Message As System.Text.StringBuilder) As pyResult
         Dim codeTest As String =
     "import sys
