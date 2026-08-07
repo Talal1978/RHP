@@ -73,6 +73,7 @@ const Outillage_Mouvement = () => {
     const [canSave, setCanSave] = useState(false);
     const [detail, setDetail] = useState<TDetail[]>([]);
     const enteteRef = useRef<TEntete | undefined>(undefined);
+    const savingRef = useRef(false); // anti double-soumission (clics multiples)
     const detailRef = useRef<TDetail[] | undefined>(undefined);
     const [agentInfo, setAgentInfo] = useState<{ Cod_Poste?: string; Cod_Entite?: string }>({});
     const [codOutillageSel, setCodOutillageSel] = useState("");
@@ -476,14 +477,20 @@ const Outillage_Mouvement = () => {
 
             let _entete = { ...entete };
             if (Statut === "SS" || Statut === "VA") _entete = { ..._entete, Statut };
+            if (savingRef.current) return; // une sauvegarde est déjà en cours
+            savingRef.current = true;
             const rslSave = await myAxios("save_outillage_mouvement", {
                 entete: _entete,
                 detail,
+            }).finally(() => {
+                savingRef.current = false;
             });
             if (rslSave.data.result) {
                 const numN = rslSave.data.data[0].Num_Mouvement;
                 if (numN !== currentNum) {
-                    setCurrentNum(numN);
+                    // Met à jour l'URL avec le n° attribué : sinon l'URL reste sur /new
+                    // et le bouton "Nouveau" (qui navigue vers /new) ne déclenche rien.
+                    navigate(`/myspace/Outillage_Mouvement/Mouvement Outillage/${numN}`, { replace: true });
                 } else {
                     await loadData();
                 }
@@ -572,20 +579,32 @@ const Outillage_Mouvement = () => {
     }, [Enregistrer, currentNum, entete.Statut]);
 
     const Supprimer = useCallback(async () => {
-        if (entete?.Num_Mouvement) {
+        if (!entete?.Num_Mouvement) {
+            // Document non enregistré : "Supprimer" abandonne la saisie en cours
             if (
+                (!isEqual(entete, enteteRef.current) || !isEqual(detail, detailRef.current)) &&
                 (await msgBox({
                     titre: "Supprimer",
-                    msg: "Etes-vous sûr de vouloir supprimer ce mouvement?",
+                    msg: "Document non enregistré. Voulez-vous abandonner la saisie en cours?",
                     typMsg: "warning",
                     typReply: "OKCancel",
                     async handleCancel() { return; },
                 })) === "Cancel"
             )
                 return;
-        } else {
+            await loadData();
             return;
         }
+        if (
+            (await msgBox({
+                titre: "Supprimer",
+                msg: "Etes-vous sûr de vouloir supprimer ce mouvement?",
+                typMsg: "warning",
+                typReply: "OKCancel",
+                async handleCancel() { return; },
+            })) === "Cancel"
+        )
+            return;
         if (["SG", "RJ", "SP", "VA"].includes(entete?.Statut || "")) {
             await msgBox({
                 titre: "Supprimer",

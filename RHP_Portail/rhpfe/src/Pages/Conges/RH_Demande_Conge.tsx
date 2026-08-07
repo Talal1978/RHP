@@ -66,6 +66,7 @@ const RH_Demande_Conge = () => {
   const [droitsConge, setDroitsConge] = useState<TConge>(iniConge);
   const [canSave, setCanSave] = useState(false);
   const enteteRef = useRef<TEntete | undefined>(undefined);
+  const savingRef = useRef(false); // anti double-soumission (clics multiples)
   const calculSeq = useRef(0);
   const myAxios = useAxiosPost();
   const { isXs, isSm, isLg, isXl } = useContext(cntX);
@@ -336,13 +337,19 @@ const RH_Demande_Conge = () => {
       }
       let _entete = { ...entete };
       if (Statut === "SS") _entete = { ..._entete, Statut };
+      if (savingRef.current) return; // une sauvegarde est déjà en cours
+      savingRef.current = true;
       const rslSave = await myAxios("save_demande_conge", {
         entete: _entete,
+      }).finally(() => {
+        savingRef.current = false;
       });
       if (rslSave.data.result) {
         const numN = rslSave.data.data[0].Num_Conge;
         if (numN !== currentNum) {
-          setCurrentNum(numN);
+          // Met à jour l'URL avec le n° attribué : sinon l'URL reste sur /new
+          // et le bouton "Nouveau" (qui navigue vers /new) ne déclenche rien.
+          navigate(`/myspace/RH_Demande_Conge/Demande de congé/${numN}`, { replace: true });
         } else {
           await Request();
         }
@@ -414,11 +421,13 @@ const RH_Demande_Conge = () => {
     }
   }, [Enregistrer]);
   const Supprimer = useCallback(async () => {
-    if (entete?.Num_Conge) {
+    if (!entete?.Num_Conge) {
+      // Document non enregistré : "Supprimer" abandonne la saisie en cours
       if (
+        !isEqual(entete, enteteRef.current) &&
         (await msgBox({
           titre: "Supprimer",
-          msg: "Êtes-vous sûr de vouloir supprimer cette demande?",
+          msg: "Document non enregistré. Voulez-vous abandonner la saisie en cours?",
           typMsg: "warning",
           typReply: "OKCancel",
           async handleCancel() {
@@ -427,9 +436,21 @@ const RH_Demande_Conge = () => {
         })) === "Cancel"
       )
         return;
-    } else {
+      await Request();
       return;
     }
+    if (
+      (await msgBox({
+        titre: "Supprimer",
+        msg: "Êtes-vous sûr de vouloir supprimer cette demande?",
+        typMsg: "warning",
+        typReply: "OKCancel",
+        async handleCancel() {
+          return;
+        },
+      })) === "Cancel"
+    )
+      return;
     let rsl = await myAxios("is_paie_encours", {});
     if (rsl.data) {
       await msgBox({

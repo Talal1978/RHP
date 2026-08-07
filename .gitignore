@@ -19,3 +19,7 @@ tmp/
 *.zip
 *.rar
 *.bak
+
+# Python
+__pycache__/
+*.pyc

@@ -192,8 +192,7 @@ export async function save_demande_conge(req: Request, res: Response) {
       { param: "Dat_Fin_Conge", sqlType: SmallDateTime, valeur: DatFin },
       { param: "Matricule", sqlType: NVarChar, valeur: entete.Matricule },
       { param: "id_Societe", sqlType: Int, valeur: idSocNum },
-    ],
-    true
+    ]
   );
   if (Sys_Conge_Check.result && Sys_Conge_Check.data.length > 0) {
     return res.send({

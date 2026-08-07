@@ -73,6 +73,7 @@ const Demande_Doc_Administratif = () => {
     const [canSave, setCanSave] = useState(false);
     const [detail, setDetail] = useState<TDetail[]>([iniDetail]);
     const enteteRef = useRef<TEntete | undefined>(undefined);
+    const savingRef = useRef(false); // anti double-soumission (clics multiples)
     const detailRef = useRef<TDetail[] | undefined>(undefined);
     const [docTypes, setDocTypes] = useState<ObjetGenerique[]>([]);
 
@@ -294,14 +295,20 @@ const Demande_Doc_Administratif = () => {
 
             let _entete = { ...entete };
             if (Statut === "SS") _entete = { ..._entete, Statut };
+            if (savingRef.current) return; // une sauvegarde est déjà en cours
+            savingRef.current = true;
             const rslSave = await myAxios("save_demande_doc_admin", {
                 entete: _entete,
                 detail,
+            }).finally(() => {
+                savingRef.current = false;
             });
             if (rslSave.data.result) {
                 const numN = rslSave.data.data[0].Num_Demande;
                 if (numN !== currentNum) {
-                    setCurrentNum(numN);
+                    // Met à jour l'URL avec le n° attribué : sinon l'URL reste sur /new
+                    // et le bouton "Nouveau" (qui navigue vers /new) ne déclenche rien.
+                    navigate(`/myspace/Demande_Doc_Administratif/Demande Documents/${numN}`, { replace: true });
                 } else {
                     await loadData();
                 }
@@ -379,11 +386,13 @@ const Demande_Doc_Administratif = () => {
     }, [Enregistrer, currentNum, entete.Statut]);
 
     const Supprimer = useCallback(async () => {
-        if (entete?.Num_Demande) {
+        if (!entete?.Num_Demande) {
+            // Document non enregistré : "Supprimer" abandonne la saisie en cours
             if (
+                (!isEqual(entete, enteteRef.current) || !isEqual(detail, detailRef.current)) &&
                 (await msgBox({
                     titre: "Supprimer",
-                    msg: "Êtes-vous sûr de vouloir supprimer cette demande?",
+                    msg: "Document non enregistré. Voulez-vous abandonner la saisie en cours?",
                     typMsg: "warning",
                     typReply: "OKCancel",
                     async handleCancel() {
@@ -392,9 +401,21 @@ const Demande_Doc_Administratif = () => {
                 })) === "Cancel"
             )
                 return;
-        } else {
+            await loadData();
             return;
         }
+        if (
+            (await msgBox({
+                titre: "Supprimer",
+                msg: "Êtes-vous sûr de vouloir supprimer cette demande?",
+                typMsg: "warning",
+                typReply: "OKCancel",
+                async handleCancel() {
+                    return;
+                },
+            })) === "Cancel"
+        )
+            return;
 
         if (entete?.Matricule !== Agent?.Matricule) {
             await msgBox({

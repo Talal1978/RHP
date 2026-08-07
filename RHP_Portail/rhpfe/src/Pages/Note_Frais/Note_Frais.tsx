@@ -75,6 +75,7 @@ const Note_Frais = () => {
   const [canSave, setCanSave] = useState(false);
   const [detail, setDetail] = useState<TDetail[]>([iniDetail]);
   const enteteRef = useRef<TEntete | undefined>(undefined);
+  const savingRef = useRef(false); // anti double-soumission (clics multiples)
   const detailRef = useRef<TDetail[] | undefined>(undefined);
   const [natureFrais, setNatureFrais] = useState<ObjetGenerique[]>([]);
   async function ondelete(e: { rowIndex: number; row: ObjetGenerique }) {
@@ -321,14 +322,20 @@ const Note_Frais = () => {
       }
       let _entete = { ...entete, Mnt_NF: totalFrais };
       if (Statut === "SS") _entete = { ..._entete, Statut };
+      if (savingRef.current) return; // une sauvegarde est déjà en cours
+      savingRef.current = true;
       const rslSave = await myAxios("save_note_frais", {
         entete: _entete,
         detail,
+      }).finally(() => {
+        savingRef.current = false;
       });
       if (rslSave.data.result) {
         const numN = rslSave.data.data[0].Num_NF;
         if (numN !== currentNum) {
-          setCurrentNum(numN);
+          // Met à jour l'URL avec le n° attribué : sinon l'URL reste sur /new
+          // et le bouton "Nouveau" (qui navigue vers /new) ne déclenche rien.
+          navigate(`/myspace/Note_Frais/Note de frais/${numN}`, { replace: true });
         } else {
           await loadData();
         }
@@ -402,11 +409,13 @@ const Note_Frais = () => {
     }
   }, [Enregistrer]);
   const Supprimer = useCallback(async () => {
-    if (entete?.Num_NF) {
+    if (!entete?.Num_NF) {
+      // Document non enregistré : "Supprimer" abandonne la saisie en cours
       if (
+        (!isEqual(entete, enteteRef.current) || !isEqual(detail, detailRef.current)) &&
         (await msgBox({
           titre: "Supprimer",
-          msg: "Êtes-vous sûr de vouloir supprimer cette note de frais?",
+          msg: "Document non enregistré. Voulez-vous abandonner la saisie en cours?",
           typMsg: "warning",
           typReply: "OKCancel",
           async handleCancel() {
@@ -415,9 +424,21 @@ const Note_Frais = () => {
         })) === "Cancel"
       )
         return;
-    } else {
+      await loadData();
       return;
     }
+    if (
+      (await msgBox({
+        titre: "Supprimer",
+        msg: "Êtes-vous sûr de vouloir supprimer cette note de frais?",
+        typMsg: "warning",
+        typReply: "OKCancel",
+        async handleCancel() {
+          return;
+        },
+      })) === "Cancel"
+    )
+      return;
     let rsl = await myAxios("is_paie_encours", {});
     if (rsl.data) {
       await msgBox({
