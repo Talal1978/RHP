@@ -1,46 +1,43 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect } from "react";
 import GroupBox from "../../components/GroupBox/GroupBox";
 import Grid from "@mui/material/Unstable_Grid2";
 import TextZoom from "../../components/TextZoom/TextZoom";
 import ComboBox from "../../components/ComboBox/ComboBox";
 import CalendarZoom from "../../components/Calendar/CalendarZoom";
 import { Box } from "@mui/material";
-import Grille, { TColonneCollection } from "../../components/Grille/Grille";
-import { ObjetGenerique } from "../../types";
+import Grille from "../../components/Grille/Grille";
 import { CloudSyncOutlined, NoteAddOutlined } from "@mui/icons-material";
 import { Agent, colorBase } from "../../modules/module_general";
 import Bouton from "../../components/Bouton/Bouton";
 import useAxiosPost from "../../hooks/useAxiosPost";
+import useEtatListe from "../../hooks/useEtatListe";
 import { useNavigate } from "react-router-dom";
 import { cntX } from "../../Menu/MenuMain";
 
 const Formation_Liste = () => {
     const navigate = useNavigate();
-    const [criteres, setCriteres] = useState<TCriteres>(initialiserCriteres);
-    const [ds, setDs] = useState<ObjetGenerique[]>([]);
-    const [dsFields, setDsFields] = useState<TColonneCollection>({});
+    const { criteres, stateChange, ds, setDs, dsFields, setDsFields } =
+        useEtatListe<TCriteres>("Formation_Liste", initialiserCriteres);
     const { isSmall, isXs, isSm, isMd, isLg, isXl } = useContext(cntX);
-
-    function stateChange(champs: string, valeur: any) {
-        setCriteres((crt: TCriteres) => {
-            return { ...crt, [champs]: valeur };
-        });
-    }
 
     const date = new Date();
     const myAxios = useAxiosPost();
 
     useEffect(() => {
-        setDs([]);
         // Define columns manually if backend doesn't provide them yet or to ensure order
-        setDsFields({
-            Cod_Formation: { columnName: "Cod_Formation", headerText: "Code", dataType: "nvarchar", visible: true, readOnly: true, sx: { width: 100 } },
-            Lib_Formation: { columnName: "Lib_Formation", headerText: "Intitulé", dataType: "nvarchar", visible: true, readOnly: true },
-            Dat_Du: { columnName: "Dat_Du", headerText: "Du", dataType: "smalldatetime", visible: true, readOnly: true, sx: { width: 100 } },
-            Dat_Au: { columnName: "Dat_Au", headerText: "Au", dataType: "smalldatetime", visible: true, readOnly: true, sx: { width: 100 } },
-            Statut_Formation: { columnName: "Statut_Formation", headerText: "Statut", dataType: "nvarchar", visible: true, readOnly: true, sx: { width: 100 } },
-            Budget: { columnName: "Budget", headerText: "Budget", dataType: "float", visible: true, readOnly: true, sx: { width: 100 } }
-        });
+        // (sans écraser les colonnes restaurées du cache session)
+        setDsFields((prv) =>
+            Object.keys(prv).length > 0
+                ? prv
+                : {
+                    Cod_Formation: { columnName: "Cod_Formation", headerText: "Code", dataType: "nvarchar", visible: true, readOnly: true, sx: { width: 100 } },
+                    Lib_Formation: { columnName: "Lib_Formation", headerText: "Intitulé", dataType: "nvarchar", visible: true, readOnly: true },
+                    Dat_Du: { columnName: "Dat_Du", headerText: "Du", dataType: "smalldatetime", visible: true, readOnly: true, sx: { width: 100 } },
+                    Dat_Au: { columnName: "Dat_Au", headerText: "Au", dataType: "smalldatetime", visible: true, readOnly: true, sx: { width: 100 } },
+                    Statut_Formation: { columnName: "Statut_Formation", headerText: "Statut", dataType: "nvarchar", visible: true, readOnly: true, sx: { width: 100 } },
+                    Budget: { columnName: "Budget", headerText: "Budget", dataType: "float", visible: true, readOnly: true, sx: { width: 100 } }
+                }
+        );
     }, []);
 
     return (
@@ -88,9 +85,9 @@ const Formation_Liste = () => {
                             <Box
                                 sx={{
                                     display: "flex",
-                                    flexWrap: { xs: "wrap", sm: "nowrap" },
+                                    flexWrap: "wrap",
                                     paddingRight: "5px",
-                                    gap: { xs: "5px", sm: "1em", md: "1.5em", lg: "2em" },
+                                    gap: { xs: "5px", sm: "1em" },
                                 }}
                             >
                                 <CalendarZoom
@@ -106,7 +103,7 @@ const Formation_Liste = () => {
                                     }
                                     onchange={stateChange}
                                     sx={{
-                                        width: "100%",
+                                        flex: 1,
                                         "& input": { fontSize: { xs: "0.85em", sm: "1em" } },
                                     }}
                                     onClear={() => stateChange("Date_Du", "")}
@@ -117,7 +114,7 @@ const Formation_Liste = () => {
                                     valeur={criteres?.Date_Au || date}
                                     onchange={stateChange}
                                     sx={{
-                                        width: "100%",
+                                        flex: 1,
                                         "& input": { fontSize: { xs: "0.85em", sm: "1em" } },
                                     }}
                                     onClear={() => stateChange("Date_Au", "")}

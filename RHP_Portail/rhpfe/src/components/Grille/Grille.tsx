@@ -13,6 +13,7 @@ import GrilleHeaderCell from "./GrilleHeaderCell";
 import GrilleRow from "./GrilleRow";
 import useAxiosPost from "../../hooks/useAxiosPost";
 import { estDate } from "../../modules/module_formats";
+import { libelleColonne } from "../../modules/module_libelles";
 import "./grille.scss";
 import { ObjetGenerique } from "../../types";
 import { useDeepCompareEffect } from "../../hooks/useDeepCompareEffect";
@@ -173,7 +174,12 @@ export default function Grille({
                       key={cl}
                     >
                       <GrilleHeaderCell
-                        headerText={Fields?.[cl]?.headerText || cl}
+                        headerText={
+                          Fields?.[cl]?.headerText &&
+                          Fields[cl].headerText !== cl
+                            ? Fields[cl].headerText
+                            : libelleColonne(cl)
+                        }
                         colName={cl}
                       />
                     </TableCell>

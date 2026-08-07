@@ -187,11 +187,36 @@ const Evaluation = () => {
       <style>
         {`
           @media print {
+            /* Force l'orientation portrait */
+            @page {
+              size: A4 portrait;
+              margin: 10mm;
+            }
+            html, body {
+              height: auto !important;
+              overflow: visible !important;
+            }
             body * {
               visibility: hidden;
             }
             .evaluation-container, .evaluation-container * {
               visibility: visible;
+            }
+            /* Neutralise les conteneurs à défilement (mainMenu/corps/ecran) qui
+               tronquent l'impression à la première page */
+            .mainMenu, .corps, .ecran {
+              position: static !important;
+              height: auto !important;
+              min-height: 0 !important;
+              max-height: none !important;
+              overflow: visible !important;
+              margin: 0 !important;
+              padding: 0 !important;
+              width: 100% !important;
+              max-width: none !important;
+              border-radius: 0 !important;
+              box-shadow: none !important;
+              background-color: white !important;
             }
             .evaluation-container {
               position: absolute;
@@ -202,8 +227,7 @@ const Evaluation = () => {
               padding: 0 !important;
               background-color: white;
             }
-            /* Hide buttons or other UI elements if they have specific classes, mostly strictly hiding parents */
-            .MuiDrawer-root, .MuiAppBar-root, header, nav, .menu-container {
+            .MuiDrawer-root, .MuiAppBar-root, header, nav, .menu-container, .sideMenuBarContainer, .floatMenu {
                display: none !important;
             }
           }

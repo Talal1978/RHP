@@ -1,16 +1,16 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext } from "react";
 import GroupBox from "../../components/GroupBox/GroupBox";
 import Grid from "@mui/material/Unstable_Grid2";
 import TextZoom from "../../components/TextZoom/TextZoom";
 import ComboBox from "../../components/ComboBox/ComboBox";
 import CalendarZoom from "../../components/Calendar/CalendarZoom";
 import { Box } from "@mui/material";
-import Grille, { TColonneCollection } from "../../components/Grille/Grille";
-import { ObjetGenerique } from "../../types";
+import Grille from "../../components/Grille/Grille";
 import { CloudSyncOutlined, NoteAddOutlined } from "@mui/icons-material";
 import { Agent, colorBase } from "../../modules/module_general";
 import Bouton from "../../components/Bouton/Bouton";
 import useAxiosPost from "../../hooks/useAxiosPost";
+import useEtatListe from "../../hooks/useEtatListe";
 import { useNavigate } from "react-router-dom";
 import { cntX } from "../../Menu/MenuMain";
 
@@ -18,20 +18,11 @@ import { cntX } from "../../Menu/MenuMain";
    L'acces au detail (fiche) est reserve au service medical (controle serveur). */
 const RH_Sante_Visite_Liste = () => {
   const navigate = useNavigate();
-  const [criteres, setCriteres] = useState<TCriteres>(initialiserCriteres);
-  const [ds, setDs] = useState<ObjetGenerique[]>([]);
-  const [dsFields, setDsFields] = useState<TColonneCollection>({});
+  const { criteres, stateChange, ds, setDs, dsFields, setDsFields } =
+    useEtatListe<TCriteres>("RH_Sante_Visite_Liste", initialiserCriteres);
   const { isSmall, isXs, isSm, isLg, isXl } = useContext(cntX);
-  function stateChange(champs: string, valeur: any) {
-    setCriteres((crt: TCriteres) => {
-      return { ...crt, [champs]: valeur };
-    });
-  }
   const date = new Date();
   const myAxios = useAxiosPost();
-  useEffect(() => {
-    setDs([]);
-  }, [JSON.stringify(criteres)]);
   return (
     <>
       <GroupBox
@@ -87,8 +78,8 @@ const RH_Sante_Visite_Liste = () => {
               <Box
                 sx={{
                   display: "flex",
-                  flexWrap: { xs: "wrap", sm: "nowrap" },
-                  gap: { xs: "5px", sm: "1em", md: "1.5em", lg: "2em" },
+                  flexWrap: "wrap",
+                  gap: { xs: "5px", sm: "1em" },
                 }}
               >
                 <CalendarZoom

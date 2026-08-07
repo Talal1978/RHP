@@ -55,15 +55,99 @@ export const surveyAnswersSave = async (req: Request, res: Response) => {
     // Generate Flg_Maj (Batch ID)
     const flg_maj = Math.floor(Math.random() * 2147483647); // Random positive 32-bit integer
 
-    // 2. Header Handling
+    // 1. Récupérer les questions AVANT toute écriture.
+    // Si le formulaire est introuvable, on ne touche ni à l'en-tête ni aux réponses
+    // existantes (sinon l'évaluation serait vidée puis affichée comme "renseignée").
+    const qstSql2 = `select row_number() over(order by Rang asc) as NumQuestion, * from Survey_Detail d where Cod_Survey = @cod_survey and id_Societe = @idSoc order by isnull(Rang, 0)`;
+    const rslQsts2 = await lireSql(qstSql2, [
+        { param: "cod_survey", sqlType: NVarChar, valeur: cod_survey },
+        { param: "idSoc", sqlType: Int, valeur: idSoc }
+    ]);
+
+    if (!rslQsts2.result) {
+        console.error("DEBUG Questions Fetch Error:", rslQsts2.sort);
+        return res.send({ result: false, data: ["Error fetching survey details"] });
+    }
+
+    const questionsList = rslQsts2.data || [];
+    if (questionsList.length === 0) {
+        return res.send({ result: false, data: ["Formulaire d'évaluation introuvable. Enregistrement annulé pour préserver les réponses existantes."] });
+    }
+
+    // 2. Préparer toutes les lignes de réponses à insérer.
+    // Si aucune réponse ne correspond aux questions du formulaire, on annule tout :
+    // insérer un en-tête vide ou supprimer l'ancien lot viderait l'évaluation.
+    let rang = 0;
+    const preparedRows: { param: string; sqlType: any; valeur: any }[][] = [];
+
+    for (const qDef of questionsList) {
+        const qNum = qDef.NumQuestion;
+        const ansState = answers?.[qNum];
+
+        if (!ansState) continue;
+
+        const val = ansState.value;
+        const noteData = ansState.note || { note: 0, coef: 0, note_totale: 0 };
+
+        let rowsToInsert: { num: string, val: string }[] = [];
+
+        if (Array.isArray(val)) {
+            val.forEach((v, i) => {
+                let s = Array.isArray(v) ? v.join(';') : String(v);
+                rowsToInsert.push({ num: String(i), val: s });
+            });
+        } else {
+            rowsToInsert.push({ num: "0", val: String(val || "") });
+        }
+
+        for (const row of rowsToInsert) {
+            let reponseStr = row.val;
+            let valeurReponse = reponseStr;
+            const typs = ['grille_cases', 'cocher', 'oui_non', 'vrai_faux', 'echelle', 'grille_choix', 'choix'];
+
+            if (typs.includes(qDef.Typ_Reponse) && qDef.Reponses_Possibles) {
+                const opts = qDef.Reponses_Possibles.split(';');
+                const chosen = reponseStr.split(';');
+                let decoded = "";
+                for (let i = 0; i < chosen.length; i++) {
+                    if (chosen[i] == "1" && opts[i]) {
+                        decoded += (decoded ? ";" : "") + opts[i];
+                    }
+                }
+                if (decoded) valeurReponse = decoded;
+            }
+
+            preparedRows.push([
+                { param: "cod_question", sqlType: NVarChar, valeur: String(qDef.RowId) },
+                { param: "question", sqlType: NVarChar, valeur: qDef.Question },
+                { param: "obligatoire", sqlType: NVarChar, valeur: qDef.Obligatoire ? "true" : "false" },
+                { param: "typ_reponse", sqlType: NVarChar, valeur: qDef.Typ_Reponse },
+                { param: "num_sous", sqlType: NVarChar, valeur: row.num },
+                { param: "reponses", sqlType: NVarChar, valeur: reponseStr },
+                { param: "valeur_reponse", sqlType: NVarChar, valeur: valeurReponse },
+                { param: "note", sqlType: Float, valeur: noteData.note || 0 },
+                { param: "coef", sqlType: Float, valeur: noteData.coef || 1 },
+                { param: "note_totale", sqlType: Float, valeur: noteData.note_totale || 0 },
+                { param: "rang", sqlType: Int, valeur: rang++ },
+                { param: "flg_maj", sqlType: NVarChar, valeur: flg_maj.toString() }
+            ]);
+        }
+    }
+
+    if (preparedRows.length === 0) {
+        return res.send({ result: false, data: ["Aucune réponse à enregistrer pour ce formulaire. Enregistrement annulé pour préserver les réponses existantes."] });
+    }
+
+    // 3. Header Handling
     // Check existence
     let currentCodReply = 0;
 
-    // Use Composite Key (Ref_Evaluation + Evalue + Evaluateur)
+    // Use Composite Key (Cod_Survey + Ref_Evaluation + Evalue + Evaluateur)
     // Fix: Handle cases where Ref_Evaluation might be NULL in older records, and strictly check Typ_Evalue
     let checkSql = `select top 1 Cod_Reply, convert(bit, isnull(Paie_Calculee, 0)) as Paie_Calculee 
                     from Survey_Reply 
-                    where (Ref_Evaluation = @ref_evaluation OR Ref_Evaluation IS NULL OR Ref_Evaluation = '')
+                    where Cod_Survey = @cod_survey
+                      and (Ref_Evaluation = @ref_evaluation OR Ref_Evaluation IS NULL OR Ref_Evaluation = '')
                       and Evalue = @evalue 
                       and Evaluateur = @evaluateur 
                       and Typ_Evalue = @typEvalue
@@ -73,6 +157,7 @@ export const surveyAnswersSave = async (req: Request, res: Response) => {
     let exists = false;
 
     const rslCheck = await lireSql(checkSql, [
+        { param: "cod_survey", sqlType: NVarChar, valeur: cod_survey },
         { param: "ref_evaluation", sqlType: NVarChar, valeur: ref_evaluation },
         { param: "evalue", sqlType: NVarChar, valeur: evalue },
         { param: "evaluateur", sqlType: NVarChar, valeur: evaluateur },
@@ -129,89 +214,21 @@ Evaluateur = @evaluateur, Typ_Evalue = @typEvalue, Evalue = @evalue, Ref_Evaluat
         ]);
     }
 
-    const qstSql2 = `select row_number() over(order by Rang asc) as NumQuestion, * from Survey_Detail d where Cod_Survey = @cod_survey and id_Societe = @idSoc order by isnull(Rang, 0)`;
-    const rslQsts2 = await lireSql(qstSql2, [
-        { param: "cod_survey", sqlType: NVarChar, valeur: cod_survey },
-        { param: "idSoc", sqlType: Int, valeur: idSoc }
-    ]);
-
-    if (!rslQsts2.result) {
-        console.error("DEBUG Questions Fetch Error:", rslQsts2.sort);
-        return res.send({ result: false, data: ["Error fetching survey details"] });
-    }
-
-    const questionsList = rslQsts2.data || [];
-
-
-    let rang = 0;
-
     const insertPromises: Promise<any>[] = [];
 
-    for (const qDef of questionsList) {
-        const qNum = qDef.NumQuestion;
-        const ansState = answers[qNum];
-
-        if (ansState) {
-        } else {
-        }
-
-        if (!ansState) continue;
-
-        const val = ansState.value;
-        const noteData = ansState.note || { note: 0, coef: 0, note_totale: 0 };
-
-        let rowsToInsert: { num: string, val: string }[] = [];
-
-        if (Array.isArray(val)) {
-            val.forEach((v, i) => {
-                let s = Array.isArray(v) ? v.join(';') : String(v);
-                rowsToInsert.push({ num: String(i), val: s });
-            });
-        } else {
-            rowsToInsert.push({ num: "0", val: String(val || "") });
-        }
-
-        for (const row of rowsToInsert) {
-            let reponseStr = row.val;
-            let valeurReponse = reponseStr;
-            const typs = ['grille_cases', 'cocher', 'oui_non', 'vrai_faux', 'echelle', 'grille_choix', 'choix'];
-
-            if (typs.includes(qDef.Typ_Reponse) && qDef.Reponses_Possibles) {
-                const opts = qDef.Reponses_Possibles.split(';');
-                const chosen = reponseStr.split(';');
-                let decoded = "";
-                for (let i = 0; i < chosen.length; i++) {
-                    if (chosen[i] == "1" && opts[i]) {
-                        decoded += (decoded ? ";" : "") + opts[i];
-                    }
-                }
-                if (decoded) valeurReponse = decoded;
-            }
-
-            const sqlIns = `insert into Survey_Reply_Detail(Cod_Reply, Cod_Question, Question, Obligatoire, Typ_Reponse, Num_Sous_Question, Reponses, Valeur_Reponse, Note, Coef, Note_Totale, Rang, Flg_Maj)
+    for (const rowParams of preparedRows) {
+        const sqlIns = `insert into Survey_Reply_Detail(Cod_Reply, Cod_Question, Question, Obligatoire, Typ_Reponse, Num_Sous_Question, Reponses, Valeur_Reponse, Note, Coef, Note_Totale, Rang, Flg_Maj)
 values(@cod_reply, @cod_question, @question, @obligatoire, @typ_reponse, @num_sous, @reponses, @valeur_reponse, @note, @coef, @note_totale, @rang, @flg_maj)`;
 
-            insertPromises.push(lireSql(sqlIns, [
-                { param: "cod_reply", sqlType: Int, valeur: currentCodReply },
-                { param: "cod_question", sqlType: NVarChar, valeur: String(qDef.RowId) },
-                { param: "question", sqlType: NVarChar, valeur: qDef.Question },
-                { param: "obligatoire", sqlType: NVarChar, valeur: qDef.Obligatoire ? "true" : "false" },
-                { param: "typ_reponse", sqlType: NVarChar, valeur: qDef.Typ_Reponse },
-                { param: "num_sous", sqlType: NVarChar, valeur: row.num },
-                { param: "reponses", sqlType: NVarChar, valeur: reponseStr },
-                { param: "valeur_reponse", sqlType: NVarChar, valeur: valeurReponse },
-                { param: "note", sqlType: Float, valeur: noteData.note || 0 },
-                { param: "coef", sqlType: Float, valeur: noteData.coef || 1 },
-                { param: "note_totale", sqlType: Float, valeur: noteData.note_totale || 0 },
-                { param: "rang", sqlType: Int, valeur: rang++ },
-                { param: "flg_maj", sqlType: NVarChar, valeur: flg_maj.toString() }
-            ], true).then((res) => {
-                if (!res.result) {
-                    console.error(`INSERT ERROR[Q:${qDef.RowId} Sub:${row.num}]: `, res.sort);
-                }
-                return res;
-            }));
-        }
+        insertPromises.push(lireSql(sqlIns, [
+            { param: "cod_reply", sqlType: Int, valeur: currentCodReply },
+            ...rowParams
+        ]).then((res) => {
+            if (!res.result) {
+                console.error(`INSERT ERROR[Reply:${currentCodReply}]: `, res.sort);
+            }
+            return res;
+        }));
     }
 
     try {

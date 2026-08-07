@@ -78,6 +78,10 @@ function TextBox({
           whiteSpace: "nowrap",
           overflow: "hidden",
           textOverflow: "ellipsis",
+          "&.MuiInputBase-inputMultiline": {
+            whiteSpace: "pre-wrap",
+            overflowWrap: "break-word",
+          },
         },
         "& .MuiInputLabel-root": {
           fontSize: { xs: "1rem", sm: "1rem" },

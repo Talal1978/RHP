@@ -63,6 +63,9 @@ const Survey_Rendering = forwardRef<ChildHandle, TProps>(({ cod_survey, cod_repl
     const [questions, setQuestions] = useState<TQuestion[]>([]);
     const [answers, setAnswers] = useState<TAnswers>({});
     const [isLoading, setIsLoading] = useState(true);
+    // Avertissement affiché quand l'évaluation possède un Cod_Reply (donc marquée
+    // comme renseignée) mais qu'aucune réponse n'existe en base (données perdues).
+    const [emptyReplyWarning, setEmptyReplyWarning] = useState(false);
     const questionsRef = useRef<TQuestion[]>([]);
     useImperativeHandle(refChild, () => ({
         save: async () => {
@@ -101,6 +104,16 @@ const Survey_Rendering = forwardRef<ChildHandle, TProps>(({ cod_survey, cod_repl
                     questionsRef.current = fetchedQuestions;
 
                     const dbAnswers: any[] = rslAnswers.data?.result ? rslAnswers.data.data : [];
+
+                    // Cas "renseignée mais vide" : une réponse (Cod_Reply) existe mais ne
+                    // contient aucun détail en base → les réponses ont été perdues.
+                    // (Requête réussie + 0 ligne + Cod_Reply valide)
+                    const codReplyNum = Number(cod_reply);
+                    setEmptyReplyWarning(
+                        rslAnswers.data?.result === true &&
+                        dbAnswers.length === 0 &&
+                        !isNaN(codReplyNum) && codReplyNum > 0
+                    );
 
 
                     const initialAnswers: TAnswers = {};
@@ -603,6 +616,12 @@ const Survey_Rendering = forwardRef<ChildHandle, TProps>(({ cod_survey, cod_repl
     }, [answers, questionsRef]); // removed answers dependency to avoid loop if used in effect, but saveAnswers is manual.
 
     const saveAnswers = useCallback(async (): Promise<{ result: boolean, data: any[] }> => {
+        // Sécurité : ne jamais enregistrer si le questionnaire n'est pas chargé,
+        // sinon un lot vide serait envoyé et les réponses existantes seraient perdues.
+        if (questionsRef.current.length === 0) {
+            return { result: false, data: ["Le questionnaire n'est pas chargé. Enregistrement impossible."] };
+        }
+
         // Validation
         const { isValid, newAnswers } = validateSurvey();
         console.log("DEBUG saveAnswers Validation:", { isValid, newAnswers, answers });
@@ -647,6 +666,14 @@ const Survey_Rendering = forwardRef<ChildHandle, TProps>(({ cod_survey, cod_repl
 
     return (
         <div style={{ width: '100%' }}>
+            {emptyReplyWarning && (
+                <Box sx={{
+                    p: 2, mb: 2, border: '1px solid #ed6c02', borderRadius: 1,
+                    bgcolor: 'rgba(237, 108, 2, 0.08)', color: '#ed6c02', fontWeight: 'bold'
+                }}>
+                    Aucune réponse n'est enregistrée en base pour cette évaluation (réponse N°{String(cod_reply)}).
+                </Box>
+            )}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
                 {questions.length > 0 && (
                     <Box sx={{ p: 2, bgcolor: 'var(--bg-input)', color: 'var(--fore-color-base-01)', borderRadius: 1, display: 'flex', justifyContent: 'space-around', alignItems: 'center', width: '100%', border: '1px solid #e0e0e0', mb: '10px' }}>

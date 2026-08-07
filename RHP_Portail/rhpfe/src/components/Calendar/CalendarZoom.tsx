@@ -40,7 +40,12 @@ const CalendarZoom = ({
   return (
     <DesktopDatePicker
       className={`calendarZoom ${readOnly ? "inactif" : "actif"}`}
-      sx={{ minWidth: { xs: "120px", sm: "175px" }, ...sx }}
+      sx={[
+        { minWidth: { xs: "120px", sm: "140px" } },
+        ...(Array.isArray(sx) ? sx : [sx]),
+        // Plancher non écrasable : la date jj/mm/aaaa doit rester entièrement visible
+        { minWidth: { xs: "120px", sm: "140px" } },
+      ]}
       readOnly={readOnly}
       label={label}
       format="dd/MM/yyyy"

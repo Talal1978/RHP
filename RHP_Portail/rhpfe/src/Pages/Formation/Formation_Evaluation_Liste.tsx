@@ -1,39 +1,41 @@
 
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect } from "react";
 import { RectangleEllipsis } from "lucide-react";
 import GroupBox from "../../components/GroupBox/GroupBox";
 import Grid from "@mui/material/Unstable_Grid2";
 import TextZoom from "../../components/TextZoom/TextZoom";
 import { Box } from "@mui/material";
-import Grille, { TColonneCollection } from "../../components/Grille/Grille";
-import { ObjetGenerique } from "../../types";
+import Grille from "../../components/Grille/Grille";
 import { CloudSyncOutlined } from "@mui/icons-material";
 import { Agent, colorBase } from "../../modules/module_general";
 import Bouton from "../../components/Bouton/Bouton";
 import useAxiosPost from "../../hooks/useAxiosPost";
 import useAlert from "../../hooks/useAlert";
+import useEtatListe from "../../hooks/useEtatListe";
 import { useNavigate } from "react-router-dom";
 import { cntX } from "../../Menu/MenuMain";
 
 const Formation_Evaluation_Liste = () => {
     const navigate = useNavigate();
     const alert = useAlert();
-    const [criteres, setCriteres] = useState<TCriteres>(initialiserCriteres);
-    const [ds, setDs] = useState<ObjetGenerique[]>([]);
-    const [dsFields, setDsFields] = useState<TColonneCollection>({});
+    const { criteres, stateChange, ds, setDs, dsFields, setDsFields } =
+        useEtatListe<TCriteres>("Formation_Evaluation_Liste", initialiserCriteres);
     const { isSmall, isXs, isSm, isLg, isXl } = useContext(cntX);
-
-    function stateChange(champs: string, valeur: any) {
-        setCriteres((crt: TCriteres) => {
-            return { ...crt, [champs]: valeur };
-        });
-    }
 
     const myAxios = useAxiosPost();
 
+    // Réinjecte l'icône Action dans les lignes restaurées du cache session
+    // (les éléments React ne sont pas persistés)
     useEffect(() => {
-        setDs([]);
-    }, [JSON.stringify(criteres)]);
+        setDs((prv) =>
+            prv.some((d) => d.Action === null)
+                ? prv.map((d) => ({
+                    ...d,
+                    Action: d.Action ?? <RectangleEllipsis color={colorBase.colorBase01} size={18} />,
+                }))
+                : prv
+        );
+    }, []);
 
     const handleSearch = () => {
         if (!criteres.Cod_Formation && !criteres.Matricule && Agent.Typ_Role !== "Ops") {

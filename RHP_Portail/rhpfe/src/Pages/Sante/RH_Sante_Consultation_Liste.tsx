@@ -1,34 +1,27 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext } from "react";
 import GroupBox from "../../components/GroupBox/GroupBox";
 import Grid from "@mui/material/Unstable_Grid2";
 import TextZoom from "../../components/TextZoom/TextZoom";
 import ComboBox from "../../components/ComboBox/ComboBox";
 import CalendarZoom from "../../components/Calendar/CalendarZoom";
 import { Box } from "@mui/material";
-import Grille, { TColonneCollection } from "../../components/Grille/Grille";
-import { ObjetGenerique } from "../../types";
+import Grille from "../../components/Grille/Grille";
 import { CloudSyncOutlined, NoteAddOutlined } from "@mui/icons-material";
 import { Agent, colorBase } from "../../modules/module_general";
 import Bouton from "../../components/Bouton/Bouton";
 import useAxiosPost from "../../hooks/useAxiosPost";
+import useEtatListe from "../../hooks/useEtatListe";
 import { useNavigate } from "react-router-dom";
 import { cntX } from "../../Menu/MenuMain";
 
 /* Registre des consultations et soins infirmiers (CLINIQUE). */
 const RH_Sante_Consultation_Liste = () => {
   const navigate = useNavigate();
-  const [criteres, setCriteres] = useState<TCriteres>(initialiserCriteres);
-  const [ds, setDs] = useState<ObjetGenerique[]>([]);
-  const [dsFields, setDsFields] = useState<TColonneCollection>({});
+  const { criteres, stateChange, ds, setDs, dsFields, setDsFields } =
+    useEtatListe<TCriteres>("RH_Sante_Consultation_Liste", initialiserCriteres);
   const { isSmall, isXs, isSm, isLg, isXl } = useContext(cntX);
-  function stateChange(champs: string, valeur: any) {
-    setCriteres((crt: TCriteres) => ({ ...crt, [champs]: valeur }));
-  }
   const date = new Date();
   const myAxios = useAxiosPost();
-  useEffect(() => {
-    setDs([]);
-  }, [JSON.stringify(criteres)]);
   return (
     <>
       <GroupBox
@@ -53,7 +46,7 @@ const RH_Sante_Consultation_Liste = () => {
               />
             </Grid>
             <Grid xs={12} sm={12} lg={6} xl={4}>
-              <Box sx={{ display: "flex", flexWrap: { xs: "wrap", sm: "nowrap" }, gap: { xs: "5px", sm: "1em", md: "1.5em", lg: "2em" } }}>
+              <Box sx={{ display: "flex", flexWrap: "wrap", gap: { xs: "5px", sm: "1em" } }}>
                 <CalendarZoom
                   nomControle="Dat_Du" label="Du"
                   valeur={criteres?.Dat_Du || new Date(date.getFullYear(), date.getMonth() - 1, date.getDate())}

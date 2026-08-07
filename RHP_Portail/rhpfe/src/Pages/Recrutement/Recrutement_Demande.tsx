@@ -476,6 +476,7 @@ const Recrutement_Demande = () => {
                     label="Description du Poste"
                     showTitre={isSmall}
                     display={tabIndex === 0 || isSmall ? undefined : "none"}
+                    sx={{ width: "100%" }}
                 >
                     <Grid xs={12} container spacing={2}>
                         <Grid xs={12} sm={6}>
@@ -528,6 +529,7 @@ const Recrutement_Demande = () => {
                     label="Profil Recherché"
                     showTitre={isSmall}
                     display={tabIndex === 1 || isSmall ? undefined : "none"}
+                    sx={{ width: "100%" }}
                 >
                     <Grid xs={12} container spacing={2}>
                         <Grid xs={12} sm={6}>
@@ -629,6 +631,7 @@ const Recrutement_Demande = () => {
                     label="Narratif & Motif"
                     showTitre={isSmall}
                     display={tabIndex === 2 || isSmall ? undefined : "none"}
+                    sx={{ width: "100%" }}
                 >
                     <Grid xs={12} container spacing={2}>
                         <Grid xs={12} sm={6}>

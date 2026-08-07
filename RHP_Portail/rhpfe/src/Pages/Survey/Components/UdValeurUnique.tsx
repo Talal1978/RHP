@@ -82,7 +82,7 @@ const UdValeurUnique = ({
           <TextBox
             valeur={inputValue}
             onchange={(n, v) => handleValueChange(v)}
-            style={{ width: `${Math.min(Math.max(3, inputValue.length + 4), 32)}ch`, minWidth: "100px" }}
+            style={{ width: "100%", maxWidth: "220px" }}
             sx={numericSx}
             label=""
             readonly={readOnly}

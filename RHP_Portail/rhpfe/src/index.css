@@ -18,11 +18,17 @@
   max-width: 100% !important;
 }
 
-/* Truncate text in all standard inputs */
-.MuiInputBase-input {
+/* Truncate text in all standard (single-line) inputs */
+.MuiInputBase-input:not(.MuiInputBase-inputMultiline) {
   white-space: nowrap !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
+}
+
+/* Multiline inputs: wrap long lines instead of truncating (no horizontal scroll) */
+.MuiInputBase-inputMultiline {
+  white-space: pre-wrap !important;
+  overflow-wrap: break-word;
 }
 
 html, body, #root {

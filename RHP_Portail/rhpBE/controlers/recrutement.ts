@@ -188,7 +188,7 @@ export async function save_recrutement_demande(req: Request, res: Response) {
         tableName: "Recrutement_Demande",
         fields: fields,
         joinFields: ["Num_DR", "id_Societe"],
-        excludeFields: [], // Add fields to exclude if any
+        excludeFields: ["Nom"], // Nom = colonne calculée (OUTER APPLY RH_Agent), absente de la table
         login: Matricule,
     });
 
