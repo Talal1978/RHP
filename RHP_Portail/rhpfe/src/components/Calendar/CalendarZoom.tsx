@@ -13,6 +13,11 @@ import { SxProps } from "@mui/material";
 function parseValue(v: any): Date | null {
   if (v instanceof Date) return v;
   if (estDate(v)) return parse(formatDateFR(v), "dd/MM/yyyy", new Date());
+  // Chaînes ISO date seule "yyyy-MM-dd" (parsing local pour éviter le décalage de fuseau horaire)
+  if (typeof v === "string") {
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(v.trim());
+    if (m) return new Date(+m[1], +m[2] - 1, +m[3]);
+  }
   return null;
 }
 

@@ -42,6 +42,7 @@ import {
   get_conge_droits,
   calcul_conge,
 } from "../controlers/demande_conge";
+import { conge_planning } from "../controlers/conge_planning";
 
 import {
   delete_note_frais,
@@ -52,6 +53,7 @@ import {
 import {
   get_parapheur,
   get_signataires,
+  has_signature_rule,
   signer,
 } from "../modules/module_workflow";
 import {
@@ -159,6 +161,7 @@ mainRooting.get("/rubrique", validate, getRubrique);
 mainRooting.get("/list_rubriques", listRubriques);
 mainRooting.post("/signer", validate, signer);
 mainRooting.get("/get_signataires", validate, get_signataires);
+mainRooting.get("/has_signature_rule", validate, has_signature_rule);
 mainRooting.get("/get_parapheur", validate, get_parapheur);
 mainRooting.post("/getreport", validate, generateReport);
 mainRooting.post("/findlibelle", findLibelleApi);
@@ -188,6 +191,7 @@ mainRooting.post("/get_mnt_prets_encours", validate, get_mnt_prets_encours);
 mainRooting.post("/delete_demande_conge", validate, delete_demande_conge);
 mainRooting.post("/get_conge_droits", validate, get_conge_droits);
 mainRooting.post("/calcul_conge", validate, calcul_conge);
+mainRooting.post("/conge_planning", validate, conge_planning);
 
 mainRooting.get("/surveyQuestions", validate, surveyQuestions);
 mainRooting.get("/surveyAnswers", validate, surveyAnswers);

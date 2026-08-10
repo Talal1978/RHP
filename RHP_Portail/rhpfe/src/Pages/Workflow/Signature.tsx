@@ -20,6 +20,7 @@ import TextBox from "../../components/TextBox/TextBox";
 import { formatDateFR } from "../../modules/module_formats";
 import { Agent } from "../../modules/module_general";
 import useAxiosPost from "../../hooks/useAxiosPost";
+import useAlert from "../../hooks/useAlert";
 
 const Signature = (props: TSignature) => {
   const { setShowSignature } = useContext(cntX);
@@ -172,19 +173,33 @@ const Decision_Signataires = ({ v }: ObjetGenerique) => {
 const Btn_Signataires = ({ RowId }: { RowId: number }) => {
   const { setShowSignature, bumpSignatureVersion } = useContext(cntX);
   const myAxios = useAxiosPost();
+  const alert = useAlert();
   const [Commentaire, setCommentaire] = useState("");
   const decision = useCallback(
     (Decision: string) => {
       myAxios("signer", { RowId, Commentaire, Decision }).then((dt) => {
         if (dt?.data) {
-          // Re-monte l'écran courant : le document est rechargé et le libellé
-          // du bouton de signature affiche le nouveau statut (Signé / Rejeté / ...)
-          if (dt.data?.result) bumpSignatureVersion();
-          setShowSignature(false);
+          if (dt.data?.result) {
+            // Re-monte l'écran courant : le document est rechargé et le libellé
+            // du bouton de signature affiche le nouveau statut (Signé / Rejeté / ...)
+            bumpSignatureVersion();
+            setShowSignature(false);
+          } else {
+            // Signature refusée par le serveur (ex: évaluation sans réponses) :
+            // on affiche la raison et on laisse la fenêtre ouverte.
+            alert({
+              titre: "Signature",
+              msg: dt.data?.data?.[0]
+                ? String(dt.data.data[0])
+                : dt.data?.message || "Signature refusée.",
+              typMsg: "error",
+              timeOut: 5000,
+            });
+          }
         }
       });
     },
-    [RowId, Commentaire, bumpSignatureVersion, setShowSignature]
+    [RowId, Commentaire, bumpSignatureVersion, setShowSignature, alert]
   );
   return (
     <div className="btn_signatures">

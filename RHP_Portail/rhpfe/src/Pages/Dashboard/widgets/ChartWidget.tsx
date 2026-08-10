@@ -11,39 +11,64 @@ interface ChartWidgetProps {
 export const ChartWidget = ({ definition, data }: ChartWidgetProps) => {
   const colors = [definition.color, "#1976d2", "#2e7d32", "#f57c00", "#8e24aa", "#d32f2f"];
 
+  // Axe X : des étiquettes nombreuses ou longues se chevauchent horizontalement
+  // et deviennent illisibles => bascule en vertical avec marge adaptée.
+  const labels = data.labels.map((l) => String(l ?? ""));
+  const maxLabelLen = labels.reduce((max, l) => Math.max(max, l.length), 0);
+  const rotateXLabels = labels.length > 12 || (labels.length >= 5 && maxLabelLen >= 8);
+  const xTickLabelStyle = rotateXLabels ? { angle: -90, textAnchor: "end" as const, fontSize: 11 } : undefined;
+  const bottomMargin = rotateXLabels ? Math.min(180, 14 + maxLabelLen * 6.5) : 30;
+  // Hauteur augmentée d'autant que la marge basse pour préserver la zone de tracé.
+  const chartHeight = 250 + Math.max(0, bottomMargin - 30);
+
+  // Axe Y : si toutes les valeurs sont identiques, le domaine est dégénéré et
+  // les graduations se superposent ("000000") => on force une échelle lisible.
+  const values = data.series.flatMap((s) => s.data).filter((v) => typeof v === "number" && Number.isFinite(v));
+  const maxValue = values.length ? Math.max(...values) : 0;
+  const minValue = values.length ? Math.min(...values) : 0;
+  const yMin = Math.min(0, minValue);
+  const yAxis = [
+    maxValue === minValue
+      ? { min: yMin, max: maxValue > yMin ? Math.ceil(maxValue * 1.2) : yMin + 1 }
+      : { min: yMin },
+  ];
+
   const renderChart = () => {
     switch (definition.chartType) {
       case "bar":
         return (
           <BarChart
-            xAxis={[{ scaleType: "band", data: data.labels }]}
+            xAxis={[{ scaleType: "band", data: labels, tickLabelStyle: xTickLabelStyle }]}
+            yAxis={yAxis}
             series={data.series.map((s, index) => ({
               data: s.data,
               label: s.label,
               color: colors[index % colors.length],
             }))}
-            height={250}
-            margin={{ left: 50, right: 20, top: 20, bottom: 30 }}
+            height={chartHeight}
+            margin={{ left: 50, right: 20, top: 20, bottom: bottomMargin }}
           />
         );
       case "line":
         return (
           <LineChart
-            xAxis={[{ scaleType: "point", data: data.labels }]}
+            xAxis={[{ scaleType: "point", data: labels, tickLabelStyle: xTickLabelStyle }]}
+            yAxis={yAxis}
             series={data.series.map((s, index) => ({
               data: s.data,
               label: s.label,
               color: colors[index % colors.length],
               curve: "linear",
             }))}
-            height={250}
-            margin={{ left: 50, right: 20, top: 20, bottom: 30 }}
+            height={chartHeight}
+            margin={{ left: 50, right: 20, top: 20, bottom: bottomMargin }}
           />
         );
       case "area":
         return (
           <LineChart
-            xAxis={[{ scaleType: "point", data: data.labels }]}
+            xAxis={[{ scaleType: "point", data: labels, tickLabelStyle: xTickLabelStyle }]}
+            yAxis={yAxis}
             series={data.series.map((s, index) => ({
               data: s.data,
               label: s.label,
@@ -51,8 +76,8 @@ export const ChartWidget = ({ definition, data }: ChartWidgetProps) => {
               area: true,
               showMark: false,
             }))}
-            height={250}
-            margin={{ left: 50, right: 20, top: 20, bottom: 30 }}
+            height={chartHeight}
+            margin={{ left: 50, right: 20, top: 20, bottom: bottomMargin }}
           />
         );
       case "pie":

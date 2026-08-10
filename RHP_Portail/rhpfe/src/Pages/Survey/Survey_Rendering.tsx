@@ -67,10 +67,14 @@ const Survey_Rendering = forwardRef<ChildHandle, TProps>(({ cod_survey, cod_repl
     // comme renseignée) mais qu'aucune réponse n'existe en base (données perdues).
     const [emptyReplyWarning, setEmptyReplyWarning] = useState(false);
     const questionsRef = useRef<TQuestion[]>([]);
+    // true dès que des réponses existent en base (chargées) ou ont été enregistrées
+    // avec succès : utilisé pour interdire la signature d'une évaluation vide.
+    const hasAnswersRef = useRef(false);
     useImperativeHandle(refChild, () => ({
         save: async () => {
             return await saveAnswers();
         },
+        hasAnswers: () => hasAnswersRef.current,
     }));
     useEffect(() => {
         questionsRef.current = questions;
@@ -114,6 +118,7 @@ const Survey_Rendering = forwardRef<ChildHandle, TProps>(({ cod_survey, cod_repl
                         dbAnswers.length === 0 &&
                         !isNaN(codReplyNum) && codReplyNum > 0
                     );
+                    hasAnswersRef.current = dbAnswers.length > 0;
 
 
                     const initialAnswers: TAnswers = {};
@@ -653,6 +658,7 @@ const Survey_Rendering = forwardRef<ChildHandle, TProps>(({ cod_survey, cod_repl
             console.log("DEBUG myAxiosPost Response:", rsl);
 
             if (rsl.data) {
+                if (rsl.data.result) hasAnswersRef.current = true;
                 return rsl.data;
             }
             return { result: false, data: ["No data/error in response"] };

@@ -17,8 +17,28 @@ export async function sousmettre_signature(
     ]
   );
 }
-export async function get_signataires(req: Request, res: Response) {
-  const { Typ_Document, Valeur_Index } = req.query;
+export async function has_signature_rule(req: Request, res: Response) {
+  const { Typ_Document } = req.query;
+  const { id_Societe } = req.params;
+  const idSocNum = Number(id_Societe);
+  if (isNaN(idSocNum) || idSocNum <= 0) {
+    return res.send({ result: false, message: "id_Societe invalide" });
+  }
+  // Même prédicat que l'application desktop (Module_Workflow) :
+  // règle active = ligne Workflow_Signatures avec isnull(Actif,'false')='true'
+  const rsl = await lireSql(
+    `select case when exists(
+        select 1 from Workflow_Signatures
+        where Typ_Document=@typ_document and id_Societe=@id_societe and isnull(Actif,'false')='true'
+     ) then 1 else 0 end as hasRule`,
+    [
+      { param: "typ_document", sqlType: NVarChar, valeur: String(Typ_Document ?? "") },
+      { param: "id_societe", sqlType: Int, valeur: idSocNum },
+    ]
+  );
+  return res.send({ result: rsl.result, hasRule: rsl.result === true && rsl.data?.[0]?.hasRule === 1 });
+}
+export async function get_signataires(req: Request, res: Response) {  const { Typ_Document, Valeur_Index } = req.query;
 
   const { id_Societe } = req.params;
   const rsl = await lireSql(
@@ -40,11 +60,37 @@ order by RowId`,
 export async function signer(req: Request, res: Response) {
   const { RowId, Commentaire, Decision } = req.body;
   const { id_Societe } = req.params;
+
+  // Contrôle métier : une évaluation (Typ_Document 'EV') ne peut pas être signée
+  // si aucune réponse n'est enregistrée en base (Survey_Reply_Detail vide ou
+  // en-tête inexistant). Valeur_Index est reconstruit comme côté front :
+  // Cod_Evaluation + '_' + Evalue + '_' + Evaluateur.
+  if (Decision === "SG") {
+    const check = await lireSql(
+      `declare @Indx nvarchar(200), @TypDoc nvarchar(10)
+       select top 1 @Indx=Valeur_Index, @TypDoc=Typ_Document from Signatures_Lig where RowId=@RowId
+       select @TypDoc as Typ_Document,
+         (select top 1 (select count(*) from Survey_Reply_Detail d where d.Cod_Reply = r.Cod_Reply)
+          from Survey_Reply r
+          where r.id_Societe = @id_Societe and r.Typ_Evalue = 'E'
+            and @Indx = r.Ref_Evaluation + '_' + r.Evalue + '_' + r.Evaluateur) as NbReponses`,
+      [
+        { param: "RowId", sqlType: Int, valeur: RowId },
+        { param: "id_Societe", sqlType: Int, valeur: id_Societe },
+      ]
+    );
+    const doc = check.data?.[0];
+    if (check.result && doc?.Typ_Document === "EV" && !(Number(doc?.NbReponses) > 0)) {
+      const msg = "Aucune réponse n'est enregistrée pour cette évaluation. Signature impossible.";
+      return res.send({ result: false, data: [msg], message: msg });
+    }
+  }
+
   const rsl = await lireSql(
     `declare @Indx nvarchar(50), @TypDoc nvarchar(10)
     select top 1 @Indx=Valeur_Index, @TypDoc=Typ_Document from Signatures_Lig where RowId=@RowId
     update Signatures_Lig set Decision=@Decision, Dat_Signature=getdate(), Commentaire=@Commentaire where RowId=@RowId
-    exec Sys_Workflow_Maj_Statut_Signature @TypDoc,@id_Societe,@Indx  
+    exec Sys_Workflow_Maj_Statut_Signature @TypDoc,@id_Societe,@Indx
     select * from Signatures_Lig where RowId=@RowId`,
     [
       { param: "RowId", sqlType: Int, valeur: RowId },

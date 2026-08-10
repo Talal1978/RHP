@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import {
     Box,
@@ -20,8 +20,9 @@ import {
     FormLabel
 } from "@mui/material";
 import Grid from "@mui/material/Unstable_Grid2";
-import { Add, Delete, Save, CheckCircle, Cancel, Person } from "@mui/icons-material";
+import { Add, Delete, Save, CheckCircle, Cancel, Person, DrawOutlined } from "@mui/icons-material";
 import useAxiosPost from "../../hooks/useAxiosPost";
+import useAxiosGet from "../../hooks/useAxiosGet";
 import useMsgBox from "../../hooks/useMsgBox";
 import useAlert from "../../hooks/useAlert";
 import { cntX } from "../../Menu/MenuMain";
@@ -29,7 +30,7 @@ import TextBox from "../../components/TextBox/TextBox";
 import CalendarZoom from "../../components/Calendar/CalendarZoom";
 import TextZoom from "../../components/TextZoom/TextZoom";
 import { Agent, colorBase } from "../../modules/module_general";
-import { parseRtfToText, toRTF } from "../../modules/module_formats";
+import { parseRtfToText, toRTF, formatDateForInput } from "../../modules/module_formats";
 import useCombo from "../../hooks/useCombo";
 import GroupBox from "../../components/GroupBox/GroupBox";
 
@@ -80,7 +81,7 @@ const defaultEntete: IEntete = {
     Cod_Poste_DR: "",
     Cod_Grade_DR: "",
     Cod_Entite_DR: "",
-    Dat_DR: new Date().toISOString().split('T')[0],
+    Dat_DR: formatDateForInput(new Date()),
     Duree_Indeterminee: true,
     Duree_Du: "",
     Duree_Au: "",
@@ -102,7 +103,8 @@ const defaultEntete: IEntete = {
 
 const Recrutement_Demande = () => {
     const myAxios = useAxiosPost();
-    const { settbnMenu, isSmall } = useContext(cntX);
+    const myAxiosGet = useAxiosGet();
+    const { settbnMenu, isSmall, setShowSignature, setSignatureProps } = useContext(cntX);
     const msgbox = useMsgBox();
     const alert = useAlert();
     const { num } = useParams();
@@ -110,6 +112,9 @@ const Recrutement_Demande = () => {
     const [tabIndex, setTabIndex] = useState(0);
     const [newCompetence, setNewCompetence] = useState("");
     const [narratifDisplay, setNarratifDisplay] = useState("");
+    // true quand la modification de Narratif vient de la saisie utilisateur :
+    // évite que le useEffect réécrive la zone avec le RTF re-parsé (trim des espaces)
+    const narratifTypingRef = useRef(false);
 
 
 
@@ -118,6 +123,10 @@ const Recrutement_Demande = () => {
 
 
     useEffect(() => {
+        if (narratifTypingRef.current) {
+            narratifTypingRef.current = false;
+            return;
+        }
         if (!entete.Narratif) {
             setNarratifDisplay("");
             return;
@@ -138,6 +147,17 @@ const Recrutement_Demande = () => {
     const isLocked = entete.Statut === "VA" || entete.Statut === "SS" || entete.Statut === "SG" || entete.Statut === "RJ";
     const canSave = !isLocked;
 
+    // Le bouton "Valider" (validation directe sans workflow) n'est affiché
+    // que si aucune règle de signature n'est paramétrée pour les demandes de recrutement
+    const [hasSignRule, setHasSignRule] = useState(true);
+    useEffect(() => {
+        myAxiosGet({ apiStr: "has_signature_rule", bdy: { Typ_Document: "DR" } })
+            .then((dt) => {
+                setHasSignRule(dt.data?.result === true && dt.data?.hasRule === true);
+            })
+            .catch(() => setHasSignRule(true));
+    }, []);
+
     // Menu logic
 
     useEffect(() => {
@@ -156,13 +176,20 @@ const Recrutement_Demande = () => {
                 action: () => saveDemande(""),
                 disabled: !canSave
             },
-            {
+            ...(!hasSignRule ? [{
                 name: "Valider",
                 libelle: "Valider",
                 icon: <CheckCircle />,
                 action: () => saveDemande("VA"),
                 disabled: !canSave,
                 color: "success.main"
+            }] : []),
+            {
+                name: "SS",
+                libelle: (entete.Statut === "" || entete.Statut === "NSS") ? "Soumettre pour signature" : "Signatures",
+                icon: <DrawOutlined />,
+                action: soumettreEnSignature,
+                disabled: entete.Num_DR === ""
             },
             {
                 name: "Supprimer",
@@ -174,13 +201,13 @@ const Recrutement_Demande = () => {
             }
         ]);
         return () => settbnMenu([]);
-    }, [isLocked, entete.Num_DR, canSave, entete]);
+    }, [isLocked, entete.Num_DR, canSave, entete, hasSignRule]);
 
     useEffect(() => {
         if (num && num !== "new") {
             loadDemande(num);
         } else if (entete.Num_DR === "" && entete.Matricule === "") {
-            setEntete(prev => ({ ...prev, Matricule: Agent.Matricule }));
+            setEntete(prev => ({ ...prev, Matricule: Agent.Matricule, Dat_DR: formatDateForInput(new Date()) }));
             loadAgentInfo(Agent.Matricule);
         }
     }, [num]);
@@ -242,6 +269,23 @@ const Recrutement_Demande = () => {
             });
     };
 
+    const soumettreEnSignature = async () => {
+        if (!entete.Num_DR) return;
+        if (entete.Statut === "" || entete.Statut === "NSS") {
+            const result = await msgbox({
+                msg: "Êtes-vous sûr de vouloir soumettre cette demande en signature ?",
+                typMsg: "question",
+                typReply: "YesNoCancel"
+            });
+            if (result === "Yes") {
+                saveDemande("SS");
+            }
+        } else {
+            setSignatureProps({ typ_document: "DR", valeur_index: entete.Num_DR });
+            setShowSignature(true);
+        }
+    };
+
     const deleteDemande = () => {
         msgbox({
             msg: "Êtes-vous sûr de vouloir supprimer cette demande ?",
@@ -264,7 +308,7 @@ const Recrutement_Demande = () => {
     };
 
     const nouveau = () => {
-        setEntete(defaultEntete);
+        setEntete({ ...defaultEntete, Dat_DR: formatDateForInput(new Date()) });
         loadAgentInfo(Agent.Matricule);
     };
 
@@ -483,13 +527,16 @@ const Recrutement_Demande = () => {
                             <TextBox nomControle="Titre_DR" label="Intitulé du poste demandé" valeur={entete.Titre_DR} onchange={handleChange} readonly={isLocked} />
                         </Grid>
                         <Grid xs={12} sm={6}>
-                            <TextZoom numZoom="MS016" nomControle="Cod_Poste_DR" label="Poste Type" valeur={entete.Cod_Poste_DR} onchange={handleChange} readonly={isLocked} />
+                            <TextZoom numZoom="MS016" nomControle="Cod_Poste_DR" label="Poste Type" valeur={entete.Cod_Poste_DR} onchange={handleChange} readonly={isLocked}
+                                findlibelle={{ champs: "Lib_Poste", code: "Cod_Poste", tblName: "Org_Poste" }} />
                         </Grid>
                         <Grid xs={12} sm={6}>
-                            <TextZoom numZoom="MS015" nomControle="Cod_Grade_DR" label="Grade" valeur={entete.Cod_Grade_DR} onchange={handleChange} readonly={isLocked} />
+                            <TextZoom numZoom="MS015" nomControle="Cod_Grade_DR" label="Grade" valeur={entete.Cod_Grade_DR} onchange={handleChange} readonly={isLocked}
+                                findlibelle={{ champs: "Lib_Grade", code: "Cod_Grade", tblName: "Org_Grade" }} />
                         </Grid>
                         <Grid xs={12} sm={6}>
-                            <TextZoom numZoom="MS010" nomControle="Cod_Entite_DR" label="Entité d'affectation" valeur={entete.Cod_Entite_DR} onchange={handleChange} readonly={isLocked} />
+                            <TextZoom numZoom="MS010" nomControle="Cod_Entite_DR" label="Entité d'affectation" valeur={entete.Cod_Entite_DR} onchange={handleChange} readonly={isLocked}
+                                findlibelle={{ champs: "Lib_Entite", code: "Cod_Entite", tblName: "Org_Entite" }} />
                         </Grid>
 
                         <Grid xs={12}><Divider sx={{ my: 1 }} /></Grid>
@@ -660,6 +707,7 @@ const Recrutement_Demande = () => {
                                 minRows={4}
                                 valeur={narratifDisplay}
                                 onchange={(name, val) => {
+                                    narratifTypingRef.current = true;
                                     setNarratifDisplay(val);
                                     handleChange(name, toRTF(val));
                                 }}

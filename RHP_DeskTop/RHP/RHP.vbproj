@@ -1566,6 +1566,12 @@
     <Compile Include="Documents\Demande_Congés\RH_Demande_Conge_Liste.vb">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="Documents\Demande_Congés\RH_Conge_Planning.designer.vb">
+      <DependentUpon>RH_Conge_Planning.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Documents\Demande_Congés\RH_Conge_Planning.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Documents\Demande_Congés\RH_Demande_Conge.Designer.vb">
       <DependentUpon>RH_Demande_Conge.vb</DependentUpon>
     </Compile>
@@ -2672,6 +2678,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Documents\Demande_Congés\RH_Demande_Conge_Liste.resx">
       <DependentUpon>RH_Demande_Conge_Liste.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Documents\Demande_Congés\RH_Conge_Planning.resx">
+      <DependentUpon>RH_Conge_Planning.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Documents\Demande_Congés\RH_Demande_Conge.resx">
       <DependentUpon>RH_Demande_Conge.vb</DependentUpon>

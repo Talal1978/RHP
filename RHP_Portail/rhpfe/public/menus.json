@@ -128,6 +128,14 @@
     "img": "ReceiptLong"
   },
   {
+    "name_ecran": "RH_Conge_Planning",
+    "text_ecran": "Planning des congés",
+    "typ_ecran": "ECR",
+    "parent": "mesConsultations",
+    "rang": 2,
+    "img": "EventAvailable"
+  },
+  {
     "name_ecran": "mesEvaluations",
     "text_ecran": "Evaluations et formations",
     "typ_ecran": "MNU",

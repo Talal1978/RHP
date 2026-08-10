@@ -141,6 +141,10 @@ export const surveyAnswersSave = async (req: Request, res: Response) => {
     // 3. Header Handling
     // Check existence
     let currentCodReply = 0;
+    // Mémorise si l'en-tête a été créé par cet appel : en cas d'échec
+    // d'insertion des détails, il sera supprimé pour éviter une réponse vide
+    // orpheline (évaluation "renseignée" mais sans aucune réponse en base).
+    let headerCreated = false;
 
     // Use Composite Key (Cod_Survey + Ref_Evaluation + Evalue + Evaluateur)
     // Fix: Handle cases where Ref_Evaluation might be NULL in older records, and strictly check Typ_Evalue
@@ -192,6 +196,7 @@ values(@idSoc, @cod_survey, getdate(), @login, @evaluateur, @typEvalue, @evalue,
 
         if (rslHeader.result && rslHeader.data.length > 0) {
             currentCodReply = rslHeader.data[0].NewId;
+            headerCreated = true;
         } else {
             return res.send({ result: false, data: [rslHeader.sort] });
         }
@@ -241,6 +246,12 @@ values(@cod_reply, @cod_question, @question, @obligatoire, @typ_reponse, @num_so
                 { param: "cod_reply", sqlType: Int, valeur: currentCodReply },
                 { param: "flg_maj", sqlType: NVarChar, valeur: flg_maj.toString() }
             ]);
+            // Supprimer aussi l'en-tête s'il vient d'être créé (pas d'ancien lot à préserver)
+            if (headerCreated) {
+                await lireSql(`delete from Survey_Reply where Cod_Reply = @cod_reply`, [
+                    { param: "cod_reply", sqlType: Int, valeur: currentCodReply }
+                ]);
+            }
             return res.send({ result: false, data: ["Erreur lors de l'enregistrement de certaines réponses."] });
         }
     } catch (error) {
@@ -249,6 +260,12 @@ values(@cod_reply, @cod_question, @question, @obligatoire, @typ_reponse, @num_so
             { param: "cod_reply", sqlType: Int, valeur: currentCodReply },
             { param: "flg_maj", sqlType: NVarChar, valeur: flg_maj.toString() }
         ]);
+        // Supprimer aussi l'en-tête s'il vient d'être créé (pas d'ancien lot à préserver)
+        if (headerCreated) {
+            await lireSql(`delete from Survey_Reply where Cod_Reply = @cod_reply`, [
+                { param: "cod_reply", sqlType: Int, valeur: currentCodReply }
+            ]);
+        }
         return res.send({ result: false, data: [error] });
     }
 

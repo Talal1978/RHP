@@ -137,10 +137,35 @@ const Evaluation = () => {
     window.print();
   }, []);
 
-  const SoumettreEnSignature = useCallback(() => {
+  const SoumettreEnSignature = useCallback(async () => {
+    // Sécurité : ne jamais soumettre/signer une évaluation sans réponses en base.
+    // 1. Si le document est modifiable (brouillon), on enregistre d'abord les
+    //    réponses saisies (comme le fait l'application desktop : Saving("SS")).
+    if (isValidForSave && myRef.current) {
+      const rsl = await myRef.current.save();
+      if (!rsl.result) {
+        await msgBox({
+          titre: "Signer",
+          msg: "Enregistrement préalable impossible : " + (rsl.data && rsl.data.length > 0 ? (typeof rsl.data[0] === 'object' ? JSON.stringify(rsl.data[0]) : String(rsl.data[0])) : "erreur inconnue"),
+          typMsg: "error",
+          typReply: "OkOnly",
+        });
+        return;
+      }
+    }
+    // 2. Bloquer si aucune réponse n'existe en base (évaluation vide).
+    if (!myRef.current?.hasAnswers()) {
+      await msgBox({
+        titre: "Signer",
+        msg: "Aucune réponse n'est enregistrée pour cette évaluation. Signature impossible.",
+        typMsg: "error",
+        typReply: "OkOnly",
+      });
+      return;
+    }
     setSignatureProps({ typ_document: "EV", valeur_index: evaluationKey });
     setShowSignature(true);
-  }, [setSignatureProps, setShowSignature, evaluationKey]);
+  }, [setSignatureProps, setShowSignature, evaluationKey, isValidForSave, msgBox]);
 
   useEffect(() => {
     settbnMenu([

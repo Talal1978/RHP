@@ -55,4 +55,7 @@ export interface TAnswers {
 
 export type ChildHandle = {
   save: () => Promise<{ result: boolean, data: any[] }>;
+  // Indique si des réponses existent en base (chargées ou fraîchement enregistrées).
+  // Sert à bloquer la signature d'une évaluation vide.
+  hasAnswers: () => boolean;
 };

@@ -135,11 +135,13 @@ suite:
                     bn += 1
 
                     oStyle = XGrd.Item(Col(j), i).InheritedStyle
-                    With xlws.Cells(xlws.Cells(i + 2, 1).Address & ":" & xlws.Cells(i + 2, Col.Count).Address).Style
-                        .Font.Bold = oStyle.Font.Bold
-                        .Font.Italic = oStyle.Font.Italic
-                        .Font.UnderLine = oStyle.Font.Underline
+                    With xlws.Cells(i + 2, bn).Style
                         '  .Font.FontStyle = oStyle.Font.FontFamily
+                        If oStyle.Font IsNot Nothing Then
+                            .Font.Bold = oStyle.Font.Bold
+                            .Font.Italic = oStyle.Font.Italic
+                            .Font.UnderLine = oStyle.Font.Underline
+                        End If
                         .Font.Color.SetColor(System.Drawing.Color.FromArgb(oStyle.ForeColor.R, oStyle.ForeColor.G, oStyle.ForeColor.B))
                         .Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid
                         .Fill.BackgroundColor.SetColor(System.Drawing.Color.FromArgb(oStyle.BackColor.R, oStyle.BackColor.G, oStyle.BackColor.B))
@@ -154,6 +156,17 @@ suite:
                 .Font.Bold = True
                 .Font.Color.SetColor(ColorEntF)
             End With
+            ' Couleurs d'en-tête personnalisées (ex. planning : fériés, repos)
+            For j As Integer = 0 To Col.Count - 1
+                If XGrd.Columns(Col(j)).HeaderCell.HasStyle Then
+                    Dim hStyle As DataGridViewCellStyle = XGrd.Columns(Col(j)).HeaderCell.InheritedStyle
+                    With xlws.Cells(1, j + 1).Style
+                        .Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid
+                        .Fill.BackgroundColor.SetColor(System.Drawing.Color.FromArgb(hStyle.BackColor.R, hStyle.BackColor.G, hStyle.BackColor.B))
+                        .Font.Color.SetColor(System.Drawing.Color.FromArgb(hStyle.ForeColor.R, hStyle.ForeColor.G, hStyle.ForeColor.B))
+                    End With
+                End If
+            Next
             With xlws.Cells(xlws.Cells(1, 1).Address & ":" & xlws.Cells(XGrd.RowCount + 1, Col.Count).Address)
                 .Style.Border.BorderAround(OfficeOpenXml.Style.ExcelBorderStyle.Thin)
                 .Style.Border.Diagonal.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin

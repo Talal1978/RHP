@@ -39,6 +39,7 @@ const Formation_Evaluation_Liste = lazy(() => import("../Pages/Formation/Formati
 const Formation = lazy(() => import("../Pages/Formation/Formation"));
 const Formation_Liste = lazy(() => import("../Pages/Formation/Formation_Liste"));
 const RH_Demande_Conge = lazy(() => import("../Pages/Conges/RH_Demande_Conge"));
+const RH_Conge_Planning = lazy(() => import("../Pages/Conges/RH_Conge_Planning"));
 const Organigramme = lazy(() => import("../Pages/Organigramme/Organigramme"));
 const Recrutement_Demande = lazy(() => import("../Pages/Recrutement/Recrutement_Demande"));
 const Recrutement_Demande_Liste = lazy(() => import("../Pages/Recrutement/Recrutement_Demande_Liste"));
@@ -127,6 +128,9 @@ const Ecran = ({ style }: { style?: React.CSSProperties }) => {
         break;
       case "RH_Demande_Conge_Liste":
         setEcran(<RH_Demande_Conge_Liste />);
+        break;
+      case "RH_Conge_Planning":
+        setEcran(<RH_Conge_Planning />);
         break;
       case "Evaluation_Liste":
         setEcran(<Evaluation_Liste />);

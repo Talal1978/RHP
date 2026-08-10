@@ -31,6 +31,10 @@
             left: 2px;
             width: auto;
             height: calc(100% - 10px);
+            // Tailwind preflight force "color: inherit" sur les inputs :
+            // il faut une couleur explicite sinon le texte hérite du blanc de l'en-tête
+            color: variables.$foreColorBase01;
+            background-color: variables.$bgInput;
           }
         }
       }
