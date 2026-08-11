@@ -88,6 +88,7 @@ Partial Class SP_Page_Designer
         Me.LabelDroits = New System.Windows.Forms.Label()
         Me.Table_Ent_txt = New RHP.ud_TextBox()
         Me.LabelTableEnt = New System.Windows.Forms.Label()
+        Me.Tab_Champs = New System.Windows.Forms.TabPage()
         Me.TabControl1.SuspendLayout()
         Me.Tab_Document.SuspendLayout()
         Me.TabControl_Details.SuspendLayout()
@@ -106,7 +107,6 @@ Partial Class SP_Page_Designer
         CType(Me.Grd_Sources, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.Tab_Comportement.SuspendLayout()
         CType(Me.SplitContainer6, System.ComponentModel.ISupportInitialize).BeginInit()
-        Me.SplitContainer6.Panel1.SuspendLayout()
         Me.SplitContainer6.Panel2.SuspendLayout()
         Me.SplitContainer6.SuspendLayout()
         Me.GroupBox_Int.SuspendLayout()
@@ -114,20 +114,22 @@ Partial Class SP_Page_Designer
         Me.Tab_Droits.SuspendLayout()
         CType(Me.Grd_Droits, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.Panel_Droits.SuspendLayout()
+        Me.Tab_Champs.SuspendLayout()
         Me.SuspendLayout()
         '
         'TabControl1
         '
         Me.TabControl1.Controls.Add(Me.Tab_Document)
+        Me.TabControl1.Controls.Add(Me.Tab_Champs)
         Me.TabControl1.Controls.Add(Me.Tab_Conception)
         Me.TabControl1.Controls.Add(Me.Tab_Comportement)
         Me.TabControl1.Controls.Add(Me.Tab_Droits)
         Me.TabControl1.Dock = System.Windows.Forms.DockStyle.Fill
         Me.TabControl1.DrawMode = System.Windows.Forms.TabDrawMode.OwnerDrawFixed
-        Me.TabControl1.Location = New System.Drawing.Point(0, 200)
+        Me.TabControl1.Location = New System.Drawing.Point(0, 72)
         Me.TabControl1.Name = "TabControl1"
         Me.TabControl1.SelectedIndex = 0
-        Me.TabControl1.Size = New System.Drawing.Size(1250, 500)
+        Me.TabControl1.Size = New System.Drawing.Size(1250, 628)
         Me.TabControl1.TabIndex = 0
         '
         'Tab_Document
@@ -265,25 +267,15 @@ Partial Class SP_Page_Designer
         '
         'GroupBox_Def
         '
-        Me.GroupBox_Def.Controls.Add(Me.Table_Ent_txt)
-        Me.GroupBox_Def.Controls.Add(Me.LabelTableEnt)
         Me.GroupBox_Def.Controls.Add(Me.Statut_Page_cmb)
         Me.GroupBox_Def.Controls.Add(Me.LabelStatut)
-        Me.GroupBox_Def.Controls.Add(Me.Icone_cmb)
-        Me.GroupBox_Def.Controls.Add(Me.LabelIcone)
-        Me.GroupBox_Def.Controls.Add(Me.Rang_txt)
-        Me.GroupBox_Def.Controls.Add(Me.LabelRang)
-        Me.GroupBox_Def.Controls.Add(Me.Menu_Parent_cmb)
-        Me.GroupBox_Def.Controls.Add(Me.LabelMenu)
         Me.GroupBox_Def.Controls.Add(Me.Nom_Page_txt)
-        Me.GroupBox_Def.Controls.Add(Me.Cod_Document_txt)
-        Me.GroupBox_Def.Controls.Add(Me.LabelCodDoc)
         Me.GroupBox_Def.Controls.Add(Me.Cod_Page_txt)
         Me.GroupBox_Def.Controls.Add(Me.LabelCodPage)
         Me.GroupBox_Def.Dock = System.Windows.Forms.DockStyle.Top
         Me.GroupBox_Def.Location = New System.Drawing.Point(0, 0)
         Me.GroupBox_Def.Name = "GroupBox_Def"
-        Me.GroupBox_Def.Size = New System.Drawing.Size(1250, 200)
+        Me.GroupBox_Def.Size = New System.Drawing.Size(1250, 72)
         Me.GroupBox_Def.TabIndex = 0
         Me.GroupBox_Def.TabStop = False
         Me.GroupBox_Def.Text = "Définition du type de document"
@@ -295,7 +287,7 @@ Partial Class SP_Page_Designer
         Me.Statut_Page_cmb.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
         Me.Statut_Page_cmb.DroppedDown = False
         Me.Statut_Page_cmb.Enabled = False
-        Me.Statut_Page_cmb.Location = New System.Drawing.Point(983, 65)
+        Me.Statut_Page_cmb.Location = New System.Drawing.Point(889, 34)
         Me.Statut_Page_cmb.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
         Me.Statut_Page_cmb.Name = "Statut_Page_cmb"
         Me.Statut_Page_cmb.SelectedIndex = -1
@@ -308,7 +300,7 @@ Partial Class SP_Page_Designer
         'LabelStatut
         '
         Me.LabelStatut.AutoSize = True
-        Me.LabelStatut.Location = New System.Drawing.Point(926, 62)
+        Me.LabelStatut.Location = New System.Drawing.Point(841, 37)
         Me.LabelStatut.Name = "LabelStatut"
         Me.LabelStatut.Size = New System.Drawing.Size(50, 19)
         Me.LabelStatut.TabIndex = 17
@@ -320,7 +312,7 @@ Partial Class SP_Page_Designer
         Me.Icone_cmb.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
         Me.Icone_cmb.DropDownWidth = 260
         Me.Icone_cmb.ItemHeight = 22
-        Me.Icone_cmb.Location = New System.Drawing.Point(540, 65)
+        Me.Icone_cmb.Location = New System.Drawing.Point(753, 51)
         Me.Icone_cmb.Name = "Icone_cmb"
         Me.Icone_cmb.Size = New System.Drawing.Size(360, 28)
         Me.Icone_cmb.TabIndex = 4
@@ -328,7 +320,7 @@ Partial Class SP_Page_Designer
         'LabelIcone
         '
         Me.LabelIcone.AutoSize = True
-        Me.LabelIcone.Location = New System.Drawing.Point(447, 69)
+        Me.LabelIcone.Location = New System.Drawing.Point(660, 55)
         Me.LabelIcone.Name = "LabelIcone"
         Me.LabelIcone.Size = New System.Drawing.Size(87, 19)
         Me.LabelIcone.TabIndex = 15
@@ -336,7 +328,7 @@ Partial Class SP_Page_Designer
         '
         'Rang_txt
         '
-        Me.Rang_txt.Location = New System.Drawing.Point(385, 67)
+        Me.Rang_txt.Location = New System.Drawing.Point(598, 53)
         Me.Rang_txt.Margin = New System.Windows.Forms.Padding(4)
         Me.Rang_txt.Maximum = New Decimal(New Integer() {9999, 0, 0, 0})
         Me.Rang_txt.Name = "Rang_txt"
@@ -348,7 +340,7 @@ Partial Class SP_Page_Designer
         'LabelRang
         '
         Me.LabelRang.AutoSize = True
-        Me.LabelRang.Location = New System.Drawing.Point(332, 67)
+        Me.LabelRang.Location = New System.Drawing.Point(545, 53)
         Me.LabelRang.Name = "LabelRang"
         Me.LabelRang.Size = New System.Drawing.Size(46, 19)
         Me.LabelRang.TabIndex = 13
@@ -360,20 +352,20 @@ Partial Class SP_Page_Designer
         Me.Menu_Parent_cmb.DisplayMember = ""
         Me.Menu_Parent_cmb.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
         Me.Menu_Parent_cmb.DroppedDown = False
-        Me.Menu_Parent_cmb.Location = New System.Drawing.Point(115, 65)
+        Me.Menu_Parent_cmb.Location = New System.Drawing.Point(130, 51)
         Me.Menu_Parent_cmb.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
         Me.Menu_Parent_cmb.Name = "Menu_Parent_cmb"
         Me.Menu_Parent_cmb.SelectedIndex = -1
         Me.Menu_Parent_cmb.SelectedItem = Nothing
         Me.Menu_Parent_cmb.SelectedValue = Nothing
-        Me.Menu_Parent_cmb.Size = New System.Drawing.Size(210, 24)
+        Me.Menu_Parent_cmb.Size = New System.Drawing.Size(408, 24)
         Me.Menu_Parent_cmb.TabIndex = 3
         Me.Menu_Parent_cmb.ValueMember = ""
         '
         'LabelMenu
         '
         Me.LabelMenu.AutoSize = True
-        Me.LabelMenu.Location = New System.Drawing.Point(4, 67)
+        Me.LabelMenu.Location = New System.Drawing.Point(19, 53)
         Me.LabelMenu.Name = "LabelMenu"
         Me.LabelMenu.Size = New System.Drawing.Size(108, 19)
         Me.LabelMenu.TabIndex = 11
@@ -402,7 +394,7 @@ Partial Class SP_Page_Designer
         '
         Me.Cod_Document_txt.CharacterCasing = System.Windows.Forms.CharacterCasing.Normal
         Me.Cod_Document_txt.ContextMenuStrip = Nothing
-        Me.Cod_Document_txt.Location = New System.Drawing.Point(983, 34)
+        Me.Cod_Document_txt.Location = New System.Drawing.Point(456, 103)
         Me.Cod_Document_txt.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
         Me.Cod_Document_txt.MaxLength = 32767
         Me.Cod_Document_txt.Multiline = False
@@ -420,7 +412,7 @@ Partial Class SP_Page_Designer
         'LabelCodDoc
         '
         Me.LabelCodDoc.AutoSize = True
-        Me.LabelCodDoc.Location = New System.Drawing.Point(851, 35)
+        Me.LabelCodDoc.Location = New System.Drawing.Point(324, 104)
         Me.LabelCodDoc.Name = "LabelCodDoc"
         Me.LabelCodDoc.Size = New System.Drawing.Size(125, 19)
         Me.LabelCodDoc.TabIndex = 3
@@ -461,11 +453,11 @@ Partial Class SP_Page_Designer
         '
         'Tab_Conception
         '
-        Me.Tab_Conception.Controls.Add(Me.SplitContainer5)
+        Me.Tab_Conception.Controls.Add(Me.GroupBox_Int)
         Me.Tab_Conception.Location = New System.Drawing.Point(4, 28)
         Me.Tab_Conception.Name = "Tab_Conception"
         Me.Tab_Conception.Padding = New System.Windows.Forms.Padding(3)
-        Me.Tab_Conception.Size = New System.Drawing.Size(1242, 468)
+        Me.Tab_Conception.Size = New System.Drawing.Size(1242, 596)
         Me.Tab_Conception.TabIndex = 1
         Me.Tab_Conception.Text = "Conception de la page"
         Me.Tab_Conception.UseVisualStyleBackColor = True
@@ -473,7 +465,7 @@ Partial Class SP_Page_Designer
         'SplitContainer5
         '
         Me.SplitContainer5.Dock = System.Windows.Forms.DockStyle.Fill
-        Me.SplitContainer5.Location = New System.Drawing.Point(3, 3)
+        Me.SplitContainer5.Location = New System.Drawing.Point(0, 0)
         Me.SplitContainer5.Name = "SplitContainer5"
         Me.SplitContainer5.Orientation = System.Windows.Forms.Orientation.Horizontal
         '
@@ -486,8 +478,8 @@ Partial Class SP_Page_Designer
         '
         Me.SplitContainer5.Panel2.Controls.Add(Me.Grd_Sources)
         Me.SplitContainer5.Panel2.Controls.Add(Me.LabelSources)
-        Me.SplitContainer5.Size = New System.Drawing.Size(1236, 462)
-        Me.SplitContainer5.SplitterDistance = 290
+        Me.SplitContainer5.Size = New System.Drawing.Size(1242, 468)
+        Me.SplitContainer5.SplitterDistance = 294
         Me.SplitContainer5.TabIndex = 0
         '
         'Grd_Champs
@@ -525,7 +517,7 @@ Partial Class SP_Page_Designer
         Me.Grd_Champs.RowHeadersDefaultCellStyle = DataGridViewCellStyle9
         Me.Grd_Champs.RowHeadersVisible = False
         Me.Grd_Champs.RowHeadersWidth = 51
-        Me.Grd_Champs.Size = New System.Drawing.Size(1236, 265)
+        Me.Grd_Champs.Size = New System.Drawing.Size(1242, 269)
         Me.Grd_Champs.TabIndex = 1
         '
         'LabelChamps
@@ -534,7 +526,7 @@ Partial Class SP_Page_Designer
         Me.LabelChamps.Location = New System.Drawing.Point(0, 0)
         Me.LabelChamps.Name = "LabelChamps"
         Me.LabelChamps.Padding = New System.Windows.Forms.Padding(5, 3, 0, 0)
-        Me.LabelChamps.Size = New System.Drawing.Size(1236, 25)
+        Me.LabelChamps.Size = New System.Drawing.Size(1242, 25)
         Me.LabelChamps.TabIndex = 0
         Me.LabelChamps.Text = "Champs : Cod_Table = ENT pour l'entête, sinon le code du détail."
         '
@@ -573,7 +565,7 @@ Partial Class SP_Page_Designer
         Me.Grd_Sources.RowHeadersDefaultCellStyle = DataGridViewCellStyle12
         Me.Grd_Sources.RowHeadersVisible = False
         Me.Grd_Sources.RowHeadersWidth = 51
-        Me.Grd_Sources.Size = New System.Drawing.Size(1236, 143)
+        Me.Grd_Sources.Size = New System.Drawing.Size(1242, 145)
         Me.Grd_Sources.TabIndex = 1
         '
         'LabelSources
@@ -582,7 +574,7 @@ Partial Class SP_Page_Designer
         Me.LabelSources.Location = New System.Drawing.Point(0, 0)
         Me.LabelSources.Name = "LabelSources"
         Me.LabelSources.Padding = New System.Windows.Forms.Padding(5, 3, 0, 0)
-        Me.LabelSources.Size = New System.Drawing.Size(1236, 25)
+        Me.LabelSources.Size = New System.Drawing.Size(1242, 25)
         Me.LabelSources.TabIndex = 0
         Me.LabelSources.Text = "Catalogue sécurisé des sources métier autorisées (commun à toutes les pages)."
         '
@@ -604,10 +596,6 @@ Partial Class SP_Page_Designer
         Me.SplitContainer6.Name = "SplitContainer6"
         Me.SplitContainer6.Orientation = System.Windows.Forms.Orientation.Horizontal
         '
-        'SplitContainer6.Panel1
-        '
-        Me.SplitContainer6.Panel1.Controls.Add(Me.GroupBox_Int)
-        '
         'SplitContainer6.Panel2
         '
         Me.SplitContainer6.Panel2.Controls.Add(Me.Grd_Validations)
@@ -618,10 +606,20 @@ Partial Class SP_Page_Designer
         '
         'GroupBox_Int
         '
+        Me.GroupBox_Int.Controls.Add(Me.Table_Ent_txt)
+        Me.GroupBox_Int.Controls.Add(Me.LabelTableEnt)
+        Me.GroupBox_Int.Controls.Add(Me.Icone_cmb)
+        Me.GroupBox_Int.Controls.Add(Me.Cod_Document_txt)
+        Me.GroupBox_Int.Controls.Add(Me.LabelCodDoc)
         Me.GroupBox_Int.Controls.Add(Me.Act_Exporter_chk)
+        Me.GroupBox_Int.Controls.Add(Me.LabelIcone)
         Me.GroupBox_Int.Controls.Add(Me.Act_Imprimer_chk)
+        Me.GroupBox_Int.Controls.Add(Me.Rang_txt)
         Me.GroupBox_Int.Controls.Add(Me.Act_Soumettre_chk)
+        Me.GroupBox_Int.Controls.Add(Me.LabelRang)
         Me.GroupBox_Int.Controls.Add(Me.Act_Enregistrer_chk)
+        Me.GroupBox_Int.Controls.Add(Me.Menu_Parent_cmb)
+        Me.GroupBox_Int.Controls.Add(Me.LabelMenu)
         Me.GroupBox_Int.Controls.Add(Me.GED_Obligatoire_chk)
         Me.GroupBox_Int.Controls.Add(Me.GED_Actif_chk)
         Me.GroupBox_Int.Controls.Add(Me.Cod_Modele_Edition_txt)
@@ -630,18 +628,17 @@ Partial Class SP_Page_Designer
         Me.GroupBox_Int.Controls.Add(Me.LabelTypDoc)
         Me.GroupBox_Int.Controls.Add(Me.Workflow_Actif_chk)
         Me.GroupBox_Int.Dock = System.Windows.Forms.DockStyle.Fill
-        Me.GroupBox_Int.Location = New System.Drawing.Point(0, 0)
+        Me.GroupBox_Int.Location = New System.Drawing.Point(3, 3)
         Me.GroupBox_Int.Name = "GroupBox_Int"
-        Me.GroupBox_Int.Size = New System.Drawing.Size(1236, 131)
+        Me.GroupBox_Int.Size = New System.Drawing.Size(1236, 590)
         Me.GroupBox_Int.TabIndex = 0
         Me.GroupBox_Int.TabStop = False
-        Me.GroupBox_Int.Text = "Intégrations (actions, édition, GED, workflow)"
         '
         'Act_Exporter_chk
         '
         Me.Act_Exporter_chk.AutoSize = True
         Me.Act_Exporter_chk.Checked = False
-        Me.Act_Exporter_chk.Location = New System.Drawing.Point(627, 104)
+        Me.Act_Exporter_chk.Location = New System.Drawing.Point(467, 211)
         Me.Act_Exporter_chk.Margin = New System.Windows.Forms.Padding(4)
         Me.Act_Exporter_chk.MaximumSize = New System.Drawing.Size(0, 25)
         Me.Act_Exporter_chk.MinimumSize = New System.Drawing.Size(133, 25)
@@ -654,7 +651,7 @@ Partial Class SP_Page_Designer
         '
         Me.Act_Imprimer_chk.AutoSize = True
         Me.Act_Imprimer_chk.Checked = False
-        Me.Act_Imprimer_chk.Location = New System.Drawing.Point(462, 104)
+        Me.Act_Imprimer_chk.Location = New System.Drawing.Point(28, 307)
         Me.Act_Imprimer_chk.Margin = New System.Windows.Forms.Padding(4)
         Me.Act_Imprimer_chk.MaximumSize = New System.Drawing.Size(0, 25)
         Me.Act_Imprimer_chk.MinimumSize = New System.Drawing.Size(133, 25)
@@ -667,7 +664,7 @@ Partial Class SP_Page_Designer
         '
         Me.Act_Soumettre_chk.AutoSize = True
         Me.Act_Soumettre_chk.Checked = True
-        Me.Act_Soumettre_chk.Location = New System.Drawing.Point(192, 104)
+        Me.Act_Soumettre_chk.Location = New System.Drawing.Point(198, 211)
         Me.Act_Soumettre_chk.Margin = New System.Windows.Forms.Padding(4)
         Me.Act_Soumettre_chk.MaximumSize = New System.Drawing.Size(0, 25)
         Me.Act_Soumettre_chk.MinimumSize = New System.Drawing.Size(133, 25)
@@ -680,7 +677,7 @@ Partial Class SP_Page_Designer
         '
         Me.Act_Enregistrer_chk.AutoSize = True
         Me.Act_Enregistrer_chk.Checked = True
-        Me.Act_Enregistrer_chk.Location = New System.Drawing.Point(12, 104)
+        Me.Act_Enregistrer_chk.Location = New System.Drawing.Point(18, 211)
         Me.Act_Enregistrer_chk.Margin = New System.Windows.Forms.Padding(4)
         Me.Act_Enregistrer_chk.MaximumSize = New System.Drawing.Size(0, 25)
         Me.Act_Enregistrer_chk.MinimumSize = New System.Drawing.Size(133, 25)
@@ -693,7 +690,7 @@ Partial Class SP_Page_Designer
         '
         Me.GED_Obligatoire_chk.AutoSize = True
         Me.GED_Obligatoire_chk.Checked = False
-        Me.GED_Obligatoire_chk.Location = New System.Drawing.Point(145, 66)
+        Me.GED_Obligatoire_chk.Location = New System.Drawing.Point(151, 173)
         Me.GED_Obligatoire_chk.Margin = New System.Windows.Forms.Padding(4)
         Me.GED_Obligatoire_chk.MaximumSize = New System.Drawing.Size(0, 25)
         Me.GED_Obligatoire_chk.MinimumSize = New System.Drawing.Size(133, 25)
@@ -705,8 +702,8 @@ Partial Class SP_Page_Designer
         'GED_Actif_chk
         '
         Me.GED_Actif_chk.AutoSize = True
-        Me.GED_Actif_chk.Checked = False
-        Me.GED_Actif_chk.Location = New System.Drawing.Point(12, 66)
+        Me.GED_Actif_chk.Checked = True
+        Me.GED_Actif_chk.Location = New System.Drawing.Point(18, 173)
         Me.GED_Actif_chk.Margin = New System.Windows.Forms.Padding(4)
         Me.GED_Actif_chk.MaximumSize = New System.Drawing.Size(0, 25)
         Me.GED_Actif_chk.MinimumSize = New System.Drawing.Size(133, 25)
@@ -719,14 +716,14 @@ Partial Class SP_Page_Designer
         '
         Me.Cod_Modele_Edition_txt.CharacterCasing = System.Windows.Forms.CharacterCasing.Normal
         Me.Cod_Modele_Edition_txt.ContextMenuStrip = Nothing
-        Me.Cod_Modele_Edition_txt.Location = New System.Drawing.Point(654, 28)
+        Me.Cod_Modele_Edition_txt.Location = New System.Drawing.Point(346, 308)
         Me.Cod_Modele_Edition_txt.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
         Me.Cod_Modele_Edition_txt.MaxLength = 32767
         Me.Cod_Modele_Edition_txt.Multiline = False
         Me.Cod_Modele_Edition_txt.Name = "Cod_Modele_Edition_txt"
         Me.Cod_Modele_Edition_txt.Padding = New System.Windows.Forms.Padding(1, 0, 1, 0)
         Me.Cod_Modele_Edition_txt.PasswordChar = "" & Global.Microsoft.VisualBasic.ChrW(0)
-        Me.Cod_Modele_Edition_txt.ReadOnly = False
+        Me.Cod_Modele_Edition_txt.ReadOnly = True
         Me.Cod_Modele_Edition_txt.ScrollBars = System.Windows.Forms.ScrollBars.None
         Me.Cod_Modele_Edition_txt.SelectionStart = 0
         Me.Cod_Modele_Edition_txt.Size = New System.Drawing.Size(160, 24)
@@ -737,7 +734,7 @@ Partial Class SP_Page_Designer
         'LabelModele
         '
         Me.LabelModele.AutoSize = True
-        Me.LabelModele.Location = New System.Drawing.Point(520, 32)
+        Me.LabelModele.Location = New System.Drawing.Point(212, 312)
         Me.LabelModele.Name = "LabelModele"
         Me.LabelModele.Size = New System.Drawing.Size(127, 19)
         Me.LabelModele.TabIndex = 3
@@ -747,7 +744,7 @@ Partial Class SP_Page_Designer
         '
         Me.Typ_Document_txt.CharacterCasing = System.Windows.Forms.CharacterCasing.Normal
         Me.Typ_Document_txt.ContextMenuStrip = Nothing
-        Me.Typ_Document_txt.Location = New System.Drawing.Point(450, 28)
+        Me.Typ_Document_txt.Location = New System.Drawing.Point(456, 135)
         Me.Typ_Document_txt.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
         Me.Typ_Document_txt.MaxLength = 2
         Me.Typ_Document_txt.Multiline = False
@@ -765,7 +762,7 @@ Partial Class SP_Page_Designer
         'LabelTypDoc
         '
         Me.LabelTypDoc.AutoSize = True
-        Me.LabelTypDoc.Location = New System.Drawing.Point(275, 30)
+        Me.LabelTypDoc.Location = New System.Drawing.Point(281, 137)
         Me.LabelTypDoc.Name = "LabelTypDoc"
         Me.LabelTypDoc.Size = New System.Drawing.Size(171, 19)
         Me.LabelTypDoc.TabIndex = 1
@@ -774,8 +771,8 @@ Partial Class SP_Page_Designer
         'Workflow_Actif_chk
         '
         Me.Workflow_Actif_chk.AutoSize = True
-        Me.Workflow_Actif_chk.Checked = False
-        Me.Workflow_Actif_chk.Location = New System.Drawing.Point(12, 30)
+        Me.Workflow_Actif_chk.Checked = True
+        Me.Workflow_Actif_chk.Location = New System.Drawing.Point(18, 137)
         Me.Workflow_Actif_chk.Margin = New System.Windows.Forms.Padding(4)
         Me.Workflow_Actif_chk.MaximumSize = New System.Drawing.Size(0, 25)
         Me.Workflow_Actif_chk.MinimumSize = New System.Drawing.Size(133, 25)
@@ -920,7 +917,7 @@ Partial Class SP_Page_Designer
         '
         Me.Table_Ent_txt.CharacterCasing = System.Windows.Forms.CharacterCasing.Normal
         Me.Table_Ent_txt.ContextMenuStrip = Nothing
-        Me.Table_Ent_txt.Location = New System.Drawing.Point(369, 123)
+        Me.Table_Ent_txt.Location = New System.Drawing.Point(130, 21)
         Me.Table_Ent_txt.Margin = New System.Windows.Forms.Padding(4, 5, 4, 5)
         Me.Table_Ent_txt.MaxLength = 32767
         Me.Table_Ent_txt.Multiline = False
@@ -930,7 +927,7 @@ Partial Class SP_Page_Designer
         Me.Table_Ent_txt.ReadOnly = True
         Me.Table_Ent_txt.ScrollBars = System.Windows.Forms.ScrollBars.None
         Me.Table_Ent_txt.SelectionStart = 0
-        Me.Table_Ent_txt.Size = New System.Drawing.Size(335, 42)
+        Me.Table_Ent_txt.Size = New System.Drawing.Size(216, 24)
         Me.Table_Ent_txt.TabIndex = 20
         Me.Table_Ent_txt.TextAlign = System.Windows.Forms.HorizontalAlignment.Left
         Me.Table_Ent_txt.UseSystemPasswordChar = False
@@ -938,11 +935,21 @@ Partial Class SP_Page_Designer
         'LabelTableEnt
         '
         Me.LabelTableEnt.AutoSize = True
-        Me.LabelTableEnt.Location = New System.Drawing.Point(167, 146)
+        Me.LabelTableEnt.Location = New System.Drawing.Point(14, 21)
         Me.LabelTableEnt.Name = "LabelTableEnt"
         Me.LabelTableEnt.Size = New System.Drawing.Size(109, 19)
         Me.LabelTableEnt.TabIndex = 19
         Me.LabelTableEnt.Text = "Table d'entête"
+        '
+        'Tab_Champs
+        '
+        Me.Tab_Champs.Controls.Add(Me.SplitContainer5)
+        Me.Tab_Champs.Location = New System.Drawing.Point(4, 28)
+        Me.Tab_Champs.Name = "Tab_Champs"
+        Me.Tab_Champs.Size = New System.Drawing.Size(1242, 468)
+        Me.Tab_Champs.TabIndex = 4
+        Me.Tab_Champs.Text = "Champs de la page"
+        Me.Tab_Champs.UseVisualStyleBackColor = True
         '
         'SP_Page_Designer
         '
@@ -974,7 +981,6 @@ Partial Class SP_Page_Designer
         CType(Me.Grd_Champs, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.Grd_Sources, System.ComponentModel.ISupportInitialize).EndInit()
         Me.Tab_Comportement.ResumeLayout(False)
-        Me.SplitContainer6.Panel1.ResumeLayout(False)
         Me.SplitContainer6.Panel2.ResumeLayout(False)
         CType(Me.SplitContainer6, System.ComponentModel.ISupportInitialize).EndInit()
         Me.SplitContainer6.ResumeLayout(False)
@@ -985,6 +991,7 @@ Partial Class SP_Page_Designer
         CType(Me.Grd_Droits, System.ComponentModel.ISupportInitialize).EndInit()
         Me.Panel_Droits.ResumeLayout(False)
         Me.Panel_Droits.PerformLayout()
+        Me.Tab_Champs.ResumeLayout(False)
         Me.ResumeLayout(False)
 
     End Sub
@@ -1115,4 +1122,5 @@ Partial Class SP_Page_Designer
     Friend WithEvents Grd_Sources_Actif As DataGridViewCheckBoxColumn
     Friend WithEvents Table_Ent_txt As ud_TextBox
     Friend WithEvents LabelTableEnt As Label
+    Friend WithEvents Tab_Champs As TabPage
 End Class
