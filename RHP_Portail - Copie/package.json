@@ -1,6 +1,0 @@
-{
-  "dependencies": {
-    "base64-js": "^1.5.1",
-    "react-image-file-resizer": "^0.4.8"
-  }
-}

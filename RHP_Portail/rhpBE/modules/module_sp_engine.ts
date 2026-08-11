@@ -269,9 +269,18 @@ export async function verifierDroit(
   codPage: string, codProfile: string, action: TSpAction
 ): Promise<boolean> {
   if (String(codProfile) === "1") return true; // super-admin (convention RHP)
+  // Accès non personnalisé : la consultation est ouverte à tous les profils,
+  // y compris ceux créés après la publication de la page.
+  const cond =
+    action === "Consulter"
+      ? `(isnull(p.Acces_Personnalise,'true')='false' or isnull(d.${qn(action)},'false')='true')`
+      : `isnull(d.${qn(action)},'false')='true'`;
   const rsl = await lireSql(
-    `select count(*) as nb from SP_Page_Droit
-     where Cod_Page=@p_cp and Cod_Profile=@p_pr and isnull(${qn(action)},'false')='true'`,
+    `select count(*) as nb
+     from SP_Page p
+     left join SP_Page_Droit d
+       on d.Cod_Page = p.Cod_Page and d.Cod_Profile = @p_pr
+     where p.Cod_Page = @p_cp and ${cond}`,
     [
       { param: "p_cp", sqlType: sql.NVarChar, valeur: codPage },
       { param: "p_pr", sqlType: sql.NVarChar, valeur: String(codProfile ?? "") },

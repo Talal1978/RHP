@@ -54,6 +54,9 @@ BEGIN
         Act_Soumettre     nvarchar(5)   NOT NULL CONSTRAINT DF_SP_Page_ActSubmit DEFAULT ('true'),
         Act_Imprimer      nvarchar(5)   NOT NULL CONSTRAINT DF_SP_Page_ActPrint DEFAULT ('false'),
         Act_Exporter      nvarchar(5)   NOT NULL CONSTRAINT DF_SP_Page_ActExport DEFAULT ('false'),
+        -- Habilitations : 'true' = consultation réservée aux profils de SP_Page_Droit ;
+        -- 'false' = consultation ouverte à tous les profils (même créés ultérieurement)
+        Acces_Personnalise nvarchar(5)  NOT NULL CONSTRAINT DF_SP_Page_AccesPerso DEFAULT ('true'),
         -- Gouvernance
         Version_Page      int           NOT NULL CONSTRAINT DF_SP_Page_Version DEFAULT (1),
         DDL_Genere        nvarchar(5)   NOT NULL CONSTRAINT DF_SP_Page_DDL DEFAULT ('false'),
@@ -68,6 +71,18 @@ BEGIN
         CONSTRAINT CK_SP_Page_Ident CHECK (Cod_Page LIKE '[A-Za-z_]%[A-Za-z0-9_]%'
                                            AND Cod_Page NOT LIKE 'Page%')
     );
+END
+GO
+
+-- 1.1.b Migration : accès personnalisé (bases existantes).
+--       'true' par défaut : les pages existantes conservent leurs habilitations
+--       par profil inchangées (aucune ouverture de consultation en douce).
+IF NOT EXISTS (SELECT 1 FROM sys.columns
+               WHERE object_id = OBJECT_ID('dbo.SP_Page') AND name = 'Acces_Personnalise')
+BEGIN
+    ALTER TABLE dbo.SP_Page
+        ADD Acces_Personnalise nvarchar(5) NOT NULL
+            CONSTRAINT DF_SP_Page_AccesPerso DEFAULT ('true') WITH VALUES;
 END
 GO
 

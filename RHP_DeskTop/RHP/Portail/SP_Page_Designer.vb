@@ -3,11 +3,11 @@ Imports System.Text.RegularExpressions
 
 ''' <summary>
 ''' Designer de pages portail (module SP_).
-''' Onglet 1 : document, rattachement portail, structure SQL (tables/colonnes),
-'''            habilitations par profil.
+''' Onglet 1 : document, rattachement portail et structure SQL (tables/colonnes).
 ''' Onglet 2 : conception de la page (champs entête + grilles) et catalogue
 '''            sécurisé des sources métier.
 ''' Onglet 3 : comportement (actions, édition, GED, workflow) et validations.
+''' Onglet 4 : habilitations par profil (périmètre : toute la page).
 ''' L'enregistrement crée/migre les tables métier SP_ dans la même transaction
 ''' (aperçu DDL disponible via le bouton "Aperçu DDL", journal SP_Page_DDL_Log).
 ''' </summary>
@@ -29,14 +29,43 @@ Public Class SP_Page_Designer
     Private Const SQL_COLONNES = "select Cod_Table, Nom_Colonne, Libelle, Typ_Sql, Longueur, Precision_Sql, Echelle_Sql, Nullable, Valeur_Defaut, estUnique, estIndexe, Rang from SP_Page_Colonne where isnull(Technique,'false')='false'"
     Private Const SQL_CHAMPS = "select Cod_Champ, Cod_Table, Nom_Colonne, Libelle, Typ_Controle, Rang, Ligne, Colonne, Largeur, Valeur_Defaut, Obligatoire, Etat, Rubrique, Num_Zoom, Source_Metier, Formule, Persiste, Format_Affichage, Decimales, Visible_Grille, Rang_Grille, Largeur_Colonne, Total_Grille, estCritere, Rang_Critere, Aide from SP_Page_Champ"
     Private Const SQL_VALIDATIONS = "select Cod_Validation, Portee, Cod_Table, Cod_Champ, Typ_Regle, Parametres, Condition_Regle, Message, Niveau, Rang, Moment, Actif from SP_Page_Validation"
-    Private Const SQL_DROITS = "select Cod_Profile, Consulter, Creer, Modifier, Supprimer, Valider, Imprimer, GED from SP_Page_Droit"
     Private Const SQL_SOURCES = "select Cod_Source, Libelle, Typ_Source, Code_Sql, Parametres, Typ_Retour, Cod_Profile, Actif from SP_Page_Source"
+
+    '---------------- Domaines prédéterminés (listes déroulantes des grilles) ----------------
+    ' Source unique des valeurs autorisées : alimente les DataGridViewComboBoxColumn
+    ' et les validations de Saving() (cohérence saisie/contrôle garantie).
+    Private Shared ReadOnly TYPES_SQL As String() = {"nvarchar", "int", "bigint", "float", "decimal", "bit", "date", "datetime", "smalldatetime"}
+    Private Shared ReadOnly TYPES_CONTROLE As String() = {"TEXT", "MEMO", "INT", "DEC", "MNT", "DATE", "DATETIME", "CHECK", "RADIO", "COMBO", "RUBRIQUE", "ZOOM", "CALCULE", "SOURCE", "GED"}
+    Private Shared ReadOnly TYPES_REGLE As String() = {"REQUIRED", "IN", "BETWEEN", "MIN", "MAX", "MINLEN", "MAXLEN", "REGEX", "COMPARE", "UNIQUE", "SOURCE", "EXPR", "NB_LIGNES"}
+    Private Shared ReadOnly PORTEES As String() = {"CHAMP", "ENTETE", "LIGNE", "DETAIL", "DOCUMENT"}
+    Private Shared ReadOnly ETATS As String() = {"S", "R", "A", "I"}
+    Private Shared ReadOnly NIVEAUX As String() = {"I", "W", "B"}
+    Private Shared ReadOnly MOMENTS As String() = {"SAISIE", "CHANGE", "AJOUT_LIGNE", "SAVE"}
+    Private Shared ReadOnly TOTAUX_GRILLE As String() = {"", "SUM", "AVG", "MIN", "MAX", "COUNT"}
+    Private Shared ReadOnly TYPES_SOURCE As String() = {"SQL", "PROC"}
+    Private Shared ReadOnly TYPES_RETOUR As String() = {"SCALAIRE", "TABLE"}
+
+    ''' <summary>Habilitations : une ligne par profil déclaré (Controle_Profile),
+    ''' complétée par les droits enregistrés de la page (LEFT JOIN ; tout à 'false'
+    ''' si aucun droit enregistré). Les profils créés ultérieurement apparaissent
+    ''' automatiquement à l'ouverture de la page.</summary>
+    Private Function SqlDroits(codPage As String) As String
+        Return "select p.Cod_Profile, p.Lib_Profile, " &
+               "isnull(d.Consulter,'false') as Consulter, isnull(d.Creer,'false') as Creer, " &
+               "isnull(d.Modifier,'false') as Modifier, isnull(d.Supprimer,'false') as Supprimer, " &
+               "isnull(d.Valider,'false') as Valider, isnull(d.Imprimer,'false') as Imprimer, " &
+               "isnull(d.GED,'false') as GED " &
+               "from Controle_Profile p left join SP_Page_Droit d on d.Cod_Profile=p.Cod_Profile" &
+               " and d.Cod_Page='" & codPage.Replace("'", "''") & "' order by p.Cod_Profile"
+    End Function
 
     ''' <summary>Applique les options d'affichage du thème RHP (ud_Grd) aux grilles éditables.</summary>
     Sub StyliserGrilles()
         For Each g As ud_Grd In {Grd_Tables, Grd_Colonnes, Grd_Droits, Grd_Champs, Grd_Sources, Grd_Validations}
             g.AlternerLesLignes = True
-            g.AfficherLesEntetesLignes = False
+            ' Tables et colonnes : en-têtes de lignes visibles (sélection d'une ligne
+            ' par le row header pour la suppression contrôlée via la touche Suppr)
+            g.AfficherLesEntetesLignes = (g Is Grd_Tables OrElse g Is Grd_Colonnes)
             g.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.None
         Next
     End Sub
@@ -138,7 +167,8 @@ Public Class SP_Page_Designer
         grd.Columns.AddRange(cols)
     End Sub
 
-    ''' <summary>Déclare les colonnes des 6 grilles (entêtes français, booléens en cases à cocher).</summary>
+    ''' <summary>Déclare les colonnes des 6 grilles (entêtes français, booléens en cases à
+    ''' cocher, domaines prédéterminés en listes déroulantes pour éviter les erreurs de saisie).</summary>
     Sub InitialiserColonnesGrilles()
         DefinirColonnes(Grd_Tables, New DataGridViewColumn() {
             ColTxt("Cod_Table", "Table"), ColTxt("Nom_Physique", "Nom physique"), ColTxt("Role_Table", "Rôle"),
@@ -152,32 +182,55 @@ Public Class SP_Page_Designer
         Grd_Tables.Columns("col_Role_Table").DefaultCellStyle = StyleCellAuto()
         DefinirColonnes(Grd_Colonnes, New DataGridViewColumn() {
             ColCombo("Cod_Table", "Table"), ColTxt("Nom_Colonne", "Colonne"), ColTxt("Libelle", "Libellé"),
-            ColTxt("Typ_Sql", "Type SQL"), ColTxt("Longueur", "Longueur"), ColTxt("Precision_Sql", "Précision"), ColTxt("Echelle_Sql", "Échelle"),
+            ColCombo("Typ_Sql", "Type SQL", TYPES_SQL), ColTxt("Longueur", "Longueur"), ColTxt("Precision_Sql", "Précision"), ColTxt("Echelle_Sql", "Échelle"),
             ColChk("Nullable", "Nullable"), ColTxt("Valeur_Defaut", "Valeur par défaut"),
             ColChk("estUnique", "Unique"), ColChk("estIndexe", "Indexée"), ColTxt("Rang", "Rang")})
         DefinirColonnes(Grd_Droits, New DataGridViewColumn() {
-            ColTxt("Cod_Profile", "Profil"), ColChk("Consulter", "Consulter"), ColChk("Creer", "Créer"),
+            ColTxt("Cod_Profile", "Profil"), ColTxt("Lib_Profile", "Libellé du profil"), ColChk("Consulter", "Consulter"), ColChk("Creer", "Créer"),
             ColChk("Modifier", "Modifier"), ColChk("Supprimer", "Supprimer"), ColChk("Valider", "Valider"),
             ColChk("Imprimer", "Imprimer"), ColChk("GED", "GED")})
+        ' Les profils sont chargés automatiquement (Controle_Profile) : identification en
+        ' lecture seule, aucune ligne à ajouter/supprimer manuellement.
+        Grd_Droits.Columns("col_Cod_Profile").ReadOnly = True
+        Grd_Droits.Columns("col_Cod_Profile").DefaultCellStyle = StyleCellAuto()
+        Grd_Droits.Columns("col_Lib_Profile").ReadOnly = True
+        Grd_Droits.Columns("col_Lib_Profile").DefaultCellStyle = StyleCellAuto()
+        Grd_Droits.AllowUserToAddRows = False
+        Grd_Droits.AllowUserToDeleteRows = False
         DefinirColonnes(Grd_Champs, New DataGridViewColumn() {
-            ColTxt("Cod_Champ", "Champ"), ColTxt("Cod_Table", "Table"), ColTxt("Nom_Colonne", "Colonne"),
-            ColTxt("Libelle", "Libellé"), ColTxt("Typ_Controle", "Type contrôle"), ColTxt("Rang", "Rang"),
+            ColTxt("Cod_Champ", "Champ"), ColCombo("Cod_Table", "Table"), ColTxt("Nom_Colonne", "Colonne"),
+            ColTxt("Libelle", "Libellé"), ColCombo("Typ_Controle", "Type contrôle", TYPES_CONTROLE), ColTxt("Rang", "Rang"),
             ColTxt("Ligne", "Ligne"), ColTxt("Colonne", "Position"), ColTxt("Largeur", "Largeur"),
-            ColTxt("Valeur_Defaut", "Valeur par défaut"), ColChk("Obligatoire", "Obligatoire"), ColTxt("Etat", "État"),
-            ColTxt("Rubrique", "Rubrique"), ColTxt("Num_Zoom", "N° Zoom"), ColTxt("Source_Metier", "Source métier"),
+            ColTxt("Valeur_Defaut", "Valeur par défaut"), ColChk("Obligatoire", "Obligatoire"), ColCombo("Etat", "État", ETATS),
+            ColTxt("Rubrique", "Rubrique"), ColTxt("Num_Zoom", "N° Zoom"), ColCombo("Source_Metier", "Source métier"),
             ColTxt("Formule", "Formule (json)"), ColChk("Persiste", "Persisté"), ColTxt("Format_Affichage", "Format"),
             ColTxt("Decimales", "Décimales"), ColChk("Visible_Grille", "Visible grille"), ColTxt("Rang_Grille", "Rang grille"),
-            ColTxt("Largeur_Colonne", "Largeur col."), ColTxt("Total_Grille", "Total"),
+            ColTxt("Largeur_Colonne", "Largeur col."), ColCombo("Total_Grille", "Total", TOTAUX_GRILLE),
             ColChk("estCritere", "Critère"), ColTxt("Rang_Critere", "Rang critère"), ColTxt("Aide", "Aide")})
+        ' Rubrique et N° Zoom : jamais saisis au clavier, choisis via un zoom de sélection
+        ' (double-clic sur la cellule) -> valeurs forcément existantes.
+        Grd_Champs.Columns("col_Rubrique").ReadOnly = True
+        Grd_Champs.Columns("col_Rubrique").DefaultCellStyle = StyleCellAuto()
+        Grd_Champs.Columns("col_Num_Zoom").ReadOnly = True
+        Grd_Champs.Columns("col_Num_Zoom").DefaultCellStyle = StyleCellAuto()
         DefinirColonnes(Grd_Validations, New DataGridViewColumn() {
-            ColTxt("Cod_Validation", "Code"), ColTxt("Portee", "Portée"), ColTxt("Cod_Table", "Table"),
-            ColTxt("Cod_Champ", "Champ"), ColTxt("Typ_Regle", "Type de règle"), ColTxt("Parametres", "Paramètres (json)"),
-            ColTxt("Condition_Regle", "Condition (json)"), ColTxt("Message", "Message d'erreur"), ColTxt("Niveau", "Niveau"),
-            ColTxt("Rang", "Rang"), ColTxt("Moment", "Moment"), ColChk("Actif", "Active")})
+            ColTxt("Cod_Validation", "Code"), ColCombo("Portee", "Portée", PORTEES), ColCombo("Cod_Table", "Table"),
+            ColTxt("Cod_Champ", "Champ"), ColCombo("Typ_Regle", "Type de règle", TYPES_REGLE), ColTxt("Parametres", "Paramètres (json)"),
+            ColTxt("Condition_Regle", "Condition (json)"), ColTxt("Message", "Message d'erreur"), ColCombo("Niveau", "Niveau", NIVEAUX),
+            ColTxt("Rang", "Rang"), ColCombo("Moment", "Moment", MOMENTS), ColChk("Actif", "Active")})
         DefinirColonnes(Grd_Sources, New DataGridViewColumn() {
-            ColTxt("Cod_Source", "Code source"), ColTxt("Libelle", "Libellé"), ColTxt("Typ_Source", "Type"),
-            ColTxt("Code_Sql", "Requête SQL"), ColTxt("Parametres", "Paramètres (json)"), ColTxt("Typ_Retour", "Retour"),
-            ColTxt("Cod_Profile", "Profil requis"), ColChk("Actif", "Active")})
+            ColTxt("Cod_Source", "Code source"), ColTxt("Libelle", "Libellé"), ColCombo("Typ_Source", "Type", TYPES_SOURCE),
+            ColTxt("Code_Sql", "Requête SQL"), ColTxt("Parametres", "Paramètres (json)"), ColCombo("Typ_Retour", "Retour", TYPES_RETOUR),
+            ColCombo("Cod_Profile", "Profil requis"), ColChk("Actif", "Active")})
+    End Sub
+
+    ''' <summary>Une valeur liée hors liste (données anciennes, profil supprimé...) ne doit
+    ''' pas interrompre l'affichage des grilles : l'erreur de données est ignorée, la
+    ''' cohérence est garantie par les validations de Saving().</summary>
+    Private Sub Grd_DataError(sender As Object, e As DataGridViewDataErrorEventArgs) _
+        Handles Grd_Tables.DataError, Grd_Colonnes.DataError, Grd_Droits.DataError,
+                Grd_Champs.DataError, Grd_Validations.DataError, Grd_Sources.DataError
+        e.ThrowException = False
     End Sub
 
     Sub Chargement()
@@ -194,6 +247,10 @@ Public Class SP_Page_Designer
         InitialiserColonnesGrilles()
         StyliserGrilles()
         ChargerIcones()
+        BrancherMenuDroits()
+        MajComboSources()
+        MajComboProfilsSources()
+        MajEtatColonneConsulter()
     End Sub
 
     ''' <summary>Relax les contraintes NOT NULL des DataTables mémoire : les grilles
@@ -211,7 +268,7 @@ Public Class SP_Page_Designer
         Tbl_Colonnes = DATA_READER_GRD(SQL_COLONNES & " and 1=0")
         Tbl_Champs = DATA_READER_GRD(SQL_CHAMPS & " where 1=0")
         Tbl_Validations = DATA_READER_GRD(SQL_VALIDATIONS & " where 1=0")
-        Tbl_Droits = DATA_READER_GRD(SQL_DROITS & " where 1=0")
+        Tbl_Droits = DATA_READER_GRD(SqlDroits(""))   ' tous les profils, aucun droit coché
         Tbl_Sources = DATA_READER_GRD(SQL_SOURCES & " where 1=0")
         AssouplirSchema(Tbl_Tables) : AssouplirSchema(Tbl_Colonnes) : AssouplirSchema(Tbl_Champs)
         AssouplirSchema(Tbl_Validations) : AssouplirSchema(Tbl_Droits) : AssouplirSchema(Tbl_Sources)
@@ -260,10 +317,11 @@ Public Class SP_Page_Designer
         Cod_Document_txt.Text = IsNull(r("Cod_Document"), "")
         Nom_Page_txt.Text = IsNull(r("Nom_Page"), "")
         Menu_Parent_cmb.SelectedValue = IsNull(r("Menu_Parent"), "")
-        Rang_txt.Text = IsNull(r("Rang"), "99")
+        Rang_txt.Value = CDec(Val(IsNull(r("Rang"), "99").ToString()))
         ChoisirIcone(IsNull(r("Icone"), ""))
         Statut_Page_cmb.SelectedValue = IsNull(r("Statut_Page"), "BROUILLON")
         Table_Ent_txt.Text = IsNull(r("Table_Ent"), "")
+        Acces_Personnalise_chk.Checked = (IsNull(r("Acces_Personnalise"), "true") = "true")
         Workflow_Actif_chk.Checked = (IsNull(r("Workflow_Actif"), "false") = "true")
         Typ_Document_txt.Text = IsNull(r("Typ_Document"), "")
         Cod_Modele_Edition_txt.Text = IsNull(r("Cod_Modele_Edition"), "")
@@ -278,29 +336,43 @@ Public Class SP_Page_Designer
         Tbl_Colonnes = DATA_READER_GRD(SQL_COLONNES.Replace("where isnull", "where Cod_Page='" & codPage.Replace("'", "''") & "' and isnull") & " order by Cod_Table, Rang")
         Tbl_Champs = DATA_READER_GRD(SQL_CHAMPS & f & " order by Cod_Table, Rang")
         Tbl_Validations = DATA_READER_GRD(SQL_VALIDATIONS & f & " order by Rang")
-        Tbl_Droits = DATA_READER_GRD(SQL_DROITS & f)
+        Tbl_Droits = DATA_READER_GRD(SqlDroits(codPage))
         AssouplirSchema(Tbl_Tables) : AssouplirSchema(Tbl_Colonnes) : AssouplirSchema(Tbl_Champs)
         AssouplirSchema(Tbl_Validations) : AssouplirSchema(Tbl_Droits)
         BrancherDefautsNouvellesLignes(False)
         Grd_Tables.DataSource = Tbl_Tables
-        MajComboTablesColonnes()   ' la liste doit exister avant le binding des colonnes
+        MajCombosDependantes()   ' les listes doivent exister avant le binding des grilles
         Grd_Colonnes.DataSource = Tbl_Colonnes
         Grd_Champs.DataSource = Tbl_Champs
         Grd_Validations.DataSource = Tbl_Validations
         Grd_Droits.DataSource = Tbl_Droits
+        MajComboSources()
+        MajComboProfilsSources()
+        MajEtatColonneConsulter()
         StyliserGrilles()
     End Sub
 
+    ''' <summary>Génère le code page automatique : PG_&lt;yyyyMMdd&gt;_&lt;séquence sur 6 positions&gt;.
+    ''' Format compatible avec l'identifiant strict (CK_SP_Page_Ident / validerIdentifiant) :
+    ''' lettres, chiffres et '_' uniquement.</summary>
+    Private Function GenererCodPage() As String
+        Dim prefixe As String = "PG_" & DateTime.Now.ToString("yyyyMMdd") & "_"
+        Dim likeEsc As String = prefixe.Replace("_", "[_]") & "[0-9][0-9][0-9][0-9][0-9][0-9]"
+        Dim rsl = CnExecuting("select isnull(max(try_convert(int, right(Cod_Page,6))),0)+1 from SP_Page where Cod_Page like '" & likeEsc & "'")
+        Return prefixe & CInt(rsl.Fields(0).Value).ToString("D6")
+    End Function
+
     Sub Nouveau()
-        Cod_Page_txt.ReadOnly = False
+        Cod_Page_txt.ReadOnly = True   ' code généré automatiquement, immuable
         Cod_Document_txt.ReadOnly = False
-        Cod_Page_txt.Text = ""
+        Cod_Page_txt.Text = GenererCodPage()
         Cod_Document_txt.Text = ""
         Nom_Page_txt.Text = ""
-        Rang_txt.Text = "99"
+        Rang_txt.Value = 99
         Icone_cmb.SelectedIndex = -1
         Table_Ent_txt.Text = ""
         Statut_Page_cmb.SelectedValue = "BROUILLON"
+        Acces_Personnalise_chk.Checked = False   ' par défaut : consultation ouverte à tous les profils
         Workflow_Actif_chk.Checked = False
         Typ_Document_txt.Text = ""
         Cod_Modele_Edition_txt.Text = ""
@@ -317,8 +389,9 @@ Public Class SP_Page_Designer
         r("Allow_Add") = "false" : r("Allow_Edit") = "false" : r("Allow_Delete") = "false" : r("Allow_Duplicate") = "false"
         r("Regle_Suppression") = "CASCADE"
         Tbl_Tables.Rows.Add(r)
-        MajComboTablesColonnes()
-        Cod_Page_txt.Select()
+        MajCombosDependantes()
+        MajEtatColonneConsulter()
+        Cod_Document_txt.Select()
     End Sub
 
     Private Sub Cod_Document_txt_Leave(sender As Object, e As EventArgs) Handles Cod_Document_txt.Leave
@@ -459,18 +532,66 @@ Public Class SP_Page_Designer
         Return lst
     End Function
 
-    ''' <summary>Alimente la liste déroulante 'Table' de la grille des colonnes
-    ''' avec les tables configurées dans l'onglet Tables.</summary>
-    Private Sub MajComboTablesColonnes()
-        If Grd_Colonnes Is Nothing OrElse Grd_Colonnes.Columns.Count = 0 Then Return
-        Dim col = TryCast(Grd_Colonnes.Columns("col_Cod_Table"), DataGridViewComboBoxColumn)
+    ''' <summary>Remplace les éléments d'une liste déroulante si le contenu a changé
+    ''' (évite de perturber la grille en cours d'édition).</summary>
+    Private Sub MajItemsCombo(col As DataGridViewComboBoxColumn, valeurs As List(Of String))
         If col Is Nothing Then Return
-        Dim dispo = CodTablesDisponibles()
         Dim actuels As New List(Of String)
         For Each it As Object In col.Items : actuels.Add(IsNull(it, "").ToString()) : Next
-        If String.Join("|", actuels) = String.Join("|", dispo) Then Return
+        If String.Join("|", actuels) = String.Join("|", valeurs) Then Return
         col.Items.Clear()
-        For Each ct As String In dispo : col.Items.Add(ct) : Next
+        For Each v As String In valeurs : col.Items.Add(v) : Next
+    End Sub
+
+    ''' <summary>Alimente les listes déroulantes 'Table' (colonnes, champs, validations)
+    ''' avec les tables configurées dans l'onglet Tables.</summary>
+    Private Sub MajCombosDependantes()
+        Dim dispo = CodTablesDisponibles()
+        MajItemsCombo(TryCast(Grd_Colonnes.Columns("col_Cod_Table"), DataGridViewComboBoxColumn), dispo)
+        MajItemsCombo(TryCast(Grd_Champs.Columns("col_Cod_Table"), DataGridViewComboBoxColumn), dispo)
+        ' Validations : la table est facultative ('' = règle globale / entête)
+        Dim avecVide As New List(Of String) From {""}
+        avecVide.AddRange(dispo)
+        MajItemsCombo(TryCast(Grd_Validations.Columns("col_Cod_Table"), DataGridViewComboBoxColumn), avecVide)
+    End Sub
+
+    ''' <summary>Alimente la liste déroulante 'Source métier' des champs : catalogue en
+    ''' base (sources actives) union les lignes en cours d'édition de la grille Sources.</summary>
+    Private Sub MajComboSources()
+        Dim dispo As New List(Of String) From {""}
+        Dim tbl As DataTable = DATA_READER_GRD("select Cod_Source from SP_Page_Source where isnull(Actif,'true')='true' order by Cod_Source")
+        For Each r As DataRow In tbl.Rows
+            Dim cs As String = IsNull(r("Cod_Source"), "").Trim
+            If cs <> "" AndAlso Not dispo.Contains(cs) Then dispo.Add(cs)
+        Next
+        If Tbl_Sources IsNot Nothing Then
+            For Each r As DataRow In Tbl_Sources.Rows
+                If r.RowState = DataRowState.Deleted Then Continue For
+                Dim cs As String = IsNull(r("Cod_Source"), "").Trim
+                If cs <> "" AndAlso Not dispo.Contains(cs) Then dispo.Add(cs)
+            Next
+        End If
+        MajItemsCombo(TryCast(Grd_Champs.Columns("col_Source_Metier"), DataGridViewComboBoxColumn), dispo)
+    End Sub
+
+    ''' <summary>Alimente la liste déroulante 'Profil requis' du catalogue des sources
+    ''' ('' = tous profils) avec les profils déclarés (Controle_Profile).</summary>
+    Private Sub MajComboProfilsSources()
+        Dim dispo As New List(Of String) From {""}
+        Dim tbl As DataTable = DATA_READER_GRD("select Cod_Profile from Controle_Profile order by Cod_Profile")
+        For Each r As DataRow In tbl.Rows
+            Dim cp As String = IsNull(r("Cod_Profile"), "").Trim
+            If cp <> "" AndAlso Not dispo.Contains(cp) Then dispo.Add(cp)
+        Next
+        MajItemsCombo(TryCast(Grd_Sources.Columns("col_Cod_Profile"), DataGridViewComboBoxColumn), dispo)
+    End Sub
+
+    Private Sub Grd_Sources_CellEndEdit(sender As Object, e As DataGridViewCellEventArgs) Handles Grd_Sources.CellEndEdit
+        MajComboSources()
+    End Sub
+
+    Private Sub Grd_Sources_RowsRemoved(sender As Object, e As DataGridViewRowsRemovedEventArgs) Handles Grd_Sources.RowsRemoved
+        MajComboSources()
     End Sub
 
     ''' <summary>Après édition d'un code table : majuscules, régénération des noms
@@ -481,13 +602,175 @@ Public Class SP_Page_Designer
         Dim v As String = IsNull(Grd_Tables.Rows(e.RowIndex).Cells(e.ColumnIndex).Value, "").Trim
         If v <> "" AndAlso v <> v.ToUpper() Then Grd_Tables.Rows(e.RowIndex).Cells(e.ColumnIndex).Value = v.ToUpper()
         MajNomsPhysiques()
-        MajComboTablesColonnes()
+        MajCombosDependantes()
     End Sub
 
     Private Sub Grd_Tables_RowsRemoved(sender As Object, e As DataGridViewRowsRemovedEventArgs) Handles Grd_Tables.RowsRemoved
         If Tbl_Tables Is Nothing Then Return
         MajNomsPhysiques()
-        MajComboTablesColonnes()
+        MajCombosDependantes()
+    End Sub
+
+    '---------------- Suppression contrôlée (sélection par l'en-tête de ligne + Suppr) ----------------
+
+    ''' <summary>Suppression d'une table : interdite pour ENT, bloquée si des colonnes,
+    ''' champs ou validations la référencent encore.</summary>
+    Private Sub Grd_Tables_UserDeletingRow(sender As Object, e As DataGridViewRowCancelEventArgs) Handles Grd_Tables.UserDeletingRow
+        If e.Row Is Nothing OrElse e.Row.IsNewRow Then Return
+        Dim ct As String = IsNull(e.Row.Cells("col_Cod_Table").Value, "").Trim
+        If ct = "" Then Return
+        If ct.Equals("ENT", StringComparison.OrdinalIgnoreCase) Then
+            ShowMessageBox("La table d'entête (ENT) est obligatoire : elle ne peut pas être supprimée.", "Suppression", MessageBoxButtons.OK, msgIcon.Stop)
+            e.Cancel = True
+            Return
+        End If
+        Dim nbColonnes As Integer = 0, nbChamps As Integer = 0, nbValidations As Integer = 0
+        For Each r As DataRow In Tbl_Colonnes.Rows
+            If r.RowState = DataRowState.Deleted Then Continue For
+            If IsNull(r("Cod_Table"), "").Trim.Equals(ct, StringComparison.OrdinalIgnoreCase) Then nbColonnes += 1
+        Next
+        For Each r As DataRow In Tbl_Champs.Rows
+            If r.RowState = DataRowState.Deleted Then Continue For
+            If IsNull(r("Cod_Table"), "ENT").Trim.Equals(ct, StringComparison.OrdinalIgnoreCase) Then nbChamps += 1
+        Next
+        For Each r As DataRow In Tbl_Validations.Rows
+            If r.RowState = DataRowState.Deleted Then Continue For
+            If IsNull(r("Cod_Table"), "").Trim.Equals(ct, StringComparison.OrdinalIgnoreCase) Then nbValidations += 1
+        Next
+        If nbColonnes + nbChamps + nbValidations > 0 Then
+            Dim details As New List(Of String)
+            If nbColonnes > 0 Then details.Add(nbColonnes & " colonne(s)")
+            If nbChamps > 0 Then details.Add(nbChamps & " champ(s)")
+            If nbValidations > 0 Then details.Add(nbValidations & " validation(s)")
+            ShowMessageBox("La table '" & ct & "' est référencée par " & String.Join(", ", details) & "." & vbCrLf &
+                           "Supprimez d'abord ces éléments.", "Suppression", MessageBoxButtons.OK, msgIcon.Stop)
+            e.Cancel = True
+        End If
+    End Sub
+
+    ''' <summary>Suppression d'une colonne physique : bloquée si des champs de la page
+    ''' (onglet 'Conception de la page') l'utilisent encore.</summary>
+    Private Sub Grd_Colonnes_UserDeletingRow(sender As Object, e As DataGridViewRowCancelEventArgs) Handles Grd_Colonnes.UserDeletingRow
+        If e.Row Is Nothing OrElse e.Row.IsNewRow Then Return
+        Dim ct As String = IsNull(e.Row.Cells("col_Cod_Table").Value, "").Trim
+        Dim nc As String = IsNull(e.Row.Cells("col_Nom_Colonne").Value, "").Trim
+        If ct = "" OrElse nc = "" Then Return
+        Dim champsLies As New List(Of String)
+        For Each r As DataRow In Tbl_Champs.Rows
+            If r.RowState = DataRowState.Deleted Then Continue For
+            If IsNull(r("Cod_Table"), "ENT").Trim.Equals(ct, StringComparison.OrdinalIgnoreCase) AndAlso
+               IsNull(r("Nom_Colonne"), "").Trim.Equals(nc, StringComparison.OrdinalIgnoreCase) Then
+                Dim cc As String = IsNull(r("Cod_Champ"), "").Trim
+                If cc <> "" AndAlso Not champsLies.Contains(cc) Then champsLies.Add(cc)
+            End If
+        Next
+        If champsLies.Count > 0 Then
+            ShowMessageBox("La colonne '" & ct & "." & nc & "' est utilisée par le(s) champ(s) : " & String.Join(", ", champsLies) & "." & vbCrLf &
+                           "Supprimez d'abord ces champs (onglet 'Conception de la page').", "Suppression", MessageBoxButtons.OK, msgIcon.Stop)
+            e.Cancel = True
+        End If
+    End Sub
+
+    '---------------- Habilitations par profil (onglet dédié, périmètre page) ----------------
+
+    ''' <summary>Active/désactive la colonne 'Consulter' selon l'option 'Accès
+    ''' personnalisé' : décochée, la consultation est ouverte à tous les profils
+    ''' (y compris ceux créés ultérieurement) et la colonne est sans objet.</summary>
+    Private Sub MajEtatColonneConsulter()
+        If Grd_Droits Is Nothing OrElse Grd_Droits.Columns.Count = 0 Then Return
+        Dim col As DataGridViewColumn = Grd_Droits.Columns("col_Consulter")
+        If col Is Nothing Then Return
+        Dim perso As Boolean = Acces_Personnalise_chk.Checked
+        col.ReadOnly = Not perso
+        col.DefaultCellStyle.BackColor = If(perso, Color.White, StyleCellAuto().BackColor)
+    End Sub
+
+    Private Sub Acces_Personnalise_chk_CheckedChanged(sender As Object, e As EventArgs) Handles Acces_Personnalise_chk.CheckedChanged
+        MajEtatColonneConsulter()
+    End Sub
+
+    ' Colonne d'habilitation ciblée par le clic droit (menu cocher/décocher pour tous)
+    Private colDroitsCible As String = ""
+    Private Const DROITS_COCHEABLES As String = "|Consulter|Creer|Modifier|Supprimer|Valider|Imprimer|GED|"
+
+    ''' <summary>Menu contextuel de la grille des habilitations : appliquer une
+    ''' habilitation à tous les profils en une fois.</summary>
+    Private Sub BrancherMenuDroits()
+        Dim menu As New ContextMenuStrip()
+        menu.Items.Add("Cocher pour tous les profils", Nothing, AddressOf DroitsCocherPourTous)
+        menu.Items.Add("Décocher pour tous les profils", Nothing, AddressOf DroitsCocherPourTous)
+        AddHandler menu.Opening, AddressOf DroitsMenuOpening
+        Grd_Droits.ContextMenuStrip = menu
+    End Sub
+
+    Private Sub Grd_Droits_CellMouseDown(sender As Object, e As DataGridViewCellMouseEventArgs) Handles Grd_Droits.CellMouseDown
+        If e.Button <> MouseButtons.Right OrElse e.ColumnIndex < 0 Then Return
+        colDroitsCible = ""
+        Dim prop As String = Grd_Droits.Columns(e.ColumnIndex).DataPropertyName
+        If DROITS_COCHEABLES.Contains("|" & prop & "|") Then
+            colDroitsCible = prop
+            If e.RowIndex >= 0 Then Grd_Droits.CurrentCell = Grd_Droits.Rows(e.RowIndex).Cells(e.ColumnIndex)
+        End If
+    End Sub
+
+    Private Sub DroitsMenuOpening(sender As Object, e As System.ComponentModel.CancelEventArgs)
+        Dim menu = DirectCast(sender, ContextMenuStrip)
+        Dim actif As Boolean = colDroitsCible <> "" AndAlso (colDroitsCible <> "Consulter" OrElse Acces_Personnalise_chk.Checked)
+        e.Cancel = Not actif
+        If actif Then
+            Dim entete As String = Grd_Droits.Columns("col_" & colDroitsCible).HeaderText
+            menu.Items(0).Text = "Cocher '" & entete & "' pour tous les profils"
+            menu.Items(1).Text = "Décocher '" & entete & "' pour tous les profils"
+        End If
+    End Sub
+
+    Private Sub DroitsCocherPourTous(sender As Object, e As EventArgs)
+        If colDroitsCible = "" Then Return
+        Dim valeur As String = If(DirectCast(sender, ToolStripItem).Text.StartsWith("Décocher"), "false", "true")
+        Grd_Droits.EndEdit()
+        For Each r As DataRow In Tbl_Droits.Rows
+            If r.RowState = DataRowState.Deleted Then Continue For
+            r(colDroitsCible) = valeur
+        Next
+    End Sub
+
+    ''' <summary>Valide immédiatement la case cochée/décochée (sinon la modification
+    ''' resterait en cours d'édition au prochain clic).</summary>
+    Private Sub Grd_Droits_CellContentClick(sender As Object, e As DataGridViewCellEventArgs) Handles Grd_Droits.CellContentClick
+        If e.ColumnIndex >= 0 AndAlso TypeOf Grd_Droits.Columns(e.ColumnIndex) Is DataGridViewCheckBoxColumn Then
+            Grd_Droits.CommitEdit(DataGridViewDataErrorContexts.Commit)
+        End If
+    End Sub
+
+    '---------------- Zooms de sélection (Rubrique / N° Zoom des champs) ----------------
+
+    ''' <summary>Double-clic sur une cellule 'Rubrique' ou 'N° Zoom' (lecture seule) :
+    ''' ouvre le zoom de sélection correspondant ; la valeur choisie est forcément valide.</summary>
+    Private Sub Grd_Champs_CellDoubleClick(sender As Object, e As DataGridViewCellEventArgs) Handles Grd_Champs.CellDoubleClick
+        If e.RowIndex < 0 OrElse e.ColumnIndex < 0 Then Return
+        If Grd_Champs.Rows(e.RowIndex).IsNewRow Then Return
+        Dim prop As String = Grd_Champs.Columns(e.ColumnIndex).DataPropertyName
+        If prop = "Rubrique" Then
+            OuvrirZoomCellule(Grd_Champs.Rows(e.RowIndex).Cells(e.ColumnIndex), "Sélection d'une rubrique",
+                              "select Nom_Controle as [Rubrique], count(*) as [Nb valeurs] from Param_Rubriques group by Nom_Controle order by Nom_Controle")
+        ElseIf prop = "Num_Zoom" Then
+            OuvrirZoomCellule(Grd_Champs.Rows(e.RowIndex).Cells(e.ColumnIndex), "Sélection d'un zoom",
+                              "select Num_Zoom as [N° Zoom], Description as [Description], Table_Ref as [Table référence] from Controle_Def_Zoom order by Num_Zoom")
+        End If
+    End Sub
+
+    ''' <summary>Ouvre un Zoom_Libre dont la sélection (double-clic) alimente la cellule
+    ''' cible (cas 'DataGridViewTextBoxCell' géré par Zoom_Libre ; bouton gomme = effacer).</summary>
+    Private Sub OuvrirZoomCellule(cell As DataGridViewCell, titre As String, sql As String)
+        Dim Z As New Zoom_Libre
+        With Z
+            .Text = titre
+            .ZoomObject = cell
+            .Libre_GRD.DataSource = DATA_READER_GRD(sql)
+            .Libre_GRD.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells
+            .Libre_GRD.ReadOnly = True
+            .ShowDialog()
+        End With
     End Sub
 
     '---------------- Garde : les tables avant les colonnes ----------------
@@ -535,7 +818,7 @@ Public Class SP_Page_Designer
             e.Cancel = True
             Return
         End If
-        MajComboTablesColonnes()
+        MajCombosDependantes()
     End Sub
 
     Private Function SqlV(v As Object) As String
@@ -576,11 +859,7 @@ Public Class SP_Page_Designer
         End If
         MajNomsPhysiques()
         '---------------- Validations des grilles ----------------
-        Dim typesSql As String() = {"nvarchar", "int", "bigint", "float", "decimal", "bit", "date", "datetime", "smalldatetime"}
-        Dim typesControle As String() = {"TEXT", "MEMO", "INT", "DEC", "MNT", "DATE", "DATETIME", "CHECK", "RADIO", "COMBO", "RUBRIQUE", "ZOOM", "CALCULE", "SOURCE", "GED"}
-        Dim typesRegle As String() = {"REQUIRED", "IN", "BETWEEN", "MIN", "MAX", "MINLEN", "MAXLEN", "REGEX", "COMPARE", "UNIQUE", "SOURCE", "EXPR", "NB_LIGNES"}
-        Dim portees As String() = {"CHAMP", "ENTETE", "LIGNE", "DETAIL", "DOCUMENT"}
-        Dim etats As String() = {"S", "R", "A", "I"}
+        ' (domaines partagés avec les listes déroulantes des grilles)
         Dim nbEnt As Integer = 0
         Dim tablesVues As New HashSet(Of String)(StringComparer.OrdinalIgnoreCase)
         Dim nomsPhysiques As New HashSet(Of String)(StringComparer.OrdinalIgnoreCase)
@@ -637,7 +916,7 @@ Public Class SP_Page_Designer
             If Not colonnesVues.Add(ct & "." & nc) Then
                 Return New savingResult With {.result = False, .message = "Colonne en doublon : '" & ct & "." & nc & "'."}
             End If
-            If Not typesSql.Contains(LCase(IsNull(r("Typ_Sql"), ""))) Then
+            If Not TYPES_SQL.Contains(LCase(IsNull(r("Typ_Sql"), ""))) Then
                 Return New savingResult With {.result = False, .message = "Type SQL invalide pour la colonne " & nc}
             End If
         Next
@@ -673,7 +952,7 @@ Public Class SP_Page_Designer
             If Not tablesVues.Contains(ctCh) Then
                 Return New savingResult With {.result = False, .message = "Le champ '" & cc & "' référence une table non configurée : '" & ctCh & "'."}
             End If
-            If Not typesControle.Contains(IsNull(r("Typ_Controle"), "")) Then
+            If Not TYPES_CONTROLE.Contains(IsNull(r("Typ_Controle"), "")) Then
                 Return New savingResult With {.result = False, .message = "Type de contrôle invalide pour le champ " & cc}
             End If
             If IsNull(r("Typ_Controle"), "") = "ZOOM" AndAlso IsNull(r("Num_Zoom"), "").Trim = "" Then
@@ -682,7 +961,7 @@ Public Class SP_Page_Designer
             If IsNull(r("Typ_Controle"), "") = "RUBRIQUE" AndAlso IsNull(r("Rubrique"), "").Trim = "" Then
                 Return New savingResult With {.result = False, .message = "Le champ " & cc & " est une rubrique : le nom de rubrique est obligatoire."}
             End If
-            If Not etats.Contains(IsNull(r("Etat"), "S")) Then
+            If Not ETATS.Contains(IsNull(r("Etat"), "S")) Then
                 Return New savingResult With {.result = False, .message = "Etat invalide (S/R/A/I) pour le champ " & cc}
             End If
         Next
@@ -690,7 +969,7 @@ Public Class SP_Page_Designer
         For Each r As DataRow In Tbl_Validations.Rows
             If r.RowState = DataRowState.Deleted Then Continue For
             Dim cv As String = IsNull(r("Cod_Validation"), "").Trim
-            If Not portees.Contains(IsNull(r("Portee"), "")) OrElse Not typesRegle.Contains(IsNull(r("Typ_Regle"), "")) Then
+            If Not PORTEES.Contains(IsNull(r("Portee"), "")) OrElse Not TYPES_REGLE.Contains(IsNull(r("Typ_Regle"), "")) Then
                 Return New savingResult With {.result = False, .message = "Validation invalide : " & cv}
             End If
             If Not validationsVues.Add(cv) Then
@@ -728,23 +1007,24 @@ Public Class SP_Page_Designer
             Dim existeDeja As Boolean = (CnExecuting("select count(*) from SP_Page where Cod_Page=" & SqlV(codPage)).Fields(0).Value > 0)
             If existeDeja Then
                 CnExecuting("update SP_Page set Libelle=" & SqlV(Nom_Page_txt.Text.Trim) & "," &
-                            " Nom_Page=" & SqlV(Nom_Page_txt.Text.Trim) & ", Menu_Parent=" & SqlV(Menu_Parent_cmb.SelectedValue) & ", Rang=" & Val(Rang_txt.Text) & "," &
+                            " Nom_Page=" & SqlV(Nom_Page_txt.Text.Trim) & ", Menu_Parent=" & SqlV(Menu_Parent_cmb.SelectedValue) & ", Rang=" & CInt(Rang_txt.Value) & "," &
                             " Icone=" & SqlV(IconeChoisie()) & ", Typ_Document=" & SqlV(Typ_Document_txt.Text.Trim) & ", Workflow_Actif=" & SqlV(B(Workflow_Actif_chk.Checked)) & "," &
                             " Cod_Modele_Edition=" & SqlV(Cod_Modele_Edition_txt.Text.Trim) & ", GED_Actif=" & SqlV(B(GED_Actif_chk.Checked)) & ", GED_Obligatoire=" & SqlV(B(GED_Obligatoire_chk.Checked)) & "," &
                             " Act_Enregistrer=" & SqlV(B(Act_Enregistrer_chk.Checked)) & ", Act_Soumettre=" & SqlV(B(Act_Soumettre_chk.Checked)) & "," &
                             " Act_Imprimer=" & SqlV(B(Act_Imprimer_chk.Checked)) & ", Act_Exporter=" & SqlV(B(Act_Exporter_chk.Checked)) & "," &
+                            " Acces_Personnalise=" & SqlV(B(Acces_Personnalise_chk.Checked)) & "," &
                             " DDL_Genere='true', Dat_Modif=getdate(), Modified_By=" & SqlV(theUser.Login) & " where Cod_Page=" & SqlV(codPage))
             Else
                 CnExecuting("insert into SP_Page (Cod_Page, Cod_Document, Libelle, Nom_Page, Menu_Parent, Rang, Icone, Statut_Page, Table_Ent, " &
                             "Typ_Document, Workflow_Actif, Cod_Modele_Edition, GED_Actif, GED_Obligatoire, " &
-                            "Act_Enregistrer, Act_Soumettre, Act_Imprimer, Act_Exporter, DDL_Genere, Dat_Crea, Created_By, Dat_Modif, Modified_By) values (" &
+                            "Act_Enregistrer, Act_Soumettre, Act_Imprimer, Act_Exporter, Acces_Personnalise, DDL_Genere, Dat_Crea, Created_By, Dat_Modif, Modified_By) values (" &
                             SqlV(codPage) & "," & SqlV(codDoc) & "," & SqlV(Nom_Page_txt.Text.Trim) & "," &
-                            SqlV(Nom_Page_txt.Text.Trim) & "," & SqlV(Menu_Parent_cmb.SelectedValue) & "," & Val(Rang_txt.Text) & "," & SqlV(IconeChoisie()) & "," &
+                            SqlV(Nom_Page_txt.Text.Trim) & "," & SqlV(Menu_Parent_cmb.SelectedValue) & "," & CInt(Rang_txt.Value) & "," & SqlV(IconeChoisie()) & "," &
                             "'BROUILLON'," & SqlV(Table_Ent_txt.Text) & "," &
                             SqlV(Typ_Document_txt.Text.Trim) & "," & SqlV(B(Workflow_Actif_chk.Checked)) & "," & SqlV(Cod_Modele_Edition_txt.Text.Trim) & "," &
                             SqlV(B(GED_Actif_chk.Checked)) & "," & SqlV(B(GED_Obligatoire_chk.Checked)) & "," &
                             SqlV(B(Act_Enregistrer_chk.Checked)) & "," & SqlV(B(Act_Soumettre_chk.Checked)) & "," &
-                            SqlV(B(Act_Imprimer_chk.Checked)) & "," & SqlV(B(Act_Exporter_chk.Checked)) & ",'true', getdate(), " & SqlV(theUser.Login) & ", getdate(), " & SqlV(theUser.Login) & ")")
+                            SqlV(B(Act_Imprimer_chk.Checked)) & "," & SqlV(B(Act_Exporter_chk.Checked)) & "," & SqlV(B(Acces_Personnalise_chk.Checked)) & ",'true', getdate(), " & SqlV(theUser.Login) & ", getdate(), " & SqlV(theUser.Login) & ")")
             End If
             ' 2. Purge des lignes filles (ordre imposé par les FK : SP_Page_Colonne
             '    référence SP_Page_Table, donc colonnes AVANT tables)
@@ -792,10 +1072,17 @@ Public Class SP_Page_Designer
                             SqlV(IsNull(r("Niveau"), "B")) & "," & Val(IsNull(r("Rang"), "1") & "") & "," & SqlV(IsNull(r("Moment"), "SAVE")) & "," &
                             SqlV(IsNull(r("Actif"), "true")) & ", getdate(), " & SqlV(theUser.Login) & ")")
             Next
-            ' 7. Droits
+            ' 7. Droits (tous les profils sont listés dans la grille ; seuls les
+            '    profils ayant au moins une habilitation cochée sont enregistrés :
+            '    l'absence de ligne équivaut à aucun droit)
             For Each r As DataRow In Tbl_Droits.Rows
                 If r.RowState = DataRowState.Deleted Then Continue For
                 If IsNull(r("Cod_Profile"), "").Trim = "" Then Continue For
+                Dim aDroit As Boolean = False
+                For Each a As String In {"Consulter", "Creer", "Modifier", "Supprimer", "Valider", "Imprimer", "GED"}
+                    If IsNull(r(a), "false") = "true" Then aDroit = True : Exit For
+                Next
+                If Not aDroit Then Continue For
                 CnExecuting("insert into SP_Page_Droit (Cod_Page, Cod_Profile, Consulter, Creer, Modifier, Supprimer, Valider, Imprimer, GED, Dat_Crea, Created_By) values (" &
                             SqlV(codPage) & "," & SqlV(r("Cod_Profile")) & "," & SqlV(IsNull(r("Consulter"), "false")) & "," & SqlV(IsNull(r("Creer"), "false")) & "," &
                             SqlV(IsNull(r("Modifier"), "false")) & "," & SqlV(IsNull(r("Supprimer"), "false")) & "," & SqlV(IsNull(r("Valider"), "false")) & "," &
@@ -954,9 +1241,12 @@ Public Class SP_Page_Designer
         ' 3. Dépendance circulaire entre champs calculés
         Dim cycle As String = DetecterCycle(tblCh)
         If cycle <> "" Then erreurs.Add("Référence circulaire dans les calculs : " & cycle)
-        ' 4. Habilitations présentes
-        If CnExecuting("select count(*) from SP_Page_Droit where Cod_Page=" & SqlV(codPage) & " and isnull(Consulter,'false')='true'").Fields(0).Value = 0 Then
-            erreurs.Add("Aucun profil n'a le droit 'Consulter' : la page serait invisible pour tous.")
+        ' 4. Habilitations présentes (sauf si la consultation est ouverte à tous :
+        '    option 'Accès personnalisé' décochée)
+        If IsNull(Tbl.Rows(0)("Acces_Personnalise"), "true") = "true" AndAlso
+           CnExecuting("select count(*) from SP_Page_Droit where Cod_Page=" & SqlV(codPage) & " and isnull(Consulter,'false')='true'").Fields(0).Value = 0 Then
+            erreurs.Add("Aucun profil n'a le droit 'Consulter' : la page serait invisible pour tous." & vbCrLf &
+                        "(Onglet 'Habilitations par profil' : cochez 'Consulter' pour au moins un profil, ou décochez l'option 'Accès personnalisé'.)")
         End If
         ' 5. Menu déclaré
         If IsNull(Tbl.Rows(0)("Menu_Parent"), "") = "" Then erreurs.Add("Section du menu portail non renseignée.")
@@ -1037,8 +1327,4 @@ Public Class SP_Page_Designer
         Next
         Return ""
     End Function
-
-    Private Sub Rang_txt_KeyPress(sender As Object, e As KeyPressEventArgs) Handles Rang_txt.KeyPress
-        ControleSaisie(sender, e, True, False, False, False, False)
-    End Sub
 End Class

@@ -50,9 +50,10 @@ export async function sp_menu_portail(req: Request, res: Response) {
      from SP_Page p
      where p.Statut_Page='PUBLIE'
        and ( @p_pr = '1'
-             or exists (select 1 from SP_Page_Droit d
-                        where d.Cod_Page=p.Cod_Page and d.Cod_Profile=@p_pr
-                          and isnull(d.Consulter,'false')='true') )
+              or isnull(p.Acces_Personnalise,'true')='false'   -- consultation ouverte à tous
+              or exists (select 1 from SP_Page_Droit d
+                         where d.Cod_Page=p.Cod_Page and d.Cod_Profile=@p_pr
+                           and isnull(d.Consulter,'false')='true') )
      order by p.Menu_Parent, p.Rang`,
     [{ param: "p_pr", sqlType: sql.NVarChar, valeur: String(codProfile ?? "") }]
   );

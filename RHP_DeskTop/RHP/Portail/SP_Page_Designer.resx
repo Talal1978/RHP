@@ -117,4 +117,7 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="LabelDroits.Text" xml:space="preserve">
+    <value>Décoché : tous les profils (même créés ultérieurement) peuvent consulter la page. Coché : consultation réservée aux profils cochés ci-dessous. Clic droit sur une colonne : cocher / décocher pour tous les profils.</value>
+  </data>
 </root>
