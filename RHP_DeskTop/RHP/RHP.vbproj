@@ -657,6 +657,13 @@
     <Compile Include="Outillage\RH_Outillage.vb">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="Portail\Module_SP_DDL.vb" />
+    <Compile Include="Portail\SP_Page_Designer.Designer.vb">
+      <DependentUpon>SP_Page_Designer.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Portail\SP_Page_Designer.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Outillage\RH_Outillage_Mouvement.Designer.vb">
       <DependentUpon>RH_Outillage_Mouvement.vb</DependentUpon>
     </Compile>
@@ -2217,6 +2224,9 @@
     <EmbeddedResource Include="Outillage\RH_Outillage.resx">
       <DependentUpon>RH_Outillage.vb</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Portail\SP_Page_Designer.resx">
+      <DependentUpon>SP_Page_Designer.vb</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Outillage\RH_Outillage_Mouvement.resx">
       <DependentUpon>RH_Outillage_Mouvement.vb</DependentUpon>
     </EmbeddedResource>
@@ -3199,6 +3209,10 @@
     <None Include="Resources\coller_presspapier.png" />
     <Content Include="ILLink\ILLink.Descriptors.LibraryBuild.xml" />
     <Content Include="Outillage\Script_SQL_Outillage.sql" />
+    <Content Include="Portail\Script_SQL_SP_Page_Designer.sql" />
+    <Content Include="rsc\fonts\MaterialIcons-Regular.ttf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <None Include="Resources\btn_copy.png" />
     <None Include="Resources\btn_mode_agent_w.png" />
     <None Include="Resources\btn_python.png" />

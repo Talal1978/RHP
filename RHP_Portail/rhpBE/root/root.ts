@@ -137,6 +137,10 @@ import {
 import {
   sante_aptitude_pdf, sante_incident_at_pdf, sante_rapport_annuel_pdf,
 } from "../controlers/sante_report";
+import {
+  sp_menu_portail, sp_page_meta, sp_document_liste, sp_get_document,
+  sp_save_document, sp_delete_document, sp_validate_document, sp_exec_source,
+} from "../controlers/sp_document";
 const mainRooting = express.Router();
 const storage = multer.diskStorage({
   destination: async (req, file, cb) => {
@@ -324,5 +328,15 @@ mainRooting.post("/sante_aptitude_pdf", validate, sante_aptitude_pdf);
 mainRooting.post("/sante_incident_at_pdf", validate, sante_incident_at_pdf);
 mainRooting.post("/sante_rapport_annuel_pdf", validate, sante_rapport_annuel_pdf);
 mainRooting.post("/get_outillage_info", validate, get_outillage_info);
+
+/* ---- Module SP_ : pages dynamiques du portail (Designer) ---- */
+mainRooting.get("/sp_menu_portail", validate, sp_menu_portail);
+mainRooting.post("/sp_page_meta", validate, sp_page_meta);
+mainRooting.post("/sp_document_liste", validate, sp_document_liste);
+mainRooting.post("/sp_get_document", validate, sp_get_document);
+mainRooting.post("/sp_save_document", validate, sp_save_document);
+mainRooting.post("/sp_delete_document", validate, sp_delete_document);
+mainRooting.post("/sp_validate_document", validate, sp_validate_document);
+mainRooting.post("/sp_exec_source", validate, sp_exec_source);
 
 

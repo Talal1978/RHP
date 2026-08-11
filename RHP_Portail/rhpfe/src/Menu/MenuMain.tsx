@@ -10,6 +10,7 @@ import Loading from "../components/Loading/Loading";
 import MyAlert from "../components/MyAlert/MyAlert";
 import useAxiosGet from "../hooks/useAxiosGet";
 import { rubriques, setRubriques } from "../modules/module_rubriques";
+import { fusionnerMenusDynamiques } from "../modules/module_menus";
 
 export const cntX = createContext<{
   setShowLoading: Dispatch<SetStateAction<boolean>>;
@@ -83,7 +84,20 @@ export const MenuMain = () => {
   // il faut les recharger avant d'afficher l'écran (libellés des menus, ComboBox...).
   const myAxiosGet = useAxiosGet();
   const [rubriquesReady, setRubriquesReady] = useState(rubriques.length > 0);
+  // Incrémenté après chargement des menus dynamiques (module SP_) : force le
+  // re-rendu de la sidebar (controleMenus est un tableau module-level muable).
+  const [menusDynVersion, setMenusDynVersion] = useState(0);
   useEffect(() => {
+    // Pages dynamiques publiées (module SP_) : fusionnées au menu latéral
+    // (section et rang déclarés dans le Designer Desktop).
+    myAxiosGet({ apiStr: "sp_menu_portail" })
+      .then((r) => {
+        if (r?.data?.result && Array.isArray(r.data.data)) {
+          fusionnerMenusDynamiques(r.data.data);
+          setMenusDynVersion((v) => v + 1);
+        }
+      })
+      .catch(() => {});
     if (rubriques.length > 0) return;
     myAxiosGet({ apiStr: "list_rubriques" })
       .then((r) => {
@@ -92,6 +106,7 @@ export const MenuMain = () => {
       .catch(() => {})
       .finally(() => setRubriquesReady(true));
   }, [myAxiosGet]);
+  void menusDynVersion;
 
   // Incrémenté après chaque signature effectuée depuis le panneau de signature :
   // Ecran re-monte la page courante pour recharger le document (statut Signé/Rejeté).

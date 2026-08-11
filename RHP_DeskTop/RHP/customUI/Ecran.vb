@@ -176,21 +176,28 @@
     End Sub
     Private Sub Ecran_Layout(sender As Object, e As LayoutEventArgs) Handles MyBase.Layout
         If Not e.AffectedControl Is Me Then Return
-        Dim obj = Me.Controls.Find("TabControl1", True)
-        If obj.Length > 0 Then
-            If TypeOf obj(0) Is TabControl Then
-                Dim TabCtrl As TabControl = DirectCast(obj(0), TabControl)
-                With TabCtrl
-                    .DrawMode = TabDrawMode.OwnerDrawFixed
-                    AddHandler .DrawItem, AddressOf TabControl_DrawItem
-                End With
-                For Each tb As TabPage In TabCtrl.TabPages
-                    AddHandler tb.Paint, AddressOf TabPage_Paint
-                Next
-            End If
-        End If
-
+        ' Thème appliqué à TOUS les TabControl de l'écran, y compris imbriqués
+        ' (auparavant : uniquement le premier contrôle nommé "TabControl1").
+        For Each TabCtrl As TabControl In TousLesTabControls(Me)
+            TabCtrl.DrawMode = TabDrawMode.OwnerDrawFixed
+            ' RemoveHandler avant AddHandler : pas de double abonnement si Layout se rejoue
+            RemoveHandler TabCtrl.DrawItem, AddressOf TabControl_DrawItem
+            AddHandler TabCtrl.DrawItem, AddressOf TabControl_DrawItem
+            For Each tb As TabPage In TabCtrl.TabPages
+                RemoveHandler tb.Paint, AddressOf TabPage_Paint
+                AddHandler tb.Paint, AddressOf TabPage_Paint
+            Next
+        Next
     End Sub
+    ''' <summary>Énumère récursivement tous les TabControl contenus dans un contrôle.</summary>
+    Private Function TousLesTabControls(parentControl As Control) As List(Of TabControl)
+        Dim rsl As New List(Of TabControl)
+        For Each c As Control In parentControl.Controls
+            If TypeOf c Is TabControl Then rsl.Add(DirectCast(c, TabControl))
+            rsl.AddRange(TousLesTabControls(c))
+        Next
+        Return rsl
+    End Function
     Private Sub Ecran_FormClosed(sender As Object, e As FormClosedEventArgs) Handles Me.FormClosed
         If leMenu.currentEcran Is Me Then
             leMenu.currentEcran = Nothing

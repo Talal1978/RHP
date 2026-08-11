@@ -70,6 +70,8 @@ const RH_Sante_Examen = lazy(() => import("../Pages/Sante/RH_Sante_Examen"));
 const RH_Sante_Maladie_Pro_Liste = lazy(() => import("../Pages/Sante/RH_Sante_Maladie_Pro_Liste"));
 const RH_Sante_Maladie_Pro = lazy(() => import("../Pages/Sante/RH_Sante_Maladie_Pro"));
 const RH_Sante_Campagne = lazy(() => import("../Pages/Sante/RH_Sante_Campagne"));
+const DynamicPage = lazy(() => import("../Pages/Dynamic/DynamicPage"));
+const DynamicPage_Liste = lazy(() => import("../Pages/Dynamic/DynamicPage_Liste"));
 
 const Ecran = ({ style }: { style?: React.CSSProperties }) => {
   const { tbnMenu, settbnMenu, showSignature, signatureProps, signatureVersion } =
@@ -88,6 +90,16 @@ const Ecran = ({ style }: { style?: React.CSSProperties }) => {
       settbnMenu([]);
     }
     ecranRef.current = ecran;
+    // Pages dynamiques du module SP_ (Designer) : SPPL_<Cod_Page> = liste,
+    // SPP_<Cod_Page> = document. Interprétées depuis les métadonnées publiées.
+    if (ecran?.startsWith("SPPL_")) {
+      setEcran(<DynamicPage_Liste codPage={ecran.substring(5)} />);
+      return;
+    }
+    if (ecran?.startsWith("SPP_")) {
+      setEcran(<DynamicPage codPage={ecran.substring(4)} />);
+      return;
+    }
     switch (ecran) {
       case "RH_Agent":
         setEcran(<RH_Agent />);
