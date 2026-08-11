@@ -48,6 +48,16 @@ export const formatDateForInput = (obj: any) => {
   }
   return "";
 };
+/** Valeur pour un <input type="datetime-local"> ("yyyy-MM-ddTHH:mm"),
+ *  cohérente avec la convention d'affichage de formatDateFR (heure reprise telle quelle). */
+export const formatDateTimeForInput = (obj: any) => {
+  if (isValid(obj)) {
+    return format(obj, "yyyy-MM-dd'T'HH:mm");
+  }
+  const fr = formatDateFR(obj, true);
+  const m = /^(\d{2})\/(\d{2})\/(\d{4})\s(\d{2}):(\d{2})/.exec(fr);
+  return m ? `${m[3]}-${m[2]}-${m[1]}T${m[4]}:${m[5]}` : "";
+};
 export const toSqlDateFormat = (dat: any, ShowTime?: boolean) => {
   let mydat = estDate(dat)
     ? format(dat, "MM-dd-yyyy" + (ShowTime ? " HH:mm" : ""))

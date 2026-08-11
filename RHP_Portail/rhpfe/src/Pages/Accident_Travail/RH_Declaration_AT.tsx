@@ -62,7 +62,7 @@ const RH_Declaration_AT = () => {
             },
             Dat_Certificat: {
                 columnName: "Dat_Certificat",
-                dataType: "datetime",
+                dataType: "smalldatetime",
                 readOnly: true,
                 visible: true,
                 headerText: "Date Certificat",
@@ -71,7 +71,7 @@ const RH_Declaration_AT = () => {
             },
             Dat_Debut_Arret: {
                 columnName: "Dat_Debut_Arret",
-                dataType: "datetime",
+                dataType: "smalldatetime",
                 readOnly: true,
                 visible: true,
                 headerText: "Début Arrêt",
@@ -80,7 +80,7 @@ const RH_Declaration_AT = () => {
             },
             Dat_Fin_Arret: {
                 columnName: "Dat_Fin_Arret",
-                dataType: "datetime",
+                dataType: "smalldatetime",
                 readOnly: true,
                 visible: true,
                 headerText: "Fin Arrêt",

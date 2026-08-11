@@ -43,7 +43,7 @@ BEGIN
         Statut_Page       nvarchar(10)  NOT NULL CONSTRAINT DF_SP_Page_Statut DEFAULT ('BROUILLON'), -- BROUILLON/PUBLIE/DESACTIVE/ARCHIVE
         Table_Ent         nvarchar(60)  NOT NULL,   -- SP_<CodDocument>_Ent
         -- Intégrations
-        Typ_Document      nvarchar(2)   NULL,       -- type workflow (Param_Workflow_Typ_Document)
+        Typ_Document      nvarchar(10)  NULL,       -- = Cod_Document : un seul code sert de type workflow (Param_Workflow_Typ_Document)
         Workflow_Actif    nvarchar(5)   NOT NULL CONSTRAINT DF_SP_Page_Wf DEFAULT ('false'),
         Cod_Modele_Edition nvarchar(20) NULL,       -- Param_Mod_Edition.Cod_Report
         GED_Actif         nvarchar(5)   NOT NULL CONSTRAINT DF_SP_Page_Ged DEFAULT ('false'),
@@ -83,6 +83,40 @@ BEGIN
     ALTER TABLE dbo.SP_Page
         ADD Acces_Personnalise nvarchar(5) NOT NULL
             CONSTRAINT DF_SP_Page_AccesPerso DEFAULT ('true') WITH VALUES;
+END
+GO
+
+-- 1.1.c Migration : fusion des champs 'Code document' / 'Type document' en un seul
+--       code (2 à 10 car., index unique UQ_SP_Page_Document) qui pilote les noms
+--       physiques des tables ET sert de code workflow.
+--       - SP_Page.Typ_Document est élargie (2 -> 10) puis alignée sur Cod_Document ;
+--       - la table historique Param_Workflow_Typ_Document (limitée à 2 car.) est
+--         élargie à 10 car. : tous les codes existants (<= 2 car.) restent valides.
+IF (SELECT CHARACTER_MAXIMUM_LENGTH FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_NAME = 'SP_Page' AND COLUMN_NAME = 'Typ_Document') < 10
+BEGIN
+    ALTER TABLE dbo.SP_Page ALTER COLUMN Typ_Document nvarchar(10) NULL;
+END
+UPDATE dbo.SP_Page SET Typ_Document = Cod_Document
+WHERE isnull(Typ_Document, '') <> isnull(Cod_Document, '');
+GO
+IF (SELECT CHARACTER_MAXIMUM_LENGTH FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_NAME = 'Param_Workflow_Typ_Document' AND COLUMN_NAME = 'Typ_Document') < 10
+BEGIN
+    DECLARE @pkW sysname, @colsW nvarchar(max);
+    SELECT @pkW = kc.name
+    FROM sys.key_constraints kc
+    WHERE kc.parent_object_id = OBJECT_ID('dbo.Param_Workflow_Typ_Document') AND kc.type = 'PK';
+    SELECT @colsW = STUFF((SELECT ',' + QUOTENAME(c.name)
+        FROM sys.key_constraints kc
+        JOIN sys.index_columns ic ON ic.object_id = kc.parent_object_id AND ic.index_id = kc.unique_index_id
+        JOIN sys.columns c ON c.object_id = ic.object_id AND c.column_id = ic.column_id
+        WHERE kc.parent_object_id = OBJECT_ID('dbo.Param_Workflow_Typ_Document') AND kc.type = 'PK'
+        ORDER BY ic.key_ordinal
+        FOR XML PATH('')), 1, 1, '');
+    IF @pkW IS NOT NULL EXEC('ALTER TABLE dbo.Param_Workflow_Typ_Document DROP CONSTRAINT [' + @pkW + ']');
+    ALTER TABLE dbo.Param_Workflow_Typ_Document ALTER COLUMN Typ_Document nvarchar(10) NOT NULL;
+    IF @pkW IS NOT NULL EXEC('ALTER TABLE dbo.Param_Workflow_Typ_Document ADD CONSTRAINT [' + @pkW + '] PRIMARY KEY (' + @colsW + ')');
 END
 GO
 

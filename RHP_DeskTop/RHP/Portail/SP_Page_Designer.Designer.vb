@@ -18,6 +18,9 @@ Partial Class SP_Page_Designer
     <System.Diagnostics.DebuggerStepThrough()>
     Private Sub InitializeComponent()
         Me.components = New System.ComponentModel.Container()
+        Dim DataGridViewCellStyle19 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
+        Dim DataGridViewCellStyle20 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
+        Dim DataGridViewCellStyle21 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
         Dim DataGridViewCellStyle1 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
         Dim DataGridViewCellStyle2 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
         Dim DataGridViewCellStyle3 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
@@ -33,9 +36,6 @@ Partial Class SP_Page_Designer
         Dim DataGridViewCellStyle13 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
         Dim DataGridViewCellStyle14 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
         Dim DataGridViewCellStyle15 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
-        Dim DataGridViewCellStyle16 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
-        Dim DataGridViewCellStyle17 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
-        Dim DataGridViewCellStyle18 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(SP_Page_Designer))
         Me.TabControl1 = New System.Windows.Forms.TabControl()
         Me.Tab_Document = New System.Windows.Forms.TabPage()
@@ -45,40 +45,38 @@ Partial Class SP_Page_Designer
         Me.Tab_Colonnes = New System.Windows.Forms.TabPage()
         Me.Grd_Colonnes = New RHP.ud_Grd()
         Me.LabelColonnes = New System.Windows.Forms.Label()
-        Me.GroupBox_Def = New System.Windows.Forms.GroupBox()
-        Me.Statut_Page_cmb = New RHP.ud_ComboBox()
-        Me.LabelStatut = New System.Windows.Forms.Label()
-        Me.Icone_cmb = New System.Windows.Forms.ComboBox()
-        Me.LabelIcone = New System.Windows.Forms.Label()
-        Me.Rang_txt = New System.Windows.Forms.NumericUpDown()
-        Me.LabelRang = New System.Windows.Forms.Label()
-        Me.Menu_Parent_cmb = New RHP.ud_ComboBox()
-        Me.LabelMenu = New System.Windows.Forms.Label()
-        Me.Nom_Page_txt = New RHP.ud_TextBox()
-        Me.Cod_Document_txt = New RHP.ud_TextBox()
-        Me.LabelCodDoc = New System.Windows.Forms.Label()
-        Me.Cod_Page_txt = New RHP.ud_TextBox()
-        Me.LabelCodPage = New System.Windows.Forms.LinkLabel()
-        Me.Tab_Conception = New System.Windows.Forms.TabPage()
+        Me.Tab_Champs = New System.Windows.Forms.TabPage()
         Me.SplitContainer5 = New System.Windows.Forms.SplitContainer()
         Me.Grd_Champs = New RHP.ud_Grd()
         Me.LabelChamps = New System.Windows.Forms.Label()
         Me.Grd_Sources = New RHP.ud_Grd()
         Me.LabelSources = New System.Windows.Forms.Label()
-        Me.Tab_Comportement = New System.Windows.Forms.TabPage()
-        Me.SplitContainer6 = New System.Windows.Forms.SplitContainer()
+        Me.Menu_Sources = New System.Windows.Forms.ContextMenuStrip(Me.components)
+        Me.MenuItem_Source_Params = New System.Windows.Forms.ToolStripMenuItem()
+        Me.Tab_Conception = New System.Windows.Forms.TabPage()
         Me.GroupBox_Int = New System.Windows.Forms.GroupBox()
+        Me.Icone_cmb = New System.Windows.Forms.ComboBox()
+        Me.Cod_Document_txt = New RHP.ud_TextBox()
+        Me.Btn_Workflow_Signature = New RHP.ud_button()
+        Me.LabelCodDoc = New System.Windows.Forms.Label()
         Me.Act_Exporter_chk = New RHP.ud_CheckBox()
+        Me.LabelIcone = New System.Windows.Forms.Label()
         Me.Act_Imprimer_chk = New RHP.ud_CheckBox()
+        Me.Rang_txt = New System.Windows.Forms.NumericUpDown()
         Me.Act_Soumettre_chk = New RHP.ud_CheckBox()
+        Me.LabelRang = New System.Windows.Forms.Label()
         Me.Act_Enregistrer_chk = New RHP.ud_CheckBox()
+        Me.Menu_Parent_cmb = New RHP.ud_ComboBox()
+        Me.Btn_Add_Section = New RHP.ud_button()
+        Me.LabelMenu = New System.Windows.Forms.Label()
         Me.GED_Obligatoire_chk = New RHP.ud_CheckBox()
         Me.GED_Actif_chk = New RHP.ud_CheckBox()
         Me.Cod_Modele_Edition_txt = New RHP.ud_TextBox()
         Me.LabelModele = New System.Windows.Forms.Label()
-        Me.Typ_Document_txt = New RHP.ud_TextBox()
-        Me.LabelTypDoc = New System.Windows.Forms.Label()
         Me.Workflow_Actif_chk = New RHP.ud_CheckBox()
+        Me.Tab_Comportement = New System.Windows.Forms.TabPage()
+        Me.Menu_Validations = New System.Windows.Forms.ContextMenuStrip(Me.components)
+        Me.MenuItem_Assistant = New System.Windows.Forms.ToolStripMenuItem()
         Me.Grd_Validations = New RHP.ud_Grd()
         Me.LabelValidations = New System.Windows.Forms.Label()
         Me.Tab_Droits = New System.Windows.Forms.TabPage()
@@ -86,9 +84,12 @@ Partial Class SP_Page_Designer
         Me.Panel_Droits = New System.Windows.Forms.Panel()
         Me.Acces_Personnalise_chk = New RHP.ud_CheckBox()
         Me.LabelDroits = New System.Windows.Forms.Label()
-        Me.Table_Ent_txt = New RHP.ud_TextBox()
-        Me.LabelTableEnt = New System.Windows.Forms.Label()
-        Me.Tab_Champs = New System.Windows.Forms.TabPage()
+        Me.GroupBox_Def = New System.Windows.Forms.GroupBox()
+        Me.Statut_Page_cmb = New RHP.ud_ComboBox()
+        Me.LabelStatut = New System.Windows.Forms.Label()
+        Me.Nom_Page_txt = New RHP.ud_TextBox()
+        Me.Cod_Page_txt = New RHP.ud_TextBox()
+        Me.LabelCodPage = New System.Windows.Forms.LinkLabel()
         Me.TabControl1.SuspendLayout()
         Me.Tab_Document.SuspendLayout()
         Me.TabControl_Details.SuspendLayout()
@@ -96,25 +97,24 @@ Partial Class SP_Page_Designer
         CType(Me.Grd_Tables, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.Tab_Colonnes.SuspendLayout()
         CType(Me.Grd_Colonnes, System.ComponentModel.ISupportInitialize).BeginInit()
-        Me.GroupBox_Def.SuspendLayout()
-        CType(Me.Rang_txt, System.ComponentModel.ISupportInitialize).BeginInit()
-        Me.Tab_Conception.SuspendLayout()
+        Me.Tab_Champs.SuspendLayout()
         CType(Me.SplitContainer5, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SplitContainer5.Panel1.SuspendLayout()
         Me.SplitContainer5.Panel2.SuspendLayout()
         Me.SplitContainer5.SuspendLayout()
         CType(Me.Grd_Champs, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.Grd_Sources, System.ComponentModel.ISupportInitialize).BeginInit()
-        Me.Tab_Comportement.SuspendLayout()
-        CType(Me.SplitContainer6, System.ComponentModel.ISupportInitialize).BeginInit()
-        Me.SplitContainer6.Panel2.SuspendLayout()
-        Me.SplitContainer6.SuspendLayout()
+        Me.Tab_Conception.SuspendLayout()
         Me.GroupBox_Int.SuspendLayout()
+        CType(Me.Rang_txt, System.ComponentModel.ISupportInitialize).BeginInit()
+        Me.Tab_Comportement.SuspendLayout()
+        Me.Menu_Validations.SuspendLayout()
+        Me.Menu_Sources.SuspendLayout()
         CType(Me.Grd_Validations, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.Tab_Droits.SuspendLayout()
         CType(Me.Grd_Droits, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.Panel_Droits.SuspendLayout()
-        Me.Tab_Champs.SuspendLayout()
+        Me.GroupBox_Def.SuspendLayout()
         Me.SuspendLayout()
         '
         'TabControl1
@@ -138,7 +138,7 @@ Partial Class SP_Page_Designer
         Me.Tab_Document.Location = New System.Drawing.Point(4, 28)
         Me.Tab_Document.Name = "Tab_Document"
         Me.Tab_Document.Padding = New System.Windows.Forms.Padding(3)
-        Me.Tab_Document.Size = New System.Drawing.Size(1242, 468)
+        Me.Tab_Document.Size = New System.Drawing.Size(1242, 596)
         Me.Tab_Document.TabIndex = 0
         Me.Tab_Document.Text = "Structure des tables"
         Me.Tab_Document.UseVisualStyleBackColor = True
@@ -152,7 +152,7 @@ Partial Class SP_Page_Designer
         Me.TabControl_Details.Location = New System.Drawing.Point(3, 3)
         Me.TabControl_Details.Name = "TabControl_Details"
         Me.TabControl_Details.SelectedIndex = 0
-        Me.TabControl_Details.Size = New System.Drawing.Size(1236, 462)
+        Me.TabControl_Details.Size = New System.Drawing.Size(1236, 590)
         Me.TabControl_Details.TabIndex = 1
         '
         'Tab_Tables
@@ -161,7 +161,7 @@ Partial Class SP_Page_Designer
         Me.Tab_Tables.Location = New System.Drawing.Point(4, 28)
         Me.Tab_Tables.Name = "Tab_Tables"
         Me.Tab_Tables.Padding = New System.Windows.Forms.Padding(3)
-        Me.Tab_Tables.Size = New System.Drawing.Size(1228, 430)
+        Me.Tab_Tables.Size = New System.Drawing.Size(1228, 558)
         Me.Tab_Tables.TabIndex = 0
         Me.Tab_Tables.Text = "Tables (entête ENT + tables de détail)"
         Me.Tab_Tables.UseVisualStyleBackColor = True
@@ -172,36 +172,36 @@ Partial Class SP_Page_Designer
         Me.Grd_Tables.AlternerLesLignes = False
         Me.Grd_Tables.BorderStyle = System.Windows.Forms.BorderStyle.None
         Me.Grd_Tables.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.[Single]
-        DataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter
-        DataGridViewCellStyle1.BackColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
-        DataGridViewCellStyle1.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        DataGridViewCellStyle1.ForeColor = System.Drawing.Color.White
-        DataGridViewCellStyle1.Padding = New System.Windows.Forms.Padding(5)
-        DataGridViewCellStyle1.SelectionBackColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
-        DataGridViewCellStyle1.SelectionForeColor = System.Drawing.Color.White
-        DataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.[True]
-        Me.Grd_Tables.ColumnHeadersDefaultCellStyle = DataGridViewCellStyle1
+        DataGridViewCellStyle19.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter
+        DataGridViewCellStyle19.BackColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
+        DataGridViewCellStyle19.Font = New System.Drawing.Font("Century Gothic", 8.25!)
+        DataGridViewCellStyle19.ForeColor = System.Drawing.Color.White
+        DataGridViewCellStyle19.Padding = New System.Windows.Forms.Padding(5)
+        DataGridViewCellStyle19.SelectionBackColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
+        DataGridViewCellStyle19.SelectionForeColor = System.Drawing.Color.White
+        DataGridViewCellStyle19.WrapMode = System.Windows.Forms.DataGridViewTriState.[True]
+        Me.Grd_Tables.ColumnHeadersDefaultCellStyle = DataGridViewCellStyle19
         Me.Grd_Tables.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize
-        DataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft
-        DataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window
-        DataGridViewCellStyle2.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        DataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.ControlText
-        DataGridViewCellStyle2.SelectionBackColor = System.Drawing.Color.FromArgb(CType(CType(94, Byte), Integer), CType(CType(185, Byte), Integer), CType(CType(117, Byte), Integer))
-        DataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText
-        DataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.[False]
-        Me.Grd_Tables.DefaultCellStyle = DataGridViewCellStyle2
+        DataGridViewCellStyle20.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft
+        DataGridViewCellStyle20.BackColor = System.Drawing.SystemColors.Window
+        DataGridViewCellStyle20.Font = New System.Drawing.Font("Century Gothic", 8.25!)
+        DataGridViewCellStyle20.ForeColor = System.Drawing.SystemColors.ControlText
+        DataGridViewCellStyle20.SelectionBackColor = System.Drawing.Color.FromArgb(CType(CType(94, Byte), Integer), CType(CType(185, Byte), Integer), CType(CType(117, Byte), Integer))
+        DataGridViewCellStyle20.SelectionForeColor = System.Drawing.SystemColors.HighlightText
+        DataGridViewCellStyle20.WrapMode = System.Windows.Forms.DataGridViewTriState.[False]
+        Me.Grd_Tables.DefaultCellStyle = DataGridViewCellStyle20
         Me.Grd_Tables.Dock = System.Windows.Forms.DockStyle.Fill
         Me.Grd_Tables.EnableHeadersVisualStyles = False
         Me.Grd_Tables.GridColor = System.Drawing.Color.FromArgb(CType(CType(179, Byte), Integer), CType(CType(216, Byte), Integer), CType(CType(228, Byte), Integer))
         Me.Grd_Tables.Location = New System.Drawing.Point(3, 3)
         Me.Grd_Tables.Name = "Grd_Tables"
         Me.Grd_Tables.RowHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.[Single]
-        DataGridViewCellStyle3.BackColor = System.Drawing.Color.FromArgb(CType(CType(169, Byte), Integer), CType(CType(210, Byte), Integer), CType(CType(224, Byte), Integer))
-        DataGridViewCellStyle3.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        Me.Grd_Tables.RowHeadersDefaultCellStyle = DataGridViewCellStyle3
+        DataGridViewCellStyle21.BackColor = System.Drawing.Color.FromArgb(CType(CType(169, Byte), Integer), CType(CType(210, Byte), Integer), CType(CType(224, Byte), Integer))
+        DataGridViewCellStyle21.Font = New System.Drawing.Font("Century Gothic", 8.25!)
+        Me.Grd_Tables.RowHeadersDefaultCellStyle = DataGridViewCellStyle21
         Me.Grd_Tables.RowHeadersVisible = False
         Me.Grd_Tables.RowHeadersWidth = 51
-        Me.Grd_Tables.Size = New System.Drawing.Size(1222, 424)
+        Me.Grd_Tables.Size = New System.Drawing.Size(1222, 552)
         Me.Grd_Tables.TabIndex = 0
         '
         'Tab_Colonnes
@@ -211,7 +211,7 @@ Partial Class SP_Page_Designer
         Me.Tab_Colonnes.Location = New System.Drawing.Point(4, 28)
         Me.Tab_Colonnes.Name = "Tab_Colonnes"
         Me.Tab_Colonnes.Padding = New System.Windows.Forms.Padding(3)
-        Me.Tab_Colonnes.Size = New System.Drawing.Size(1228, 521)
+        Me.Tab_Colonnes.Size = New System.Drawing.Size(1228, 430)
         Me.Tab_Colonnes.TabIndex = 1
         Me.Tab_Colonnes.Text = "Colonnes physiques"
         Me.Tab_Colonnes.UseVisualStyleBackColor = True
@@ -222,36 +222,36 @@ Partial Class SP_Page_Designer
         Me.Grd_Colonnes.AlternerLesLignes = False
         Me.Grd_Colonnes.BorderStyle = System.Windows.Forms.BorderStyle.None
         Me.Grd_Colonnes.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.[Single]
-        DataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter
-        DataGridViewCellStyle4.BackColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
-        DataGridViewCellStyle4.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        DataGridViewCellStyle4.ForeColor = System.Drawing.Color.White
-        DataGridViewCellStyle4.Padding = New System.Windows.Forms.Padding(5)
-        DataGridViewCellStyle4.SelectionBackColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
-        DataGridViewCellStyle4.SelectionForeColor = System.Drawing.Color.White
-        DataGridViewCellStyle4.WrapMode = System.Windows.Forms.DataGridViewTriState.[True]
-        Me.Grd_Colonnes.ColumnHeadersDefaultCellStyle = DataGridViewCellStyle4
+        DataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter
+        DataGridViewCellStyle1.BackColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
+        DataGridViewCellStyle1.Font = New System.Drawing.Font("Century Gothic", 8.25!)
+        DataGridViewCellStyle1.ForeColor = System.Drawing.Color.White
+        DataGridViewCellStyle1.Padding = New System.Windows.Forms.Padding(5)
+        DataGridViewCellStyle1.SelectionBackColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
+        DataGridViewCellStyle1.SelectionForeColor = System.Drawing.Color.White
+        DataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.[True]
+        Me.Grd_Colonnes.ColumnHeadersDefaultCellStyle = DataGridViewCellStyle1
         Me.Grd_Colonnes.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize
-        DataGridViewCellStyle5.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft
-        DataGridViewCellStyle5.BackColor = System.Drawing.SystemColors.Window
-        DataGridViewCellStyle5.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        DataGridViewCellStyle5.ForeColor = System.Drawing.SystemColors.ControlText
-        DataGridViewCellStyle5.SelectionBackColor = System.Drawing.Color.FromArgb(CType(CType(94, Byte), Integer), CType(CType(185, Byte), Integer), CType(CType(117, Byte), Integer))
-        DataGridViewCellStyle5.SelectionForeColor = System.Drawing.SystemColors.HighlightText
-        DataGridViewCellStyle5.WrapMode = System.Windows.Forms.DataGridViewTriState.[False]
-        Me.Grd_Colonnes.DefaultCellStyle = DataGridViewCellStyle5
+        DataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft
+        DataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window
+        DataGridViewCellStyle2.Font = New System.Drawing.Font("Century Gothic", 8.25!)
+        DataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.ControlText
+        DataGridViewCellStyle2.SelectionBackColor = System.Drawing.Color.FromArgb(CType(CType(94, Byte), Integer), CType(CType(185, Byte), Integer), CType(CType(117, Byte), Integer))
+        DataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText
+        DataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.[False]
+        Me.Grd_Colonnes.DefaultCellStyle = DataGridViewCellStyle2
         Me.Grd_Colonnes.Dock = System.Windows.Forms.DockStyle.Fill
         Me.Grd_Colonnes.EnableHeadersVisualStyles = False
         Me.Grd_Colonnes.GridColor = System.Drawing.Color.FromArgb(CType(CType(179, Byte), Integer), CType(CType(216, Byte), Integer), CType(CType(228, Byte), Integer))
         Me.Grd_Colonnes.Location = New System.Drawing.Point(3, 28)
         Me.Grd_Colonnes.Name = "Grd_Colonnes"
         Me.Grd_Colonnes.RowHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.[Single]
-        DataGridViewCellStyle6.BackColor = System.Drawing.Color.FromArgb(CType(CType(169, Byte), Integer), CType(CType(210, Byte), Integer), CType(CType(224, Byte), Integer))
-        DataGridViewCellStyle6.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        Me.Grd_Colonnes.RowHeadersDefaultCellStyle = DataGridViewCellStyle6
+        DataGridViewCellStyle3.BackColor = System.Drawing.Color.FromArgb(CType(CType(169, Byte), Integer), CType(CType(210, Byte), Integer), CType(CType(224, Byte), Integer))
+        DataGridViewCellStyle3.Font = New System.Drawing.Font("Century Gothic", 8.25!)
+        Me.Grd_Colonnes.RowHeadersDefaultCellStyle = DataGridViewCellStyle3
         Me.Grd_Colonnes.RowHeadersVisible = False
         Me.Grd_Colonnes.RowHeadersWidth = 51
-        Me.Grd_Colonnes.Size = New System.Drawing.Size(1222, 490)
+        Me.Grd_Colonnes.Size = New System.Drawing.Size(1222, 399)
         Me.Grd_Colonnes.TabIndex = 1
         '
         'LabelColonnes
@@ -265,202 +265,15 @@ Partial Class SP_Page_Designer
         Me.LabelColonnes.Text = "Les colonnes techniques (Num_Doc, Statut, audit, RV) sont ajoutées automatiquemen" &
     "t."
         '
-        'GroupBox_Def
+        'Tab_Champs
         '
-        Me.GroupBox_Def.Controls.Add(Me.Statut_Page_cmb)
-        Me.GroupBox_Def.Controls.Add(Me.LabelStatut)
-        Me.GroupBox_Def.Controls.Add(Me.Nom_Page_txt)
-        Me.GroupBox_Def.Controls.Add(Me.Cod_Page_txt)
-        Me.GroupBox_Def.Controls.Add(Me.LabelCodPage)
-        Me.GroupBox_Def.Dock = System.Windows.Forms.DockStyle.Top
-        Me.GroupBox_Def.Location = New System.Drawing.Point(0, 0)
-        Me.GroupBox_Def.Name = "GroupBox_Def"
-        Me.GroupBox_Def.Size = New System.Drawing.Size(1250, 72)
-        Me.GroupBox_Def.TabIndex = 0
-        Me.GroupBox_Def.TabStop = False
-        Me.GroupBox_Def.Text = "Définition du type de document"
-        '
-        'Statut_Page_cmb
-        '
-        Me.Statut_Page_cmb.DataSource = Nothing
-        Me.Statut_Page_cmb.DisplayMember = ""
-        Me.Statut_Page_cmb.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
-        Me.Statut_Page_cmb.DroppedDown = False
-        Me.Statut_Page_cmb.Enabled = False
-        Me.Statut_Page_cmb.Location = New System.Drawing.Point(889, 34)
-        Me.Statut_Page_cmb.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
-        Me.Statut_Page_cmb.Name = "Statut_Page_cmb"
-        Me.Statut_Page_cmb.SelectedIndex = -1
-        Me.Statut_Page_cmb.SelectedItem = Nothing
-        Me.Statut_Page_cmb.SelectedValue = Nothing
-        Me.Statut_Page_cmb.Size = New System.Drawing.Size(140, 28)
-        Me.Statut_Page_cmb.TabIndex = 5
-        Me.Statut_Page_cmb.ValueMember = ""
-        '
-        'LabelStatut
-        '
-        Me.LabelStatut.AutoSize = True
-        Me.LabelStatut.Location = New System.Drawing.Point(841, 37)
-        Me.LabelStatut.Name = "LabelStatut"
-        Me.LabelStatut.Size = New System.Drawing.Size(50, 19)
-        Me.LabelStatut.TabIndex = 17
-        Me.LabelStatut.Text = "Statut"
-        '
-        'Icone_cmb
-        '
-        Me.Icone_cmb.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed
-        Me.Icone_cmb.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
-        Me.Icone_cmb.DropDownWidth = 260
-        Me.Icone_cmb.ItemHeight = 22
-        Me.Icone_cmb.Location = New System.Drawing.Point(753, 51)
-        Me.Icone_cmb.Name = "Icone_cmb"
-        Me.Icone_cmb.Size = New System.Drawing.Size(360, 28)
-        Me.Icone_cmb.TabIndex = 4
-        '
-        'LabelIcone
-        '
-        Me.LabelIcone.AutoSize = True
-        Me.LabelIcone.Location = New System.Drawing.Point(660, 55)
-        Me.LabelIcone.Name = "LabelIcone"
-        Me.LabelIcone.Size = New System.Drawing.Size(87, 19)
-        Me.LabelIcone.TabIndex = 15
-        Me.LabelIcone.Text = "Icône (MUI)"
-        '
-        'Rang_txt
-        '
-        Me.Rang_txt.Location = New System.Drawing.Point(598, 53)
-        Me.Rang_txt.Margin = New System.Windows.Forms.Padding(4)
-        Me.Rang_txt.Maximum = New Decimal(New Integer() {9999, 0, 0, 0})
-        Me.Rang_txt.Name = "Rang_txt"
-        Me.Rang_txt.Size = New System.Drawing.Size(55, 24)
-        Me.Rang_txt.TabIndex = 4
-        Me.Rang_txt.TextAlign = System.Windows.Forms.HorizontalAlignment.Center
-        Me.Rang_txt.Value = New Decimal(New Integer() {99, 0, 0, 0})
-        '
-        'LabelRang
-        '
-        Me.LabelRang.AutoSize = True
-        Me.LabelRang.Location = New System.Drawing.Point(545, 53)
-        Me.LabelRang.Name = "LabelRang"
-        Me.LabelRang.Size = New System.Drawing.Size(46, 19)
-        Me.LabelRang.TabIndex = 13
-        Me.LabelRang.Text = "Rang"
-        '
-        'Menu_Parent_cmb
-        '
-        Me.Menu_Parent_cmb.DataSource = Nothing
-        Me.Menu_Parent_cmb.DisplayMember = ""
-        Me.Menu_Parent_cmb.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
-        Me.Menu_Parent_cmb.DroppedDown = False
-        Me.Menu_Parent_cmb.Location = New System.Drawing.Point(130, 51)
-        Me.Menu_Parent_cmb.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
-        Me.Menu_Parent_cmb.Name = "Menu_Parent_cmb"
-        Me.Menu_Parent_cmb.SelectedIndex = -1
-        Me.Menu_Parent_cmb.SelectedItem = Nothing
-        Me.Menu_Parent_cmb.SelectedValue = Nothing
-        Me.Menu_Parent_cmb.Size = New System.Drawing.Size(408, 24)
-        Me.Menu_Parent_cmb.TabIndex = 3
-        Me.Menu_Parent_cmb.ValueMember = ""
-        '
-        'LabelMenu
-        '
-        Me.LabelMenu.AutoSize = True
-        Me.LabelMenu.Location = New System.Drawing.Point(19, 53)
-        Me.LabelMenu.Name = "LabelMenu"
-        Me.LabelMenu.Size = New System.Drawing.Size(108, 19)
-        Me.LabelMenu.TabIndex = 11
-        Me.LabelMenu.Text = "Section portail"
-        '
-        'Nom_Page_txt
-        '
-        Me.Nom_Page_txt.CharacterCasing = System.Windows.Forms.CharacterCasing.Normal
-        Me.Nom_Page_txt.ContextMenuStrip = Nothing
-        Me.Nom_Page_txt.Location = New System.Drawing.Point(308, 34)
-        Me.Nom_Page_txt.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
-        Me.Nom_Page_txt.MaxLength = 32767
-        Me.Nom_Page_txt.Multiline = False
-        Me.Nom_Page_txt.Name = "Nom_Page_txt"
-        Me.Nom_Page_txt.Padding = New System.Windows.Forms.Padding(1, 0, 1, 0)
-        Me.Nom_Page_txt.PasswordChar = "" & Global.Microsoft.VisualBasic.ChrW(0)
-        Me.Nom_Page_txt.ReadOnly = False
-        Me.Nom_Page_txt.ScrollBars = System.Windows.Forms.ScrollBars.None
-        Me.Nom_Page_txt.SelectionStart = 0
-        Me.Nom_Page_txt.Size = New System.Drawing.Size(528, 24)
-        Me.Nom_Page_txt.TabIndex = 2
-        Me.Nom_Page_txt.TextAlign = System.Windows.Forms.HorizontalAlignment.Left
-        Me.Nom_Page_txt.UseSystemPasswordChar = False
-        '
-        'Cod_Document_txt
-        '
-        Me.Cod_Document_txt.CharacterCasing = System.Windows.Forms.CharacterCasing.Normal
-        Me.Cod_Document_txt.ContextMenuStrip = Nothing
-        Me.Cod_Document_txt.Location = New System.Drawing.Point(456, 103)
-        Me.Cod_Document_txt.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
-        Me.Cod_Document_txt.MaxLength = 32767
-        Me.Cod_Document_txt.Multiline = False
-        Me.Cod_Document_txt.Name = "Cod_Document_txt"
-        Me.Cod_Document_txt.Padding = New System.Windows.Forms.Padding(1, 0, 1, 0)
-        Me.Cod_Document_txt.PasswordChar = "" & Global.Microsoft.VisualBasic.ChrW(0)
-        Me.Cod_Document_txt.ReadOnly = False
-        Me.Cod_Document_txt.ScrollBars = System.Windows.Forms.ScrollBars.None
-        Me.Cod_Document_txt.SelectionStart = 0
-        Me.Cod_Document_txt.Size = New System.Drawing.Size(110, 24)
-        Me.Cod_Document_txt.TabIndex = 1
-        Me.Cod_Document_txt.TextAlign = System.Windows.Forms.HorizontalAlignment.Left
-        Me.Cod_Document_txt.UseSystemPasswordChar = False
-        '
-        'LabelCodDoc
-        '
-        Me.LabelCodDoc.AutoSize = True
-        Me.LabelCodDoc.Location = New System.Drawing.Point(324, 104)
-        Me.LabelCodDoc.Name = "LabelCodDoc"
-        Me.LabelCodDoc.Size = New System.Drawing.Size(125, 19)
-        Me.LabelCodDoc.TabIndex = 3
-        Me.LabelCodDoc.Text = "Code document"
-        '
-        'Cod_Page_txt
-        '
-        Me.Cod_Page_txt.CharacterCasing = System.Windows.Forms.CharacterCasing.Normal
-        Me.Cod_Page_txt.ContextMenuStrip = Nothing
-        Me.Cod_Page_txt.Location = New System.Drawing.Point(115, 34)
-        Me.Cod_Page_txt.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
-        Me.Cod_Page_txt.MaxLength = 32767
-        Me.Cod_Page_txt.Multiline = False
-        Me.Cod_Page_txt.Name = "Cod_Page_txt"
-        Me.Cod_Page_txt.Padding = New System.Windows.Forms.Padding(1, 0, 1, 0)
-        Me.Cod_Page_txt.PasswordChar = "" & Global.Microsoft.VisualBasic.ChrW(0)
-        Me.Cod_Page_txt.ReadOnly = True
-        Me.Cod_Page_txt.ScrollBars = System.Windows.Forms.ScrollBars.None
-        Me.Cod_Page_txt.SelectionStart = 0
-        Me.Cod_Page_txt.Size = New System.Drawing.Size(185, 24)
-        Me.Cod_Page_txt.TabIndex = 0
-        Me.Cod_Page_txt.TextAlign = System.Windows.Forms.HorizontalAlignment.Left
-        Me.Cod_Page_txt.UseSystemPasswordChar = False
-        '
-        'LabelCodPage
-        '
-        Me.LabelCodPage.ActiveLinkColor = System.Drawing.Color.FromArgb(CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer))
-        Me.LabelCodPage.AutoSize = True
-        Me.LabelCodPage.DisabledLinkColor = System.Drawing.Color.FromArgb(CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer))
-        Me.LabelCodPage.LinkColor = System.Drawing.Color.FromArgb(CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer))
-        Me.LabelCodPage.Location = New System.Drawing.Point(22, 37)
-        Me.LabelCodPage.Name = "LabelCodPage"
-        Me.LabelCodPage.Size = New System.Drawing.Size(90, 19)
-        Me.LabelCodPage.TabIndex = 0
-        Me.LabelCodPage.TabStop = True
-        Me.LabelCodPage.Text = "Code page"
-        Me.LabelCodPage.VisitedLinkColor = System.Drawing.Color.FromArgb(CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer))
-        '
-        'Tab_Conception
-        '
-        Me.Tab_Conception.Controls.Add(Me.GroupBox_Int)
-        Me.Tab_Conception.Location = New System.Drawing.Point(4, 28)
-        Me.Tab_Conception.Name = "Tab_Conception"
-        Me.Tab_Conception.Padding = New System.Windows.Forms.Padding(3)
-        Me.Tab_Conception.Size = New System.Drawing.Size(1242, 596)
-        Me.Tab_Conception.TabIndex = 1
-        Me.Tab_Conception.Text = "Conception de la page"
-        Me.Tab_Conception.UseVisualStyleBackColor = True
+        Me.Tab_Champs.Controls.Add(Me.SplitContainer5)
+        Me.Tab_Champs.Location = New System.Drawing.Point(4, 28)
+        Me.Tab_Champs.Name = "Tab_Champs"
+        Me.Tab_Champs.Size = New System.Drawing.Size(1242, 596)
+        Me.Tab_Champs.TabIndex = 4
+        Me.Tab_Champs.Text = "Champs de la page"
+        Me.Tab_Champs.UseVisualStyleBackColor = True
         '
         'SplitContainer5
         '
@@ -478,8 +291,8 @@ Partial Class SP_Page_Designer
         '
         Me.SplitContainer5.Panel2.Controls.Add(Me.Grd_Sources)
         Me.SplitContainer5.Panel2.Controls.Add(Me.LabelSources)
-        Me.SplitContainer5.Size = New System.Drawing.Size(1242, 468)
-        Me.SplitContainer5.SplitterDistance = 294
+        Me.SplitContainer5.Size = New System.Drawing.Size(1242, 596)
+        Me.SplitContainer5.SplitterDistance = 374
         Me.SplitContainer5.TabIndex = 0
         '
         'Grd_Champs
@@ -488,36 +301,36 @@ Partial Class SP_Page_Designer
         Me.Grd_Champs.AlternerLesLignes = False
         Me.Grd_Champs.BorderStyle = System.Windows.Forms.BorderStyle.None
         Me.Grd_Champs.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.[Single]
-        DataGridViewCellStyle7.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter
-        DataGridViewCellStyle7.BackColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
-        DataGridViewCellStyle7.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        DataGridViewCellStyle7.ForeColor = System.Drawing.Color.White
-        DataGridViewCellStyle7.Padding = New System.Windows.Forms.Padding(5)
-        DataGridViewCellStyle7.SelectionBackColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
-        DataGridViewCellStyle7.SelectionForeColor = System.Drawing.Color.White
-        DataGridViewCellStyle7.WrapMode = System.Windows.Forms.DataGridViewTriState.[True]
-        Me.Grd_Champs.ColumnHeadersDefaultCellStyle = DataGridViewCellStyle7
+        DataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter
+        DataGridViewCellStyle4.BackColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
+        DataGridViewCellStyle4.Font = New System.Drawing.Font("Century Gothic", 8.25!)
+        DataGridViewCellStyle4.ForeColor = System.Drawing.Color.White
+        DataGridViewCellStyle4.Padding = New System.Windows.Forms.Padding(5)
+        DataGridViewCellStyle4.SelectionBackColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
+        DataGridViewCellStyle4.SelectionForeColor = System.Drawing.Color.White
+        DataGridViewCellStyle4.WrapMode = System.Windows.Forms.DataGridViewTriState.[True]
+        Me.Grd_Champs.ColumnHeadersDefaultCellStyle = DataGridViewCellStyle4
         Me.Grd_Champs.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize
-        DataGridViewCellStyle8.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft
-        DataGridViewCellStyle8.BackColor = System.Drawing.SystemColors.Window
-        DataGridViewCellStyle8.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        DataGridViewCellStyle8.ForeColor = System.Drawing.SystemColors.ControlText
-        DataGridViewCellStyle8.SelectionBackColor = System.Drawing.Color.FromArgb(CType(CType(94, Byte), Integer), CType(CType(185, Byte), Integer), CType(CType(117, Byte), Integer))
-        DataGridViewCellStyle8.SelectionForeColor = System.Drawing.SystemColors.HighlightText
-        DataGridViewCellStyle8.WrapMode = System.Windows.Forms.DataGridViewTriState.[False]
-        Me.Grd_Champs.DefaultCellStyle = DataGridViewCellStyle8
+        DataGridViewCellStyle5.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft
+        DataGridViewCellStyle5.BackColor = System.Drawing.SystemColors.Window
+        DataGridViewCellStyle5.Font = New System.Drawing.Font("Century Gothic", 8.25!)
+        DataGridViewCellStyle5.ForeColor = System.Drawing.SystemColors.ControlText
+        DataGridViewCellStyle5.SelectionBackColor = System.Drawing.Color.FromArgb(CType(CType(94, Byte), Integer), CType(CType(185, Byte), Integer), CType(CType(117, Byte), Integer))
+        DataGridViewCellStyle5.SelectionForeColor = System.Drawing.SystemColors.HighlightText
+        DataGridViewCellStyle5.WrapMode = System.Windows.Forms.DataGridViewTriState.[False]
+        Me.Grd_Champs.DefaultCellStyle = DataGridViewCellStyle5
         Me.Grd_Champs.Dock = System.Windows.Forms.DockStyle.Fill
         Me.Grd_Champs.EnableHeadersVisualStyles = False
         Me.Grd_Champs.GridColor = System.Drawing.Color.FromArgb(CType(CType(179, Byte), Integer), CType(CType(216, Byte), Integer), CType(CType(228, Byte), Integer))
         Me.Grd_Champs.Location = New System.Drawing.Point(0, 25)
         Me.Grd_Champs.Name = "Grd_Champs"
         Me.Grd_Champs.RowHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.[Single]
-        DataGridViewCellStyle9.BackColor = System.Drawing.Color.FromArgb(CType(CType(169, Byte), Integer), CType(CType(210, Byte), Integer), CType(CType(224, Byte), Integer))
-        DataGridViewCellStyle9.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        Me.Grd_Champs.RowHeadersDefaultCellStyle = DataGridViewCellStyle9
+        DataGridViewCellStyle6.BackColor = System.Drawing.Color.FromArgb(CType(CType(169, Byte), Integer), CType(CType(210, Byte), Integer), CType(CType(224, Byte), Integer))
+        DataGridViewCellStyle6.Font = New System.Drawing.Font("Century Gothic", 8.25!)
+        Me.Grd_Champs.RowHeadersDefaultCellStyle = DataGridViewCellStyle6
         Me.Grd_Champs.RowHeadersVisible = False
         Me.Grd_Champs.RowHeadersWidth = 51
-        Me.Grd_Champs.Size = New System.Drawing.Size(1242, 269)
+        Me.Grd_Champs.Size = New System.Drawing.Size(1242, 349)
         Me.Grd_Champs.TabIndex = 1
         '
         'LabelChamps
@@ -536,36 +349,37 @@ Partial Class SP_Page_Designer
         Me.Grd_Sources.AlternerLesLignes = False
         Me.Grd_Sources.BorderStyle = System.Windows.Forms.BorderStyle.None
         Me.Grd_Sources.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.[Single]
-        DataGridViewCellStyle10.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter
-        DataGridViewCellStyle10.BackColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
-        DataGridViewCellStyle10.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        DataGridViewCellStyle10.ForeColor = System.Drawing.Color.White
-        DataGridViewCellStyle10.Padding = New System.Windows.Forms.Padding(5)
-        DataGridViewCellStyle10.SelectionBackColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
-        DataGridViewCellStyle10.SelectionForeColor = System.Drawing.Color.White
-        DataGridViewCellStyle10.WrapMode = System.Windows.Forms.DataGridViewTriState.[True]
-        Me.Grd_Sources.ColumnHeadersDefaultCellStyle = DataGridViewCellStyle10
+        DataGridViewCellStyle7.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter
+        DataGridViewCellStyle7.BackColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
+        DataGridViewCellStyle7.Font = New System.Drawing.Font("Century Gothic", 8.25!)
+        DataGridViewCellStyle7.ForeColor = System.Drawing.Color.White
+        DataGridViewCellStyle7.Padding = New System.Windows.Forms.Padding(5)
+        DataGridViewCellStyle7.SelectionBackColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
+        DataGridViewCellStyle7.SelectionForeColor = System.Drawing.Color.White
+        DataGridViewCellStyle7.WrapMode = System.Windows.Forms.DataGridViewTriState.[True]
+        Me.Grd_Sources.ColumnHeadersDefaultCellStyle = DataGridViewCellStyle7
         Me.Grd_Sources.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize
-        DataGridViewCellStyle11.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft
-        DataGridViewCellStyle11.BackColor = System.Drawing.SystemColors.Window
-        DataGridViewCellStyle11.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        DataGridViewCellStyle11.ForeColor = System.Drawing.SystemColors.ControlText
-        DataGridViewCellStyle11.SelectionBackColor = System.Drawing.Color.FromArgb(CType(CType(94, Byte), Integer), CType(CType(185, Byte), Integer), CType(CType(117, Byte), Integer))
-        DataGridViewCellStyle11.SelectionForeColor = System.Drawing.SystemColors.HighlightText
-        DataGridViewCellStyle11.WrapMode = System.Windows.Forms.DataGridViewTriState.[False]
-        Me.Grd_Sources.DefaultCellStyle = DataGridViewCellStyle11
+        Me.Grd_Sources.ContextMenuStrip = Me.Menu_Sources
+        DataGridViewCellStyle8.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft
+        DataGridViewCellStyle8.BackColor = System.Drawing.SystemColors.Window
+        DataGridViewCellStyle8.Font = New System.Drawing.Font("Century Gothic", 8.25!)
+        DataGridViewCellStyle8.ForeColor = System.Drawing.SystemColors.ControlText
+        DataGridViewCellStyle8.SelectionBackColor = System.Drawing.Color.FromArgb(CType(CType(94, Byte), Integer), CType(CType(185, Byte), Integer), CType(CType(117, Byte), Integer))
+        DataGridViewCellStyle8.SelectionForeColor = System.Drawing.SystemColors.HighlightText
+        DataGridViewCellStyle8.WrapMode = System.Windows.Forms.DataGridViewTriState.[False]
+        Me.Grd_Sources.DefaultCellStyle = DataGridViewCellStyle8
         Me.Grd_Sources.Dock = System.Windows.Forms.DockStyle.Fill
         Me.Grd_Sources.EnableHeadersVisualStyles = False
         Me.Grd_Sources.GridColor = System.Drawing.Color.FromArgb(CType(CType(179, Byte), Integer), CType(CType(216, Byte), Integer), CType(CType(228, Byte), Integer))
         Me.Grd_Sources.Location = New System.Drawing.Point(0, 25)
         Me.Grd_Sources.Name = "Grd_Sources"
         Me.Grd_Sources.RowHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.[Single]
-        DataGridViewCellStyle12.BackColor = System.Drawing.Color.FromArgb(CType(CType(169, Byte), Integer), CType(CType(210, Byte), Integer), CType(CType(224, Byte), Integer))
-        DataGridViewCellStyle12.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        Me.Grd_Sources.RowHeadersDefaultCellStyle = DataGridViewCellStyle12
+        DataGridViewCellStyle9.BackColor = System.Drawing.Color.FromArgb(CType(CType(169, Byte), Integer), CType(CType(210, Byte), Integer), CType(CType(224, Byte), Integer))
+        DataGridViewCellStyle9.Font = New System.Drawing.Font("Century Gothic", 8.25!)
+        Me.Grd_Sources.RowHeadersDefaultCellStyle = DataGridViewCellStyle9
         Me.Grd_Sources.RowHeadersVisible = False
         Me.Grd_Sources.RowHeadersWidth = 51
-        Me.Grd_Sources.Size = New System.Drawing.Size(1242, 145)
+        Me.Grd_Sources.Size = New System.Drawing.Size(1242, 193)
         Me.Grd_Sources.TabIndex = 1
         '
         'LabelSources
@@ -576,40 +390,37 @@ Partial Class SP_Page_Designer
         Me.LabelSources.Padding = New System.Windows.Forms.Padding(5, 3, 0, 0)
         Me.LabelSources.Size = New System.Drawing.Size(1242, 25)
         Me.LabelSources.TabIndex = 0
-        Me.LabelSources.Text = "Catalogue sécurisé des sources métier autorisées (commun à toutes les pages)."
+        Me.LabelSources.Text = "Catalogue sécurisé des sources métier autorisées (commun à toutes les pages). Double" &
+    "-clic sur 'Paramètres' pour définir les paramètres avec l'assistant."
         '
-        'Tab_Comportement
+        'Menu_Sources
         '
-        Me.Tab_Comportement.Controls.Add(Me.SplitContainer6)
-        Me.Tab_Comportement.Location = New System.Drawing.Point(4, 28)
-        Me.Tab_Comportement.Name = "Tab_Comportement"
-        Me.Tab_Comportement.Padding = New System.Windows.Forms.Padding(3)
-        Me.Tab_Comportement.Size = New System.Drawing.Size(1242, 468)
-        Me.Tab_Comportement.TabIndex = 2
-        Me.Tab_Comportement.Text = "Comportement"
-        Me.Tab_Comportement.UseVisualStyleBackColor = True
+        Me.Menu_Sources.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.MenuItem_Source_Params})
+        Me.Menu_Sources.Name = "Menu_Sources"
+        Me.Menu_Sources.Size = New System.Drawing.Size(342, 28)
         '
-        'SplitContainer6
+        'MenuItem_Source_Params
         '
-        Me.SplitContainer6.Dock = System.Windows.Forms.DockStyle.Fill
-        Me.SplitContainer6.Location = New System.Drawing.Point(3, 3)
-        Me.SplitContainer6.Name = "SplitContainer6"
-        Me.SplitContainer6.Orientation = System.Windows.Forms.Orientation.Horizontal
+        Me.MenuItem_Source_Params.Name = "MenuItem_Source_Params"
+        Me.MenuItem_Source_Params.Size = New System.Drawing.Size(341, 24)
+        Me.MenuItem_Source_Params.Text = "Définir les paramètres avec l'assistant..."
         '
-        'SplitContainer6.Panel2
+        'Tab_Conception
         '
-        Me.SplitContainer6.Panel2.Controls.Add(Me.Grd_Validations)
-        Me.SplitContainer6.Panel2.Controls.Add(Me.LabelValidations)
-        Me.SplitContainer6.Size = New System.Drawing.Size(1236, 462)
-        Me.SplitContainer6.SplitterDistance = 131
-        Me.SplitContainer6.TabIndex = 0
+        Me.Tab_Conception.Controls.Add(Me.GroupBox_Int)
+        Me.Tab_Conception.Location = New System.Drawing.Point(4, 28)
+        Me.Tab_Conception.Name = "Tab_Conception"
+        Me.Tab_Conception.Padding = New System.Windows.Forms.Padding(3)
+        Me.Tab_Conception.Size = New System.Drawing.Size(1242, 596)
+        Me.Tab_Conception.TabIndex = 1
+        Me.Tab_Conception.Text = "Conception de la page"
+        Me.Tab_Conception.UseVisualStyleBackColor = True
         '
         'GroupBox_Int
         '
-        Me.GroupBox_Int.Controls.Add(Me.Table_Ent_txt)
-        Me.GroupBox_Int.Controls.Add(Me.LabelTableEnt)
         Me.GroupBox_Int.Controls.Add(Me.Icone_cmb)
         Me.GroupBox_Int.Controls.Add(Me.Cod_Document_txt)
+        Me.GroupBox_Int.Controls.Add(Me.Btn_Workflow_Signature)
         Me.GroupBox_Int.Controls.Add(Me.LabelCodDoc)
         Me.GroupBox_Int.Controls.Add(Me.Act_Exporter_chk)
         Me.GroupBox_Int.Controls.Add(Me.LabelIcone)
@@ -619,13 +430,12 @@ Partial Class SP_Page_Designer
         Me.GroupBox_Int.Controls.Add(Me.LabelRang)
         Me.GroupBox_Int.Controls.Add(Me.Act_Enregistrer_chk)
         Me.GroupBox_Int.Controls.Add(Me.Menu_Parent_cmb)
+        Me.GroupBox_Int.Controls.Add(Me.Btn_Add_Section)
         Me.GroupBox_Int.Controls.Add(Me.LabelMenu)
         Me.GroupBox_Int.Controls.Add(Me.GED_Obligatoire_chk)
         Me.GroupBox_Int.Controls.Add(Me.GED_Actif_chk)
         Me.GroupBox_Int.Controls.Add(Me.Cod_Modele_Edition_txt)
         Me.GroupBox_Int.Controls.Add(Me.LabelModele)
-        Me.GroupBox_Int.Controls.Add(Me.Typ_Document_txt)
-        Me.GroupBox_Int.Controls.Add(Me.LabelTypDoc)
         Me.GroupBox_Int.Controls.Add(Me.Workflow_Actif_chk)
         Me.GroupBox_Int.Dock = System.Windows.Forms.DockStyle.Fill
         Me.GroupBox_Int.Location = New System.Drawing.Point(3, 3)
@@ -634,11 +444,68 @@ Partial Class SP_Page_Designer
         Me.GroupBox_Int.TabIndex = 0
         Me.GroupBox_Int.TabStop = False
         '
+        'Icone_cmb
+        '
+        Me.Icone_cmb.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed
+        Me.Icone_cmb.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
+        Me.Icone_cmb.DropDownWidth = 260
+        Me.Icone_cmb.ItemHeight = 22
+        Me.Icone_cmb.Location = New System.Drawing.Point(753, 51)
+        Me.Icone_cmb.Name = "Icone_cmb"
+        Me.Icone_cmb.Size = New System.Drawing.Size(360, 28)
+        Me.Icone_cmb.TabIndex = 4
+        '
+        'Cod_Document_txt
+        '
+        Me.Cod_Document_txt.CharacterCasing = System.Windows.Forms.CharacterCasing.Upper
+        Me.Cod_Document_txt.ContextMenuStrip = Nothing
+        Me.Cod_Document_txt.Location = New System.Drawing.Point(456, 103)
+        Me.Cod_Document_txt.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
+        Me.Cod_Document_txt.MaxLength = 10
+        Me.Cod_Document_txt.Multiline = False
+        Me.Cod_Document_txt.Name = "Cod_Document_txt"
+        Me.Cod_Document_txt.Padding = New System.Windows.Forms.Padding(1, 0, 1, 0)
+        Me.Cod_Document_txt.PasswordChar = "" & Global.Microsoft.VisualBasic.ChrW(0)
+        Me.Cod_Document_txt.ReadOnly = False
+        Me.Cod_Document_txt.ScrollBars = System.Windows.Forms.ScrollBars.None
+        Me.Cod_Document_txt.SelectionStart = 0
+        Me.Cod_Document_txt.Size = New System.Drawing.Size(110, 24)
+        Me.Cod_Document_txt.TabIndex = 1
+        Me.Cod_Document_txt.TextAlign = System.Windows.Forms.HorizontalAlignment.Left
+        Me.Cod_Document_txt.UseSystemPasswordChar = False
+        '
+        'Btn_Workflow_Signature
+        '
+        Me.Btn_Workflow_Signature.bgColor = System.Drawing.Color.FromArgb(CType(CType(250, Byte), Integer), CType(CType(250, Byte), Integer), CType(CType(250, Byte), Integer))
+        Me.Btn_Workflow_Signature.Border = RHP.ud_button.BorderStyle.All
+        Me.Btn_Workflow_Signature.BorderColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
+        Me.Btn_Workflow_Signature.BorderSize = 2
+        Me.Btn_Workflow_Signature.Cursor = System.Windows.Forms.Cursors.Hand
+        Me.Btn_Workflow_Signature.Image = Global.RHP.My.Resources.Resources.btn_sign
+        Me.Btn_Workflow_Signature.isDefault = False
+        Me.Btn_Workflow_Signature.Location = New System.Drawing.Point(572, 102)
+        Me.Btn_Workflow_Signature.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
+        Me.Btn_Workflow_Signature.Name = "Btn_Workflow_Signature"
+        Me.Btn_Workflow_Signature.Padding = New System.Windows.Forms.Padding(2)
+        Me.Btn_Workflow_Signature.Size = New System.Drawing.Size(28, 25)
+        Me.Btn_Workflow_Signature.TabIndex = 2
+        Me.Btn_Workflow_Signature.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
+        Me.Btn_Workflow_Signature.ToolTip = "Règles du workflow de signature"
+        '
+        'LabelCodDoc
+        '
+        Me.LabelCodDoc.AutoSize = True
+        Me.LabelCodDoc.Location = New System.Drawing.Point(324, 104)
+        Me.LabelCodDoc.Name = "LabelCodDoc"
+        Me.LabelCodDoc.Size = New System.Drawing.Size(118, 19)
+        Me.LabelCodDoc.TabIndex = 3
+        Me.LabelCodDoc.Text = "Type document"
+        '
         'Act_Exporter_chk
         '
         Me.Act_Exporter_chk.AutoSize = True
         Me.Act_Exporter_chk.Checked = False
-        Me.Act_Exporter_chk.Location = New System.Drawing.Point(467, 211)
+        Me.Act_Exporter_chk.Location = New System.Drawing.Point(18, 272)
         Me.Act_Exporter_chk.Margin = New System.Windows.Forms.Padding(4)
         Me.Act_Exporter_chk.MaximumSize = New System.Drawing.Size(0, 25)
         Me.Act_Exporter_chk.MinimumSize = New System.Drawing.Size(133, 25)
@@ -647,11 +514,20 @@ Partial Class SP_Page_Designer
         Me.Act_Exporter_chk.TabIndex = 10
         Me.Act_Exporter_chk.Text = "Action : Exporter"
         '
+        'LabelIcone
+        '
+        Me.LabelIcone.AutoSize = True
+        Me.LabelIcone.Location = New System.Drawing.Point(660, 55)
+        Me.LabelIcone.Name = "LabelIcone"
+        Me.LabelIcone.Size = New System.Drawing.Size(87, 19)
+        Me.LabelIcone.TabIndex = 15
+        Me.LabelIcone.Text = "Icône (MUI)"
+        '
         'Act_Imprimer_chk
         '
         Me.Act_Imprimer_chk.AutoSize = True
         Me.Act_Imprimer_chk.Checked = False
-        Me.Act_Imprimer_chk.Location = New System.Drawing.Point(28, 307)
+        Me.Act_Imprimer_chk.Location = New System.Drawing.Point(18, 301)
         Me.Act_Imprimer_chk.Margin = New System.Windows.Forms.Padding(4)
         Me.Act_Imprimer_chk.MaximumSize = New System.Drawing.Size(0, 25)
         Me.Act_Imprimer_chk.MinimumSize = New System.Drawing.Size(133, 25)
@@ -660,11 +536,22 @@ Partial Class SP_Page_Designer
         Me.Act_Imprimer_chk.TabIndex = 9
         Me.Act_Imprimer_chk.Text = "Action : Imprimer"
         '
+        'Rang_txt
+        '
+        Me.Rang_txt.Location = New System.Drawing.Point(598, 53)
+        Me.Rang_txt.Margin = New System.Windows.Forms.Padding(4)
+        Me.Rang_txt.Maximum = New Decimal(New Integer() {9999, 0, 0, 0})
+        Me.Rang_txt.Name = "Rang_txt"
+        Me.Rang_txt.Size = New System.Drawing.Size(55, 24)
+        Me.Rang_txt.TabIndex = 4
+        Me.Rang_txt.TextAlign = System.Windows.Forms.HorizontalAlignment.Center
+        Me.Rang_txt.Value = New Decimal(New Integer() {99, 0, 0, 0})
+        '
         'Act_Soumettre_chk
         '
         Me.Act_Soumettre_chk.AutoSize = True
         Me.Act_Soumettre_chk.Checked = True
-        Me.Act_Soumettre_chk.Location = New System.Drawing.Point(198, 211)
+        Me.Act_Soumettre_chk.Location = New System.Drawing.Point(18, 239)
         Me.Act_Soumettre_chk.Margin = New System.Windows.Forms.Padding(4)
         Me.Act_Soumettre_chk.MaximumSize = New System.Drawing.Size(0, 25)
         Me.Act_Soumettre_chk.MinimumSize = New System.Drawing.Size(133, 25)
@@ -673,11 +560,20 @@ Partial Class SP_Page_Designer
         Me.Act_Soumettre_chk.TabIndex = 8
         Me.Act_Soumettre_chk.Text = "Action : Soumettre en signature"
         '
+        'LabelRang
+        '
+        Me.LabelRang.AutoSize = True
+        Me.LabelRang.Location = New System.Drawing.Point(545, 53)
+        Me.LabelRang.Name = "LabelRang"
+        Me.LabelRang.Size = New System.Drawing.Size(46, 19)
+        Me.LabelRang.TabIndex = 13
+        Me.LabelRang.Text = "Rang"
+        '
         'Act_Enregistrer_chk
         '
         Me.Act_Enregistrer_chk.AutoSize = True
         Me.Act_Enregistrer_chk.Checked = True
-        Me.Act_Enregistrer_chk.Location = New System.Drawing.Point(18, 211)
+        Me.Act_Enregistrer_chk.Location = New System.Drawing.Point(18, 206)
         Me.Act_Enregistrer_chk.Margin = New System.Windows.Forms.Padding(4)
         Me.Act_Enregistrer_chk.MaximumSize = New System.Drawing.Size(0, 25)
         Me.Act_Enregistrer_chk.MinimumSize = New System.Drawing.Size(133, 25)
@@ -686,11 +582,54 @@ Partial Class SP_Page_Designer
         Me.Act_Enregistrer_chk.TabIndex = 7
         Me.Act_Enregistrer_chk.Text = "Action : Enregistrer"
         '
+        'Menu_Parent_cmb
+        '
+        Me.Menu_Parent_cmb.DataSource = Nothing
+        Me.Menu_Parent_cmb.DisplayMember = ""
+        Me.Menu_Parent_cmb.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
+        Me.Menu_Parent_cmb.DroppedDown = False
+        Me.Menu_Parent_cmb.Location = New System.Drawing.Point(130, 51)
+        Me.Menu_Parent_cmb.Margin = New System.Windows.Forms.Padding(4)
+        Me.Menu_Parent_cmb.Name = "Menu_Parent_cmb"
+        Me.Menu_Parent_cmb.SelectedIndex = -1
+        Me.Menu_Parent_cmb.SelectedItem = Nothing
+        Me.Menu_Parent_cmb.SelectedValue = Nothing
+        Me.Menu_Parent_cmb.Size = New System.Drawing.Size(372, 24)
+        Me.Menu_Parent_cmb.TabIndex = 3
+        Me.Menu_Parent_cmb.ValueMember = ""
+        '
+        'Btn_Add_Section
+        '
+        Me.Btn_Add_Section.bgColor = System.Drawing.Color.FromArgb(CType(CType(250, Byte), Integer), CType(CType(250, Byte), Integer), CType(CType(250, Byte), Integer))
+        Me.Btn_Add_Section.Border = RHP.ud_button.BorderStyle.All
+        Me.Btn_Add_Section.BorderColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
+        Me.Btn_Add_Section.BorderSize = 2
+        Me.Btn_Add_Section.Cursor = System.Windows.Forms.Cursors.Hand
+        Me.Btn_Add_Section.Image = Global.RHP.My.Resources.Resources.btn_add
+        Me.Btn_Add_Section.isDefault = False
+        Me.Btn_Add_Section.Location = New System.Drawing.Point(508, 50)
+        Me.Btn_Add_Section.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
+        Me.Btn_Add_Section.Name = "Btn_Add_Section"
+        Me.Btn_Add_Section.Padding = New System.Windows.Forms.Padding(2)
+        Me.Btn_Add_Section.Size = New System.Drawing.Size(28, 25)
+        Me.Btn_Add_Section.TabIndex = 3
+        Me.Btn_Add_Section.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
+        Me.Btn_Add_Section.ToolTip = "Ajouter une nouvelle section portail"
+        '
+        'LabelMenu
+        '
+        Me.LabelMenu.AutoSize = True
+        Me.LabelMenu.Location = New System.Drawing.Point(19, 53)
+        Me.LabelMenu.Name = "LabelMenu"
+        Me.LabelMenu.Size = New System.Drawing.Size(108, 19)
+        Me.LabelMenu.TabIndex = 11
+        Me.LabelMenu.Text = "Section portail"
+        '
         'GED_Obligatoire_chk
         '
         Me.GED_Obligatoire_chk.AutoSize = True
         Me.GED_Obligatoire_chk.Checked = False
-        Me.GED_Obligatoire_chk.Location = New System.Drawing.Point(151, 173)
+        Me.GED_Obligatoire_chk.Location = New System.Drawing.Point(182, 173)
         Me.GED_Obligatoire_chk.Margin = New System.Windows.Forms.Padding(4)
         Me.GED_Obligatoire_chk.MaximumSize = New System.Drawing.Size(0, 25)
         Me.GED_Obligatoire_chk.MinimumSize = New System.Drawing.Size(133, 25)
@@ -716,7 +655,7 @@ Partial Class SP_Page_Designer
         '
         Me.Cod_Modele_Edition_txt.CharacterCasing = System.Windows.Forms.CharacterCasing.Normal
         Me.Cod_Modele_Edition_txt.ContextMenuStrip = Nothing
-        Me.Cod_Modele_Edition_txt.Location = New System.Drawing.Point(346, 308)
+        Me.Cod_Modele_Edition_txt.Location = New System.Drawing.Point(312, 302)
         Me.Cod_Modele_Edition_txt.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
         Me.Cod_Modele_Edition_txt.MaxLength = 32767
         Me.Cod_Modele_Edition_txt.Multiline = False
@@ -734,45 +673,17 @@ Partial Class SP_Page_Designer
         'LabelModele
         '
         Me.LabelModele.AutoSize = True
-        Me.LabelModele.Location = New System.Drawing.Point(212, 312)
+        Me.LabelModele.Location = New System.Drawing.Point(178, 306)
         Me.LabelModele.Name = "LabelModele"
         Me.LabelModele.Size = New System.Drawing.Size(127, 19)
         Me.LabelModele.TabIndex = 3
         Me.LabelModele.Text = "Modèle d'édition"
         '
-        'Typ_Document_txt
-        '
-        Me.Typ_Document_txt.CharacterCasing = System.Windows.Forms.CharacterCasing.Normal
-        Me.Typ_Document_txt.ContextMenuStrip = Nothing
-        Me.Typ_Document_txt.Location = New System.Drawing.Point(456, 135)
-        Me.Typ_Document_txt.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
-        Me.Typ_Document_txt.MaxLength = 2
-        Me.Typ_Document_txt.Multiline = False
-        Me.Typ_Document_txt.Name = "Typ_Document_txt"
-        Me.Typ_Document_txt.Padding = New System.Windows.Forms.Padding(1, 0, 1, 0)
-        Me.Typ_Document_txt.PasswordChar = "" & Global.Microsoft.VisualBasic.ChrW(0)
-        Me.Typ_Document_txt.ReadOnly = False
-        Me.Typ_Document_txt.ScrollBars = System.Windows.Forms.ScrollBars.None
-        Me.Typ_Document_txt.SelectionStart = 0
-        Me.Typ_Document_txt.Size = New System.Drawing.Size(50, 24)
-        Me.Typ_Document_txt.TabIndex = 2
-        Me.Typ_Document_txt.TextAlign = System.Windows.Forms.HorizontalAlignment.Left
-        Me.Typ_Document_txt.UseSystemPasswordChar = False
-        '
-        'LabelTypDoc
-        '
-        Me.LabelTypDoc.AutoSize = True
-        Me.LabelTypDoc.Location = New System.Drawing.Point(281, 137)
-        Me.LabelTypDoc.Name = "LabelTypDoc"
-        Me.LabelTypDoc.Size = New System.Drawing.Size(171, 19)
-        Me.LabelTypDoc.TabIndex = 1
-        Me.LabelTypDoc.Text = "Type document (2 car.)"
-        '
         'Workflow_Actif_chk
         '
         Me.Workflow_Actif_chk.AutoSize = True
         Me.Workflow_Actif_chk.Checked = True
-        Me.Workflow_Actif_chk.Location = New System.Drawing.Point(18, 137)
+        Me.Workflow_Actif_chk.Location = New System.Drawing.Point(28, 98)
         Me.Workflow_Actif_chk.Margin = New System.Windows.Forms.Padding(4)
         Me.Workflow_Actif_chk.MaximumSize = New System.Drawing.Size(0, 25)
         Me.Workflow_Actif_chk.MinimumSize = New System.Drawing.Size(133, 25)
@@ -781,42 +692,55 @@ Partial Class SP_Page_Designer
         Me.Workflow_Actif_chk.TabIndex = 0
         Me.Workflow_Actif_chk.Text = "Workflow de signature actif"
         '
+        'Tab_Comportement
+        '
+        Me.Tab_Comportement.Controls.Add(Me.Grd_Validations)
+        Me.Tab_Comportement.Controls.Add(Me.LabelValidations)
+        Me.Tab_Comportement.Location = New System.Drawing.Point(4, 28)
+        Me.Tab_Comportement.Name = "Tab_Comportement"
+        Me.Tab_Comportement.Padding = New System.Windows.Forms.Padding(3)
+        Me.Tab_Comportement.Size = New System.Drawing.Size(1242, 596)
+        Me.Tab_Comportement.TabIndex = 2
+        Me.Tab_Comportement.Text = "Comportement"
+        Me.Tab_Comportement.UseVisualStyleBackColor = True
+        '
         'Grd_Validations
         '
         Me.Grd_Validations.AfficherLesEntetesLignes = True
         Me.Grd_Validations.AlternerLesLignes = False
         Me.Grd_Validations.BorderStyle = System.Windows.Forms.BorderStyle.None
         Me.Grd_Validations.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.[Single]
-        DataGridViewCellStyle13.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter
-        DataGridViewCellStyle13.BackColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
-        DataGridViewCellStyle13.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        DataGridViewCellStyle13.ForeColor = System.Drawing.Color.White
-        DataGridViewCellStyle13.Padding = New System.Windows.Forms.Padding(5)
-        DataGridViewCellStyle13.SelectionBackColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
-        DataGridViewCellStyle13.SelectionForeColor = System.Drawing.Color.White
-        DataGridViewCellStyle13.WrapMode = System.Windows.Forms.DataGridViewTriState.[True]
-        Me.Grd_Validations.ColumnHeadersDefaultCellStyle = DataGridViewCellStyle13
+        DataGridViewCellStyle10.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter
+        DataGridViewCellStyle10.BackColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
+        DataGridViewCellStyle10.Font = New System.Drawing.Font("Century Gothic", 8.25!)
+        DataGridViewCellStyle10.ForeColor = System.Drawing.Color.White
+        DataGridViewCellStyle10.Padding = New System.Windows.Forms.Padding(5)
+        DataGridViewCellStyle10.SelectionBackColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
+        DataGridViewCellStyle10.SelectionForeColor = System.Drawing.Color.White
+        DataGridViewCellStyle10.WrapMode = System.Windows.Forms.DataGridViewTriState.[True]
+        Me.Grd_Validations.ColumnHeadersDefaultCellStyle = DataGridViewCellStyle10
         Me.Grd_Validations.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize
-        DataGridViewCellStyle14.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft
-        DataGridViewCellStyle14.BackColor = System.Drawing.SystemColors.Window
-        DataGridViewCellStyle14.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        DataGridViewCellStyle14.ForeColor = System.Drawing.SystemColors.ControlText
-        DataGridViewCellStyle14.SelectionBackColor = System.Drawing.Color.FromArgb(CType(CType(94, Byte), Integer), CType(CType(185, Byte), Integer), CType(CType(117, Byte), Integer))
-        DataGridViewCellStyle14.SelectionForeColor = System.Drawing.SystemColors.HighlightText
-        DataGridViewCellStyle14.WrapMode = System.Windows.Forms.DataGridViewTriState.[False]
-        Me.Grd_Validations.DefaultCellStyle = DataGridViewCellStyle14
+        Me.Grd_Validations.ContextMenuStrip = Me.Menu_Validations
+        DataGridViewCellStyle11.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft
+        DataGridViewCellStyle11.BackColor = System.Drawing.SystemColors.Window
+        DataGridViewCellStyle11.Font = New System.Drawing.Font("Century Gothic", 8.25!)
+        DataGridViewCellStyle11.ForeColor = System.Drawing.SystemColors.ControlText
+        DataGridViewCellStyle11.SelectionBackColor = System.Drawing.Color.FromArgb(CType(CType(94, Byte), Integer), CType(CType(185, Byte), Integer), CType(CType(117, Byte), Integer))
+        DataGridViewCellStyle11.SelectionForeColor = System.Drawing.SystemColors.HighlightText
+        DataGridViewCellStyle11.WrapMode = System.Windows.Forms.DataGridViewTriState.[False]
+        Me.Grd_Validations.DefaultCellStyle = DataGridViewCellStyle11
         Me.Grd_Validations.Dock = System.Windows.Forms.DockStyle.Fill
         Me.Grd_Validations.EnableHeadersVisualStyles = False
         Me.Grd_Validations.GridColor = System.Drawing.Color.FromArgb(CType(CType(179, Byte), Integer), CType(CType(216, Byte), Integer), CType(CType(228, Byte), Integer))
         Me.Grd_Validations.Location = New System.Drawing.Point(0, 25)
         Me.Grd_Validations.Name = "Grd_Validations"
         Me.Grd_Validations.RowHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.[Single]
-        DataGridViewCellStyle15.BackColor = System.Drawing.Color.FromArgb(CType(CType(169, Byte), Integer), CType(CType(210, Byte), Integer), CType(CType(224, Byte), Integer))
-        DataGridViewCellStyle15.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        Me.Grd_Validations.RowHeadersDefaultCellStyle = DataGridViewCellStyle15
+        DataGridViewCellStyle12.BackColor = System.Drawing.Color.FromArgb(CType(CType(169, Byte), Integer), CType(CType(210, Byte), Integer), CType(CType(224, Byte), Integer))
+        DataGridViewCellStyle12.Font = New System.Drawing.Font("Century Gothic", 8.25!)
+        Me.Grd_Validations.RowHeadersDefaultCellStyle = DataGridViewCellStyle12
         Me.Grd_Validations.RowHeadersVisible = False
         Me.Grd_Validations.RowHeadersWidth = 51
-        Me.Grd_Validations.Size = New System.Drawing.Size(1236, 302)
+        Me.Grd_Validations.Size = New System.Drawing.Size(1236, 394)
         Me.Grd_Validations.TabIndex = 1
         '
         'LabelValidations
@@ -827,7 +751,20 @@ Partial Class SP_Page_Designer
         Me.LabelValidations.Padding = New System.Windows.Forms.Padding(5, 3, 0, 0)
         Me.LabelValidations.Size = New System.Drawing.Size(1236, 25)
         Me.LabelValidations.TabIndex = 0
-        Me.LabelValidations.Text = "Validations déclaratives (champs et règles globales avant enregistrement)."
+        Me.LabelValidations.Text = "Validations déclaratives (champs et règles globales avant enregistrement). Double-cl" &
+    "ic sur une cellule 'Paramètres' ou 'Condition' pour générer la syntaxe avec l'assistant."
+        '
+        'Menu_Validations
+        '
+        Me.Menu_Validations.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.MenuItem_Assistant})
+        Me.Menu_Validations.Name = "Menu_Validations"
+        Me.Menu_Validations.Size = New System.Drawing.Size(336, 28)
+        '
+        'MenuItem_Assistant
+        '
+        Me.MenuItem_Assistant.Name = "MenuItem_Assistant"
+        Me.MenuItem_Assistant.Size = New System.Drawing.Size(335, 24)
+        Me.MenuItem_Assistant.Text = "Créer / modifier une règle avec l'assistant..."
         '
         'Tab_Droits
         '
@@ -836,7 +773,7 @@ Partial Class SP_Page_Designer
         Me.Tab_Droits.Location = New System.Drawing.Point(4, 28)
         Me.Tab_Droits.Name = "Tab_Droits"
         Me.Tab_Droits.Padding = New System.Windows.Forms.Padding(3)
-        Me.Tab_Droits.Size = New System.Drawing.Size(1242, 468)
+        Me.Tab_Droits.Size = New System.Drawing.Size(1242, 596)
         Me.Tab_Droits.TabIndex = 3
         Me.Tab_Droits.Text = "Habilitations"
         Me.Tab_Droits.UseVisualStyleBackColor = True
@@ -847,36 +784,36 @@ Partial Class SP_Page_Designer
         Me.Grd_Droits.AlternerLesLignes = False
         Me.Grd_Droits.BorderStyle = System.Windows.Forms.BorderStyle.None
         Me.Grd_Droits.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.[Single]
-        DataGridViewCellStyle16.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter
-        DataGridViewCellStyle16.BackColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
-        DataGridViewCellStyle16.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        DataGridViewCellStyle16.ForeColor = System.Drawing.Color.White
-        DataGridViewCellStyle16.Padding = New System.Windows.Forms.Padding(5)
-        DataGridViewCellStyle16.SelectionBackColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
-        DataGridViewCellStyle16.SelectionForeColor = System.Drawing.Color.White
-        DataGridViewCellStyle16.WrapMode = System.Windows.Forms.DataGridViewTriState.[True]
-        Me.Grd_Droits.ColumnHeadersDefaultCellStyle = DataGridViewCellStyle16
+        DataGridViewCellStyle13.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter
+        DataGridViewCellStyle13.BackColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
+        DataGridViewCellStyle13.Font = New System.Drawing.Font("Century Gothic", 8.25!)
+        DataGridViewCellStyle13.ForeColor = System.Drawing.Color.White
+        DataGridViewCellStyle13.Padding = New System.Windows.Forms.Padding(5)
+        DataGridViewCellStyle13.SelectionBackColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
+        DataGridViewCellStyle13.SelectionForeColor = System.Drawing.Color.White
+        DataGridViewCellStyle13.WrapMode = System.Windows.Forms.DataGridViewTriState.[True]
+        Me.Grd_Droits.ColumnHeadersDefaultCellStyle = DataGridViewCellStyle13
         Me.Grd_Droits.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize
-        DataGridViewCellStyle17.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft
-        DataGridViewCellStyle17.BackColor = System.Drawing.SystemColors.Window
-        DataGridViewCellStyle17.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        DataGridViewCellStyle17.ForeColor = System.Drawing.SystemColors.ControlText
-        DataGridViewCellStyle17.SelectionBackColor = System.Drawing.Color.FromArgb(CType(CType(94, Byte), Integer), CType(CType(185, Byte), Integer), CType(CType(117, Byte), Integer))
-        DataGridViewCellStyle17.SelectionForeColor = System.Drawing.SystemColors.HighlightText
-        DataGridViewCellStyle17.WrapMode = System.Windows.Forms.DataGridViewTriState.[False]
-        Me.Grd_Droits.DefaultCellStyle = DataGridViewCellStyle17
+        DataGridViewCellStyle14.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft
+        DataGridViewCellStyle14.BackColor = System.Drawing.SystemColors.Window
+        DataGridViewCellStyle14.Font = New System.Drawing.Font("Century Gothic", 8.25!)
+        DataGridViewCellStyle14.ForeColor = System.Drawing.SystemColors.ControlText
+        DataGridViewCellStyle14.SelectionBackColor = System.Drawing.Color.FromArgb(CType(CType(94, Byte), Integer), CType(CType(185, Byte), Integer), CType(CType(117, Byte), Integer))
+        DataGridViewCellStyle14.SelectionForeColor = System.Drawing.SystemColors.HighlightText
+        DataGridViewCellStyle14.WrapMode = System.Windows.Forms.DataGridViewTriState.[False]
+        Me.Grd_Droits.DefaultCellStyle = DataGridViewCellStyle14
         Me.Grd_Droits.Dock = System.Windows.Forms.DockStyle.Fill
         Me.Grd_Droits.EnableHeadersVisualStyles = False
         Me.Grd_Droits.GridColor = System.Drawing.Color.FromArgb(CType(CType(179, Byte), Integer), CType(CType(216, Byte), Integer), CType(CType(228, Byte), Integer))
         Me.Grd_Droits.Location = New System.Drawing.Point(3, 61)
         Me.Grd_Droits.Name = "Grd_Droits"
         Me.Grd_Droits.RowHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.[Single]
-        DataGridViewCellStyle18.BackColor = System.Drawing.Color.FromArgb(CType(CType(169, Byte), Integer), CType(CType(210, Byte), Integer), CType(CType(224, Byte), Integer))
-        DataGridViewCellStyle18.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        Me.Grd_Droits.RowHeadersDefaultCellStyle = DataGridViewCellStyle18
+        DataGridViewCellStyle15.BackColor = System.Drawing.Color.FromArgb(CType(CType(169, Byte), Integer), CType(CType(210, Byte), Integer), CType(CType(224, Byte), Integer))
+        DataGridViewCellStyle15.Font = New System.Drawing.Font("Century Gothic", 8.25!)
+        Me.Grd_Droits.RowHeadersDefaultCellStyle = DataGridViewCellStyle15
         Me.Grd_Droits.RowHeadersVisible = False
         Me.Grd_Droits.RowHeadersWidth = 51
-        Me.Grd_Droits.Size = New System.Drawing.Size(1236, 404)
+        Me.Grd_Droits.Size = New System.Drawing.Size(1236, 532)
         Me.Grd_Droits.TabIndex = 0
         '
         'Panel_Droits
@@ -913,43 +850,98 @@ Partial Class SP_Page_Designer
         Me.LabelDroits.TabIndex = 1
         Me.LabelDroits.Text = resources.GetString("LabelDroits.Text")
         '
-        'Table_Ent_txt
+        'GroupBox_Def
         '
-        Me.Table_Ent_txt.CharacterCasing = System.Windows.Forms.CharacterCasing.Normal
-        Me.Table_Ent_txt.ContextMenuStrip = Nothing
-        Me.Table_Ent_txt.Location = New System.Drawing.Point(130, 21)
-        Me.Table_Ent_txt.Margin = New System.Windows.Forms.Padding(4, 5, 4, 5)
-        Me.Table_Ent_txt.MaxLength = 32767
-        Me.Table_Ent_txt.Multiline = False
-        Me.Table_Ent_txt.Name = "Table_Ent_txt"
-        Me.Table_Ent_txt.Padding = New System.Windows.Forms.Padding(1, 0, 1, 0)
-        Me.Table_Ent_txt.PasswordChar = "" & Global.Microsoft.VisualBasic.ChrW(0)
-        Me.Table_Ent_txt.ReadOnly = True
-        Me.Table_Ent_txt.ScrollBars = System.Windows.Forms.ScrollBars.None
-        Me.Table_Ent_txt.SelectionStart = 0
-        Me.Table_Ent_txt.Size = New System.Drawing.Size(216, 24)
-        Me.Table_Ent_txt.TabIndex = 20
-        Me.Table_Ent_txt.TextAlign = System.Windows.Forms.HorizontalAlignment.Left
-        Me.Table_Ent_txt.UseSystemPasswordChar = False
+        Me.GroupBox_Def.Controls.Add(Me.Statut_Page_cmb)
+        Me.GroupBox_Def.Controls.Add(Me.LabelStatut)
+        Me.GroupBox_Def.Controls.Add(Me.Nom_Page_txt)
+        Me.GroupBox_Def.Controls.Add(Me.Cod_Page_txt)
+        Me.GroupBox_Def.Controls.Add(Me.LabelCodPage)
+        Me.GroupBox_Def.Dock = System.Windows.Forms.DockStyle.Top
+        Me.GroupBox_Def.Location = New System.Drawing.Point(0, 0)
+        Me.GroupBox_Def.Name = "GroupBox_Def"
+        Me.GroupBox_Def.Size = New System.Drawing.Size(1250, 72)
+        Me.GroupBox_Def.TabIndex = 0
+        Me.GroupBox_Def.TabStop = False
+        Me.GroupBox_Def.Text = "Définition du type de document"
         '
-        'LabelTableEnt
+        'Statut_Page_cmb
         '
-        Me.LabelTableEnt.AutoSize = True
-        Me.LabelTableEnt.Location = New System.Drawing.Point(14, 21)
-        Me.LabelTableEnt.Name = "LabelTableEnt"
-        Me.LabelTableEnt.Size = New System.Drawing.Size(109, 19)
-        Me.LabelTableEnt.TabIndex = 19
-        Me.LabelTableEnt.Text = "Table d'entête"
+        Me.Statut_Page_cmb.DataSource = Nothing
+        Me.Statut_Page_cmb.DisplayMember = ""
+        Me.Statut_Page_cmb.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
+        Me.Statut_Page_cmb.DroppedDown = False
+        Me.Statut_Page_cmb.Enabled = False
+        Me.Statut_Page_cmb.Location = New System.Drawing.Point(889, 34)
+        Me.Statut_Page_cmb.Margin = New System.Windows.Forms.Padding(4)
+        Me.Statut_Page_cmb.Name = "Statut_Page_cmb"
+        Me.Statut_Page_cmb.SelectedIndex = -1
+        Me.Statut_Page_cmb.SelectedItem = Nothing
+        Me.Statut_Page_cmb.SelectedValue = Nothing
+        Me.Statut_Page_cmb.Size = New System.Drawing.Size(140, 28)
+        Me.Statut_Page_cmb.TabIndex = 5
+        Me.Statut_Page_cmb.ValueMember = ""
         '
-        'Tab_Champs
+        'LabelStatut
         '
-        Me.Tab_Champs.Controls.Add(Me.SplitContainer5)
-        Me.Tab_Champs.Location = New System.Drawing.Point(4, 28)
-        Me.Tab_Champs.Name = "Tab_Champs"
-        Me.Tab_Champs.Size = New System.Drawing.Size(1242, 468)
-        Me.Tab_Champs.TabIndex = 4
-        Me.Tab_Champs.Text = "Champs de la page"
-        Me.Tab_Champs.UseVisualStyleBackColor = True
+        Me.LabelStatut.AutoSize = True
+        Me.LabelStatut.Location = New System.Drawing.Point(841, 37)
+        Me.LabelStatut.Name = "LabelStatut"
+        Me.LabelStatut.Size = New System.Drawing.Size(50, 19)
+        Me.LabelStatut.TabIndex = 17
+        Me.LabelStatut.Text = "Statut"
+        '
+        'Nom_Page_txt
+        '
+        Me.Nom_Page_txt.CharacterCasing = System.Windows.Forms.CharacterCasing.Normal
+        Me.Nom_Page_txt.ContextMenuStrip = Nothing
+        Me.Nom_Page_txt.Location = New System.Drawing.Point(308, 34)
+        Me.Nom_Page_txt.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
+        Me.Nom_Page_txt.MaxLength = 32767
+        Me.Nom_Page_txt.Multiline = False
+        Me.Nom_Page_txt.Name = "Nom_Page_txt"
+        Me.Nom_Page_txt.Padding = New System.Windows.Forms.Padding(1, 0, 1, 0)
+        Me.Nom_Page_txt.PasswordChar = "" & Global.Microsoft.VisualBasic.ChrW(0)
+        Me.Nom_Page_txt.ReadOnly = False
+        Me.Nom_Page_txt.ScrollBars = System.Windows.Forms.ScrollBars.None
+        Me.Nom_Page_txt.SelectionStart = 0
+        Me.Nom_Page_txt.Size = New System.Drawing.Size(528, 24)
+        Me.Nom_Page_txt.TabIndex = 2
+        Me.Nom_Page_txt.TextAlign = System.Windows.Forms.HorizontalAlignment.Left
+        Me.Nom_Page_txt.UseSystemPasswordChar = False
+        '
+        'Cod_Page_txt
+        '
+        Me.Cod_Page_txt.CharacterCasing = System.Windows.Forms.CharacterCasing.Normal
+        Me.Cod_Page_txt.ContextMenuStrip = Nothing
+        Me.Cod_Page_txt.Location = New System.Drawing.Point(115, 34)
+        Me.Cod_Page_txt.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
+        Me.Cod_Page_txt.MaxLength = 32767
+        Me.Cod_Page_txt.Multiline = False
+        Me.Cod_Page_txt.Name = "Cod_Page_txt"
+        Me.Cod_Page_txt.Padding = New System.Windows.Forms.Padding(1, 0, 1, 0)
+        Me.Cod_Page_txt.PasswordChar = "" & Global.Microsoft.VisualBasic.ChrW(0)
+        Me.Cod_Page_txt.ReadOnly = True
+        Me.Cod_Page_txt.ScrollBars = System.Windows.Forms.ScrollBars.None
+        Me.Cod_Page_txt.SelectionStart = 0
+        Me.Cod_Page_txt.Size = New System.Drawing.Size(185, 24)
+        Me.Cod_Page_txt.TabIndex = 0
+        Me.Cod_Page_txt.TextAlign = System.Windows.Forms.HorizontalAlignment.Left
+        Me.Cod_Page_txt.UseSystemPasswordChar = False
+        '
+        'LabelCodPage
+        '
+        Me.LabelCodPage.ActiveLinkColor = System.Drawing.Color.FromArgb(CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer))
+        Me.LabelCodPage.AutoSize = True
+        Me.LabelCodPage.DisabledLinkColor = System.Drawing.Color.FromArgb(CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer))
+        Me.LabelCodPage.LinkColor = System.Drawing.Color.FromArgb(CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer))
+        Me.LabelCodPage.Location = New System.Drawing.Point(22, 37)
+        Me.LabelCodPage.Name = "LabelCodPage"
+        Me.LabelCodPage.Size = New System.Drawing.Size(90, 19)
+        Me.LabelCodPage.TabIndex = 0
+        Me.LabelCodPage.TabStop = True
+        Me.LabelCodPage.Text = "Code page"
+        Me.LabelCodPage.VisitedLinkColor = System.Drawing.Color.FromArgb(CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer))
         '
         'SP_Page_Designer
         '
@@ -970,28 +962,27 @@ Partial Class SP_Page_Designer
         CType(Me.Grd_Tables, System.ComponentModel.ISupportInitialize).EndInit()
         Me.Tab_Colonnes.ResumeLayout(False)
         CType(Me.Grd_Colonnes, System.ComponentModel.ISupportInitialize).EndInit()
-        Me.GroupBox_Def.ResumeLayout(False)
-        Me.GroupBox_Def.PerformLayout()
-        CType(Me.Rang_txt, System.ComponentModel.ISupportInitialize).EndInit()
-        Me.Tab_Conception.ResumeLayout(False)
+        Me.Tab_Champs.ResumeLayout(False)
         Me.SplitContainer5.Panel1.ResumeLayout(False)
         Me.SplitContainer5.Panel2.ResumeLayout(False)
         CType(Me.SplitContainer5, System.ComponentModel.ISupportInitialize).EndInit()
         Me.SplitContainer5.ResumeLayout(False)
         CType(Me.Grd_Champs, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.Grd_Sources, System.ComponentModel.ISupportInitialize).EndInit()
-        Me.Tab_Comportement.ResumeLayout(False)
-        Me.SplitContainer6.Panel2.ResumeLayout(False)
-        CType(Me.SplitContainer6, System.ComponentModel.ISupportInitialize).EndInit()
-        Me.SplitContainer6.ResumeLayout(False)
+        Me.Tab_Conception.ResumeLayout(False)
         Me.GroupBox_Int.ResumeLayout(False)
         Me.GroupBox_Int.PerformLayout()
+        CType(Me.Rang_txt, System.ComponentModel.ISupportInitialize).EndInit()
+        Me.Tab_Comportement.ResumeLayout(False)
+        Me.Menu_Validations.ResumeLayout(False)
+        Me.Menu_Sources.ResumeLayout(False)
         CType(Me.Grd_Validations, System.ComponentModel.ISupportInitialize).EndInit()
         Me.Tab_Droits.ResumeLayout(False)
         CType(Me.Grd_Droits, System.ComponentModel.ISupportInitialize).EndInit()
         Me.Panel_Droits.ResumeLayout(False)
         Me.Panel_Droits.PerformLayout()
-        Me.Tab_Champs.ResumeLayout(False)
+        Me.GroupBox_Def.ResumeLayout(False)
+        Me.GroupBox_Def.PerformLayout()
         Me.ResumeLayout(False)
 
     End Sub
@@ -1011,9 +1002,11 @@ Partial Class SP_Page_Designer
     Friend WithEvents Cod_Page_txt As ud_TextBox
     Friend WithEvents LabelCodPage As LinkLabel
     Friend WithEvents Cod_Document_txt As ud_TextBox
+    Friend WithEvents Btn_Workflow_Signature As ud_button
     Friend WithEvents LabelCodDoc As Label
     Friend WithEvents Nom_Page_txt As ud_TextBox
     Friend WithEvents Menu_Parent_cmb As ud_ComboBox
+    Friend WithEvents Btn_Add_Section As ud_button
     Friend WithEvents LabelMenu As Label
     Friend WithEvents Rang_txt As NumericUpDown
     Friend WithEvents LabelRang As Label
@@ -1031,8 +1024,6 @@ Partial Class SP_Page_Designer
     Friend WithEvents LabelSources As Label
     Friend WithEvents GroupBox_Int As GroupBox
     Friend WithEvents Workflow_Actif_chk As ud_CheckBox
-    Friend WithEvents Typ_Document_txt As ud_TextBox
-    Friend WithEvents LabelTypDoc As Label
     Friend WithEvents Cod_Modele_Edition_txt As ud_TextBox
     Friend WithEvents LabelModele As Label
     Friend WithEvents GED_Actif_chk As ud_CheckBox
@@ -1044,7 +1035,10 @@ Partial Class SP_Page_Designer
     Friend WithEvents Grd_Validations As ud_Grd
     Friend WithEvents LabelValidations As Label
     Friend WithEvents SplitContainer5 As SplitContainer
-    Friend WithEvents SplitContainer6 As SplitContainer
+    Friend WithEvents Menu_Validations As ContextMenuStrip
+    Friend WithEvents MenuItem_Assistant As ToolStripMenuItem
+    Friend WithEvents Menu_Sources As ContextMenuStrip
+    Friend WithEvents MenuItem_Source_Params As ToolStripMenuItem
     Friend WithEvents Grd_Tables_Cod_Table As DataGridViewTextBoxColumn
     Friend WithEvents Grd_Tables_Nom_Physique As DataGridViewTextBoxColumn
     Friend WithEvents Grd_Tables_Role_Table As DataGridViewTextBoxColumn
@@ -1120,7 +1114,5 @@ Partial Class SP_Page_Designer
     Friend WithEvents Grd_Sources_Typ_Retour As DataGridViewTextBoxColumn
     Friend WithEvents Grd_Sources_Cod_Profile As DataGridViewTextBoxColumn
     Friend WithEvents Grd_Sources_Actif As DataGridViewCheckBoxColumn
-    Friend WithEvents Table_Ent_txt As ud_TextBox
-    Friend WithEvents LabelTableEnt As Label
     Friend WithEvents Tab_Champs As TabPage
 End Class

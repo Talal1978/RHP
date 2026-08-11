@@ -1,0 +1,208 @@
+# =============================================================================
+# Exemple 02 - "Demande de teletravail" (TELETRAVAIL) - package complet genere
+# Demontre : ENT + DET, zoom, dates, calcule persiste (agregat), source metier
+#            pre-existante (solde_conge, seedee par 001), validations EXPR /
+#            NB_LIGNES / BETWEEN / REQUIRED, workflow actif, droits profil '1'.
+# =============================================================================
+request:
+  operation: create
+  environment: development
+  dry_run: true
+  requested_by: SCRIPT
+  change_reference: "EXEMPLE-02"
+
+page:
+  page_code: TELETRAVAIL
+  document_code: TT
+  page_name: "Demande de télétravail"
+  short_title: "Télétravail"
+  title: "Télétravail"
+  description: "Demande de télétravail : periode, jours concernes et soumission au workflow."
+  route: ""
+  target_section_id: null
+  target_section_code: MesDemandes
+  icon: "HomeWork"
+  layout_type: standard
+  display_order: 95
+  enabled: true
+  actions:
+    save: true
+    submit: true
+    print: false
+    export: false
+  attachments:
+    enabled: false
+    categories: []
+    required: false
+  workflow:
+    enabled: true
+
+components:
+  - component_code: Matricule
+    component_type: zoom
+    label: "Matricule"
+    layout: { width: 3, display_order: 1 }
+    properties:
+      sql_type: nvarchar
+      length: 20
+      nullable: false
+      default: "GV_MATRICULE"
+      zoom: "MS067"
+      help: "Agent concerné (zoom MS067)"
+      grid_order: 1
+      is_criteria: true
+      criteria_order: 1
+    required: true
+  - component_code: Dat_Debut
+    component_type: date
+    label: "Date de début"
+    layout: { width: 3, display_order: 2 }
+    properties:
+      sql_type: date
+      default: "GV_NOW"
+      grid_order: 2
+      is_criteria: true
+      criteria_order: 2
+    required: true
+  - component_code: Dat_Fin
+    component_type: date
+    label: "Date de fin"
+    layout: { width: 3, display_order: 3 }
+    properties: { sql_type: date, grid_order: 3 }
+    required: true
+  - component_code: Nb_Jours
+    component_type: calculated
+    label: "Nombre de jours"
+    layout: { width: 3, display_order: 4 }
+    visible: true
+    editable: false
+    properties:
+      sql_type: decimal
+      precision: 5
+      scale: 1
+      formula: { "op": "SUM", "table": "JOURS", "colonne": "Nb" }
+      persist: true
+      decimals: 1
+      grid_order: 4
+      help: "Somme des jours de télétravail saisis"
+  - component_code: Solde_Conge
+    component_type: source
+    label: "Solde de congés"
+    layout: { width: 3, display_order: 5 }
+    visible: true
+    editable: false
+    data_source_code: solde_conge
+    properties:
+      formula: { "source": "solde_conge", "mapping": { "Matricule": { "ref": "Matricule" } } }
+      visible_in_grid: false
+      help: "Solde de congés de l'agent (source métier solde_conge)"
+  - component_code: Motif
+    component_type: memo
+    label: "Motif"
+    layout: { width: 6, display_order: 6 }
+    properties: { sql_type: nvarchar, length: 300, grid_order: 5 }
+  - component_code: JOURS
+    component_type: detail_grid
+    label: "Jours de télétravail"
+    layout: { display_order: 1 }
+    properties:
+      allow_add: true
+      allow_edit: true
+      allow_delete: true
+      allow_duplicate: false
+      delete_rule: CASCADE
+      default_sort: "Dat_Jour asc"
+  - component_code: L_Dat_Jour
+    component_type: date
+    label: "Jour"
+    target_block: JOURS
+    column_name: Dat_Jour
+    layout: { display_order: 1 }
+    properties: { sql_type: date, grid_order: 1, grid_width_em: 12 }
+    required: true
+  - component_code: L_Nb
+    component_type: decimal
+    label: "Quotité"
+    target_block: JOURS
+    column_name: Nb
+    layout: { display_order: 2 }
+    properties:
+      sql_type: float
+      decimals: 1
+      grid_order: 2
+      grid_width_em: 6
+      grid_total: SUM
+      help: "1 = journée ; 0,5 = demi-journée"
+    required: true
+  - component_code: L_Commentaire
+    component_type: text
+    label: "Commentaire"
+    target_block: JOURS
+    column_name: Commentaire
+    layout: { display_order: 3 }
+    properties: { sql_type: nvarchar, length: 200, grid_order: 3, grid_width_em: 30 }
+
+page_validations:
+  - code: V01_MATRICULE
+    scope: CHAMP
+    target_block: ENT
+    target_field: Matricule
+    type: REQUIRED
+    message: "Le matricule est obligatoire."
+    level: B
+    moment: SAVE
+  - code: V02_DATES
+    scope: DOCUMENT
+    target_block: ENT
+    type: EXPR
+    parameters: { expr: { "op": "GE", "args": [ { "ref": "Dat_Fin" }, { "ref": "Dat_Debut" } ] } }
+    message: "La date de fin doit être postérieure ou égale à la date de début."
+    level: B
+    moment: SAVE
+  - code: V03_NB_JOURS
+    scope: DETAIL
+    target_block: JOURS
+    type: NB_LIGNES
+    parameters: { min: 1 }
+    message: "Au moins un jour de télétravail est requis."
+    level: B
+    moment: SAVE
+  - code: V04_QUOTITE
+    scope: LIGNE
+    target_block: JOURS
+    target_field: L_Nb
+    type: BETWEEN
+    parameters: { min: 0, max: 1 }
+    message: "Quotité inhabituelle (attendu : 0,5 ou 1)."
+    level: W
+    moment: SAVE
+
+data_sources:
+  - data_source_code: solde_conge
+    label: "Solde de congé de l'agent"
+    source_type: sql
+    reference: "select Solde_Conge from dbo.Sys_Rh_Conge(@id_Societe, convert(date, getdate())) where Matricule = @Matricule"
+    parameters:
+      - { name: Matricule, type: nvarchar, required: true }
+    return_type: scalar
+    profile: ""
+    allowed_operations: { read: true, create: false, update: false, delete: false }
+
+access_control:
+  default_policy: deny
+  roles:
+    - role_code: "1"
+      permissions:
+        view: true
+        create: true
+        update: true
+        delete: true
+        export: false
+        submit: true
+        attachments: false
+
+deployment:
+  update_if_exists: false
+  expected_schema_version: SP3
+  use_feature_flag: false
+  feature_flag_code: ""

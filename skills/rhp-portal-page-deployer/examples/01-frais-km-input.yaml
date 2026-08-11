@@ -1,0 +1,197 @@
+# =============================================================================
+# Exemple 01 - "Note de frais kilometriques" (FRAIS_KM)
+# Cet input reproduit la page officielle du depot :
+#   RHP_Portail\rhpBE\sql\SP_Designer\002_SP_Designer_Exemple_FKM.sql
+#   (+ 003_SP_Designer_Criteres.sql pour estCritere/Rang_Critere)
+# Usage : generer le package avec le skill, puis comparer deploy.sql au script
+# 002 (oracle). Les ecarts doivent etre cosmetiques uniquement.
+# =============================================================================
+request:
+  operation: create
+  environment: development
+  dry_run: true
+  requested_by: SCRIPT
+  change_reference: "EXEMPLE-01"
+
+page:
+  page_code: FRAIS_KM
+  document_code: FKM
+  page_name: "Note de frais kilométriques"
+  short_title: "Frais KM"
+  title: "Frais kilométriques"
+  description: "Saisie des notes de frais kilométriques avec calcul des montants."
+  route: ""
+  target_section_id: null
+  target_section_code: MesDemandes
+  icon: "Commute"
+  layout_type: standard
+  display_order: 90
+  enabled: true
+  actions:
+    save: true
+    submit: true
+    print: false
+    export: false
+  attachments:
+    enabled: true
+    categories: []
+    required: false
+  workflow:
+    enabled: true
+
+components:
+  - component_code: Matricule
+    component_type: zoom
+    label: "Matricule"
+    layout: { width: 3, display_order: 1 }
+    properties:
+      sql_type: nvarchar
+      length: 20
+      nullable: false
+      default: "GV_MATRICULE"
+      zoom: "MS067"
+      help: "Choisir l'agent via le zoom MS067"
+      grid_order: 1
+      is_criteria: true
+      criteria_order: 1
+    required: true
+  - component_code: Dat_Demande
+    component_type: date
+    label: "Date de demande"
+    layout: { width: 3, display_order: 2 }
+    properties:
+      sql_type: date
+      default: "GV_NOW"
+      grid_order: 2
+      is_criteria: true
+      criteria_order: 2
+  - component_code: Commentaire
+    component_type: memo
+    label: "Commentaire"
+    layout: { width: 6, display_order: 3 }
+    properties:
+      sql_type: nvarchar
+      length: 300
+      grid_order: 3
+  - component_code: Total
+    component_type: calculated
+    label: "Total frais"
+    layout: { width: 3, display_order: 4 }
+    visible: true
+    editable: false
+    properties:
+      sql_type: decimal
+      precision: 18
+      scale: 2
+      formula: { "op": "SUM", "table": "LIGNES", "colonne": "Mnt" }
+      persist: true
+      format: "MNT"
+      decimals: 2
+      grid_order: 4
+      help: "Somme des montants des trajets"
+  - component_code: LIGNES
+    component_type: detail_grid
+    label: "Trajets parcourus"
+    layout: { display_order: 1 }
+    properties:
+      allow_add: true
+      allow_edit: true
+      allow_delete: true
+      allow_duplicate: true
+      delete_rule: CASCADE
+  - component_code: L_Trajet
+    component_type: text
+    label: "Trajet"
+    target_block: LIGNES
+    column_name: Trajet
+    layout: { display_order: 1 }
+    properties: { sql_type: nvarchar, length: 100, grid_order: 1, grid_width_em: 20 }
+  - component_code: L_Km
+    component_type: decimal
+    label: "Km"
+    target_block: LIGNES
+    column_name: Km
+    layout: { display_order: 2 }
+    properties: { sql_type: float, decimals: 2, grid_order: 2, grid_width_em: 5 }
+  - component_code: L_Tx
+    component_type: decimal
+    label: "Taux / km"
+    target_block: LIGNES
+    column_name: Tx
+    layout: { display_order: 3 }
+    properties: { sql_type: float, decimals: 2, grid_order: 3, grid_width_em: 5 }
+  - component_code: L_Mnt
+    component_type: calculated
+    label: "Montant"
+    target_block: LIGNES
+    column_name: Mnt
+    layout: { display_order: 4 }
+    visible: true
+    editable: false
+    properties:
+      sql_type: decimal
+      precision: 18
+      scale: 2
+      formula: { "op": "ROUND", "args": [ { "op": "MUL", "args": [ { "ref": "Km" }, { "ref": "Tx" } ] }, { "const": 2 } ] }
+      persist: true
+      decimals: 2
+      grid_order: 4
+      grid_width_em: 8
+      grid_total: SUM
+      help: "Montant = Km x Taux"
+
+page_validations:
+  - code: V01_MATRICULE
+    scope: CHAMP
+    target_block: ENT
+    target_field: Matricule
+    type: REQUIRED
+    message: "Le matricule est obligatoire."
+    level: B
+    moment: SAVE
+  - code: V02_NB_LIGNES
+    scope: DETAIL
+    target_block: LIGNES
+    type: NB_LIGNES
+    parameters: { min: 1 }
+    message: "Au moins une ligne de trajet est requise."
+    level: B
+    moment: SAVE
+  - code: V03_KM_MAX
+    scope: LIGNE
+    target_block: LIGNES
+    target_field: L_Km
+    type: BETWEEN
+    parameters: { min: 0, max: 1000 }
+    message: "Kilométrage inhabituel (attendu entre 0 et 1000 km)."
+    level: W
+    moment: SAVE
+  - code: V04_TOTAL
+    scope: DOCUMENT
+    target_block: ENT
+    type: EXPR
+    parameters: { expr: { "op": "GE", "args": [ { "ref": "Total" }, { "const": 0 } ] } }
+    message: "Le total ne peut pas être négatif."
+    level: B
+    moment: SAVE
+
+data_sources: []
+
+access_control:
+  default_policy: deny
+  roles:
+    - role_code: "1"
+      permissions:
+        view: true
+        create: true
+        update: true
+        delete: true
+        export: true
+        submit: true
+        attachments: true
+
+deployment:
+  update_if_exists: true   # l'exemple officiel est re-executable (002 est idempotent)
+  expected_schema_version: SP3
+  use_feature_flag: false
+  feature_flag_code: ""

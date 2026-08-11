@@ -65,12 +65,14 @@ function ligneInitiale(meta: TSpMeta, codTable: string): ObjetGenerique {
     .forEach((c) => { l[c.Nom_Colonne] = valeurInitiale(c); });
   return l;
 }
-/** Mapping Typ_Sql -> dataType de la Grille partagée. */
+/** Mapping Typ_Sql -> dataType de la Grille partagée.
+ *  La distinction datetime (avec heure) / smalldatetime-date (sans heure) est préservée. */
 function dataTypeGrille(typSql: string): TColonne["dataType"] {
   switch ((typSql ?? "").toLowerCase()) {
     case "int": case "bigint": return "int";
     case "float": case "decimal": return "float";
-    case "date": case "datetime": case "smalldatetime": return "datetime";
+    case "datetime": case "datetime2": return "datetime";
+    case "date": case "smalldatetime": return "smalldatetime";
     case "bit": return "bit";
     default: return "nvarchar";
   }
@@ -388,6 +390,8 @@ const DynamicPage = ({ codPage }: { codPage: string }) => {
       if (rslSave?.data?.result) {
         const numN = rslSave.data.data?.[0]?.Num_Doc;
         if (numN && numN !== currentNum) {
+          // Affiche immédiatement le numéro généré (sans attendre le rechargement déclenché par l'URL)
+          setEntete((prv) => ({ ...prv, Num_Doc: numN }));
           navigate(`/myspace/${nameEcran}/${meta.page.Nom_Page}/${numN}`, { replace: true });
         } else {
           await loadData();

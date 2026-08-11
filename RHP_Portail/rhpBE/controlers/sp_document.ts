@@ -66,7 +66,34 @@ export async function sp_menu_portail(req: Request, res: Response) {
     rang: p.Rang,
     img: p.Icone ?? "",
   }));
-  return res.send({ result: true, data: menus, fields: [], sort: "succès" });
+  // Sections créées depuis le Designer (rubrique SP_Menu_Portail) : racines du
+  // menu latéral. Seules les sections contenant au moins une page publiée visible
+  // par le profil sont retournées (une section vide ne mène nulle part). Marquées
+  // dyn:true pour que le client puisse les distinguer des sections de menus.json.
+  const rslSections = await lireSql(
+    `select r.Valeur, r.Membre, r.Rang
+     from Param_Rubriques r
+     where r.Nom_Controle='SP_Menu_Portail'
+       and exists (select 1 from SP_Page p
+                   where p.Menu_Parent = r.Valeur and p.Statut_Page='PUBLIE'
+                     and ( @p_pr = '1'
+                           or isnull(p.Acces_Personnalise,'true')='false'
+                           or exists (select 1 from SP_Page_Droit d
+                                      where d.Cod_Page=p.Cod_Page and d.Cod_Profile=@p_pr
+                                        and isnull(d.Consulter,'false')='true') ))
+     order by r.Rang, r.Membre`,
+    [{ param: "p_pr", sqlType: sql.NVarChar, valeur: String(codProfile ?? "") }]
+  );
+  const sections = (rslSections.data ?? []).map((s: any) => ({
+    name_ecran: String(s.Valeur ?? ""),
+    text_ecran: String(s.Membre ?? ""),
+    typ_ecran: "MNU",
+    parent: "",
+    rang: s.Rang ?? 99,
+    img: "",
+    dyn: true,
+  }));
+  return res.send({ result: true, data: [...sections, ...menus], fields: [], sort: "succès" });
 }
 
 /* -------------------------------------------------------------------------- */

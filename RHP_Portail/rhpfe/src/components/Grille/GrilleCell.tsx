@@ -3,7 +3,7 @@ import {
   CheckBoxOutlined,
 } from "@mui/icons-material";
 import { TGrilleCell, cntx } from "./Grille";
-import { formatDateForInput, formatDateFR } from "../../modules/module_formats";
+import { formatDateForInput, formatDateFR, formatDateTimeForInput } from "../../modules/module_formats";
 import { memo, useContext, useRef } from "react";
 
 const GrilleCell = ({
@@ -49,10 +49,13 @@ const GrilleCell = ({
     } else if (typ?.dataType === "bit") {
       return row[col] ? <CheckBoxOutlined /> : <CheckBoxOutlineBlankOutlined />;
     } else if (typ?.dataType?.includes("date")) {
+      // Convention : "datetime"/"datetime2" = date + heure, "date"/"smalldatetime" = date seule
+      const showTime =
+        typ?.dataType === "datetime" || typ?.dataType === "datetime2";
       if (editMode && !typ.readOnly) {
         return (
           <input
-            type="date"
+            type={showTime ? "datetime-local" : "date"}
             ref={myInput}
             onKeyDown={handleKeyDown}
             onChange={(e) => {
@@ -64,7 +67,11 @@ const GrilleCell = ({
                   valeur: e.target.value,
                 });
             }}
-            value={formatDateForInput(row[col])}
+            value={
+              showTime
+                ? formatDateTimeForInput(row[col])
+                : formatDateForInput(row[col])
+            }
             placeholder="dd/mm/yy"
             style={{
               width: "100%",
@@ -78,7 +85,7 @@ const GrilleCell = ({
       } else {
         return (
           <div style={{ width: "100%", textAlign: align }}>
-            {formatDateFR(row[col])}
+            {formatDateFR(row[col], showTime)}
           </div>
         );
       }

@@ -71,9 +71,13 @@ const DynamicField = ({
           valeur={valeur ?? ""} readonly={readonly} onchange={onchange} style={stylePlein} />
       );
     case "DATE":
-    case "DATETIME":
       return (
         <CalendarZoom nomControle={nom} label={label} valeur={valeur || ""} readOnly={readonly}
+          onchange={onchange} onClear={() => onchange(nom, "")} sx={{ width: "100%" }} />
+      );
+    case "DATETIME":
+      return (
+        <CalendarZoom nomControle={nom} label={label} valeur={valeur || ""} readOnly={readonly} showTime
           onchange={onchange} onClear={() => onchange(nom, "")} sx={{ width: "100%" }} />
       );
     case "CHECK":

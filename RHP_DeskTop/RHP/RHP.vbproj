@@ -658,12 +658,16 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Portail\Module_SP_DDL.vb" />
+    <Compile Include="Portail\SP_Assistant_ParamSource.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Portail\SP_Assistant_Validation.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Portail\SP_Page_Designer.Designer.vb">
       <DependentUpon>SP_Page_Designer.vb</DependentUpon>
     </Compile>
-    <Compile Include="Portail\SP_Page_Designer.vb">
-      <SubType>Form</SubType>
-    </Compile>
+    <Compile Include="Portail\SP_Page_Designer.vb" />
     <Compile Include="Outillage\RH_Outillage_Mouvement.Designer.vb">
       <DependentUpon>RH_Outillage_Mouvement.vb</DependentUpon>
     </Compile>

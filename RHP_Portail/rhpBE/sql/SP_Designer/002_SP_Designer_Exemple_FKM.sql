@@ -25,7 +25,7 @@ BEGIN
         Statut_Page, Table_Ent, Typ_Document, Workflow_Actif, Cod_Modele_Edition, GED_Actif, GED_Obligatoire,
         Act_Enregistrer, Act_Soumettre, Act_Imprimer, Act_Exporter, DDL_Genere, Dat_Crea, Created_By)
     VALUES (@CP, 'FKM', 'Note de frais kilométriques', 'Frais KM', 'Frais kilométriques', 'MesDemandes', 90, 'Commute',
-        'BROUILLON', 'SP_FKM_Ent', 'FK', 'true', NULL, 'true', 'false',
+        'BROUILLON', 'SP_FKM_Ent', 'FKM', 'true', NULL, 'true', 'false',
         'true', 'true', 'false', 'false', 'true', GETDATE(), 'SCRIPT');
 END
 
@@ -140,11 +140,12 @@ IF NOT EXISTS (SELECT 1 FROM Controle_Def_Ecran WHERE Name_Ecran = 'SPP_FRAIS_KM
     VALUES ('SPP_FRAIS_KM', 'SP_FKM_Ent', 'Num_Doc', '', 'Num_Doc', 'false', 'true', 'true', GETDATE(), 'SCRIPT');
 
 -- Déclaration du type de document au moteur de workflow existant
--- (le circuit de signataires se paramètre ensuite via l'écran Workflow_Signatures)
-IF NOT EXISTS (SELECT 1 FROM Param_Workflow_Typ_Document WHERE Typ_Document = 'FK')
+-- (code unique de la page = code workflow ; le circuit de signataires se
+--  paramètre ensuite via l'écran Workflow_Signatures)
+IF NOT EXISTS (SELECT 1 FROM Param_Workflow_Typ_Document WHERE Typ_Document = 'FKM')
     INSERT INTO Param_Workflow_Typ_Document
         (Typ_Document, Intitule, Table_Ref, Table_Index, Accepte_Detail, Name_Ecran, Index_Ecran, Champs_Proprietaire, id_Societe)
-    VALUES ('FK', 'Note de frais kilométriques', 'SP_FKM_Ent', 'Num_Doc', 'false', 'SPP_FRAIS_KM', 'Num_Doc', 'Created_By', -1);
+    VALUES ('FKM', 'Note de frais kilométriques', 'SP_FKM_Ent', 'Num_Doc', 'false', 'SPP_FRAIS_KM', 'Num_Doc', 'Created_By', -1);
 
 COMMIT TRANSACTION;
 GO

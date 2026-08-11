@@ -1,0 +1,211 @@
+# =============================================================================
+# RHP Portal Page Deployer - Input template
+# -----------------------------------------------------------------------------
+# YAML or JSON accepted. Natural language is NOT accepted directly: convert it
+# to this structure first, then validate (scripts/validate_input.py).
+#
+# Conventions:
+#   (r)  required - blocking error if missing/empty
+#   (o)  optional - defaults shown
+#   (x)  extension to the base contract (RHP-specific, optional)
+# Keys marked [UNSUPPORTED] exist for contract compatibility only; keep their
+# neutral value. See references/schema-mapping.md for the why.
+# =============================================================================
+
+request:
+  operation: create            # (r) create | update | disable
+                               #     create  : new page; fails if Cod_Page exists
+                               #               unless deployment.update_if_exists=true
+                               #     update  : requires the page to exist; rewrites
+                               #               metadata collections, migrates DDL (ADD only)
+                               #     disable : only sets Statut_Page='DESACTIVE'
+  environment: development     # (r) development | test | production
+                               #     production => extra confirmations in the manifest
+  dry_run: true                # (r) true  => deploy script ends with ROLLBACK
+                               #     false => deploy script ends with COMMIT
+  requested_by: ""             # (r) login written to Created_By/Modified_By
+                               #     (RHP scripts use 'SCRIPT')
+  change_reference: ""         # (r) ticket/change id, echoed in headers + DDL log
+
+page:
+  page_code: ""                # (r) => SP_Page.Cod_Page. [A-Za-z_][A-Za-z0-9_]{0,29},
+                               #     must NOT start with 'Page' (CK_SP_Page_Ident). Immutable.
+  document_code: ""            # (r)(x) => SP_Page.Cod_Document (1..10 chars, unique).
+                               #     Drives physical names: SP_<document_code>_Ent ...
+  page_name: ""                # (r) => SP_Page.Libelle (full functional label, <=150)
+  short_title: ""              # (o)(x) => SP_Page.Libelle_Court (<=50; default = page_name truncated)
+  title: ""                    # (r) => SP_Page.Nom_Page (portal menu title, <=60)
+  description: ""              # (o) NOT persisted (no such column - verified).
+                               #     Emitted in script header + DDL log message only.
+  route: ""                    # [UNSUPPORTED] RHP routes are conventional:
+                               #   list  = /myspace/SPPL_<page_code>/<titre>
+                               #   document = /myspace/SPP_<page_code>/<titre>/<num?>
+                               #     Any non-empty value is validated against this rule.
+  target_section_id: null      # [UNSUPPORTED] keep null - sections have no surrogate id.
+  target_section_code: ""      # (r) => SP_Page.Menu_Parent. Must be a Valeur of the
+                               #     SP_Menu_Portail rubrique (verified list:
+                               #     orga, MesDemandes, mesConsultations, mesEvaluations,
+                               #     Recrutement_fdr, MesDeclarationsAT, DiverseEditions,
+                               #     Discipline_fdr, Outillage, Communication, Sante)
+                               #     OR created when create_section_if_missing=true.
+  create_section_if_missing: false  # (o)(x) insert a new SP_Menu_Portail rubrique row
+  new_section_label: ""        # (r if create_section_if_missing) rubrique Membre
+  icon: ""                     # (o)(x) => SP_Page.Icone (MUI icon name, e.g. 'Commute')
+  layout_type: standard        # (o) hint only, NOT persisted: standard | wide | compact
+                               #     standard : fields default Largeur 3
+                               #     wide     : fields default Largeur 6
+                               #     compact  : fields default Largeur 2
+  display_order: null          # (o) => SP_Page.Rang (int, default 99)
+  enabled: true                # (o) true  => full publication on first deployment
+                               #     false => metadata deployed as BROUILLON (not visible)
+
+  actions:                     # (o)(x) page action flags
+    save: true                 #   => Act_Enregistrer
+    submit: false              #   => Act_Soumettre (requires workflow.enabled=true)
+    print: false               #   => Act_Imprimer (requires print_model)
+    export: false              #   => Act_Exporter (metadata only in current frontend)
+  print_model: ""              # (o)(x) => Cod_Modele_Edition = Param_Mod_Edition.Cod_Report
+  attachments:                 # (o)(x) GED (pieces jointes)
+    enabled: false             #   => GED_Actif (sets Controle_Def_Ecran.PJ at publication)
+    categories: []             #   => GED_Categories (json array of strings)
+    required: false            #   => GED_Obligatoire
+  workflow:                    # (o)(x)
+    enabled: false             #   => Workflow_Actif; registers Param_Workflow_Typ_Document
+                               #   NOTE: the signature circuit (Workflow_Signatures*) is
+                               #   NOT generated; configure it post-deploy via the
+                               #   Workflow_Signatures screen (see 004_FKM_Workflow_Signature.sql).
+
+# -----------------------------------------------------------------------------
+# components: UI fields + structural blocks.
+# component_type whitelist (=> SP_Page_Champ.Typ_Controle):
+#   text->TEXT  memo->MEMO  integer->INT  decimal->DEC  money->MNT
+#   date->DATE  datetime->DATETIME  checkbox->CHECK  radio->RADIO
+#   combo->COMBO  reference_list->RUBRIQUE  zoom->ZOOM
+#   calculated->CALCULE  source->SOURCE  attachments->GED
+#   detail_grid->(structural: creates an SP_Page_Table DET block; children
+#                reference it via target_block)
+# -----------------------------------------------------------------------------
+components:
+  - component_code: ""         # (r) => Cod_Champ; default => Nom_Colonne
+    component_type: ""         # (r) whitelist above
+    label: ""                  # (r) => Libelle
+    target_block: ENT          # (o)(x) ENT or the component_code of a detail_grid
+    column_name: ""            # (o)(x) => Nom_Colonne (default = component_code)
+    layout:
+      row: null                # (o) => Ligne   (sort only - flow layout, no absolute position)
+      column: null             # (o) => Colonne (sort only)
+      width: null              # (o) => Largeur, 1..12 (default from layout_type, else 3)
+      height: null             # [UNSUPPORTED] no height concept in RHP layout
+      display_order: null      # (o) => Rang (default = position in this list)
+    properties:                # (o) type-specific keys (all optional unless noted):
+      sql_type: ""             #   nvarchar|int|bigint|float|decimal|bit|date|datetime|smalldatetime
+      length: null             #   nvarchar length (-1 = max, clamped 1..4000)
+      precision: null          #   decimal precision (default 18)
+      scale: null              #   decimal scale (default 2)
+      nullable: true           #   physical column nullability (false => DF default added)
+      default: ""              #   => Valeur_Defaut; constants or GV_MATRICULE/GV_NOW/GV_LOGIN
+      help: ""                 #   => Aide (<=300)
+      rubrique: ""             #   (r for radio, reference_list) Param_Rubriques.Nom_Controle
+      zoom: ""                 #   (r for zoom, combo) Controle_Def_Zoom.Num_Zoom
+      zoom_return: {}          #   => Zoom_Retour json {"ChampCible":"ColonneZoom"}
+      formula: {}              #   (r for calculated; required mapping for source)
+                               #     declarative AST, whitelisted ops only:
+                               #     logical: AND OR NOT EQ NE GT GE LT LE IN EMPTY NOTEMPTY CONTIENT
+                               #     calc:    ADD SUB MUL DIVSAFE COND SUM AVG MIN MAX COUNT ROUND ABS REF CONST
+                               #     operands: {"ref":"Colonne"} {"const":123} {"op":...,"args":[...]}
+                               #     aggregate: {"op":"SUM","table":"LIGNES","colonne":"Mnt"}
+                               #     source mapping: {"source":"<code>","mapping":{"Param":{"ref":"Colonne"}}}
+      persist: false           #   (calculated/source) physical column created when true
+      recalc_save: true        #   => Recalc_Save
+      format: ""               #   => Format_Affichage (e.g. 'MNT')
+      decimals: null           #   => Decimales
+      visibility_rule: {}      #   => Regle_Visibilite (declarative AST)
+      activation_rule: {}      #   => Regle_Activation (declarative AST)
+      visible_in_grid: true    #   => Visible_Grille
+      grid_order: null         #   => Rang_Grille (default = display_order)
+      grid_width_em: null      #   => Largeur_Colonne (em)
+      grid_total: ""           #   => Total_Grille: ''|SUM|AVG|MIN|MAX|COUNT
+      is_criteria: false       #   => estCritere (ENT fields only; not for
+                               #     calculated/source/attachments/checkbox/radio)
+      criteria_order: null     #   => Rang_Critere (r if is_criteria)
+      indexed: false           #   => estIndexe (creates IX_<table>_<col>)
+      unique: false            #   => estUnique (creates UX_<table>_<col>)
+      # detail_grid only:
+      allow_add: true          #   => Allow_Add
+      allow_edit: true         #   => Allow_Edit
+      allow_delete: true       #   => Allow_Delete
+      allow_duplicate: false   #   => Allow_Duplicate
+      delete_rule: CASCADE     #   => Regle_Suppression: CASCADE|RESTRICT
+      default_sort: ""         #   => Tri_Defaut (e.g. 'Dat_Jour asc') - validated names only
+    required: false            # (o) => Obligatoire (consider adding a REQUIRED validation too)
+    visible: true              # (o) Etat mapping:
+    editable: true             # (o)   visible+editable        => 'S'
+                               #       visible+not editable    => 'R' ('A' for calculated/source)
+                               #       not visible             => 'I'
+    data_source_code: ""       # (r for source) => Source_Metier = SP_Page_Source.Cod_Source
+                               #   (may reference a data_sources[] entry of this input
+                               #    or a pre-existing catalog source)
+    validations: []            # (o) field-level validation specs, see page_validations
+
+# (o)(x) page-level validations (Portee ENTETE/DETAIL/DOCUMENT, or extra CHAMP/LIGNE rules)
+page_validations: []
+#  - code: V02_NB_LIGNES      # (r) => Cod_Validation (unique per page)
+#    scope: DETAIL            # (r) CHAMP|ENTETE|LIGNE|DETAIL|DOCUMENT
+#    target_block: LIGNES     # (o) => Cod_Table (default ENT)
+#    target_field: null       # (o) => Cod_Champ (for CHAMP/LIGNE scope)
+#    type: NB_LIGNES          # (r) REQUIRED|IN|BETWEEN|MIN|MAX|MINLEN|MAXLEN|REGEX|
+#                            #     COMPARE|UNIQUE|SOURCE|EXPR|NB_LIGNES
+#    parameters: {min: 1}     # (o) json => Parametres (verified shapes:
+#                            #     NB_LIGNES {"min":n}, BETWEEN {"min":a,"max":b},
+#                            #     EXPR {"expr":{...AST...}})
+#    condition: null          # (o) json AST => Condition_Regle
+#    message: ""              # (r) => Message (<=300)
+#    level: B                 # (o) => Niveau: I|W|B (default B = blocking)
+#    moment: SAVE             # (o) => Moment: SAISIE|CHANGE|AJOUT_LIGNE|SAVE
+#    active: true             # (o) => Actif
+# (component-level validations[] accept the same shape; scope is implied:
+#  CHAMP for ENT fields, LIGNE for detail_grid children.)
+
+# -----------------------------------------------------------------------------
+data_sources: []               # (o) => SP_Page_Source rows (read-only catalog)
+#  - data_source_code: ""      # (r) => Cod_Source
+#    label: ""                 # (r)(x) => Libelle
+#    source_type: sql          # (r) sql|proc => Typ_Source SQL|PROC
+#    reference: ""             # (r) SQL text (single SELECT/WITH) or 'dbo.Sys_*' proc.
+#                            #     MUST pass the server read-only guard
+#                            #     (references/sp-metadata-model.md section 7).
+#    parameters: []            # (o) [{name, type, required}] => Parametres json.
+#                            #     NEVER declare id_Societe (auto-injected).
+#    return_type: scalar       # (o)(x) scalar|table => Typ_Retour SCALAIRE|TABLE
+#    profile: ""               # (o)(x) => Cod_Profile ('' = all profiles)
+#    allowed_operations:       # (r) MUST keep read:true and all others false:
+#      read: true              #     RHP sources are read-only by design (server-enforced);
+#      create: false           #     any write flag => blocking error.
+#      update: false
+#      delete: false
+
+# -----------------------------------------------------------------------------
+access_control:
+  default_policy: deny         # (r) deny | open_read
+                               #     deny      => Acces_Personnalise='true' (rights from roles only)
+                               #     open_read => Acces_Personnalise='false' (consult open to all)
+  roles: []                    # (r when default_policy=deny: >=1 role with view:true)
+#  - role_code: ""             # (r) => SP_Page_Droit.Cod_Profile (must exist in Controle_Profile)
+#    permissions:
+#      view: true              # (r) => Consulter
+#      create: false           # (o) => Creer
+#      update: false           # (o) => Modifier
+#      delete: false           # (o) => Supprimer
+#      export: false           # (o) => Imprimer (RHP has no separate export right - verified)
+#      submit: false           # (o)(x) => Valider (submit to workflow)
+#      attachments: false      # (o)(x) => GED
+
+# -----------------------------------------------------------------------------
+deployment:
+  update_if_exists: false      # (r) explicit authorization to modify an existing page.
+                               #     false + page exists => blocking error.
+  expected_schema_version: SP3 # (r) SP1|SP2|SP3 (references/environment-discovery.md)
+  use_feature_flag: false      # [UNSUPPORTED] must stay false: RHP has no feature-flag
+                               #     mechanism (verified absence). The native equivalent is
+                               #     the Statut_Page lifecycle (page.enabled).
+  feature_flag_code: ""        # [UNSUPPORTED] keep empty.
