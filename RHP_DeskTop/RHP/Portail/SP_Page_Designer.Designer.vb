@@ -618,7 +618,7 @@ Partial Class SP_Page_Designer
         Me.Btn_Add_Section.Size = New System.Drawing.Size(28, 25)
         Me.Btn_Add_Section.TabIndex = 3
         Me.Btn_Add_Section.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
-        Me.Btn_Add_Section.ToolTip = "Ajouter une nouvelle section portail"
+        Me.Btn_Add_Section.ToolTip = "Gérer les sections du menu portail (création, modification, suppression)"
         '
         'LabelMenu
         '

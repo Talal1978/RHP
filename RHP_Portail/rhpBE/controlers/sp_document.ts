@@ -70,8 +70,9 @@ export async function sp_menu_portail(req: Request, res: Response) {
   // menu latéral. Seules les sections contenant au moins une page publiée visible
   // par le profil sont retournées (une section vide ne mène nulle part). Marquées
   // dyn:true pour que le client puisse les distinguer des sections de menus.json.
+  // L'icône MUI choisie à la création est stockée dans la colonne libre Champs02.
   const rslSections = await lireSql(
-    `select r.Valeur, r.Membre, r.Rang
+    `select r.Valeur, r.Membre, r.Rang, isnull(r.Champs02,'') as Icone
      from Param_Rubriques r
      where r.Nom_Controle='SP_Menu_Portail'
        and exists (select 1 from SP_Page p
@@ -90,7 +91,7 @@ export async function sp_menu_portail(req: Request, res: Response) {
     typ_ecran: "MNU",
     parent: "",
     rang: s.Rang ?? 99,
-    img: "",
+    img: String(s.Icone ?? ""),
     dyn: true,
   }));
   return res.send({ result: true, data: [...sections, ...menus], fields: [], sort: "succès" });

@@ -1,5 +1,4 @@
-﻿Imports System.Text
-Imports System.Text.RegularExpressions
+﻿Imports System.Text.RegularExpressions
 
 ''' <summary>
 ''' Designer de pages portail (module SP_).
@@ -354,74 +353,28 @@ Public Class SP_Page_Designer
         End Try
     End Sub
 
-    '---------------- Création d'une section portail (bouton "+") ----------------
+    '---------------- Gestion des sections portail (bouton "+") ----------------
 
-    ''' <summary>Crée une nouvelle section de menu portail : elle est enregistrée dans
-    ''' la rubrique SP_Menu_Portail (Param_Rubriques) puis sélectionnée dans la liste.
-    ''' Côté portail, la section apparaît dans le menu latéral dès qu'une première
-    ''' page y est publiée (endpoint sp_menu_portail).</summary>
+    ''' <summary>Ouvre l'écran modal de gestion des sections du menu portail
+    ''' (SP_Nouvelle_Section : création avec code généré automatiquement, modification
+    ''' du nom / rang / icône, suppression hors sections standards). Les sections sont
+    ''' enregistrées dans la rubrique SP_Menu_Portail (Param_Rubriques, icône dans la
+    ''' colonne libre Champs02). Au retour : la liste est rechargée et la dernière
+    ''' section traitée est sélectionnée. Côté portail, une section apparaît dans le
+    ''' menu latéral dès qu'une première page y est publiée (endpoint sp_menu_portail).</summary>
     Private Sub Btn_Add_Section_Click(sender As Object, e As EventArgs) Handles Btn_Add_Section.Click
         Try
-            Dim rLib As Object = ShowInputBox("Libellé de la nouvelle section :", "Nouvelle section portail", ChampType._String)
-            If rLib Is Nothing Then Return
-            Dim libelle As String = rLib.ToString().Trim()
-            If libelle = "" Then Return
-            ' Code technique proposé : dérivé du libellé, l'utilisateur peut l'ajuster
-            Dim rCode As Object = ShowInputBox("Code technique de la section (unique, lettres/chiffres/_) :",
-                                               "Nouvelle section portail", ChampType._String, msgIcon.Information,
-                                               CodeSectionDepuisLibelle(libelle))
-            If rCode Is Nothing Then Return
-            Dim code As String = rCode.ToString().Trim()
-            If Not Regex.IsMatch(code, "^[A-Za-z][A-Za-z0-9_]{1,29}$") Then
-                ShowMessageBox("Code invalide : 2 à 30 caractères (lettres, chiffres, _), commençant par une lettre.",
-                               "Nouvelle section portail", MessageBoxButtons.OK, msgIcon.Stop)
-                Return
-            End If
-            If ScalarInt("select count(*) from Param_Rubriques where Nom_Controle='SP_Menu_Portail' and Valeur=" & SqlV(code)) > 0 Then
-                ShowMessageBox("La section '" & code & "' existe déjà.",
-                               "Nouvelle section portail", MessageBoxButtons.OK, msgIcon.Stop)
-                Return
-            End If
-            If ScalarInt("select count(*) from Param_Rubriques where Nom_Controle='SP_Menu_Portail' and Membre=" & SqlV(libelle)) > 0 Then
-                ShowMessageBox("Une section porte déjà le libellé '" & libelle & "'.",
-                               "Nouvelle section portail", MessageBoxButtons.OK, msgIcon.Stop)
-                Return
-            End If
-            Dim rang As Integer = ScalarInt("select isnull(max(Rang),0)+1 from Param_Rubriques where Nom_Controle='SP_Menu_Portail'")
-            CnExecuting("insert into Param_Rubriques (Nom_Controle, Valeur, Membre, Rang, Typ, Dat_Crea, Created_By) values ('SP_Menu_Portail', " &
-                        SqlV(code) & ", " & SqlV(libelle) & ", " & rang & ", 'U', getdate(), " & SqlV(theUser.Login) & ")")
-            ' Rechargement de la liste puis sélection de la section créée
-            Menu_Parent_cmb.fromRubrique("SP_Menu_Portail")
-            Menu_Parent_cmb.SelectedValue = code
-            ShowMessageBox("Section '" & libelle & "' créée (rang " & rang & ")." & vbCrLf &
-                           "Elle apparaîtra dans le portail dès qu'une première page y sera publiée.",
-                           "Nouvelle section portail", MessageBoxButtons.OK, msgIcon.Information)
+            Using f As New SP_Nouvelle_Section()
+                f.ShowDialog(Me)
+                If Not f.Modifie Then Return
+                Menu_Parent_cmb.fromRubrique("SP_Menu_Portail")
+                If f.CodeSelectionne <> "" Then Menu_Parent_cmb.SelectedValue = f.CodeSelectionne
+            End Using
         Catch ex As Exception
-            ShowMessageBox("Erreur lors de la création de la section : " & ex.Message,
-                           "Nouvelle section portail", MessageBoxButtons.OK, msgIcon.Stop)
+            ShowMessageBox("Erreur lors de la gestion des sections : " & ex.Message,
+                           "Sections portail", MessageBoxButtons.OK, msgIcon.Stop)
         End Try
     End Sub
-
-    ''' <summary>Dérive un code technique du libellé saisi : PascalCase sans accents
-    ''' ni caractères spéciaux (ex. 'Notes de frais' -> 'NotesDeFrais').</summary>
-    Private Function CodeSectionDepuisLibelle(libelle As String) As String
-        Dim norm As String = libelle.Normalize(NormalizationForm.FormD)
-        Dim sb As New StringBuilder()
-        Dim debutMot As Boolean = True
-        For Each ch As Char In norm
-            If Globalization.CharUnicodeInfo.GetUnicodeCategory(ch) = Globalization.UnicodeCategory.NonSpacingMark Then Continue For
-            If Char.IsLetterOrDigit(ch) Then
-                sb.Append(If(debutMot, Char.ToUpper(ch), ch))
-                debutMot = False
-            Else
-                debutMot = True
-            End If
-        Next
-        Dim code As String = sb.ToString()
-        If code = "" Then code = "Section"
-        If Char.IsDigit(code(0)) Then code = "S" & code
-        Return code.Substring(0, Math.Min(30, code.Length))
-    End Function
 
     ''' <summary>Charge la configuration complète d'une page.</summary>
     Sub Request(Optional codPage As String = "")

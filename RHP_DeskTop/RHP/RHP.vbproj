@@ -667,6 +667,12 @@
     <Compile Include="Portail\SP_Assistant_Formule.vb">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="Portail\SP_Nouvelle_Section.Designer.vb">
+      <DependentUpon>SP_Nouvelle_Section.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Portail\SP_Nouvelle_Section.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Portail\SP_Page_Designer.Designer.vb">
       <DependentUpon>SP_Page_Designer.vb</DependentUpon>
     </Compile>
@@ -2120,6 +2126,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Portail\SP_Page_Designer.resx">
       <DependentUpon>SP_Page_Designer.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Portail\SP_Nouvelle_Section.resx">
+      <DependentUpon>SP_Nouvelle_Section.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Outillage\RH_Outillage_Mouvement.resx">
       <DependentUpon>RH_Outillage_Mouvement.vb</DependentUpon>
