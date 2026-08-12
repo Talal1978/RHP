@@ -57,6 +57,7 @@ const Note_Frais = () => {
     setSignatureProps,
     setShowGED,
     setGEDprops,
+    setShowLoading,
   } = useContext(cntX);
   const msgBox = useMsgBox();
   const [action, setAction] = useState<TGrilleAction>("");
@@ -173,30 +174,35 @@ const Note_Frais = () => {
     setNatureFrais(listRubriques("Typ_Frais"));
   }, []);
   const loadData = useCallback(async () => {
-    if (currentNum !== "" && currentNum !== "new") {
-      await myAxios("get_note_frais", { num_nf: currentNum })
-        .then((dt) => {
-          if (dt.data && dt.data?.result) {
-            setEntete(dt.data.entete);
-            setDetail(dt.data.detail);
-            enteteRef.current = dt.data.entete;
-            detailRef.current = dt.data.detail;
-          } else {
+    setShowLoading(true);
+    try {
+      if (currentNum !== "" && currentNum !== "new") {
+        await myAxios("get_note_frais", { num_nf: currentNum })
+          .then((dt) => {
+            if (dt.data && dt.data?.result) {
+              setEntete(dt.data.entete);
+              setDetail(dt.data.detail);
+              enteteRef.current = dt.data.entete;
+              detailRef.current = dt.data.detail;
+            } else {
+              setEntete(iniEntete);
+              setDetail([iniDetail]);
+              enteteRef.current = iniEntete;
+              detailRef.current = [iniDetail];
+            }
+          })
+          .catch((err) => {
             setEntete(iniEntete);
             setDetail([iniDetail]);
             enteteRef.current = iniEntete;
             detailRef.current = [iniDetail];
-          }
-        })
-        .catch((err) => {
-          setEntete(iniEntete);
-          setDetail([iniDetail]);
-          enteteRef.current = iniEntete;
-          detailRef.current = [iniDetail];
-        });
-    } else {
-      setEntete(iniEntete);
-      setDetail([iniDetail]);
+          });
+      } else {
+        setEntete(iniEntete);
+        setDetail([iniDetail]);
+      }
+    } finally {
+      setShowLoading(false);
     }
   }, [currentNum]);
 

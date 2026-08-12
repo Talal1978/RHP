@@ -97,47 +97,6 @@ import {
   get_outillage_info,
 } from "../controlers/outillage_mouvement";
 import {
-  sante_visite_liste, sante_visite_liste_planning, get_sante_visite,
-  save_sante_visite, delete_sante_visite, sante_calcul_echeance, sante_dossier,
-} from "../controlers/sante_visite";
-import {
-  sante_aptitude_liste, get_sante_aptitude, save_sante_aptitude, sante_aptitude_masse,
-} from "../controlers/sante_aptitude";
-import {
-  sante_consultation_liste, get_sante_consultation, save_sante_consultation,
-  delete_sante_consultation, sante_vaccination_liste, save_sante_vaccination,
-} from "../controlers/sante_infirmerie";
-import {
-  sante_examen_liste, get_sante_examen, save_sante_examen, delete_sante_examen,
-} from "../controlers/sante_examen";
-import {
-  sante_maladie_pro_liste, get_sante_maladie_pro, save_sante_maladie_pro,
-  delete_sante_maladie_pro, save_sante_maladie_pro_statut,
-} from "../controlers/sante_maladie_pro";
-import {
-  sante_campagne_liste, get_sante_campagne, save_sante_campagne, delete_sante_campagne,
-  sante_convocation_generer, save_sante_convocation,
-} from "../controlers/sante_campagne";
-import {
-  sante_at_suivi_get, save_sante_at_typ, sante_at_generer_echeances,
-  save_sante_at_echeance, save_sante_at_transmission, sante_at_stats,
-} from "../controlers/sante_at_suivi";
-import {
-  ma_sante, sante_tableau_bord, sante_rapport_annuel_donnees, sante_rapport_annuel_controle,
-  save_sante_rapport_annuel, sante_audit_liste,
-  sante_intervenant_liste, save_sante_intervenant,
-  sante_periodicite_liste, save_sante_periodicite,
-  sante_reglement_liste, save_sante_reglement,
-  sante_destinataire_liste, save_sante_destinataire,
-  sante_etape_at_liste, save_sante_etape_at,
-  sante_heures_liste, save_sante_heures,
-  sante_poste_risque_liste, save_sante_poste_risque,
-  sante_agent_critere_liste, save_sante_agent_critere,
-} from "../controlers/sante_divers";
-import {
-  sante_aptitude_pdf, sante_incident_at_pdf, sante_rapport_annuel_pdf,
-} from "../controlers/sante_report";
-import {
   sp_menu_portail, sp_page_meta, sp_document_liste, sp_get_document,
   sp_save_document, sp_delete_document, sp_validate_document, sp_exec_source,
 } from "../controlers/sp_document";
@@ -263,70 +222,6 @@ mainRooting.post("/get_outillage_mouvement", validate, get_outillage_mouvement);
 mainRooting.post("/save_outillage_mouvement", validate, save_outillage_mouvement);
 mainRooting.post("/delete_outillage_mouvement", validate, delete_outillage_mouvement);
 
-/* ---- Module Sante, Infirmerie & Medecine du travail ---- */
-mainRooting.post("/sante_visite_liste", validate, sante_visite_liste);
-mainRooting.post("/sante_visite_liste_planning", validate, sante_visite_liste_planning);
-mainRooting.post("/get_sante_visite", validate, get_sante_visite);
-mainRooting.post("/save_sante_visite", validate, save_sante_visite);
-mainRooting.post("/delete_sante_visite", validate, delete_sante_visite);
-mainRooting.post("/sante_calcul_echeance", validate, sante_calcul_echeance);
-mainRooting.post("/sante_dossier", validate, sante_dossier);
-mainRooting.post("/sante_aptitude_liste", validate, sante_aptitude_liste);
-mainRooting.post("/get_sante_aptitude", validate, get_sante_aptitude);
-mainRooting.post("/save_sante_aptitude", validate, save_sante_aptitude);
-mainRooting.post("/sante_aptitude_masse", validate, sante_aptitude_masse);
-mainRooting.post("/sante_consultation_liste", validate, sante_consultation_liste);
-mainRooting.post("/get_sante_consultation", validate, get_sante_consultation);
-mainRooting.post("/save_sante_consultation", validate, save_sante_consultation);
-mainRooting.post("/delete_sante_consultation", validate, delete_sante_consultation);
-mainRooting.post("/sante_vaccination_liste", validate, sante_vaccination_liste);
-mainRooting.post("/save_sante_vaccination", validate, save_sante_vaccination);
-mainRooting.post("/sante_examen_liste", validate, sante_examen_liste);
-mainRooting.post("/get_sante_examen", validate, get_sante_examen);
-mainRooting.post("/save_sante_examen", validate, save_sante_examen);
-mainRooting.post("/delete_sante_examen", validate, delete_sante_examen);
-mainRooting.post("/sante_maladie_pro_liste", validate, sante_maladie_pro_liste);
-mainRooting.post("/get_sante_maladie_pro", validate, get_sante_maladie_pro);
-mainRooting.post("/save_sante_maladie_pro", validate, save_sante_maladie_pro);
-mainRooting.post("/delete_sante_maladie_pro", validate, delete_sante_maladie_pro);
-mainRooting.post("/save_sante_maladie_pro_statut", validate, save_sante_maladie_pro_statut);
-mainRooting.post("/sante_campagne_liste", validate, sante_campagne_liste);
-mainRooting.post("/get_sante_campagne", validate, get_sante_campagne);
-mainRooting.post("/save_sante_campagne", validate, save_sante_campagne);
-mainRooting.post("/delete_sante_campagne", validate, delete_sante_campagne);
-mainRooting.post("/sante_convocation_generer", validate, sante_convocation_generer);
-mainRooting.post("/save_sante_convocation", validate, save_sante_convocation);
-mainRooting.post("/sante_at_suivi_get", validate, sante_at_suivi_get);
-mainRooting.post("/save_sante_at_typ", validate, save_sante_at_typ);
-mainRooting.post("/sante_at_generer_echeances", validate, sante_at_generer_echeances);
-mainRooting.post("/save_sante_at_echeance", validate, save_sante_at_echeance);
-mainRooting.post("/save_sante_at_transmission", validate, save_sante_at_transmission);
-mainRooting.post("/sante_at_stats", validate, sante_at_stats);
-mainRooting.post("/ma_sante", validate, ma_sante);
-mainRooting.post("/sante_tableau_bord", validate, sante_tableau_bord);
-mainRooting.post("/sante_rapport_annuel_donnees", validate, sante_rapport_annuel_donnees);
-mainRooting.post("/sante_rapport_annuel_controle", validate, sante_rapport_annuel_controle);
-mainRooting.post("/save_sante_rapport_annuel", validate, save_sante_rapport_annuel);
-mainRooting.post("/sante_audit_liste", validate, sante_audit_liste);
-mainRooting.post("/sante_intervenant_liste", validate, sante_intervenant_liste);
-mainRooting.post("/save_sante_intervenant", validate, save_sante_intervenant);
-mainRooting.post("/sante_periodicite_liste", validate, sante_periodicite_liste);
-mainRooting.post("/save_sante_periodicite", validate, save_sante_periodicite);
-mainRooting.post("/sante_reglement_liste", validate, sante_reglement_liste);
-mainRooting.post("/save_sante_reglement", validate, save_sante_reglement);
-mainRooting.post("/sante_destinataire_liste", validate, sante_destinataire_liste);
-mainRooting.post("/save_sante_destinataire", validate, save_sante_destinataire);
-mainRooting.post("/sante_etape_at_liste", validate, sante_etape_at_liste);
-mainRooting.post("/save_sante_etape_at", validate, save_sante_etape_at);
-mainRooting.post("/sante_heures_liste", validate, sante_heures_liste);
-mainRooting.post("/save_sante_heures", validate, save_sante_heures);
-mainRooting.post("/sante_poste_risque_liste", validate, sante_poste_risque_liste);
-mainRooting.post("/save_sante_poste_risque", validate, save_sante_poste_risque);
-mainRooting.post("/sante_agent_critere_liste", validate, sante_agent_critere_liste);
-mainRooting.post("/save_sante_agent_critere", validate, save_sante_agent_critere);
-mainRooting.post("/sante_aptitude_pdf", validate, sante_aptitude_pdf);
-mainRooting.post("/sante_incident_at_pdf", validate, sante_incident_at_pdf);
-mainRooting.post("/sante_rapport_annuel_pdf", validate, sante_rapport_annuel_pdf);
 mainRooting.post("/get_outillage_info", validate, get_outillage_info);
 
 /* ---- Module SP_ : pages dynamiques du portail (Designer) ---- */

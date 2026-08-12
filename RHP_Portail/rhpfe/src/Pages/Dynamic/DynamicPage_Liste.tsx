@@ -28,7 +28,7 @@ const DynamicPage_Liste = ({ codPage }: { codPage: string }) => {
   const navigate = useNavigate();
   const alert = useAlert();
   const myAxios = useAxiosPost();
-  const { isSmall, isXs, isSm, isLg, isXl } = useContext(cntX);
+  const { isSmall, isXs, isSm, isLg, isXl, setShowLoading } = useContext(cntX);
   const { titre: titreUrl } = useParams();
   const titre = titreUrl || codPage;
   // Persistance critères + résultats (sessionStorage, convention des listes)
@@ -61,27 +61,32 @@ const DynamicPage_Liste = ({ codPage }: { codPage: string }) => {
 
   const interroger = useCallback(
     async (pageDemandee: number = 1) => {
-      await myAxios("sp_document_liste", {
-        codPage,
-        filtres: criteres ?? {},
-        page: pageDemandee,
-        pageSize: PAGE_SIZE,
-      })
-        .then((dt) => {
-          if (dt?.data?.result) {
-            setDs(dt.data.data ?? []);
-            setDsFields(dt.data.fields ?? {});
-            setPage(dt.data.page ?? pageDemandee);
-          } else {
+      setShowLoading(true);
+      try {
+        await myAxios("sp_document_liste", {
+          codPage,
+          filtres: criteres ?? {},
+          page: pageDemandee,
+          pageSize: PAGE_SIZE,
+        })
+          .then((dt) => {
+            if (dt?.data?.result) {
+              setDs(dt.data.data ?? []);
+              setDsFields(dt.data.fields ?? {});
+              setPage(dt.data.page ?? pageDemandee);
+            } else {
+              setDs([]);
+              setDsFields({});
+              if (dt?.data?.message) alert({ titre: "Liste", msg: dt.data.message, typMsg: "error" });
+            }
+          })
+          .catch(() => {
             setDs([]);
             setDsFields({});
-            if (dt?.data?.message) alert({ titre: "Liste", msg: dt.data.message, typMsg: "error" });
-          }
-        })
-        .catch(() => {
-          setDs([]);
-          setDsFields({});
-        });
+          });
+      } finally {
+        setShowLoading(false);
+      }
     },
     [codPage, criteres]
   );

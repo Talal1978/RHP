@@ -35,6 +35,7 @@ const Demande_Avance = () => {
     setSignatureProps,
     setShowGED,
     setGEDprops,
+    setShowLoading,
   } = useContext(cntX);
   const msgBox = useMsgBox();
   const [info, setInfo] = useState<TInfo>(initInfo);
@@ -80,39 +81,44 @@ const Demande_Avance = () => {
       });
   }
   const Request = useCallback(async () => {
-    if (currentNum !== "" && currentNum !== "new") {
-      await myAxios("get_demande_avance", { num_avance: currentNum })
-        .then((dt) => {
-          if (dt.data && dt.data?.result) {
-            setEntete(dt.data.data[0]);
-            enteteRef.current = dt.data.data[0];
-          } else {
+    setShowLoading(true);
+    try {
+      if (currentNum !== "" && currentNum !== "new") {
+        await myAxios("get_demande_avance", { num_avance: currentNum })
+          .then((dt) => {
+            if (dt.data && dt.data?.result) {
+              setEntete(dt.data.data[0]);
+              enteteRef.current = dt.data.data[0];
+            } else {
+              setEntete(iniEntete);
+              enteteRef.current = iniEntete;
+            }
+          })
+          .catch((err) => {
             setEntete(iniEntete);
             enteteRef.current = iniEntete;
-          }
-        })
-        .catch((err) => {
-          setEntete(iniEntete);
-          enteteRef.current = iniEntete;
-        });
-    } else {
-      setEntete(iniEntete);
-      enteteRef.current = iniEntete;
-    }
-    if (canSave) {
-      if (currentNum !== "" && currentNum !== "new") {
-        await myAxios("check_accessible", {
-          nameEcran: "RH_Demande_Avance",
-          idEcran: currentNum,
-        }).then((dt) => {
-          if (dt?.data && typeof dt.data === "object") setAccessible(dt.data);
-        });
+          });
       } else {
-        await myAxios("release_accessible", {
-          nameEcran: "RH_Demande_Avance",
-          idEcran: currentNum,
-        });
+        setEntete(iniEntete);
+        enteteRef.current = iniEntete;
       }
+      if (canSave) {
+        if (currentNum !== "" && currentNum !== "new") {
+          await myAxios("check_accessible", {
+            nameEcran: "RH_Demande_Avance",
+            idEcran: currentNum,
+          }).then((dt) => {
+            if (dt?.data && typeof dt.data === "object") setAccessible(dt.data);
+          });
+        } else {
+          await myAxios("release_accessible", {
+            nameEcran: "RH_Demande_Avance",
+            idEcran: currentNum,
+          });
+        }
+      }
+    } finally {
+      setShowLoading(false);
     }
   }, [currentNum, canSave]);
 

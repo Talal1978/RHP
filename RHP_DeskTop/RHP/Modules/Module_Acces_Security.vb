@@ -321,8 +321,18 @@ Module Module_Acces_Security
         Dim CEx As New ADODB.Recordset
         Dim strTime As Date = Nothing
         Try
-            If cn.Execute("Select count(*) from sysobjects where name='Controle_Traitement'").Fields(0).Value > 0 Then
-                If cn.Execute("Select count(*) from Controle_Traitement where Termine='N'").Fields(0).Value > 0 Then
+            ' Les recordsets de contrôle sont fermés explicitement : un recordset
+            ' firehose laissé ouvert sur cn maintient une session SQL implicite active ;
+            ' dès que deux sessions sont en cours d'utilisation, un BeginTrans ultérieur
+            ' sur cn échoue (-2147168227 « dépassement de capacité »).
+            Dim rsCtrl As ADODB.Recordset = cn.Execute("Select count(*) from sysobjects where name='Controle_Traitement'")
+            Dim ctrlPresent As Boolean = (CInt(rsCtrl.Fields(0).Value) > 0)
+            rsCtrl.Close()
+            If ctrlPresent Then
+                Dim rsTerm As ADODB.Recordset = cn.Execute("Select count(*) from Controle_Traitement where Termine='N'")
+                Dim traitEnCours As Boolean = (CInt(rsTerm.Fields(0).Value) > 0)
+                rsTerm.Close()
+                If traitEnCours Then
                     MessageBoxRHP(518)
                     Application.Exit()
                 End If

@@ -56,20 +56,6 @@ const Communication_Blogs_Liste = lazy(() => import("../Pages/Communication/Comm
 const Communication_Blog = lazy(() => import("../Pages/Communication/Communication_Blog"));
 const Outillage_Mouvement_Liste = lazy(() => import("../Pages/Outillage/Outillage_Mouvement_Liste"));
 const Outillage_Mouvement = lazy(() => import("../Pages/Outillage/Outillage_Mouvement"));
-const RH_Sante_Visite_Liste = lazy(() => import("../Pages/Sante/RH_Sante_Visite_Liste"));
-const RH_Sante_Visite = lazy(() => import("../Pages/Sante/RH_Sante_Visite"));
-const Sante_MaSante = lazy(() => import("../Pages/Sante/Sante_MaSante"));
-const RH_Sante_Tableau_Bord = lazy(() => import("../Pages/Sante/RH_Sante_Tableau_Bord"));
-const RH_Declaration_AT_Suivi = lazy(() => import("../Pages/Sante/RH_Declaration_AT_Suivi"));
-const RH_Sante_Aptitude_Liste = lazy(() => import("../Pages/Sante/RH_Sante_Aptitude_Liste"));
-const RH_Sante_Aptitude = lazy(() => import("../Pages/Sante/RH_Sante_Aptitude"));
-const RH_Sante_Consultation_Liste = lazy(() => import("../Pages/Sante/RH_Sante_Consultation_Liste"));
-const RH_Sante_Consultation = lazy(() => import("../Pages/Sante/RH_Sante_Consultation"));
-const RH_Sante_Examen_Liste = lazy(() => import("../Pages/Sante/RH_Sante_Examen_Liste"));
-const RH_Sante_Examen = lazy(() => import("../Pages/Sante/RH_Sante_Examen"));
-const RH_Sante_Maladie_Pro_Liste = lazy(() => import("../Pages/Sante/RH_Sante_Maladie_Pro_Liste"));
-const RH_Sante_Maladie_Pro = lazy(() => import("../Pages/Sante/RH_Sante_Maladie_Pro"));
-const RH_Sante_Campagne = lazy(() => import("../Pages/Sante/RH_Sante_Campagne"));
 const DynamicPage = lazy(() => import("../Pages/Dynamic/DynamicPage"));
 const DynamicPage_Liste = lazy(() => import("../Pages/Dynamic/DynamicPage_Liste"));
 
@@ -212,48 +198,6 @@ const Ecran = ({ style }: { style?: React.CSSProperties }) => {
         break;
       case "Outillage_Mouvement":
         setEcran(<Outillage_Mouvement />);
-        break;
-      case "RH_Sante_Visite_Liste":
-        setEcran(<RH_Sante_Visite_Liste />);
-        break;
-      case "RH_Sante_Visite":
-        setEcran(<RH_Sante_Visite />);
-        break;
-      case "Sante_MaSante":
-        setEcran(<Sante_MaSante />);
-        break;
-      case "RH_Sante_Tableau_Bord":
-        setEcran(<RH_Sante_Tableau_Bord />);
-        break;
-      case "RH_Declaration_AT_Suivi":
-        setEcran(<RH_Declaration_AT_Suivi />);
-        break;
-      case "RH_Sante_Aptitude_Liste":
-        setEcran(<RH_Sante_Aptitude_Liste />);
-        break;
-      case "RH_Sante_Aptitude":
-        setEcran(<RH_Sante_Aptitude />);
-        break;
-      case "RH_Sante_Consultation_Liste":
-        setEcran(<RH_Sante_Consultation_Liste />);
-        break;
-      case "RH_Sante_Consultation":
-        setEcran(<RH_Sante_Consultation />);
-        break;
-      case "RH_Sante_Examen_Liste":
-        setEcran(<RH_Sante_Examen_Liste />);
-        break;
-      case "RH_Sante_Examen":
-        setEcran(<RH_Sante_Examen />);
-        break;
-      case "RH_Sante_Maladie_Pro_Liste":
-        setEcran(<RH_Sante_Maladie_Pro_Liste />);
-        break;
-      case "RH_Sante_Maladie_Pro":
-        setEcran(<RH_Sante_Maladie_Pro />);
-        break;
-      case "RH_Sante_Campagne":
-        setEcran(<RH_Sante_Campagne />);
         break;
       default:
         setEcran(

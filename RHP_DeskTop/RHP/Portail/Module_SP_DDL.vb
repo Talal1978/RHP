@@ -313,26 +313,39 @@ Public Module Module_SP_DDL
     End Function
 
     ''' <summary>
-    ''' Exécute un script DDL dans la transaction ADODB courante (cn) et
-    ''' journalise dans SP_Page_DDL_Log. L'appelant gère BeginTrans/Commit/Rollback.
+    ''' Exécute un script DDL dans la transaction ADODB ouverte sur cnTx (connexion
+    ''' dédiée ouverte par l'appelant) et journalise dans SP_Page_DDL_Log.
+    ''' L'appelant gère BeginTrans/Commit/Rollback.
+    ''' NB : la connexion globale cn n'est JAMAIS utilisée ici : des recordsets
+    ''' firehose peuvent y rester en attente (CnExecuting), ce qui fait échouer
+    ''' BeginTrans (-2147168227 « dépassement de capacité ») ou exécuterait des
+    ''' ordres sur une session implicite HORS transaction.
     ''' </summary>
-    Public Sub ExecuterScriptDansTransaction(codPage As String, typeOperation As String, script As String)
+    Public Sub ExecuterScriptDansTransaction(codPage As String, typeOperation As String, script As String, cnTx As ADODB.Connection)
         If script Is Nothing OrElse script.Trim = "" Then Return
         Dim batches = Regex.Split(script, "(?im)^\s*GO\s*$")
         For Each b As String In batches
-            If b.Trim <> "" Then cn.Execute(b)
+            If b.Trim <> "" Then cnTx.Execute(b)
         Next
-        JournaliserDDL(codPage, typeOperation, script, "true", "")
+        JournaliserDDL(codPage, typeOperation, script, "true", "", cnTx)
     End Sub
 
-    ''' <summary>Journalise un DDL exécuté (ou tenté) dans SP_Page_DDL_Log.</summary>
-    Public Sub JournaliserDDL(codPage As String, typeOperation As String, script As String, resultat As String, message As String)
+    ''' <summary>Journalise un DDL exécuté (ou tenté) dans SP_Page_DDL_Log.
+    ''' cnTx fourni : journalise dans la transaction de l'enregistrement ;
+    ''' cnTx omis : journalise hors transaction (cas d'un échec, après rollback).</summary>
+    Public Sub JournaliserDDL(codPage As String, typeOperation As String, script As String, resultat As String, message As String,
+                              Optional cnTx As ADODB.Connection = Nothing)
         Try
-            CnExecuting("insert into SP_Page_DDL_Log (Cod_Page, Type_Operation, Script_DDL, Resultat, Message, Login_Exec, Date_Exec) values ('" &
+            Dim sql As String = "insert into SP_Page_DDL_Log (Cod_Page, Type_Operation, Script_DDL, Resultat, Message, Login_Exec, Date_Exec) values ('" &
                         codPage.Replace("'", "''") & "','" & typeOperation.Replace("'", "''") & "','" &
                         IsNull(script, "").Replace("'", "''") & "','" & resultat & "','" &
                         IsNull(message, "").Replace("'", "''").Substring(0, Math.Min(3900, IsNull(message, "").Length)) & "','" &
-                        theUser.Login.Replace("'", "''") & "', getdate())")
+                        theUser.Login.Replace("'", "''") & "', getdate())"
+            If cnTx Is Nothing Then
+                CnExecuting(sql)
+            Else
+                cnTx.Execute(sql)
+            End If
         Catch
             ' La journalisation ne doit jamais masquer l'erreur principale
         End Try

@@ -420,8 +420,7 @@ BEGIN
         ('SP_Menu_Portail', 'DiverseEditions',  'Diverses Éditions',               7,  'S', GETDATE(), 'SCRIPT'),
         ('SP_Menu_Portail', 'Discipline_fdr',   'Discipline',                      8,  'S', GETDATE(), 'SCRIPT'),
         ('SP_Menu_Portail', 'Outillage',        'Outillage',                       9,  'S', GETDATE(), 'SCRIPT'),
-        ('SP_Menu_Portail', 'Communication',    'Communication',                   10, 'S', GETDATE(), 'SCRIPT'),
-        ('SP_Menu_Portail', 'Sante',            'Santé au travail',                11, 'S', GETDATE(), 'SCRIPT');
+        ('SP_Menu_Portail', 'Communication',    'Communication',                   10, 'S', GETDATE(), 'SCRIPT');
 END
 GO
 

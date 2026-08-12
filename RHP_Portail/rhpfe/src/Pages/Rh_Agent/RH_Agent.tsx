@@ -38,7 +38,7 @@ function getPhotoSrc(photo: any): string | undefined {
 const RH_Agent = ({ readonly = false }: { readonly?: boolean }) => {
   console.log("[RH_Agent] render start");
   const myAxios = useAxiosPost();
-  const { settbnMenu, isSmall } = useContext(cntX);
+  const { settbnMenu, isSmall, setShowLoading } = useContext(cntX);
   const msgbox = useMsgBox();
   const [rhAgent, setRhAgent] = useState<IRH_Agent>(initialState);
   const [rhCompetence, setRhCompetence] = useState<ICompetence[]>([]);
@@ -99,6 +99,7 @@ const RH_Agent = ({ readonly = false }: { readonly?: boolean }) => {
     const matricule = rhAgent?.Matricule || Agent.Matricule;
     if (!matricule || lastLoadedMatricule.current === matricule) return;
     lastLoadedMatricule.current = matricule;
+    setShowLoading(true);
     myAxios("rh_agent", { Matricule: matricule })
       .then((dt) => {
         if (dt?.data?.result && dt.data.data?.agent?.length > 0) {
@@ -127,7 +128,8 @@ const RH_Agent = ({ readonly = false }: { readonly?: boolean }) => {
         setFamille([]);
         setPaie([]);
         setOutillage([]);
-      });
+      })
+      .finally(() => setShowLoading(false));
   }, [rhAgent?.Matricule, myAxios]);
   const photoSrc = useMemo(() => getPhotoSrc(rhAgent?.Photo), [rhAgent?.Photo]);
   return (

@@ -47,6 +47,7 @@ const RH_Demande_Conge = () => {
     setSignatureProps,
     setShowGED,
     setGEDprops,
+    setShowLoading,
   } = useContext(cntX);
   const msgBox = useMsgBox();
   const { num } = useParams();
@@ -84,44 +85,49 @@ const RH_Demande_Conge = () => {
     setCalculerConge((prv) => !prv);
   }
   const Request = useCallback(async () => {
-    if (currentNum !== "" && currentNum !== "new") {
-      await myAxios("get_demande_conge", { Num_Conge: currentNum })
-        .then((dt) => {
-          calculSeq.current++;
-          if (dt.data && dt.data?.result) {
-            setEntete(dt.data.data[0]);
-            enteteRef.current = dt.data.data[0];
-            setLigne(dt.data.lignes ?? []);
-          } else {
+    setShowLoading(true);
+    try {
+      if (currentNum !== "" && currentNum !== "new") {
+        await myAxios("get_demande_conge", { Num_Conge: currentNum })
+          .then((dt) => {
+            calculSeq.current++;
+            if (dt.data && dt.data?.result) {
+              setEntete(dt.data.data[0]);
+              enteteRef.current = dt.data.data[0];
+              setLigne(dt.data.lignes ?? []);
+            } else {
+              setEntete(iniEntete);
+              enteteRef.current = iniEntete;
+              setLigne([]);
+            }
+          })
+          .catch((err) => {
             setEntete(iniEntete);
             enteteRef.current = iniEntete;
             setLigne([]);
-          }
-        })
-        .catch((err) => {
-          setEntete(iniEntete);
-          enteteRef.current = iniEntete;
-          setLigne([]);
-        });
-    } else {
-      setEntete(iniEntete);
-      enteteRef.current = iniEntete;
-      setLigne([]);
-    }
-    if (canSave) {
-      if (currentNum !== "" && currentNum !== "new") {
-        await myAxios("check_accessible", {
-          nameEcran: "RH_Demande_Conge",
-          idEcran: currentNum,
-        }).then((dt) => {
-          if (dt?.data && typeof dt.data === "object") setAccessible(dt.data);
-        });
+          });
       } else {
-        await myAxios("release_accessible", {
-          nameEcran: "RH_Demande_Conge",
-          idEcran: currentNum,
-        });
+        setEntete(iniEntete);
+        enteteRef.current = iniEntete;
+        setLigne([]);
       }
+      if (canSave) {
+        if (currentNum !== "" && currentNum !== "new") {
+          await myAxios("check_accessible", {
+            nameEcran: "RH_Demande_Conge",
+            idEcran: currentNum,
+          }).then((dt) => {
+            if (dt?.data && typeof dt.data === "object") setAccessible(dt.data);
+          });
+        } else {
+          await myAxios("release_accessible", {
+            nameEcran: "RH_Demande_Conge",
+            idEcran: currentNum,
+          });
+        }
+      }
+    } finally {
+      setShowLoading(false);
     }
   }, [currentNum, canSave]);
   const Colonnes = useMemo<TColonneCollection>(

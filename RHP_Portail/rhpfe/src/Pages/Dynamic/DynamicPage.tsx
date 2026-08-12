@@ -28,7 +28,7 @@ import { Monetaire } from "../../modules/module_general_formulas";
 import { ObjetGenerique } from "../../types";
 import { TReport } from "../../Report/ReportViewer";
 import { TSpChamp, TSpContexte, TSpMeta, TSpTable } from "./Types";
-import { champVisible, construireGraphe, recalculer, validerClient } from "./dynamicEngine";
+import { champVisible, cleChamp, construireGraphe, recalculer, validerClient } from "./dynamicEngine";
 import DynamicField from "./DynamicField";
 
 /** Valeur initiale d'un champ (constante ou variable GV_*). */
@@ -51,18 +51,31 @@ function valeurInitiale(champ: TSpChamp): any {
       return def;
   }
 }
+/** Sérialisation pour l'envoi au serveur : les Date deviennent des chaînes locales
+ *  naïves "aaaa-mm-jjThh:mm:ss" (canon « heure naïve » : la lecture d'horloge fait foi,
+ *  jamais le fuseau — évite le décalage UTC à l'enregistrement). */
+function valeurPourEnvoi(v: any): any {
+  if (v instanceof Date && !isNaN(v.getTime())) {
+    const p = (n: number) => String(n).padStart(2, "0");
+    return `${v.getFullYear()}-${p(v.getMonth() + 1)}-${p(v.getDate())}T${p(v.getHours())}:${p(v.getMinutes())}:${p(v.getSeconds())}`;
+  }
+  return v;
+}
+function valeursPourEnvoi(obj: { [k: string]: any }): { [k: string]: any } {
+  return Object.fromEntries(Object.entries(obj ?? {}).map(([k, v]) => [k, valeurPourEnvoi(v)]));
+}
 function enteteInitial(meta: TSpMeta): ObjetGenerique {
   const e: ObjetGenerique = { Statut: "" };
   meta.champs
     .filter((c) => c.Cod_Table === "ENT")
-    .forEach((c) => { e[c.Nom_Colonne] = valeurInitiale(c); });
+    .forEach((c) => { e[cleChamp(c)] = valeurInitiale(c); });
   return e;
 }
 function ligneInitiale(meta: TSpMeta, codTable: string): ObjetGenerique {
   const l: ObjetGenerique = { RowId: 0 };
   meta.champs
     .filter((c) => c.Cod_Table === codTable)
-    .forEach((c) => { l[c.Nom_Colonne] = valeurInitiale(c); });
+    .forEach((c) => { l[cleChamp(c)] = valeurInitiale(c); });
   return l;
 }
 /** Mapping Typ_Sql -> dataType de la Grille partagée.
@@ -93,14 +106,20 @@ const DynamicPage = ({ codPage }: { codPage: string }) => {
   const [meta, setMeta] = useState<TSpMeta | null>(null);
   const [metaErreur, setMetaErreur] = useState("");
   useEffect(() => {
+    let ok = false;
     setShowLoading(true);
     myAxios("sp_page_meta", { codPage })
       .then((dt) => {
-        if (dt?.data?.result) setMeta(dt.data.data[0]);
+        if (dt?.data?.result) {
+          ok = true;
+          setMeta(dt.data.data[0]);
+        }
         else setMetaErreur(dt?.data?.message || "Page introuvable ou non publiée.");
       })
       .catch(() => setMetaErreur("Erreur de chargement de la page."))
-      .finally(() => setShowLoading(false));
+      // En cas de succès, le waiter reste affiché : il sera masqué par loadData
+      // une fois le document complètement chargé (évite un clignotement).
+      .finally(() => { if (!ok) setShowLoading(false); });
   }, [codPage]);
 
   /* ---- État du document ---- */
@@ -144,21 +163,26 @@ const DynamicPage = ({ codPage }: { codPage: string }) => {
 
   const loadData = useCallback(async () => {
     if (!meta) return;
-    if (currentNum !== "" && currentNum !== "new" && currentNum !== undefined) {
-      await myAxios("sp_get_document", { codPage, numDoc: currentNum })
-        .then((dt) => {
-          if (dt?.data?.result) {
-            setEntete(dt.data.entete);
-            setDetails(dt.data.details ?? {});
-            enteteRef.current = dt.data.entete;
-            detailsRef.current = dt.data.details ?? {};
-          } else {
-            resetDocument();
-          }
-        })
-        .catch(() => resetDocument());
-    } else {
-      resetDocument();
+    setShowLoading(true);
+    try {
+      if (currentNum !== "" && currentNum !== "new" && currentNum !== undefined) {
+        await myAxios("sp_get_document", { codPage, numDoc: currentNum })
+          .then((dt) => {
+            if (dt?.data?.result) {
+              setEntete(dt.data.entete);
+              setDetails(dt.data.details ?? {});
+              enteteRef.current = dt.data.entete;
+              detailsRef.current = dt.data.details ?? {};
+            } else {
+              resetDocument();
+            }
+          })
+          .catch(() => resetDocument());
+      } else {
+        resetDocument();
+      }
+    } finally {
+      setShowLoading(false);
     }
   }, [currentNum, meta, resetDocument]);
 
@@ -218,7 +242,7 @@ const DynamicPage = ({ codPage }: { codPage: string }) => {
         myAxios("sp_exec_source", { codSource: f.source, params }).then((dt) => {
           if (dt?.data?.result) {
             const val = dt.data.data?.[0]?.valeur;
-            setEntete((prv) => ({ ...prv, [c.Nom_Colonne]: val }));
+            setEntete((prv) => ({ ...prv, [cleChamp(c)]: val }));
           }
         }).catch(() => {});
       } catch { /* source invalide : ignorée */ }
@@ -235,7 +259,7 @@ const DynamicPage = ({ codPage }: { codPage: string }) => {
       return r.entete;
     });
     // Validations au changement de champ (confort, niveau B uniquement signalé)
-    const champModifie = meta.champs.find((c) => c.Nom_Colonne === nomColonne)?.Cod_Champ;
+    const champModifie = meta.champs.find((c) => cleChamp(c) === nomColonne)?.Cod_Champ;
     const v = validerClient(meta, { entete: { ...entete, [nomColonne]: valeur }, details }, "CHANGE", champModifie);
     if (v.erreurs.length > 0) {
       alert({ titre: "Contrôle", msg: v.erreurs[0].message, typMsg: "warning" });
@@ -310,8 +334,8 @@ const DynamicPage = ({ codPage }: { codPage: string }) => {
     for (const c of champs) {
       const typSql = colMeta.get(`${codTable}|${c.Nom_Colonne}`)?.Typ_Sql ?? "nvarchar";
       const enLecture = lectureSeule || c.Etat !== "S" || c.Typ_Controle === "CALCULE" || c.Typ_Controle === "SOURCE";
-      colonnes[c.Nom_Colonne] = {
-        columnName: c.Nom_Colonne,
+      colonnes[cleChamp(c)] = {
+        columnName: cleChamp(c),
         headerText: c.Libelle,
         dataType: dataTypeGrille(typSql),
         readOnly: enLecture,
@@ -334,7 +358,7 @@ const DynamicPage = ({ codPage }: { codPage: string }) => {
     return (meta?.champs ?? [])
       .filter((c) => c.Cod_Table === codTable && c.Total_Grille)
       .map((c) => {
-        const vals = lignes.map((l) => Number(l?.[c.Nom_Colonne]) || 0);
+        const vals = lignes.map((l) => Number(l?.[cleChamp(c)]) || 0);
         let v = 0;
         if (c.Total_Grille === "SUM") v = vals.reduce((t, x) => t + x, 0);
         else if (c.Total_Grille === "AVG" && vals.length > 0) v = vals.reduce((t, x) => t + x, 0) / vals.length;
@@ -385,7 +409,10 @@ const DynamicPage = ({ codPage }: { codPage: string }) => {
       if (savingRef.current) return;
       savingRef.current = true;
       const rslSave = await myAxios("sp_save_document", {
-        codPage, entete, details, statut: Statut,
+        codPage,
+        entete: valeursPourEnvoi(entete),
+        details: Object.fromEntries(Object.entries(details ?? {}).map(([t, ls]) => [t, (ls ?? []).map(valeursPourEnvoi)])),
+        statut: Statut,
       }).finally(() => { savingRef.current = false; });
       if (rslSave?.data?.result) {
         const numN = rslSave.data.data?.[0]?.Num_Doc;
@@ -510,7 +537,7 @@ const DynamicPage = ({ codPage }: { codPage: string }) => {
             <Grid key={champ.Cod_Champ} xs={12} sm={Math.min(12, (champ.Largeur ?? 3) * 2)} lg={champ.Largeur ?? 3} xl={champ.Largeur ?? 3}>
               <DynamicField
                 champ={champ}
-                valeur={entete?.[champ.Nom_Colonne]}
+                valeur={entete?.[cleChamp(champ)]}
                 ctx={ctx}
                 readonlyGlobal={lectureSeuleDoc}
                 onchange={stateChange}

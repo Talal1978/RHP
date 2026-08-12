@@ -37,6 +37,7 @@ const RH_Declaration_AT = () => {
         isXl,
         setShowGED,
         setGEDprops,
+        setShowLoading,
     } = useContext(cntX);
 
     const { num } = useParams();
@@ -112,21 +113,26 @@ const RH_Declaration_AT = () => {
     const myAxios = useAxiosPost();
 
     const loadData = useCallback(async () => {
-        if (currentNum && currentNum !== "new") {
-            await myAxios("get_declaration_at", { num_declaration: currentNum })
-                .then((dt) => {
-                    if (dt.data && dt.data?.result) {
-                        setEntete(dt.data.entete);
-                        setDetail(dt.data.detail);
-                    } else {
+        setShowLoading(true);
+        try {
+            if (currentNum && currentNum !== "new") {
+                await myAxios("get_declaration_at", { num_declaration: currentNum })
+                    .then((dt) => {
+                        if (dt.data && dt.data?.result) {
+                            setEntete(dt.data.entete);
+                            setDetail(dt.data.detail);
+                        } else {
+                            setEntete(iniEntete);
+                            setDetail([]);
+                        }
+                    })
+                    .catch((err) => {
                         setEntete(iniEntete);
                         setDetail([]);
-                    }
-                })
-                .catch((err) => {
-                    setEntete(iniEntete);
-                    setDetail([]);
-                });
+                    });
+            }
+        } finally {
+            setShowLoading(false);
         }
     }, [currentNum]);
 

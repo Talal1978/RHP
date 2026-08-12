@@ -29,6 +29,7 @@ const RH_Discipline = () => {
         isSmall,
         setShowGED,
         setGEDprops,
+        setShowLoading,
     } = useContext(cntX);
     const { num } = useParams();
     const [currentNum, setCurrentNum] = useState(num);
@@ -41,20 +42,25 @@ const RH_Discipline = () => {
     const myAxios = useAxiosPost();
 
     const Request = useCallback(async () => {
-        if (currentNum !== "" && currentNum !== "new") {
-            await myAxios("get_discipline", { Cod_Sanction: currentNum })
-                .then((dt) => {
-                    if (dt.data && dt.data?.result) {
-                        setEntete(dt.data.data[0]);
-                    } else {
+        setShowLoading(true);
+        try {
+            if (currentNum !== "" && currentNum !== "new") {
+                await myAxios("get_discipline", { Cod_Sanction: currentNum })
+                    .then((dt) => {
+                        if (dt.data && dt.data?.result) {
+                            setEntete(dt.data.data[0]);
+                        } else {
+                            setEntete(iniEntete);
+                        }
+                    })
+                    .catch((err) => {
                         setEntete(iniEntete);
-                    }
-                })
-                .catch((err) => {
-                    setEntete(iniEntete);
-                });
-        } else {
-            setEntete(iniEntete);
+                    });
+            } else {
+                setEntete(iniEntete);
+            }
+        } finally {
+            setShowLoading(false);
         }
     }, [currentNum]);
 

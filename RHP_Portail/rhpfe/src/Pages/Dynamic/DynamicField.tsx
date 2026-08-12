@@ -13,7 +13,7 @@ import { AttachFileOutlined } from "@mui/icons-material";
 import { listRubriques } from "../../modules/module_rubriques";
 import { Monetaire } from "../../modules/module_general_formulas";
 import { TSpChamp, TSpContexte } from "./Types";
-import { champActif } from "./dynamicEngine";
+import { champActif, cleChamp } from "./dynamicEngine";
 
 const stylePlein = { width: "100%" };
 
@@ -51,7 +51,7 @@ const DynamicField = ({
 }) => {
   const readonly = readonlyGlobal || !champActif(champ, ctx) || champ.Typ_Controle === "CALCULE" || champ.Typ_Controle === "SOURCE";
   const label = libelleChamp(champ);
-  const nom = champ.Nom_Colonne;
+  const nom = cleChamp(champ);
 
   switch (champ.Typ_Controle) {
     case "MEMO":

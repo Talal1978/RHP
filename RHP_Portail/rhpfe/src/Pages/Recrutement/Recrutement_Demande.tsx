@@ -104,7 +104,7 @@ const defaultEntete: IEntete = {
 const Recrutement_Demande = () => {
     const myAxios = useAxiosPost();
     const myAxiosGet = useAxiosGet();
-    const { settbnMenu, isSmall, setShowSignature, setSignatureProps } = useContext(cntX);
+    const { settbnMenu, isSmall, setShowSignature, setSignatureProps, setShowLoading } = useContext(cntX);
     const msgbox = useMsgBox();
     const alert = useAlert();
     const { num } = useParams();
@@ -222,6 +222,7 @@ const Recrutement_Demande = () => {
 
     const loadAgentInfo = async (matricule: string) => {
         if (!matricule) return;
+        setShowLoading(true);
         myAxios("rh_agent", { Matricule: matricule })
             .then(res => {
                 if (res.data.result && res.data.data?.agent?.length > 0) {
@@ -235,11 +236,13 @@ const Recrutement_Demande = () => {
                         Cod_Entite: agt.Cod_Entite || ""
                     }));
                 }
-            });
+            })
+            .finally(() => setShowLoading(false));
     };
 
     const loadDemande = (numDR: string) => {
         if (!numDR) return;
+        setShowLoading(true);
         myAxios("get_recrutement_demande", { Num_DR: numDR })
             .then((res) => {
                 if (res.data.result && res.data.data.length > 0) {
@@ -252,7 +255,8 @@ const Recrutement_Demande = () => {
                     msgbox({ msg: "Demande introuvable", typMsg: "warning", typReply: "OkOnly" });
                     // Optional: Reset or keep as new
                 }
-            });
+            })
+            .finally(() => setShowLoading(false));
     };
 
     const saveDemande = (statut: string = "") => {

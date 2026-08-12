@@ -31,7 +31,7 @@ interface IPoste {
 
 const Org_Poste = () => {
     const myAxios = useAxiosPost();
-    const { isSmall } = useContext(cntX);
+    const { isSmall, setShowLoading } = useContext(cntX);
     const [poste, setPoste] = useState<IPoste | null>(null);
     const domaines_competences = useCombo("domaines_competences");
     const grade = useCombo("grade");
@@ -45,6 +45,7 @@ const Org_Poste = () => {
     }, [Agent.Cod_Poste]);
 
     const loadPoste = (code: string) => {
+        setShowLoading(true);
         myAxios("getPoste", { cod_poste: code })
             .then((res) => {
                 if (res.data.result && res.data.data.length > 0) {
@@ -53,7 +54,8 @@ const Org_Poste = () => {
 
                 }
             })
-            .catch((err) => console.error(err));
+            .catch((err) => console.error(err))
+            .finally(() => setShowLoading(false));
     };
 
     const parseChips = (str: string) => {

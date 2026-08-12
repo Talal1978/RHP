@@ -213,8 +213,8 @@ export function valeurPour(col: TSpColonne, val: any): any {
     case "smalldatetime": {
       if (val instanceof Date) return isNaN(val.getTime()) ? null : val;
       const s = String(val).trim();
-      const m = /^(\d{2})\/(\d{2})\/(\d{4})(.*)$/.exec(s); // dd/MM/yyyy
-      const d = m ? new Date(`${m[3]}-${m[2]}-${m[1]}${m[4] || ""}`) : new Date(s);
+      // Canon « heure naïve » : la lecture d'horloge littérale est stockée telle quelle
+      const d = versDate(s) ?? new Date(s);
       return isNaN(d.getTime()) ? null : d;
     }
     default:
@@ -300,13 +300,32 @@ export type TSpContexte = {
 const OPS_LOGIQUES = new Set(["AND", "OR", "NOT", "EQ", "NE", "GT", "GE", "LT", "LE",
   "IN", "EMPTY", "NOTEMPTY", "CONTIENT"]);
 const OPS_CALCUL = new Set(["ADD", "SUB", "MUL", "DIVSAFE", "COND",
-  "SUM", "AVG", "MIN", "MAX", "COUNT", "ROUND", "ABS", "REF", "CONST"]);
+  "SUM", "AVG", "MIN", "MAX", "COUNT", "ROUND", "ABS", "REF", "CONST", "DATEDIFF",
+  "LEFT", "RIGHT", "SUBSTRING", "INDEXOF", "LEN", "UPPER", "LOWER", "TRIM", "REPLACE", "CONCAT",
+  "INT", "CEIL", "FLOOR", "DATEADD", "DATEPART", "DAYOFWEEK"]);
+
+/** Variables globales GV_* utilisables dans les formules (date/heure du serveur).
+ *  Aligné sur GlobalVar() du desktop ; les GV inconnues retournent null (0 en numérique). */
+function variableGlobale(nom: string): any {
+  const d = new Date();
+  switch (nom.toUpperCase()) {
+    case "GV_NOW": return d;
+    case "GV_YEAR": return d.getFullYear();
+    case "GV_MONTH": return d.getMonth() + 1;
+    case "GV_DAY": return d.getDate();
+    case "GV_DEBMOIS": return new Date(d.getFullYear(), d.getMonth(), 1);
+    case "GV_FINMOIS": return new Date(d.getFullYear(), d.getMonth() + 1, 0);
+    case "GV_DEBYEAR": return new Date(d.getFullYear(), 0, 1);
+    default: return null;
+  }
+}
 
 function operande(node: any, ctx: TSpContexte, ligne?: any): any {
   if (node === null || node === undefined) return null;
   if (typeof node !== "object") return node; // constante littérale
   if (node.ref !== undefined) {
     if (node.ref === "@result") return (ctx as any).__result;
+    if (typeof node.ref === "string" && node.ref.startsWith("GV_")) return variableGlobale(node.ref);
     if (ligne && node.ref in ligne) return ligne[node.ref];
     return ctx.entete?.[node.ref];
   }
@@ -318,6 +337,25 @@ function num(v: any): number {
   const n = Number(String(v ?? "").replace(",", "."));
   return isNaN(n) ? 0 : n;
 }
+/** Conversion stricte en date, canon « heure naïve » : la lecture d'horloge littérale
+ *  fait foi, le fuseau est ignoré (les valeurs circulent en lectures d'horloge entre le
+ *  portail, le fil JSON et la base). Retourne un instant UTC matérialisant cette lecture :
+ *  Date -> ses composants LOCAUX ; chaîne ISO/FR -> ses composants littéraux.
+ *  Tout le reste (nombres, autres chaînes) retourne null — on ne devine jamais une date. */
+function versDate(v: any): Date | null {
+  if (v instanceof Date) {
+    if (isNaN(v.getTime())) return null;
+    return new Date(Date.UTC(v.getFullYear(), v.getMonth(), v.getDate(),
+      v.getHours(), v.getMinutes(), v.getSeconds()));
+  }
+  if (typeof v !== "string") return null;
+  const s = v.trim();
+  let m = /^(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{2}):(\d{2})(?::(\d{2}))?)?/.exec(s);
+  if (m) return new Date(Date.UTC(+m[1], +m[2] - 1, +m[3], +(m[4] ?? 0), +(m[5] ?? 0), +(m[6] ?? 0)));
+  m = /^(\d{2})\/(\d{2})\/(\d{4})(?:[ T](\d{2}):(\d{2})(?::(\d{2}))?)?/.exec(s);
+  if (m) return new Date(Date.UTC(+m[3], +m[2] - 1, +m[1], +(m[4] ?? 0), +(m[5] ?? 0), +(m[6] ?? 0)));
+  return null;
+}
 /** Comparaison intelligente : numérique si possible, dates sinon, chaînes en dernier. */
 function cmp(a: any, b: any): number {
   const na = Number(String(a ?? "").replace(",", "."));
@@ -325,10 +363,45 @@ function cmp(a: any, b: any): number {
   const aNum = String(a ?? "").trim() !== "" && !isNaN(na);
   const bNum = String(b ?? "").trim() !== "" && !isNaN(nb);
   if (aNum && bNum) return na - nb;
-  const da = a instanceof Date ? a : new Date(a);
-  const db = b instanceof Date ? b : new Date(b);
+  const da = versDate(a) ?? new Date(a);
+  const db = versDate(b) ?? new Date(b);
   if (!isNaN(da.getTime()) && !isNaN(db.getTime())) return da.getTime() - db.getTime();
   return String(a ?? "").localeCompare(String(b ?? ""));
+}
+/** Conversion en texte pour les fonctions de chaînes, canon « heure naïve » :
+ *  une date devient sa lecture d'horloge littérale "AAAA-MM-JJ HH:mm:ss"
+ *  (identique côté client et côté serveur, quel que soit le fuseau). */
+function txt(v: any): string {
+  if (v === null || v === undefined) return "";
+  if (v instanceof Date) {
+    const d = versDate(v);
+    if (!d) return "";
+    const p = (x: number) => String(x).padStart(2, "0");
+    return `${d.getUTCFullYear()}-${p(d.getUTCMonth() + 1)}-${p(d.getUTCDate())} ${p(d.getUTCHours())}:${p(d.getUTCMinutes())}:${p(d.getUTCSeconds())}`;
+  }
+  if (typeof v === "boolean") return v ? "true" : "false";
+  return String(v);
+}
+/** Ajoute n unités à une date du canon UTC : S/MI/H/J en millisecondes ;
+ *  MO/A par composants avec clamp au dernier jour du mois cible (comme SQL DATEADD). */
+function ajouterDate(d: Date, n: number, unite: string): Date | null {
+  switch (unite) {
+    case "S": return new Date(d.getTime() + n * 1000);
+    case "MI": return new Date(d.getTime() + n * 60000);
+    case "H": return new Date(d.getTime() + n * 3600000);
+    case "J": return new Date(d.getTime() + n * 86400000);
+    case "MO":
+    case "A": {
+      const ni = Math.trunc(n) * (unite === "A" ? 12 : 1);
+      const total = d.getUTCFullYear() * 12 + d.getUTCMonth() + ni;
+      const y = Math.floor(total / 12);
+      const m = total - y * 12;
+      const dim = new Date(Date.UTC(y, m + 1, 0)).getUTCDate(); // nb de jours du mois cible
+      return new Date(Date.UTC(y, m, Math.min(d.getUTCDate(), dim),
+        d.getUTCHours(), d.getUTCMinutes(), d.getUTCSeconds()));
+    }
+    default: return null;
+  }
 }
 /** Évalue un nœud déclaratif (condition OU expression numérique). */
 export function evaluer(node: any, ctx: TSpContexte, ligne?: any): any {
@@ -370,7 +443,15 @@ export function evaluer(node: any, ctx: TSpContexte, ligne?: any): any {
       case "REF": return ctx.entete?.[node.colonne ?? ""];
       case "CONST": return node.valeur;
       case "ADD": return args.reduce((t, a) => t + num(operande(a, ctx, ligne)), 0);
-      case "SUB": return num(operande(args[0], ctx, ligne)) - num(operande(args[1], ctx, ligne));
+      case "SUB": {
+        // Soustraction de deux dates -> durée en secondes ; sinon arithmétique classique.
+        const a = operande(args[0], ctx, ligne);
+        const b = operande(args[1], ctx, ligne);
+        const da = versDate(a);
+        const db = versDate(b);
+        if (da && db) return (da.getTime() - db.getTime()) / 1000;
+        return num(a) - num(b);
+      }
       case "MUL": return args.reduce((t, a) => t * num(operande(a, ctx, ligne)), 1);
       case "DIVSAFE": {
         const d = num(operande(args[1], ctx, ligne));
@@ -382,23 +463,107 @@ export function evaluer(node: any, ctx: TSpContexte, ligne?: any): any {
         return Math.round(num(operande(args[0], ctx, ligne)) * f) / f;
       }
       case "ABS": return Math.abs(num(operande(args[0], ctx, ligne)));
+      /* ---- Fonctions texte (positions 1-based, convention tableur) ---- */
+      case "LEFT": {
+        const s = txt(operande(args[0], ctx, ligne));
+        return s.slice(0, Math.min(Math.max(0, Math.trunc(num(operande(args[1], ctx, ligne)))), s.length));
+      }
+      case "RIGHT": {
+        const s = txt(operande(args[0], ctx, ligne));
+        const n = Math.min(Math.max(0, Math.trunc(num(operande(args[1], ctx, ligne)))), s.length);
+        return s.slice(s.length - n);
+      }
+      case "SUBSTRING": {
+        // STXT(texte; début; longueur?) : début 1-based ; sans longueur -> jusqu'à la fin
+        const s = txt(operande(args[0], ctx, ligne));
+        const d = Math.max(1, Math.trunc(num(operande(args[1], ctx, ligne))));
+        if (args[2] === undefined) return s.slice(d - 1);
+        const n = Math.max(0, Math.trunc(num(operande(args[2], ctx, ligne))));
+        return s.slice(d - 1, d - 1 + n);
+      }
+      case "INDEXOF": {
+        // POSITION(morceau; texte) : position 1-based ; 0 si absent
+        const cherche = txt(operande(args[0], ctx, ligne));
+        if (cherche === "") return 0;
+        return txt(operande(args[1], ctx, ligne)).indexOf(cherche) + 1;
+      }
+      case "LEN": return txt(operande(args[0], ctx, ligne)).length;
+      case "UPPER": return txt(operande(args[0], ctx, ligne)).toUpperCase();
+      case "LOWER": return txt(operande(args[0], ctx, ligne)).toLowerCase();
+      case "TRIM": return txt(operande(args[0], ctx, ligne)).trim();
+      case "REPLACE": {
+        const s = txt(operande(args[0], ctx, ligne));
+        const ancien = txt(operande(args[1], ctx, ligne));
+        return ancien === "" ? s : s.split(ancien).join(txt(operande(args[2], ctx, ligne)));
+      }
+      case "CONCAT": return args.map((a) => txt(operande(a, ctx, ligne))).join("");
+      /* ---- Fonctions nombres ---- */
+      case "INT": return Math.floor(num(operande(args[0], ctx, ligne))); // ENT tableur : vers -∞
+      case "CEIL": return Math.ceil(num(operande(args[0], ctx, ligne)));
+      case "FLOOR": return Math.floor(num(operande(args[0], ctx, ligne)));
+      case "DATEDIFF": {
+        // Durée args[0] - args[1] convertie dans l'unité demandée (S/MI/H/J, défaut J).
+        // Dates invalides -> 0 (même philosophie que num() : jamais d'erreur bloquante).
+        const da = versDate(operande(args[0], ctx, ligne));
+        const db = versDate(operande(args[1], ctx, ligne));
+        if (!da || !db) return 0;
+        const ms = da.getTime() - db.getTime();
+        switch (String(node.unite ?? "J").toUpperCase()) {
+          case "S": return ms / 1000;
+          case "MI": return ms / 60000;
+          case "H": return ms / 3600000;
+          default: return ms / 86400000; // "J"
+        }
+      }
+      case "DATEADD": {
+        // Date + n unités (S/MI/H/J/MO/A) ; date invalide -> null
+        const d = versDate(operande(args[0], ctx, ligne));
+        if (!d) return null;
+        return ajouterDate(d, num(operande(args[1], ctx, ligne)),
+          String(node.unite ?? "J").toUpperCase());
+      }
+      case "DATEPART": {
+        // Partie d'une date en nombre ; date invalide -> 0
+        const d = versDate(operande(args[0], ctx, ligne));
+        if (!d) return 0;
+        switch (String(node.partie ?? "J").toUpperCase()) {
+          case "A": return d.getUTCFullYear();
+          case "M": return d.getUTCMonth() + 1;
+          case "J": return d.getUTCDate();
+          case "H": return d.getUTCHours();
+          case "MI": return d.getUTCMinutes();
+          default: return d.getUTCSeconds(); // "S"
+        }
+      }
+      case "DAYOFWEEK": {
+        // Jour de la semaine : 1 = lundi … 7 = dimanche ; date invalide -> 0
+        const d = versDate(operande(args[0], ctx, ligne));
+        if (!d) return 0;
+        return ((d.getUTCDay() + 6) % 7) + 1;
+      }
       case "COND":
         return evaluer(args[0], ctx, ligne)
           ? operande(args[1], ctx, ligne)
           : operande(args[2], ctx, ligne);
       case "SUM":
       case "AVG":
-      case "MIN":
-      case "MAX":
       case "COUNT": {
         const lignes = ctx.details?.[node.table] ?? [];
         if (op === "COUNT") return lignes.length;
         const valeurs = lignes.map((l) => num(l?.[node.colonne]));
         if (valeurs.length === 0) return 0;
         if (op === "SUM") return valeurs.reduce((t, v) => t + v, 0);
-        if (op === "AVG") return valeurs.reduce((t, v) => t + v, 0) / valeurs.length;
-        if (op === "MIN") return Math.min(...valeurs);
-        return Math.max(...valeurs);
+        return valeurs.reduce((t, v) => t + v, 0) / valeurs.length;
+      }
+      case "MIN":
+      case "MAX": {
+        // Avec "table" : agrégat sur les lignes ; sans "table" : forme scalaire
+        // (plus petite / plus grande des valeurs des arguments).
+        const valeurs = node.table
+          ? (ctx.details?.[node.table] ?? []).map((l) => num(l?.[node.colonne]))
+          : args.map((a) => num(operande(a, ctx, ligne)));
+        if (valeurs.length === 0) return 0;
+        return op === "MIN" ? Math.min(...valeurs) : Math.max(...valeurs);
       }
       default: return null;
     }
@@ -432,10 +597,16 @@ export function validerExpression(node: any, profondeur = 0): { ok: boolean; mes
 /* -------------------------------------------------------------------------- */
 /* 7. Graphe de dépendances des champs calculés                               */
 /* -------------------------------------------------------------------------- */
+/** Clé de stockage d'un champ dans le contexte : Nom_Colonne, sinon Cod_Champ
+ *  (un champ calculé non persisté peut n'être rattaché à aucune colonne physique). */
+export function cleChamp(c: { Nom_Colonne: string | null; Cod_Champ: string }): string {
+  return c.Nom_Colonne || c.Cod_Champ;
+}
 function extraireDependances(node: any, acc: { refs: string[]; tables: string[]; aggs: { table: string; colonne: string }[] }) {
   if (node === null || typeof node !== "object") return;
   if (Array.isArray(node)) { node.forEach((n) => extraireDependances(n, acc)); return; }
-  if (node.ref !== undefined && typeof node.ref === "string" && node.ref !== "@result") {
+  if (node.ref !== undefined && typeof node.ref === "string" && node.ref !== "@result"
+    && !node.ref.startsWith("GV_")) { // les GV_* ne sont pas des champs : pas de dépendance
     acc.refs.push(node.ref);
   }
   if (["SUM", "AVG", "MIN", "MAX", "COUNT"].includes(String(node.op ?? "").toUpperCase()) && node.table) {
@@ -454,7 +625,7 @@ export type TSpGraphe = {
 };
 export function construireGraphe(meta: TSpMeta): TSpGraphe {
   const calcules = meta.champs.filter((c) => c.Typ_Controle === "CALCULE" && c.Formule);
-  const parCle: Map<string, TSpChamp> = new Map(calcules.map((c) => [`${c.Cod_Table}|${c.Nom_Colonne}`, c]));
+  const parCle: Map<string, TSpChamp> = new Map(calcules.map((c) => [`${c.Cod_Table}|${cleChamp(c)}`, c]));
   const deps: { [cle: string]: string[] } = {};
   const impactesParChamp: { [k: string]: string[] } = {};
   const impactesParTable: { [k: string]: string[] } = {};
@@ -466,17 +637,17 @@ export function construireGraphe(meta: TSpMeta): TSpGraphe {
     for (const r of acc.refs) {
       if (parCle.has(`${c.Cod_Table}|${r}`)) set.add(`${c.Cod_Table}|${r}`);
       else if (parCle.has(`ENT|${r}`)) set.add(`ENT|${r}`);
-      impactesParChamp[r] = [...new Set([...(impactesParChamp[r] ?? []), c.Nom_Colonne])];
+      impactesParChamp[r] = [...new Set([...(impactesParChamp[r] ?? []), cleChamp(c)])];
     }
     // Agrégat : dépend du champ calculé de ligne alimentant la colonne agrégée
     for (const a of acc.aggs) {
       if (parCle.has(`${a.table}|${a.colonne}`)) set.add(`${a.table}|${a.colonne}`);
     }
     for (const t of acc.tables) {
-      impactesParTable[t] = [...new Set([...(impactesParTable[t] ?? []), c.Nom_Colonne])];
+      impactesParTable[t] = [...new Set([...(impactesParTable[t] ?? []), cleChamp(c)])];
     }
-    set.delete(`${c.Cod_Table}|${c.Nom_Colonne}`); // pas d'auto-référence
-    deps[`${c.Cod_Table}|${c.Nom_Colonne}`] = [...set];
+    set.delete(`${c.Cod_Table}|${cleChamp(c)}`); // pas d'auto-référence
+    deps[`${c.Cod_Table}|${cleChamp(c)}`] = [...set];
   }
   // Tri topologique (DFS avec détection de cycle)
   const ordre: TSpChamp[] = [];
@@ -504,11 +675,11 @@ export function recalculer(meta: TSpMeta, ctx: TSpContexte, ligne?: any): { cycl
     try {
       const formule = JSON.parse(champ.Formule!);
       if (champ.Cod_Table === "ENT") {
-        ctx.entete[champ.Nom_Colonne] = evaluer(formule, ctx, ligne);
+        ctx.entete[cleChamp(champ)] = evaluer(formule, ctx, ligne);
       } else {
         // Calcul de ligne : appliqué à chaque ligne du détail concerné
         for (const l of ctx.details?.[champ.Cod_Table] ?? []) {
-          l[champ.Nom_Colonne] = evaluer(formule, ctx, l);
+          l[cleChamp(champ)] = evaluer(formule, ctx, l);
         }
       }
     } catch { /* formule invalide : ignorée, signalée à la publication */ }
@@ -617,7 +788,7 @@ export async function executerValidations(
     };
     const champ = champParCode(v.Cod_Champ);
     const valeurChamp = (ligne?: any) => {
-      const nomCol = champ?.Nom_Colonne ?? v.Cod_Champ ?? "";
+      const nomCol = champ ? cleChamp(champ) : (v.Cod_Champ ?? "");
       return ligne ? ligne[nomCol] : ctx.entete[nomCol];
     };
     try {
@@ -694,7 +865,7 @@ export async function executerValidations(
           const autre = p.autre !== undefined ? { ref: p.autre } : { const: p.constante };
           const tester = (i: number, l?: any) => {
             if (!conditionOk(l)) return;
-            const cond = { op, args: [{ ref: champ?.Nom_Colonne ?? v.Cod_Champ }, autre] };
+            const cond = { op, args: [{ ref: champ ? cleChamp(champ) : v.Cod_Champ }, autre] };
             if (!evaluer(cond, ctx, l)) pousser(v, i);
           };
           if (v.Portee === "LIGNE") lignes.forEach((_, i) => tester(i, lignes[i]));
@@ -703,7 +874,7 @@ export async function executerValidations(
         }
         case "UNIQUE": {
           // Portée DETAIL : pas de doublon sur la combinaison de colonnes (en mémoire)
-          const cols: string[] = p.colonnes ?? (v.Cod_Champ ? [champ?.Nom_Colonne ?? v.Cod_Champ] : []);
+          const cols: string[] = p.colonnes ?? (v.Cod_Champ ? [champ ? cleChamp(champ) : v.Cod_Champ] : []);
           const vus = new Set<string>();
           lignes.forEach((l, i) => {
             if (!conditionOk(l)) return;

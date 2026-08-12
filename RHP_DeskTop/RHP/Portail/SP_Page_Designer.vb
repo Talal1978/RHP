@@ -377,17 +377,17 @@ Public Class SP_Page_Designer
                                "Nouvelle section portail", MessageBoxButtons.OK, msgIcon.Stop)
                 Return
             End If
-            If CInt(CnExecuting("select count(*) from Param_Rubriques where Nom_Controle='SP_Menu_Portail' and Valeur=" & SqlV(code)).Fields(0).Value) > 0 Then
+            If ScalarInt("select count(*) from Param_Rubriques where Nom_Controle='SP_Menu_Portail' and Valeur=" & SqlV(code)) > 0 Then
                 ShowMessageBox("La section '" & code & "' existe déjà.",
                                "Nouvelle section portail", MessageBoxButtons.OK, msgIcon.Stop)
                 Return
             End If
-            If CInt(CnExecuting("select count(*) from Param_Rubriques where Nom_Controle='SP_Menu_Portail' and Membre=" & SqlV(libelle)).Fields(0).Value) > 0 Then
+            If ScalarInt("select count(*) from Param_Rubriques where Nom_Controle='SP_Menu_Portail' and Membre=" & SqlV(libelle)) > 0 Then
                 ShowMessageBox("Une section porte déjà le libellé '" & libelle & "'.",
                                "Nouvelle section portail", MessageBoxButtons.OK, msgIcon.Stop)
                 Return
             End If
-            Dim rang As Integer = CInt(CnExecuting("select isnull(max(Rang),0)+1 from Param_Rubriques where Nom_Controle='SP_Menu_Portail'").Fields(0).Value)
+            Dim rang As Integer = ScalarInt("select isnull(max(Rang),0)+1 from Param_Rubriques where Nom_Controle='SP_Menu_Portail'")
             CnExecuting("insert into Param_Rubriques (Nom_Controle, Valeur, Membre, Rang, Typ, Dat_Crea, Created_By) values ('SP_Menu_Portail', " &
                         SqlV(code) & ", " & SqlV(libelle) & ", " & rang & ", 'U', getdate(), " & SqlV(theUser.Login) & ")")
             ' Rechargement de la liste puis sélection de la section créée
@@ -588,6 +588,21 @@ Public Class SP_Page_Designer
         MajEtatWorkflowSignature()
     End Sub
 
+    ''' <summary>SELECT scalaire sur la connexion globale avec fermeture systématique
+    ''' du recordset. Un recordset firehose laissé ouvert sur cn maintient une session
+    ''' SQL implicite active : dès que deux sessions sont en cours d'utilisation, un
+    ''' BeginTrans ultérieur sur cn échoue (-2147168227 « Impossible de créer une
+    ''' nouvelle transaction en raison d'un dépassement de capacité »).</summary>
+    Private Function ScalarInt(sql As String) As Integer
+        Dim rs As ADODB.Recordset = CnExecuting(sql)
+        Dim n As Integer = 0
+        If rs IsNot Nothing AndAlso rs.State = 1 Then
+            If Not rs.EOF Then n = CInt(IsNull(rs.Fields(0).Value, 0))
+            rs.Close()
+        End If
+        Return n
+    End Function
+
     Sub Enregistrer()
         Dim rsl As savingResult = Saving()
         ShowMessageBox(rsl.message, "Enregistrer", MessageBoxButtons.OK, IIf(rsl.result, msgIcon.Information, msgIcon.Stop))
@@ -733,7 +748,11 @@ Public Class SP_Page_Designer
     Private Sub MajCombosDependantes()
         Dim dispo = CodTablesDisponibles()
         MajItemsCombo(TryCast(Grd_Colonnes.Columns("col_Cod_Table"), DataGridViewComboBoxColumn), dispo)
-        MajItemsCombo(TryCast(Grd_Champs.Columns("col_Cod_Table"), DataGridViewComboBoxColumn), dispo)
+        ' Champs : la table est facultative pour un champ affiché uniquement
+        ' ('' = champ non rattaché à une table : pur affichage, jamais stocké)
+        Dim champsDispo As New List(Of String) From {""}
+        champsDispo.AddRange(dispo)
+        MajItemsCombo(TryCast(Grd_Champs.Columns("col_Cod_Table"), DataGridViewComboBoxColumn), champsDispo)
         ' Validations : la table est facultative ('' = règle globale / entête)
         Dim avecVide As New List(Of String) From {""}
         avecVide.AddRange(dispo)
@@ -832,6 +851,7 @@ Public Class SP_Page_Designer
         If actuel <> "" AndAlso Not dispo.Contains(actuel) Then dispo.Add(actuel)
         combo.DropDownStyle = ComboBoxStyle.DropDownList
         combo.Items.Clear()
+        combo.Items.Add("")   ' '' = pas de colonne (champ calculé non persisté ou affiché uniquement)
         For Each v As String In dispo : combo.Items.Add(v) : Next
         If actuel <> "" AndAlso dispo.Contains(actuel) Then combo.SelectedItem = actuel
     End Sub
@@ -847,6 +867,24 @@ Public Class SP_Page_Designer
             ProposerLibelleDepuisColonne(e.RowIndex)
         ElseIf prop = "Cod_Champ" Then
             ProposerDepuisNomChamp(e.RowIndex)
+        ElseIf prop = "Typ_Controle" Then
+            ' Un champ qui devient calculé n'est plus saisissable : affiché par défaut
+            Dim lig As DataGridViewRow = Grd_Champs.Rows(e.RowIndex)
+            If IsNull(lig.Cells("col_Typ_Controle").Value, "") = "CALCULE" Then
+                Dim et As String = IsNull(lig.Cells("col_Etat").Value, "S")
+                If et <> "A" AndAlso et <> "I" Then lig.Cells("col_Etat").Value = "A"
+            End If
+        ElseIf prop = "Etat" Then
+            ' Un champ calculé n'est jamais saisissable : affiché (A) ou invisible (I) uniquement
+            Dim lig As DataGridViewRow = Grd_Champs.Rows(e.RowIndex)
+            If IsNull(lig.Cells("col_Typ_Controle").Value, "") = "CALCULE" Then
+                Dim et As String = IsNull(lig.Cells("col_Etat").Value, "S")
+                If et <> "A" AndAlso et <> "I" Then
+                    lig.Cells("col_Etat").Value = "A"
+                    ShowMessageBox("Un champ calculé n'est jamais saisissable : il est 'Affiché' (A) ou 'Invisible' (I).",
+                                   "Champ calculé", MessageBoxButtons.OK, msgIcon.Information)
+                End If
+            End If
         End If
     End Sub
 
@@ -1030,7 +1068,7 @@ Public Class SP_Page_Designer
         If ct = "" OrElse nc = "" Then Return
         ' Un champ en cours de saisie n'est pas encore dans Tbl_Champs.Rows : il doit
         ' être pris en compte par le contrôle d'utilisation.
-        Grd_Champs.EndEdit()
+        TerminerEditionGrille(Grd_Champs)
         Dim champsLies As New List(Of String)
         For Each r As DataRow In Tbl_Champs.Rows
             If r.RowState = DataRowState.Deleted Then Continue For
@@ -1297,7 +1335,8 @@ Public Class SP_Page_Designer
 
     ''' <summary>Double-clic sur une cellule 'Rubrique' ou 'N° Zoom' (lecture seule) :
     ''' ouvre le zoom standard (Appel_Zoom) : frappe au clavier = filtre sur la colonne
-    ''' sélectionnée, bouton gomme = effacer ; la valeur choisie est forcément valide.</summary>
+    ''' sélectionnée, bouton gomme = effacer ; la valeur choisie est forcément valide.
+    ''' Double-clic sur 'Formule (json)' : ouvre l'assistant de formule (champs CALCULE).</summary>
     Private Sub Grd_Champs_CellDoubleClick(sender As Object, e As DataGridViewCellEventArgs) Handles Grd_Champs.CellDoubleClick
         If e.RowIndex < 0 OrElse e.ColumnIndex < 0 Then Return
         If Grd_Champs.Rows(e.RowIndex).IsNewRow Then Return
@@ -1309,7 +1348,38 @@ Public Class SP_Page_Designer
         ElseIf prop = "Num_Zoom" Then
             Appel_Zoom("Num_Zoom", "Description,Table_Ref", "Controle_Def_Zoom", "1=1",
                        Grd_Champs.Rows(e.RowIndex).Cells(e.ColumnIndex), Me)
+        ElseIf prop = "Formule" Then
+            OuvrirAssistantFormule(e.RowIndex)
         End If
+    End Sub
+
+    ''' <summary>Curseur "main" sur les cellules 'Formule' : elles s'ouvrent avec l'assistant au double-clic.</summary>
+    Private Sub Grd_Champs_CellMouseEnter(sender As Object, e As DataGridViewCellEventArgs) Handles Grd_Champs.CellMouseEnter
+        If e.ColumnIndex >= 0 AndAlso Grd_Champs.Columns(e.ColumnIndex).DataPropertyName = "Formule" Then
+            Grd_Champs.Cursor = Cursors.Hand
+        Else
+            Grd_Champs.Cursor = Cursors.Default
+        End If
+    End Sub
+
+    ''' <summary>Ouvre l'assistant de formule (SP_Assistant_Formule) pour le champ de la ligne :
+    ''' composition guidée sans code, puis le json généré est écrit dans la colonne Formule.</summary>
+    Private Sub OuvrirAssistantFormule(rowIndex As Integer)
+        Grd_Champs.EndEdit()
+        Dim drv = TryCast(Grd_Champs.Rows(rowIndex).DataBoundItem, DataRowView)
+        If drv Is Nothing Then Return
+        Dim r As DataRow = drv.Row
+        If Not IsNull(r("Typ_Controle"), "").Trim.Equals("CALCULE", StringComparison.OrdinalIgnoreCase) Then
+            ShowMessageBox("Une formule ne concerne que les champs calculés :" & vbCrLf &
+                           "passez d'abord le type du champ à 'CALCULE' (colonne 'Type de contrôle').",
+                           "Assistant de formule", MessageBoxButtons.OK, msgIcon.Information)
+            Return
+        End If
+        Using f As New SP_Assistant_Formule(Tbl_Champs, IsNull(r("Nom_Colonne"), "").Trim,
+                                            IsNull(r("Cod_Champ"), "").Trim, IsNull(r("Formule"), ""))
+            If f.ShowDialog(Me) <> DialogResult.OK Then Return
+            r("Formule") = f.FormuleJson
+        End Using
     End Sub
 
     '---------------- Garde : les tables avant les colonnes ----------------
@@ -1349,7 +1419,7 @@ Public Class SP_Page_Designer
         If e.TabPage Is Tab_Champs Then
             ' Une colonne physique en cours de saisie doit être visible dans la liste
             ' 'Colonne' des champs (et dans les propositions automatiques).
-            Grd_Colonnes.EndEdit()
+            TerminerEditionGrille(Grd_Colonnes)
             MajCombosDependantes()
             Return
         End If
@@ -1384,12 +1454,27 @@ Public Class SP_Page_Designer
         Return If(valeur, "true", "false")
     End Function
 
+    ''' <summary>Termine l'édition en cours d'une grille (cellule ET ligne) : EndEdit ne
+    ''' valide que la cellule ; une nouvelle ligne en cours de saisie n'entre dans le
+    ''' DataTable qu'à la validation de la ligne (EndCurrentEdit du gestionnaire de devise).
+    ''' La ligne courante n'est validée que si l'utilisateur l'a réellement modifiée
+    ''' (un simple clic sur la ligne vide ne doit pas créer de ligne).</summary>
+    Private Sub TerminerEditionGrille(grd As DataGridView)
+        grd.EndEdit()
+        If Not grd.IsCurrentRowDirty OrElse grd.DataSource Is Nothing Then Return
+        Dim bc As BindingContext = grd.BindingContext
+        If bc Is Nothing Then Return
+        Dim cm As CurrencyManager = TryCast(bc(grd.DataSource), CurrencyManager)
+        If cm IsNot Nothing Then cm.EndCurrentEdit()
+    End Sub
+
     Function Saving() As savingResult
         ' Termine toute édition en cours dans les grilles AVANT les contrôles : une
         ' ligne en cours de saisie n'entre dans le DataTable qu'à sa validation ;
         ' contrôles et écriture doivent porter sur les mêmes données.
-        Grd_Tables.EndEdit() : Grd_Colonnes.EndEdit() : Grd_Champs.EndEdit()
-        Grd_Validations.EndEdit() : Grd_Droits.EndEdit() : Grd_Sources.EndEdit()
+        For Each g As DataGridView In {Grd_Tables, Grd_Colonnes, Grd_Champs, Grd_Validations, Grd_Droits, Grd_Sources}
+            TerminerEditionGrille(g)
+        Next
         '---------------- Validations de saisie ----------------
         Dim codPage As String = Cod_Page_txt.Text.Trim
         Dim codDoc As String = Cod_Document_txt.Text.Trim
@@ -1442,11 +1527,11 @@ Public Class SP_Page_Designer
                 Return New savingResult With {.result = False, .message = "Nom physique en doublon : '" & np & "'."}
             End If
             ' Le nom physique est globalement unique (UQ_SP_Page_Table_Nom)
-            If CnExecuting("select count(*) from SP_Page_Table where Nom_Physique=" & SqlV(np) & " and Cod_Page<>" & SqlV(codPage)).Fields(0).Value > 0 Then
+            If ScalarInt("select count(*) from SP_Page_Table where Nom_Physique=" & SqlV(np) & " and Cod_Page<>" & SqlV(codPage)) > 0 Then
                 Return New savingResult With {.result = False, .message = "Le nom physique '" & np & "' est déjà utilisé par une autre page."}
             End If
             ' Table physique orpheline : sa création échouerait et son rattachement serait risqué
-            If TableExiste(np) AndAlso CnExecuting("select count(*) from SP_Page_Table where Nom_Physique=" & SqlV(np)).Fields(0).Value = 0 Then
+            If TableExiste(np) AndAlso ScalarInt("select count(*) from SP_Page_Table where Nom_Physique=" & SqlV(np)) = 0 Then
                 Return New savingResult With {.result = False, .message = "La table '" & np & "' existe déjà dans la base sans être rattachée à une page : choisissez un autre code document."}
             End If
         Next
@@ -1496,36 +1581,61 @@ Public Class SP_Page_Designer
         For Each r As DataRow In Tbl_Champs.Rows
             If r.RowState = DataRowState.Deleted Then Continue For
             Dim cc As String = IsNull(r("Cod_Champ"), "").Trim
-            If ValiderIdentifiantSql(cc) <> "" OrElse ValiderIdentifiantSql(IsNull(r("Nom_Colonne"), "")) <> "" Then
+            Dim typCtrl As String = IsNull(r("Typ_Controle"), "")
+            Dim ncCh As String = IsNull(r("Nom_Colonne"), "").Trim
+            Dim etatCh As String = IsNull(r("Etat"), "S")
+            ' Un champ calculé non persisté peut n'être rattaché à aucune colonne
+            ' (valeur calculée à la volée, jamais stockée) ; sa clé est alors Cod_Champ.
+            ' Un champ affiché uniquement (État = A) peut aussi être sans colonne :
+            ' simple élément d'affichage, jamais stocké (sa clé est Cod_Champ).
+            Dim sansColonne As Boolean = (ncCh = "" AndAlso (typCtrl = "CALCULE" OrElse etatCh = "A"))
+            If ncCh = "" AndAlso Not sansColonne Then
+                Return New savingResult With {.result = False, .message = "Le champ '" & cc & "' n'est rattaché à aucune colonne : seuls les champs calculés (non persistés) ou affichés uniquement (État = A) peuvent être sans colonne ni table."}
+            End If
+            If ValiderIdentifiantSql(cc) <> "" OrElse (Not sansColonne AndAlso ValiderIdentifiantSql(ncCh) <> "") Then
                 Return New savingResult With {.result = False, .message = "Champ invalide : " & cc}
             End If
             If Not champsVus.Add(cc) Then
                 Return New savingResult With {.result = False, .message = "Champ en doublon : '" & cc & "'."}
             End If
-            Dim ctCh As String = IsNull(r("Cod_Table"), "ENT").Trim
-            If ctCh = "" Then ctCh = "ENT"
-            If Not tablesVues.Contains(ctCh) Then
+            ' La table est obligatoire, sauf pour un champ affiché uniquement (hors
+            ' calculé) sans colonne : il peut être non rattaché (Cod_Table vide) —
+            ' pur affichage, jamais stocké. Sinon, une table vide vaut ENT (défaut).
+            Dim ctCh As String = IsNull(r("Cod_Table"), "").Trim
+            Dim sansTable As Boolean = (ctCh = "" AndAlso sansColonne AndAlso etatCh = "A" AndAlso typCtrl <> "CALCULE")
+            If ctCh = "" AndAlso Not sansTable Then ctCh = "ENT"
+            r("Cod_Table") = ctCh   ' normalise la valeur enregistrée ('' = non rattaché)
+            If Not sansTable AndAlso Not tablesVues.Contains(ctCh) Then
                 Return New savingResult With {.result = False, .message = "Le champ '" & cc & "' référence une table non configurée : '" & ctCh & "'."}
             End If
-            ' La colonne affectée doit exister physiquement dans la table : déclarée dans
-            ' l'onglet 'Colonnes physiques' ou colonne technique (Num_Doc, Statut...)
-            Dim ncCh As String = IsNull(r("Nom_Colonne"), "").Trim
-            If Not colonnesVues.Contains(ctCh & "." & ncCh) AndAlso
-               Not ColonnesTechniquesTable(ctCh).Contains(ncCh, StringComparer.OrdinalIgnoreCase) Then
-                Return New savingResult With {.result = False, .message = "Le champ '" & cc & "' est affecté à la colonne '" & ctCh & "." & ncCh & "' inexistante : elle n'est pas déclarée dans les colonnes physiques de la table '" & ctCh & "' (onglet 'Colonnes physiques')."}
+            If sansColonne Then
+                If IsNull(r("Persiste"), "false") = "true" Then
+                    Return New savingResult With {.result = False, .message = "Le champ '" & cc & "' est persisté : affectez-lui une colonne physique (onglet 'Colonnes physiques') ou décochez 'Persisté'."}
+                End If
+            Else
+                ' La colonne affectée doit exister physiquement dans la table : déclarée dans
+                ' l'onglet 'Colonnes physiques' ou colonne technique (Num_Doc, Statut...)
+                If Not colonnesVues.Contains(ctCh & "." & ncCh) AndAlso
+                   Not ColonnesTechniquesTable(ctCh).Contains(ncCh, StringComparer.OrdinalIgnoreCase) Then
+                    Return New savingResult With {.result = False, .message = "Le champ '" & cc & "' est affecté à la colonne '" & ctCh & "." & ncCh & "' inexistante : elle n'est pas déclarée dans les colonnes physiques de la table '" & ctCh & "' (onglet 'Colonnes physiques')."}
+                End If
+                ' Une colonne physique ne peut être affectée qu'à un seul champ de la page
+                If Not colonnesAffectees.Add(ctCh & "." & ncCh) Then
+                    Return New savingResult With {.result = False, .message = "Colonne affectée en double : '" & ctCh & "." & ncCh & "' est utilisée par plusieurs champs (dont '" & cc & "')."}
+                End If
             End If
-            ' Une colonne physique ne peut être affectée qu'à un seul champ de la page
-            If Not colonnesAffectees.Add(ctCh & "." & ncCh) Then
-                Return New savingResult With {.result = False, .message = "Colonne affectée en double : '" & ctCh & "." & ncCh & "' est utilisée par plusieurs champs (dont '" & cc & "')."}
-            End If
-            If Not TYPES_CONTROLE.Contains(IsNull(r("Typ_Controle"), "")) Then
+            If Not TYPES_CONTROLE.Contains(typCtrl) Then
                 Return New savingResult With {.result = False, .message = "Type de contrôle invalide pour le champ " & cc}
             End If
-            If IsNull(r("Typ_Controle"), "") = "ZOOM" AndAlso IsNull(r("Num_Zoom"), "").Trim = "" Then
+            If typCtrl = "ZOOM" AndAlso IsNull(r("Num_Zoom"), "").Trim = "" Then
                 Return New savingResult With {.result = False, .message = "Le champ " & cc & " est un Zoom : le numéro de zoom est obligatoire."}
             End If
-            If IsNull(r("Typ_Controle"), "") = "RUBRIQUE" AndAlso IsNull(r("Rubrique"), "").Trim = "" Then
+            If typCtrl = "RUBRIQUE" AndAlso IsNull(r("Rubrique"), "").Trim = "" Then
                 Return New savingResult With {.result = False, .message = "Le champ " & cc & " est une rubrique : le nom de rubrique est obligatoire."}
+            End If
+            ' Un champ calculé n'est jamais saisissable : affiché (A) ou invisible (I) uniquement
+            If typCtrl = "CALCULE" AndAlso IsNull(r("Etat"), "S") <> "A" AndAlso IsNull(r("Etat"), "S") <> "I" Then
+                r("Etat") = "A"
             End If
             If Not ETATS.Contains(IsNull(r("Etat"), "S")) Then
                 Return New savingResult With {.result = False, .message = "Etat invalide (S/R/A/I) pour le champ " & cc}
@@ -1560,9 +1670,19 @@ Public Class SP_Page_Designer
         Next
 
         '---------------- Écriture transactionnelle ----------------
+        ' Connexion ADODB DÉDIÉE à cette transaction : la connexion globale cn est
+        ' partagée par toute l'application et peut conserver des recordsets firehose
+        ' en attente (CnExecuting) ; SQLOLEDB ouvre alors des sessions implicites et
+        ' BeginTrans y échouerait (-2147168227 « dépassement de capacité ») — ou pire,
+        ' exécuterait certains ordres sur une session HORS transaction. Une connexion
+        ' neuve garantit que BeginTrans aboutit et que TOUS les ordres de
+        ' l'enregistrement (métadonnées + DDL) s'exécutent dans la MÊME transaction.
+        Dim cnTx As New ADODB.Connection
         Dim enTransaction As Boolean = False
         Try
-            cn.BeginTrans()
+            cnTx.ConnectionString = connectionString
+            cnTx.Open()
+            cnTx.BeginTrans()
             enTransaction = True
             ' 1. Entête de page : UPDATE si existant, INSERT sinon.
             '    (Jamais de DELETE : SP_Page_DDL_Log référence Cod_Page - audit préservé.)
@@ -1570,9 +1690,11 @@ Public Class SP_Page_Designer
             '    immuables ; le statut publié est préservé (le DDL généré étant non
             '    destructif, la publication n'est pas invalidée).
             '    Typ_Document reprend Cod_Document : un seul code sert de type workflow.
-            Dim existeDeja As Boolean = (CnExecuting("select count(*) from SP_Page where Cod_Page=" & SqlV(codPage)).Fields(0).Value > 0)
+            Dim rsExist As ADODB.Recordset = cnTx.Execute("select count(*) from SP_Page where Cod_Page=" & SqlV(codPage))
+            Dim existeDeja As Boolean = (CInt(rsExist.Fields(0).Value) > 0)
+            rsExist.Close()
             If existeDeja Then
-                CnExecuting("update SP_Page set Libelle=" & SqlV(Nom_Page_txt.Text.Trim) & "," &
+                cnTx.Execute("update SP_Page set Libelle=" & SqlV(Nom_Page_txt.Text.Trim) & "," &
                             " Nom_Page=" & SqlV(Nom_Page_txt.Text.Trim) & ", Menu_Parent=" & SqlV(Menu_Parent_cmb.SelectedValue) & ", Rang=" & CInt(Rang_txt.Value) & "," &
                             " Icone=" & SqlV(IconeChoisie()) & ", Typ_Document=" & SqlV(codDoc) & ", Workflow_Actif=" & SqlV(B(Workflow_Actif_chk.Checked)) & "," &
                             " Cod_Modele_Edition=" & SqlV(Cod_Modele_Edition_txt.Text.Trim) & ", GED_Actif=" & SqlV(B(GED_Actif_chk.Checked)) & ", GED_Obligatoire=" & SqlV(B(GED_Obligatoire_chk.Checked)) & "," &
@@ -1581,7 +1703,7 @@ Public Class SP_Page_Designer
                             " Acces_Personnalise=" & SqlV(B(Acces_Personnalise_chk.Checked)) & "," &
                             " DDL_Genere='true', Dat_Modif=getdate(), Modified_By=" & SqlV(theUser.Login) & " where Cod_Page=" & SqlV(codPage))
             Else
-                CnExecuting("insert into SP_Page (Cod_Page, Cod_Document, Libelle, Nom_Page, Menu_Parent, Rang, Icone, Statut_Page, Table_Ent, " &
+                cnTx.Execute("insert into SP_Page (Cod_Page, Cod_Document, Libelle, Nom_Page, Menu_Parent, Rang, Icone, Statut_Page, Table_Ent, " &
                             "Typ_Document, Workflow_Actif, Cod_Modele_Edition, GED_Actif, GED_Obligatoire, " &
                             "Act_Enregistrer, Act_Soumettre, Act_Imprimer, Act_Exporter, Acces_Personnalise, DDL_Genere, Dat_Crea, Created_By, Dat_Modif, Modified_By) values (" &
                             SqlV(codPage) & "," & SqlV(codDoc) & "," & SqlV(Nom_Page_txt.Text.Trim) & "," &
@@ -1594,15 +1716,15 @@ Public Class SP_Page_Designer
             End If
             ' 2. Purge des lignes filles (ordre imposé par les FK : SP_Page_Colonne
             '    référence SP_Page_Table, donc colonnes AVANT tables)
-            CnExecuting("delete from SP_Page_Colonne where Cod_Page=" & SqlV(codPage))
-            CnExecuting("delete from SP_Page_Champ where Cod_Page=" & SqlV(codPage))
-            CnExecuting("delete from SP_Page_Validation where Cod_Page=" & SqlV(codPage))
-            CnExecuting("delete from SP_Page_Droit where Cod_Page=" & SqlV(codPage))
-            CnExecuting("delete from SP_Page_Table where Cod_Page=" & SqlV(codPage))
+            cnTx.Execute("delete from SP_Page_Colonne where Cod_Page=" & SqlV(codPage))
+            cnTx.Execute("delete from SP_Page_Champ where Cod_Page=" & SqlV(codPage))
+            cnTx.Execute("delete from SP_Page_Validation where Cod_Page=" & SqlV(codPage))
+            cnTx.Execute("delete from SP_Page_Droit where Cod_Page=" & SqlV(codPage))
+            cnTx.Execute("delete from SP_Page_Table where Cod_Page=" & SqlV(codPage))
             ' 3. Tables
             For Each r As DataRow In Tbl_Tables.Rows
                 If r.RowState = DataRowState.Deleted Then Continue For
-                CnExecuting("insert into SP_Page_Table (Cod_Page, Cod_Table, Nom_Physique, Role_Table, Libelle, Rang, Allow_Add, Allow_Edit, Allow_Delete, Allow_Duplicate, Tri_Defaut, Regle_Suppression, Dat_Crea, Created_By) values (" &
+                cnTx.Execute("insert into SP_Page_Table (Cod_Page, Cod_Table, Nom_Physique, Role_Table, Libelle, Rang, Allow_Add, Allow_Edit, Allow_Delete, Allow_Duplicate, Tri_Defaut, Regle_Suppression, Dat_Crea, Created_By) values (" &
                             SqlV(codPage) & "," & SqlV(r("Cod_Table")) & "," & SqlV(r("Nom_Physique")) & "," & SqlV(IsNull(r("Role_Table"), "DET")) & "," &
                             SqlV(r("Libelle")) & "," & Val(IsNull(r("Rang"), "1") & "") & "," & SqlV(IsNull(r("Allow_Add"), "true")) & "," & SqlV(IsNull(r("Allow_Edit"), "true")) & "," &
                             SqlV(IsNull(r("Allow_Delete"), "true")) & "," & SqlV(IsNull(r("Allow_Duplicate"), "false")) & "," & SqlV(r("Tri_Defaut")) & "," &
@@ -1611,7 +1733,7 @@ Public Class SP_Page_Designer
             ' 4. Colonnes
             For Each r As DataRow In Tbl_Colonnes.Rows
                 If r.RowState = DataRowState.Deleted Then Continue For
-                CnExecuting("insert into SP_Page_Colonne (Cod_Page, Cod_Table, Nom_Colonne, Libelle, Typ_Sql, Longueur, Precision_Sql, Echelle_Sql, Nullable, Valeur_Defaut, estUnique, estIndexe, Technique, Rang, Dat_Crea, Created_By) values (" &
+                cnTx.Execute("insert into SP_Page_Colonne (Cod_Page, Cod_Table, Nom_Colonne, Libelle, Typ_Sql, Longueur, Precision_Sql, Echelle_Sql, Nullable, Valeur_Defaut, estUnique, estIndexe, Technique, Rang, Dat_Crea, Created_By) values (" &
                             SqlV(codPage) & "," & SqlV(r("Cod_Table")) & "," & SqlV(r("Nom_Colonne")) & "," & SqlV(r("Libelle")) & "," & SqlV(LCase(IsNull(r("Typ_Sql"), "nvarchar"))) & "," &
                             SqlN(r("Longueur")) & "," & SqlN(r("Precision_Sql")) & "," & SqlN(r("Echelle_Sql")) & "," & SqlV(IsNull(r("Nullable"), "true")) & "," &
                             SqlV(r("Valeur_Defaut")) & "," & SqlV(IsNull(r("estUnique"), "false")) & "," & SqlV(IsNull(r("estIndexe"), "false")) & ", 'false'," &
@@ -1620,9 +1742,9 @@ Public Class SP_Page_Designer
             ' 5. Champs
             For Each r As DataRow In Tbl_Champs.Rows
                 If r.RowState = DataRowState.Deleted Then Continue For
-                CnExecuting("insert into SP_Page_Champ (Cod_Page, Cod_Champ, Cod_Table, Nom_Colonne, Libelle, Typ_Controle, Rang, Ligne, Colonne, Largeur, Valeur_Defaut, Obligatoire, Etat, " &
+                cnTx.Execute("insert into SP_Page_Champ (Cod_Page, Cod_Champ, Cod_Table, Nom_Colonne, Libelle, Typ_Controle, Rang, Ligne, Colonne, Largeur, Valeur_Defaut, Obligatoire, Etat, " &
                             "Rubrique, Num_Zoom, Source_Metier, Formule, Persiste, Format_Affichage, Decimales, Visible_Grille, Rang_Grille, Largeur_Colonne, Total_Grille, estCritere, Rang_Critere, Aide, Dat_Crea, Created_By) values (" &
-                            SqlV(codPage) & "," & SqlV(r("Cod_Champ")) & "," & SqlV(IsNull(r("Cod_Table"), "ENT")) & "," & SqlV(r("Nom_Colonne")) & "," & SqlV(r("Libelle")) & "," &
+                            SqlV(codPage) & "," & SqlV(r("Cod_Champ")) & "," & SqlV(IsNull(r("Cod_Table"), "")) & "," & SqlV(r("Nom_Colonne")) & "," & SqlV(r("Libelle")) & "," &
                             SqlV(r("Typ_Controle")) & "," & Val(IsNull(r("Rang"), "1") & "") & "," & SqlN(r("Ligne")) & "," & SqlN(r("Colonne")) & "," & SqlN(r("Largeur")) & "," &
                             SqlV(r("Valeur_Defaut")) & "," & SqlV(IsNull(r("Obligatoire"), "false")) & "," & SqlV(IsNull(r("Etat"), "S")) & "," &
                             SqlV(r("Rubrique")) & "," & SqlV(r("Num_Zoom")) & "," & SqlV(r("Source_Metier")) & "," & SqlV(r("Formule")) & "," & SqlV(IsNull(r("Persiste"), "false")) & "," &
@@ -1632,7 +1754,7 @@ Public Class SP_Page_Designer
             ' 6. Validations
             For Each r As DataRow In Tbl_Validations.Rows
                 If r.RowState = DataRowState.Deleted Then Continue For
-                CnExecuting("insert into SP_Page_Validation (Cod_Page, Cod_Validation, Portee, Cod_Table, Cod_Champ, Typ_Regle, Parametres, Condition_Regle, Message, Niveau, Rang, Moment, Actif, Dat_Crea, Created_By) values (" &
+                cnTx.Execute("insert into SP_Page_Validation (Cod_Page, Cod_Validation, Portee, Cod_Table, Cod_Champ, Typ_Regle, Parametres, Condition_Regle, Message, Niveau, Rang, Moment, Actif, Dat_Crea, Created_By) values (" &
                             SqlV(codPage) & "," & SqlV(r("Cod_Validation")) & "," & SqlV(r("Portee")) & "," & SqlV(r("Cod_Table")) & "," & SqlV(r("Cod_Champ")) & "," &
                             SqlV(r("Typ_Regle")) & "," & SqlV(r("Parametres")) & "," & SqlV(r("Condition_Regle")) & "," & SqlV(r("Message")) & "," &
                             SqlV(IsNull(r("Niveau"), "B")) & "," & Val(IsNull(r("Rang"), "1") & "") & "," & SqlV(IsNull(r("Moment"), "SAVE")) & "," &
@@ -1649,7 +1771,7 @@ Public Class SP_Page_Designer
                     If IsNull(r(a), "false") = "true" Then aDroit = True : Exit For
                 Next
                 If Not aDroit Then Continue For
-                CnExecuting("insert into SP_Page_Droit (Cod_Page, Cod_Profile, Consulter, Creer, Modifier, Supprimer, Valider, Imprimer, GED, Dat_Crea, Created_By) values (" &
+                cnTx.Execute("insert into SP_Page_Droit (Cod_Page, Cod_Profile, Consulter, Creer, Modifier, Supprimer, Valider, Imprimer, GED, Dat_Crea, Created_By) values (" &
                             SqlV(codPage) & "," & SqlV(r("Cod_Profile")) & "," & SqlV(IsNull(r("Consulter"), "false")) & "," & SqlV(IsNull(r("Creer"), "false")) & "," &
                             SqlV(IsNull(r("Modifier"), "false")) & "," & SqlV(IsNull(r("Supprimer"), "false")) & "," & SqlV(IsNull(r("Valider"), "false")) & "," &
                             SqlV(IsNull(r("Imprimer"), "false")) & "," & SqlV(IsNull(r("GED"), "false")) & ", getdate(), " & SqlV(theUser.Login) & ")")
@@ -1658,8 +1780,8 @@ Public Class SP_Page_Designer
             For Each r As DataRow In Tbl_Sources.Rows
                 If r.RowState = DataRowState.Deleted Then Continue For
                 If IsNull(r("Cod_Source"), "").Trim = "" Then Continue For
-                CnExecuting("delete from SP_Page_Source where Cod_Source=" & SqlV(r("Cod_Source")))
-                CnExecuting("insert into SP_Page_Source (Cod_Source, Libelle, Typ_Source, Code_Sql, Parametres, Typ_Retour, Cod_Profile, Actif, Dat_Crea, Created_By) values (" &
+                cnTx.Execute("delete from SP_Page_Source where Cod_Source=" & SqlV(r("Cod_Source")))
+                cnTx.Execute("insert into SP_Page_Source (Cod_Source, Libelle, Typ_Source, Code_Sql, Parametres, Typ_Retour, Cod_Profile, Actif, Dat_Crea, Created_By) values (" &
                             SqlV(r("Cod_Source")) & "," & SqlV(r("Libelle")) & "," & SqlV(IsNull(r("Typ_Source"), "SQL")) & "," & SqlV(r("Code_Sql")) & "," &
                             SqlV(r("Parametres")) & "," & SqlV(IsNull(r("Typ_Retour"), "SCALAIRE")) & "," & SqlV(IsNull(r("Cod_Profile"), "")) & "," &
                             SqlV(IsNull(r("Actif"), "true")) & ", getdate(), " & SqlV(theUser.Login) & ")")
@@ -1667,27 +1789,32 @@ Public Class SP_Page_Designer
             ' 9. Génération / migration des tables métier SP_ (même transaction)
             '    NB : génération depuis les grilles en mémoire (Tbl_Tables/Tbl_Colonnes) :
             '    aucune relecture en base pendant la transaction (évite le blocage sur
-            '    les verrous posés par cn sur SP_Page_Table/SP_Page_Colonne).
+            '    les verrous posés par cnTx sur SP_Page_Table/SP_Page_Colonne).
             Dim messages As New List(Of String)
             Dim erreurs As New List(Of String)
             Dim script As String = GenererScriptPage(codPage, messages, erreurs, Tbl_Tables, Tbl_Colonnes)
             If erreurs.Count > 0 Then
-                cn.RollbackTrans() : enTransaction = False
+                cnTx.RollbackTrans() : enTransaction = False
                 Return New savingResult With {.result = False, .message = "Erreurs de configuration SQL :" & vbCrLf & String.Join(vbCrLf, erreurs)}
             End If
             If script.Trim <> "" Then
-                ExecuterScriptDansTransaction(codPage, If(TableExiste("SP_Page"), "MIGRATE", "CREATE"), script)
+                ExecuterScriptDansTransaction(codPage, If(TableExiste("SP_Page"), "MIGRATE", "CREATE"), script, cnTx)
             End If
-            cn.CommitTrans() : enTransaction = False
+            cnTx.CommitTrans() : enTransaction = False
             Dim msg As String = "Enregistré avec succès."
             If messages.Count > 0 Then msg &= vbCrLf & String.Join(vbCrLf, messages)
             Return New savingResult With {.result = True, .message = msg}
         Catch ex As Exception
             If enTransaction Then
-                Try : cn.RollbackTrans() : Catch : End Try
+                Try : cnTx.RollbackTrans() : Catch : End Try
             End If
             JournaliserDDL(codPage, "MIGRATE", "", "false", ex.Message)
             Return New savingResult With {.result = False, .message = ex.Message}
+        Finally
+            Try
+                If cnTx.State = 1 Then cnTx.Close()
+            Catch
+            End Try
         End Try
     End Function
 
@@ -1787,8 +1914,9 @@ Public Class SP_Page_Designer
         ' 2. Validité des champs : table/colonne existantes, zooms, rubriques, sources
         Dim tblCh As DataTable = DATA_READER_GRD("select * from SP_Page_Champ where Cod_Page=" & SqlV(codPage))
         For Each rc As DataRow In tblCh.Rows
-            Dim ct As String = IsNull(rc("Cod_Table"), "ENT")
-            If tblT.Select("Cod_Table='" & ct.Replace("'", "''") & "'").Length = 0 Then
+            ' Cod_Table vide : champ non rattaché (affiché uniquement) — pas de contrôle de table
+            Dim ct As String = IsNull(rc("Cod_Table"), "")
+            If ct <> "" AndAlso tblT.Select("Cod_Table='" & ct.Replace("'", "''") & "'").Length = 0 Then
                 erreurs.Add("Champ " & IsNull(rc("Cod_Champ"), "") & " : table '" & ct & "' non configurée")
             End If
             If IsNull(rc("Num_Zoom"), "") <> "" AndAlso

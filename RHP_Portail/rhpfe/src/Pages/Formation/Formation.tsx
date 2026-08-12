@@ -70,7 +70,7 @@ const defaultEntete: IEntete = {
 
 const Formation = () => {
     const myAxios = useAxiosPost();
-    const { settbnMenu, isSmall, setShowGED, setGEDprops } = useContext(cntX);
+    const { settbnMenu, isSmall, setShowGED, setGEDprops, setShowLoading } = useContext(cntX);
     const msgbox = useMsgBox();
     const alert = useAlert();
     const { num } = useParams();
@@ -172,6 +172,7 @@ const Formation = () => {
 
     const loadFormation = (code: string) => {
         if (!code) return;
+        setShowLoading(true);
         myAxios("get_formation", { Cod_Formation: code })
             .then((res) => {
                 if (res.data.result) {
@@ -189,7 +190,8 @@ const Formation = () => {
                 } else {
                     msgbox({ msg: res.data.message, typMsg: "error", typReply: "OkOnly" });
                 }
-            });
+            })
+            .finally(() => setShowLoading(false));
     };
     const nouveau = () => {
         setEntete(defaultEntete);

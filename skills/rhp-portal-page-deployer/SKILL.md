@@ -3,10 +3,11 @@ name: rhp-portal-page-deployer
 description: >
   Transforme une description fonctionnelle precise d'une page portail RHP en un
   package de deploiement SQL Server sur, auditable, idempotent et reversible
-  (metadonnees SP_Page*, tables metier SP_<doc>_Ent/_Det_, rattachement a une
-  section du menu, habilitations, publication). A utiliser quand on demande la
-  creation, la mise a jour ou la desactivation d'une page du Designer de pages
-  portail RHP (module SP_), ou la generation du SQL de deploiement correspondant.
+  (metadonnees SP_Page*, tables metier generees prefixees SP_ suffixees _Ent
+  et _Det_, rattachement a une section du menu, habilitations, publication).
+  A utiliser quand on demande la creation, la mise a jour ou la desactivation
+  d'une page du Designer de pages portail RHP (module SP_), ou la generation
+  du SQL de deploiement correspondant.
 ---
 
 # RHP Portal Page Deployer

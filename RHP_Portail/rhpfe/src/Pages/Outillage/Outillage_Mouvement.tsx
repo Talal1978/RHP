@@ -53,6 +53,7 @@ const Outillage_Mouvement = () => {
         isXl,
         setShowGED,
         setGEDprops,
+        setShowLoading,
     } = useContext(cntX);
     const msgBox = useMsgBox();
     const [action, setAction] = useState<TGrilleAction>("");
@@ -244,32 +245,37 @@ const Outillage_Mouvement = () => {
     }
 
     const loadData = useCallback(async () => {
-        if (currentNum !== "" && currentNum !== "new") {
-            await myAxios("get_outillage_mouvement", { num_mouvement: currentNum })
-                .then((dt) => {
-                    if (dt.data && dt.data?.result) {
-                        setEntete(dt.data.entete);
-                        setDetail(dt.data.detail);
-                        enteteRef.current = dt.data.entete;
-                        detailRef.current = dt.data.detail;
-                    } else {
+        setShowLoading(true);
+        try {
+            if (currentNum !== "" && currentNum !== "new") {
+                await myAxios("get_outillage_mouvement", { num_mouvement: currentNum })
+                    .then((dt) => {
+                        if (dt.data && dt.data?.result) {
+                            setEntete(dt.data.entete);
+                            setDetail(dt.data.detail);
+                            enteteRef.current = dt.data.entete;
+                            detailRef.current = dt.data.detail;
+                        } else {
+                            setEntete(iniEntete);
+                            setDetail([]);
+                            enteteRef.current = iniEntete;
+                            detailRef.current = [];
+                        }
+                    })
+                    .catch((err) => {
                         setEntete(iniEntete);
                         setDetail([]);
                         enteteRef.current = iniEntete;
                         detailRef.current = [];
-                    }
-                })
-                .catch((err) => {
-                    setEntete(iniEntete);
-                    setDetail([]);
-                    enteteRef.current = iniEntete;
-                    detailRef.current = [];
-                });
-        } else {
-            setEntete(iniEntete);
-            setDetail([]);
-            enteteRef.current = iniEntete;
-            detailRef.current = [];
+                    });
+            } else {
+                setEntete(iniEntete);
+                setDetail([]);
+                enteteRef.current = iniEntete;
+                detailRef.current = [];
+            }
+        } finally {
+            setShowLoading(false);
         }
     }, [currentNum]);
 

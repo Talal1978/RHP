@@ -12,18 +12,20 @@ const Communication_Blog = () => {
     const { num } = useParams(); // Capture the ID (Num_Blog) from route :num
     const navigate = useNavigate();
     const myAxios = useAxiosPost();
-    const { isSmall } = useContext(cntX);
+    const { isSmall, setShowLoading } = useContext(cntX);
     const [blog, setBlog] = useState<any>(null);
 
     useEffect(() => {
         if (num) {
+            setShowLoading(true);
             myAxios("get_communication_blog", { Num_Blog: num })
                 .then((dt) => {
                     if (dt.data && dt.data.result && dt.data.data.length > 0) {
                         setBlog(dt.data.data[0]);
                     }
                 })
-                .catch((err) => console.error(err));
+                .catch((err) => console.error(err))
+                .finally(() => setShowLoading(false));
         }
     }, [num]);
 

@@ -43,6 +43,7 @@ const RH_Dossier_Maladie = () => {
     setSignatureProps,
     setShowGED,
     setGEDprops,
+    setShowLoading,
   } = useContext(cntX);
   const msgBox = useMsgBox();
   const { num } = useParams();
@@ -72,39 +73,44 @@ const RH_Dossier_Maladie = () => {
       });
   }
   const Request = useCallback(async () => {
-    if (currentNum !== "" && currentNum !== "new") {
-      await myAxios("get_dossier_maladie", { Num_Dossier: currentNum })
-        .then((dt) => {
-          if (dt.data && dt.data?.result) {
-            setEntete(dt.data.data[0]);
-            enteteRef.current = dt.data.data[0];
-          } else {
+    setShowLoading(true);
+    try {
+      if (currentNum !== "" && currentNum !== "new") {
+        await myAxios("get_dossier_maladie", { Num_Dossier: currentNum })
+          .then((dt) => {
+            if (dt.data && dt.data?.result) {
+              setEntete(dt.data.data[0]);
+              enteteRef.current = dt.data.data[0];
+            } else {
+              setEntete(iniEntete);
+              enteteRef.current = iniEntete;
+            }
+          })
+          .catch((err) => {
             setEntete(iniEntete);
             enteteRef.current = iniEntete;
-          }
-        })
-        .catch((err) => {
-          setEntete(iniEntete);
-          enteteRef.current = iniEntete;
-        });
-    } else {
-      setEntete(iniEntete);
-      enteteRef.current = iniEntete;
-    }
-    if (canSave) {
-      if (currentNum !== "" && currentNum !== "new") {
-        await myAxios("check_accessible", {
-          nameEcran: "RH_Dossier_Maladie",
-          idEcran: currentNum,
-        }).then((dt) => {
-          if (dt?.data && typeof dt.data === "object") setAccessible(dt.data);
-        });
+          });
       } else {
-        await myAxios("release_accessible", {
-          nameEcran: "RH_Dossier_Maladie",
-          idEcran: currentNum,
-        });
+        setEntete(iniEntete);
+        enteteRef.current = iniEntete;
       }
+      if (canSave) {
+        if (currentNum !== "" && currentNum !== "new") {
+          await myAxios("check_accessible", {
+            nameEcran: "RH_Dossier_Maladie",
+            idEcran: currentNum,
+          }).then((dt) => {
+            if (dt?.data && typeof dt.data === "object") setAccessible(dt.data);
+          });
+        } else {
+          await myAxios("release_accessible", {
+            nameEcran: "RH_Dossier_Maladie",
+            idEcran: currentNum,
+          });
+        }
+      }
+    } finally {
+      setShowLoading(false);
     }
   }, [currentNum, canSave]);
 
