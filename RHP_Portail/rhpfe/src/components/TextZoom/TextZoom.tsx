@@ -21,6 +21,7 @@ const TextZoom = ({
   nomControle,
   label,
   findlibelle,
+  libelleZoom = false,
   valeur = "",
   onchange = () => { },
   style,
@@ -30,15 +31,26 @@ const TextZoom = ({
   nomControle: string;
   label: string;
   findlibelle?: TFindLibelle;
+  /** Affiche le libellé (2e colonne de la déclaration du zoom dans
+   *  Controle_Def_Zoom) à la place du code, résolu via l'API zoomlibelle. */
+  libelleZoom?: boolean;
   valeur?: string;
   onchange?: (v: string, x: any) => void;
 } & Omit<TextFieldProps, "variant" | "onChange">) => {
   const [showZoom, setShowZoom] = useState(false);
   const [libelleText, setLibelleText] = useState("");
   const myAxios = useAxiosPost();
+  const avecLibelle = Boolean(findlibelle) || libelleZoom;
   useEffect(() => {
-    if (!findlibelle) return;
-    myAxios("findlibelle", { ...findlibelle, valeur: valeur })
+    if (!avecLibelle) return;
+    if (valeur === "") {
+      setLibelleText("");
+      return;
+    }
+    const req = findlibelle
+      ? myAxios("findlibelle", { ...findlibelle, valeur: valeur })
+      : myAxios("zoomlibelle", { numZoom, valeur: valeur });
+    req
       .then((dt) => {
         setLibelleText(dt.data);
       })
@@ -46,7 +58,7 @@ const TextZoom = ({
 
         setLibelleText("");
       });
-  }, [valeur]);
+  }, [valeur, numZoom]);
   return (
     <div
       style={{
@@ -75,8 +87,8 @@ const TextZoom = ({
         }}
         id={nomControle}
         label={label}
-        value={findlibelle ? libelleText : valeur}
-        helperText={findlibelle ? valeur : ""}
+        value={avecLibelle ? libelleText : valeur}
+        helperText={avecLibelle ? valeur : ""}
         variant="standard"
         FormHelperTextProps={{
           style: { fontSize: "0.9rem" },

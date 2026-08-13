@@ -41,6 +41,7 @@ Public Class SP_Nouvelle_Section
         ' Cet appel est requis par le concepteur.
         InitializeComponent()
         ' Initialisation après InitializeComponent()
+        InitialiserColonnes()
         ChargerIcones()
         ChargerSections()
         Nouveau()
@@ -48,6 +49,27 @@ Public Class SP_Nouvelle_Section
 
     Private Function SqlV(v As Object) As String
         Return "'" & IsNull(v, "").ToString().Replace("'", "''") & "'"
+    End Function
+
+    ''' <summary>Colonnes de la grille des sections (Typ cachée : pilote la possibilité
+    ''' de suppression). Déclarées dans le code : à l'abri de la régénération du
+    ''' Designer par Visual Studio. Les lectures des lignes passent par DataBoundItem
+    ''' (DataRow), jamais par les noms de colonnes de la grille.</summary>
+    Private Sub InitialiserColonnes()
+        Grd_Sections.AutoGenerateColumns = False
+        Grd_Sections.Columns.Clear()
+        Grd_Sections.Columns.Add(New DataGridViewTextBoxColumn With {.DataPropertyName = "Valeur", .HeaderText = "Code", .Name = "colValeur", .Width = 95})
+        Grd_Sections.Columns.Add(New DataGridViewTextBoxColumn With {.DataPropertyName = "Membre", .HeaderText = "Section", .Name = "colMembre", .Width = 165})
+        Grd_Sections.Columns.Add(New DataGridViewTextBoxColumn With {.DataPropertyName = "Rang", .HeaderText = "Rang", .Name = "colRang", .Width = 50})
+        Grd_Sections.Columns.Add(New DataGridViewTextBoxColumn With {.DataPropertyName = "Icone", .HeaderText = "Icône", .Name = "colIcone", .Width = 85})
+        Grd_Sections.Columns.Add(New DataGridViewTextBoxColumn With {.DataPropertyName = "Typ", .HeaderText = "Typ", .Name = "colTyp", .Visible = False, .Width = 5})
+    End Sub
+
+    ''' <summary>Ligne de section actuellement sélectionnée (Nothing si aucune).</summary>
+    Private Function LigneCourante() As DataRow
+        If Grd_Sections.SelectedRows.Count = 0 Then Return Nothing
+        Dim drv = TryCast(Grd_Sections.SelectedRows(0).DataBoundItem, DataRowView)
+        Return If(drv Is Nothing, Nothing, drv.Row)
     End Function
 
     '---------------- Chargement de la liste des sections ----------------
@@ -68,9 +90,10 @@ Public Class SP_Nouvelle_Section
         _enChargement = False
         If reselect <> "" Then
             For Each gr As DataGridViewRow In Grd_Sections.Rows
-                If IsNull(gr.Cells("colValeur").Value, "").Equals(reselect, StringComparison.OrdinalIgnoreCase) Then
+                Dim drv = TryCast(gr.DataBoundItem, DataRowView)
+                If drv IsNot Nothing AndAlso IsNull(drv.Row("Valeur"), "").Equals(reselect, StringComparison.OrdinalIgnoreCase) Then
                     gr.Selected = True
-                    Grd_Sections.CurrentCell = gr.Cells("colValeur")
+                    Grd_Sections.CurrentCell = gr.Cells(0)
                     Exit For
                 End If
             Next
@@ -108,17 +131,17 @@ Public Class SP_Nouvelle_Section
     ''' <summary>Sélection d'une section dans la grille : charge ses valeurs en mode modification.</summary>
     Private Sub Grd_Sections_SelectionChanged(sender As Object, e As EventArgs) Handles Grd_Sections.SelectionChanged
         If _enChargement Then Return
-        If Grd_Sections.SelectedRows.Count = 0 Then Return
-        Dim gr As DataGridViewRow = Grd_Sections.SelectedRows(0)
+        Dim r As DataRow = LigneCourante()
+        If r Is Nothing Then Return
         _enChargement = True
         ModeCreationModification = "M"
-        txtCode.Text = IsNull(gr.Cells("colValeur").Value, "")
-        txtLibelle.Text = IsNull(gr.Cells("colMembre").Value, "")
-        Dim rg As Integer = CInt(Val(IsNull(gr.Cells("colRang").Value, "99").ToString()))
+        txtCode.Text = IsNull(r("Valeur"), "")
+        txtLibelle.Text = IsNull(r("Membre"), "")
+        Dim rg As Integer = CInt(Val(IsNull(r("Rang"), "99").ToString()))
         numRang.Value = Math.Max(numRang.Minimum, Math.Min(numRang.Maximum, rg))
-        ChoisirIcone(IsNull(gr.Cells("colIcone").Value, ""))
+        ChoisirIcone(IsNull(r("Icone"), ""))
         ' La suppression ne s'applique pas aux sections standards (Typ = 'S')
-        Supprimer_ud.Enabled = (IsNull(gr.Cells("colTyp").Value, "U") <> "S")
+        Supprimer_ud.Enabled = (IsNull(r("Typ"), "U") <> "S")
         _enChargement = False
     End Sub
 
@@ -271,11 +294,11 @@ Public Class SP_Nouvelle_Section
         Return False
     End Function
 
-    Private Sub Nouveau_ud_Click(sender As Object, e As EventArgs) Handles Nouveau_ud.Click
+    Private Sub Nouveau_ud_Click(sender As Object, e As EventArgs) Handles Nouveau_pb.Click
         Nouveau()
     End Sub
 
-    Private Sub Save_ud_Click(sender As Object, e As EventArgs) Handles Save_ud.Click
+    Private Sub Save_ud_Click(sender As Object, e As EventArgs) Handles Save_pb.Click
         Dim nomSaisi As String = txtLibelle.Text.Trim
         If nomSaisi = "" Then
             ShowMessageBox("Le nom de la section est obligatoire.", "Section portail", MessageBoxButtons.OK, msgIcon.Warning)
@@ -325,13 +348,13 @@ Public Class SP_Nouvelle_Section
     ''' <summary>Suppression de la section sélectionnée : jamais pour une section
     ''' standard (Typ = 'S', fournie avec l'application) ni si des pages y sont
     ''' encore rattachées.</summary>
-    Private Sub Supprimer_ud_Click(sender As Object, e As EventArgs) Handles Supprimer_ud.Click
-        If Grd_Sections.SelectedRows.Count = 0 Then Return
-        Dim gr As DataGridViewRow = Grd_Sections.SelectedRows(0)
-        Dim cod As String = IsNull(gr.Cells("colValeur").Value, "")
-        Dim nom As String = IsNull(gr.Cells("colMembre").Value, "")
+    Private Sub Supprimer_ud_Click(sender As Object, e As EventArgs) Handles Supprimer_pb.Click
+        Dim r As DataRow = LigneCourante()
+        If r Is Nothing Then Return
+        Dim cod As String = IsNull(r("Valeur"), "")
+        Dim nom As String = IsNull(r("Membre"), "")
         If cod = "" Then Return
-        If IsNull(gr.Cells("colTyp").Value, "U") = "S" Then
+        If IsNull(r("Typ"), "U") = "S" Then
             ShowMessageBox("'" & nom & "' est une section standard : elle ne peut pas être supprimée.",
                            "Suppression", MessageBoxButtons.OK, msgIcon.Stop)
             Return
@@ -355,7 +378,7 @@ Public Class SP_Nouvelle_Section
         Nouveau()
     End Sub
 
-    Private Sub Annuler_ud_Click(sender As Object, e As EventArgs) Handles Annuler_ud.Click
+    Private Sub Annuler_ud_Click(sender As Object, e As EventArgs) Handles Close_pb.Click
         Me.Close()
     End Sub
 

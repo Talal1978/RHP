@@ -116,7 +116,10 @@ export async function initialisationGlobale(theAgent?: TAgent) {
         let sqlStr = `select distinct ${Zoom_Cod} as Code,${Zoom_Lib} FROM ${Zoom_Tbl} where ${Zoom_Where1}  ${Zoom_Order != "" ? `Order by ${Zoom_Order} ${ZoomSens}` : ""
           }`;
         sqlStr = await handleIdSoc(sqlStr, theAgent.id_Societe);
-        Tbl_Controle_Def_Zoom.push({ numZoom: z["Num_Zoom"], sqlStr });
+        // codExp : expression SQL de la 1ère colonne (Code) — nécessaire pour
+        // retrouver le libellé (2e colonne) d'une valeur, l'alias Code n'étant
+        // pas utilisable dans le WHERE.
+        Tbl_Controle_Def_Zoom.push({ numZoom: z["Num_Zoom"], codExp: Zoom_Cod, sqlStr });
       });
     }
   }

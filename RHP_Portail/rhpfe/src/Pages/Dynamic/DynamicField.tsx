@@ -120,7 +120,7 @@ const DynamicField = ({
     case "ZOOM":
       return (
         <TextZoom numZoom={champ.Num_Zoom ?? ""} nomControle={nom} label={label}
-          valeur={valeur ?? ""} readonly={readonly} onchange={onchange} style={stylePlein} />
+          valeur={valeur ?? ""} readonly={readonly} onchange={onchange} style={stylePlein} libelleZoom />
       );
     case "CALCULE":
     case "SOURCE":

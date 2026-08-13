@@ -27,12 +27,10 @@ Partial Class SP_Nouvelle_Section
         Dim DataGridViewCellStyle1 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
         Me.Panel1 = New System.Windows.Forms.Panel()
         Me.Grd_Sections = New System.Windows.Forms.DataGridView()
-        Me.Lbl_Aide_Std = New System.Windows.Forms.Label()
         Me.Lbl_Nom = New System.Windows.Forms.Label()
         Me.txtLibelle = New RHP.ud_TextBox()
         Me.Lbl_Code = New System.Windows.Forms.Label()
         Me.txtCode = New RHP.ud_TextBox()
-        Me.Lbl_Aide_Code = New System.Windows.Forms.Label()
         Me.Lbl_Rang = New System.Windows.Forms.Label()
         Me.numRang = New System.Windows.Forms.NumericUpDown()
         Me.Lbl_Aide_Rang = New System.Windows.Forms.Label()
@@ -40,27 +38,31 @@ Partial Class SP_Nouvelle_Section
         Me.cmbIcone = New System.Windows.Forms.ComboBox()
         Me.picApercu = New System.Windows.Forms.PictureBox()
         Me.Lbl_Aide_Icone = New System.Windows.Forms.Label()
-        Me.Nouveau_ud = New RHP.ud_button()
-        Me.Supprimer_ud = New RHP.ud_button()
-        Me.Save_ud = New RHP.ud_button()
-        Me.Annuler_ud = New RHP.ud_button()
-        Me.Titre_lbl = New System.Windows.Forms.Label()
+        Me.ent_pnl = New System.Windows.Forms.TableLayoutPanel()
+        Me.Supprimer_pb = New System.Windows.Forms.PictureBox()
+        Me.Zoom_lbl = New System.Windows.Forms.Label()
+        Me.Close_pb = New System.Windows.Forms.PictureBox()
+        Me.Nouveau_pb = New System.Windows.Forms.PictureBox()
+        Me.Save_pb = New System.Windows.Forms.PictureBox()
         Me.Panel1.SuspendLayout()
         CType(Me.Grd_Sections, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.numRang, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.picApercu, System.ComponentModel.ISupportInitialize).BeginInit()
+        Me.ent_pnl.SuspendLayout()
+        CType(Me.Supprimer_pb, System.ComponentModel.ISupportInitialize).BeginInit()
+        CType(Me.Close_pb, System.ComponentModel.ISupportInitialize).BeginInit()
+        CType(Me.Nouveau_pb, System.ComponentModel.ISupportInitialize).BeginInit()
+        CType(Me.Save_pb, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SuspendLayout()
         '
         'Panel1
         '
         Me.Panel1.BackColor = System.Drawing.Color.FromArgb(CType(CType(250, Byte), Integer), CType(CType(250, Byte), Integer), CType(CType(250, Byte), Integer))
         Me.Panel1.Controls.Add(Me.Grd_Sections)
-        Me.Panel1.Controls.Add(Me.Lbl_Aide_Std)
         Me.Panel1.Controls.Add(Me.Lbl_Nom)
         Me.Panel1.Controls.Add(Me.txtLibelle)
         Me.Panel1.Controls.Add(Me.Lbl_Code)
         Me.Panel1.Controls.Add(Me.txtCode)
-        Me.Panel1.Controls.Add(Me.Lbl_Aide_Code)
         Me.Panel1.Controls.Add(Me.Lbl_Rang)
         Me.Panel1.Controls.Add(Me.numRang)
         Me.Panel1.Controls.Add(Me.Lbl_Aide_Rang)
@@ -68,15 +70,11 @@ Partial Class SP_Nouvelle_Section
         Me.Panel1.Controls.Add(Me.cmbIcone)
         Me.Panel1.Controls.Add(Me.picApercu)
         Me.Panel1.Controls.Add(Me.Lbl_Aide_Icone)
-        Me.Panel1.Controls.Add(Me.Nouveau_ud)
-        Me.Panel1.Controls.Add(Me.Supprimer_ud)
-        Me.Panel1.Controls.Add(Me.Save_ud)
-        Me.Panel1.Controls.Add(Me.Annuler_ud)
         Me.Panel1.Dock = System.Windows.Forms.DockStyle.Fill
-        Me.Panel1.Location = New System.Drawing.Point(2, 41)
+        Me.Panel1.Location = New System.Drawing.Point(2, 47)
         Me.Panel1.Margin = New System.Windows.Forms.Padding(4)
         Me.Panel1.Name = "Panel1"
-        Me.Panel1.Size = New System.Drawing.Size(973, 415)
+        Me.Panel1.Size = New System.Drawing.Size(973, 409)
         Me.Panel1.TabIndex = 0
         '
         'Grd_Sections
@@ -94,9 +92,10 @@ Partial Class SP_Nouvelle_Section
         DataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.[True]
         Me.Grd_Sections.ColumnHeadersDefaultCellStyle = DataGridViewCellStyle1
         Me.Grd_Sections.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize
+        Me.Grd_Sections.Dock = System.Windows.Forms.DockStyle.Left
         Me.Grd_Sections.EnableHeadersVisualStyles = False
         Me.Grd_Sections.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        Me.Grd_Sections.Location = New System.Drawing.Point(16, 24)
+        Me.Grd_Sections.Location = New System.Drawing.Point(0, 0)
         Me.Grd_Sections.Margin = New System.Windows.Forms.Padding(4)
         Me.Grd_Sections.MultiSelect = False
         Me.Grd_Sections.Name = "Grd_Sections"
@@ -104,20 +103,8 @@ Partial Class SP_Nouvelle_Section
         Me.Grd_Sections.RowHeadersVisible = False
         Me.Grd_Sections.RowHeadersWidth = 51
         Me.Grd_Sections.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect
-        Me.Grd_Sections.Size = New System.Drawing.Size(400, 290)
+        Me.Grd_Sections.Size = New System.Drawing.Size(466, 409)
         Me.Grd_Sections.TabIndex = 0
-        '
-        'Lbl_Aide_Std
-        '
-        Me.Lbl_Aide_Std.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        Me.Lbl_Aide_Std.ForeColor = System.Drawing.Color.FromArgb(CType(CType(110, Byte), Integer), CType(CType(110, Byte), Integer), CType(CType(110, Byte), Integer))
-        Me.Lbl_Aide_Std.Location = New System.Drawing.Point(16, 320)
-        Me.Lbl_Aide_Std.Margin = New System.Windows.Forms.Padding(4, 0, 4, 0)
-        Me.Lbl_Aide_Std.Name = "Lbl_Aide_Std"
-        Me.Lbl_Aide_Std.Size = New System.Drawing.Size(400, 32)
-        Me.Lbl_Aide_Std.TabIndex = 9
-        Me.Lbl_Aide_Std.Text = "Les sections standards (fournies avec l'application) ne peuvent pas être supprimé" &
-    "es."
         '
         'Lbl_Nom
         '
@@ -145,7 +132,7 @@ Partial Class SP_Nouvelle_Section
         Me.txtLibelle.ReadOnly = False
         Me.txtLibelle.ScrollBars = System.Windows.Forms.ScrollBars.None
         Me.txtLibelle.SelectionStart = 0
-        Me.txtLibelle.Size = New System.Drawing.Size(312, 26)
+        Me.txtLibelle.Size = New System.Drawing.Size(352, 26)
         Me.txtLibelle.TabIndex = 1
         Me.txtLibelle.TextAlign = System.Windows.Forms.HorizontalAlignment.Left
         Me.txtLibelle.UseSystemPasswordChar = False
@@ -176,22 +163,10 @@ Partial Class SP_Nouvelle_Section
         Me.txtCode.ReadOnly = True
         Me.txtCode.ScrollBars = System.Windows.Forms.ScrollBars.None
         Me.txtCode.SelectionStart = 0
-        Me.txtCode.Size = New System.Drawing.Size(180, 26)
+        Me.txtCode.Size = New System.Drawing.Size(352, 26)
         Me.txtCode.TabIndex = 2
         Me.txtCode.TextAlign = System.Windows.Forms.HorizontalAlignment.Left
         Me.txtCode.UseSystemPasswordChar = False
-        '
-        'Lbl_Aide_Code
-        '
-        Me.Lbl_Aide_Code.AutoSize = True
-        Me.Lbl_Aide_Code.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        Me.Lbl_Aide_Code.ForeColor = System.Drawing.Color.FromArgb(CType(CType(110, Byte), Integer), CType(CType(110, Byte), Integer), CType(CType(110, Byte), Integer))
-        Me.Lbl_Aide_Code.Location = New System.Drawing.Point(793, 61)
-        Me.Lbl_Aide_Code.Margin = New System.Windows.Forms.Padding(4, 0, 4, 0)
-        Me.Lbl_Aide_Code.Name = "Lbl_Aide_Code"
-        Me.Lbl_Aide_Code.Size = New System.Drawing.Size(111, 19)
-        Me.Lbl_Aide_Code.TabIndex = 12
-        Me.Lbl_Aide_Code.Text = "(automatique)"
         '
         'Lbl_Rang
         '
@@ -250,14 +225,14 @@ Partial Class SP_Nouvelle_Section
         Me.cmbIcone.Location = New System.Drawing.Point(605, 136)
         Me.cmbIcone.Margin = New System.Windows.Forms.Padding(4)
         Me.cmbIcone.Name = "cmbIcone"
-        Me.cmbIcone.Size = New System.Drawing.Size(220, 28)
+        Me.cmbIcone.Size = New System.Drawing.Size(288, 28)
         Me.cmbIcone.TabIndex = 4
         '
         'picApercu
         '
         Me.picApercu.BackColor = System.Drawing.Color.White
         Me.picApercu.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
-        Me.picApercu.Location = New System.Drawing.Point(841, 122)
+        Me.picApercu.Location = New System.Drawing.Point(901, 118)
         Me.picApercu.Margin = New System.Windows.Forms.Padding(4)
         Me.picApercu.Name = "picApercu"
         Me.picApercu.Size = New System.Drawing.Size(56, 56)
@@ -276,103 +251,103 @@ Partial Class SP_Nouvelle_Section
         Me.Lbl_Aide_Icone.TabIndex = 17
         Me.Lbl_Aide_Icone.Text = "Icône affichée devant la section dans le menu latéral du portail."
         '
-        'Nouveau_ud
+        'ent_pnl
         '
-        Me.Nouveau_ud.AutoSize = True
-        Me.Nouveau_ud.BackColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
-        Me.Nouveau_ud.bgColor = System.Drawing.Color.FromArgb(CType(CType(250, Byte), Integer), CType(CType(250, Byte), Integer), CType(CType(250, Byte), Integer))
-        Me.Nouveau_ud.Border = RHP.ud_button.BorderStyle.All
-        Me.Nouveau_ud.BorderColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
-        Me.Nouveau_ud.BorderSize = 2
-        Me.Nouveau_ud.Cursor = System.Windows.Forms.Cursors.Hand
-        Me.Nouveau_ud.Image = Global.RHP.My.Resources.Resources.btn_add
-        Me.Nouveau_ud.isDefault = False
-        Me.Nouveau_ud.Location = New System.Drawing.Point(540, 359)
-        Me.Nouveau_ud.Margin = New System.Windows.Forms.Padding(4, 5, 4, 5)
-        Me.Nouveau_ud.MinimumSize = New System.Drawing.Size(29, 31)
-        Me.Nouveau_ud.Name = "Nouveau_ud"
-        Me.Nouveau_ud.Padding = New System.Windows.Forms.Padding(2)
-        Me.Nouveau_ud.Size = New System.Drawing.Size(125, 41)
-        Me.Nouveau_ud.TabIndex = 6
-        Me.Nouveau_ud.Text = "Nouveau"
-        Me.Nouveau_ud.ToolTip = "Créer une nouvelle section"
+        Me.ent_pnl.BackColor = System.Drawing.Color.FromArgb(CType(CType(240, Byte), Integer), CType(CType(240, Byte), Integer), CType(CType(240, Byte), Integer))
+        Me.ent_pnl.ColumnCount = 6
+        Me.ent_pnl.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100.0!))
+        Me.ent_pnl.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 44.0!))
+        Me.ent_pnl.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 44.0!))
+        Me.ent_pnl.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 44.0!))
+        Me.ent_pnl.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 44.0!))
+        Me.ent_pnl.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 44.0!))
+        Me.ent_pnl.Controls.Add(Me.Supprimer_pb, 1, 0)
+        Me.ent_pnl.Controls.Add(Me.Zoom_lbl, 0, 0)
+        Me.ent_pnl.Controls.Add(Me.Close_pb, 5, 0)
+        Me.ent_pnl.Controls.Add(Me.Nouveau_pb, 3, 0)
+        Me.ent_pnl.Controls.Add(Me.Save_pb, 4, 0)
+        Me.ent_pnl.Dock = System.Windows.Forms.DockStyle.Top
+        Me.ent_pnl.Location = New System.Drawing.Point(2, 2)
+        Me.ent_pnl.Margin = New System.Windows.Forms.Padding(4)
+        Me.ent_pnl.Name = "ent_pnl"
+        Me.ent_pnl.RowCount = 1
+        Me.ent_pnl.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100.0!))
+        Me.ent_pnl.Size = New System.Drawing.Size(973, 45)
+        Me.ent_pnl.TabIndex = 7
         '
-        'Supprimer_ud
+        'Supprimer_pb
         '
-        Me.Supprimer_ud.AutoSize = True
-        Me.Supprimer_ud.BackColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
-        Me.Supprimer_ud.bgColor = System.Drawing.Color.FromArgb(CType(CType(250, Byte), Integer), CType(CType(250, Byte), Integer), CType(CType(250, Byte), Integer))
-        Me.Supprimer_ud.Border = RHP.ud_button.BorderStyle.All
-        Me.Supprimer_ud.BorderColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
-        Me.Supprimer_ud.BorderSize = 2
-        Me.Supprimer_ud.Cursor = System.Windows.Forms.Cursors.Hand
-        Me.Supprimer_ud.Image = Global.RHP.My.Resources.Resources.btn_delete
-        Me.Supprimer_ud.isDefault = False
-        Me.Supprimer_ud.Location = New System.Drawing.Point(673, 359)
-        Me.Supprimer_ud.Margin = New System.Windows.Forms.Padding(4, 5, 4, 5)
-        Me.Supprimer_ud.MinimumSize = New System.Drawing.Size(29, 31)
-        Me.Supprimer_ud.Name = "Supprimer_ud"
-        Me.Supprimer_ud.Padding = New System.Windows.Forms.Padding(2)
-        Me.Supprimer_ud.Size = New System.Drawing.Size(125, 41)
-        Me.Supprimer_ud.TabIndex = 7
-        Me.Supprimer_ud.Text = "Supprimer"
-        Me.Supprimer_ud.ToolTip = "Supprimer la section sélectionnée (hors sections standards)"
+        Me.Supprimer_pb.Anchor = CType((((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) _
+            Or System.Windows.Forms.AnchorStyles.Left) _
+            Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.Supprimer_pb.Cursor = System.Windows.Forms.Cursors.Hand
+        Me.Supprimer_pb.Image = Global.RHP.My.Resources.Resources.btn_delete
+        Me.Supprimer_pb.Location = New System.Drawing.Point(757, 4)
+        Me.Supprimer_pb.Margin = New System.Windows.Forms.Padding(4)
+        Me.Supprimer_pb.Name = "Supprimer_pb"
+        Me.Supprimer_pb.Size = New System.Drawing.Size(36, 37)
+        Me.Supprimer_pb.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage
+        Me.Supprimer_pb.TabIndex = 35
+        Me.Supprimer_pb.TabStop = False
         '
-        'Save_ud
+        'Zoom_lbl
         '
-        Me.Save_ud.AutoSize = True
-        Me.Save_ud.BackColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
-        Me.Save_ud.bgColor = System.Drawing.Color.FromArgb(CType(CType(250, Byte), Integer), CType(CType(250, Byte), Integer), CType(CType(250, Byte), Integer))
-        Me.Save_ud.Border = RHP.ud_button.BorderStyle.All
-        Me.Save_ud.BorderColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
-        Me.Save_ud.BorderSize = 2
-        Me.Save_ud.Cursor = System.Windows.Forms.Cursors.Hand
-        Me.Save_ud.Image = Global.RHP.My.Resources.Resources.btn_save
-        Me.Save_ud.isDefault = False
-        Me.Save_ud.Location = New System.Drawing.Point(835, 359)
-        Me.Save_ud.Margin = New System.Windows.Forms.Padding(4, 5, 4, 5)
-        Me.Save_ud.MinimumSize = New System.Drawing.Size(29, 31)
-        Me.Save_ud.Name = "Save_ud"
-        Me.Save_ud.Padding = New System.Windows.Forms.Padding(2)
-        Me.Save_ud.Size = New System.Drawing.Size(125, 41)
-        Me.Save_ud.TabIndex = 8
-        Me.Save_ud.Text = "Enregistrer"
-        Me.Save_ud.ToolTip = "Enregistrer la section"
+        Me.Zoom_lbl.BackColor = System.Drawing.Color.Transparent
+        Me.Zoom_lbl.Dock = System.Windows.Forms.DockStyle.Top
+        Me.Zoom_lbl.Font = New System.Drawing.Font("Century Gothic", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Zoom_lbl.ForeColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
+        Me.Zoom_lbl.Location = New System.Drawing.Point(4, 0)
+        Me.Zoom_lbl.Margin = New System.Windows.Forms.Padding(4, 0, 4, 0)
+        Me.Zoom_lbl.Name = "Zoom_lbl"
+        Me.Zoom_lbl.Size = New System.Drawing.Size(745, 39)
+        Me.Zoom_lbl.TabIndex = 33
+        Me.Zoom_lbl.Text = "Gestion des sections du portail"
+        Me.Zoom_lbl.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
         '
-        'Annuler_ud
+        'Close_pb
         '
-        Me.Annuler_ud.AutoSize = True
-        Me.Annuler_ud.BackColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
-        Me.Annuler_ud.bgColor = System.Drawing.Color.FromArgb(CType(CType(250, Byte), Integer), CType(CType(250, Byte), Integer), CType(CType(250, Byte), Integer))
-        Me.Annuler_ud.Border = RHP.ud_button.BorderStyle.All
-        Me.Annuler_ud.BorderColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
-        Me.Annuler_ud.BorderSize = 2
-        Me.Annuler_ud.Cursor = System.Windows.Forms.Cursors.Hand
-        Me.Annuler_ud.Image = Global.RHP.My.Resources.Resources.btn_close
-        Me.Annuler_ud.isDefault = False
-        Me.Annuler_ud.Location = New System.Drawing.Point(19, 359)
-        Me.Annuler_ud.Margin = New System.Windows.Forms.Padding(4, 5, 4, 5)
-        Me.Annuler_ud.MinimumSize = New System.Drawing.Size(29, 31)
-        Me.Annuler_ud.Name = "Annuler_ud"
-        Me.Annuler_ud.Padding = New System.Windows.Forms.Padding(2)
-        Me.Annuler_ud.Size = New System.Drawing.Size(125, 41)
-        Me.Annuler_ud.TabIndex = 5
-        Me.Annuler_ud.Text = "Fermer"
-        Me.Annuler_ud.ToolTip = "Fermer l'écran"
+        Me.Close_pb.Anchor = CType((((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) _
+            Or System.Windows.Forms.AnchorStyles.Left) _
+            Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.Close_pb.Cursor = System.Windows.Forms.Cursors.Hand
+        Me.Close_pb.Image = Global.RHP.My.Resources.Resources.btn_close
+        Me.Close_pb.Location = New System.Drawing.Point(933, 4)
+        Me.Close_pb.Margin = New System.Windows.Forms.Padding(4)
+        Me.Close_pb.Name = "Close_pb"
+        Me.Close_pb.Size = New System.Drawing.Size(36, 37)
+        Me.Close_pb.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage
+        Me.Close_pb.TabIndex = 34
+        Me.Close_pb.TabStop = False
         '
-        'Titre_lbl
+        'Nouveau_pb
         '
-        Me.Titre_lbl.BackColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
-        Me.Titre_lbl.Dock = System.Windows.Forms.DockStyle.Top
-        Me.Titre_lbl.Font = New System.Drawing.Font("Century Gothic", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Titre_lbl.ForeColor = System.Drawing.Color.White
-        Me.Titre_lbl.Location = New System.Drawing.Point(2, 2)
-        Me.Titre_lbl.Margin = New System.Windows.Forms.Padding(4, 0, 4, 0)
-        Me.Titre_lbl.Name = "Titre_lbl"
-        Me.Titre_lbl.Size = New System.Drawing.Size(973, 39)
-        Me.Titre_lbl.TabIndex = 1
-        Me.Titre_lbl.Text = "Gestion des sections du portail"
-        Me.Titre_lbl.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
+        Me.Nouveau_pb.Anchor = CType((((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) _
+            Or System.Windows.Forms.AnchorStyles.Left) _
+            Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.Nouveau_pb.Cursor = System.Windows.Forms.Cursors.Hand
+        Me.Nouveau_pb.Image = Global.RHP.My.Resources.Resources.btn_add
+        Me.Nouveau_pb.Location = New System.Drawing.Point(845, 4)
+        Me.Nouveau_pb.Margin = New System.Windows.Forms.Padding(4)
+        Me.Nouveau_pb.Name = "Nouveau_pb"
+        Me.Nouveau_pb.Size = New System.Drawing.Size(36, 37)
+        Me.Nouveau_pb.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage
+        Me.Nouveau_pb.TabIndex = 34
+        Me.Nouveau_pb.TabStop = False
+        '
+        'Save_pb
+        '
+        Me.Save_pb.Anchor = CType((((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) _
+            Or System.Windows.Forms.AnchorStyles.Left) _
+            Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.Save_pb.Cursor = System.Windows.Forms.Cursors.Hand
+        Me.Save_pb.Image = Global.RHP.My.Resources.Resources.btn_save
+        Me.Save_pb.Location = New System.Drawing.Point(889, 4)
+        Me.Save_pb.Margin = New System.Windows.Forms.Padding(4)
+        Me.Save_pb.Name = "Save_pb"
+        Me.Save_pb.Size = New System.Drawing.Size(36, 37)
+        Me.Save_pb.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage
+        Me.Save_pb.TabIndex = 36
+        Me.Save_pb.TabStop = False
         '
         'SP_Nouvelle_Section
         '
@@ -382,7 +357,7 @@ Partial Class SP_Nouvelle_Section
         Me.ClientSize = New System.Drawing.Size(977, 458)
         Me.ControlBox = False
         Me.Controls.Add(Me.Panel1)
-        Me.Controls.Add(Me.Titre_lbl)
+        Me.Controls.Add(Me.ent_pnl)
         Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None
         Me.KeyPreview = True
         Me.Margin = New System.Windows.Forms.Padding(4)
@@ -396,24 +371,21 @@ Partial Class SP_Nouvelle_Section
         CType(Me.Grd_Sections, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.numRang, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.picApercu, System.ComponentModel.ISupportInitialize).EndInit()
+        Me.ent_pnl.ResumeLayout(False)
+        CType(Me.Supprimer_pb, System.ComponentModel.ISupportInitialize).EndInit()
+        CType(Me.Close_pb, System.ComponentModel.ISupportInitialize).EndInit()
+        CType(Me.Nouveau_pb, System.ComponentModel.ISupportInitialize).EndInit()
+        CType(Me.Save_pb, System.ComponentModel.ISupportInitialize).EndInit()
         Me.ResumeLayout(False)
 
     End Sub
 
     Friend WithEvents Panel1 As Panel
-    Friend WithEvents Titre_lbl As Label
     Friend WithEvents Grd_Sections As DataGridView
-    Friend WithEvents colValeur As DataGridViewTextBoxColumn
-    Friend WithEvents colMembre As DataGridViewTextBoxColumn
-    Friend WithEvents colRang As DataGridViewTextBoxColumn
-    Friend WithEvents colIcone As DataGridViewTextBoxColumn
-    Friend WithEvents colTyp As DataGridViewTextBoxColumn
-    Friend WithEvents Lbl_Aide_Std As Label
     Friend WithEvents Lbl_Nom As Label
     Friend WithEvents txtLibelle As ud_TextBox
     Friend WithEvents Lbl_Code As Label
     Friend WithEvents txtCode As ud_TextBox
-    Friend WithEvents Lbl_Aide_Code As Label
     Friend WithEvents Lbl_Rang As Label
     Friend WithEvents numRang As NumericUpDown
     Friend WithEvents Lbl_Aide_Rang As Label
@@ -421,8 +393,10 @@ Partial Class SP_Nouvelle_Section
     Friend WithEvents cmbIcone As ComboBox
     Friend WithEvents picApercu As PictureBox
     Friend WithEvents Lbl_Aide_Icone As Label
-    Friend WithEvents Nouveau_ud As ud_button
-    Friend WithEvents Supprimer_ud As ud_button
-    Friend WithEvents Save_ud As ud_button
-    Friend WithEvents Annuler_ud As ud_button
+    Friend WithEvents ent_pnl As TableLayoutPanel
+    Friend WithEvents Save_pb As PictureBox
+    Friend WithEvents Supprimer_pb As PictureBox
+    Friend WithEvents Zoom_lbl As Label
+    Friend WithEvents Close_pb As PictureBox
+    Friend WithEvents Nouveau_pb As PictureBox
 End Class
