@@ -49,14 +49,14 @@ function metaBase(): TSpMeta {
         Obligatoire: "true", Etat: "S", Rubrique: null, Num_Zoom: null, Zoom_Retour: null, Source_Metier: null,
         Formule: null, Persiste: "false", Recalc_Save: "true", Format_Affichage: null, Decimales: null,
         Regle_Visibilite: null, Regle_Activation: null, Visible_Grille: "true", Rang_Grille: 1,
-        Largeur_Colonne: null, Total_Grille: "", estCritere: "false", Rang_Critere: null },
+        Largeur_Colonne: null, estCritere: "false", Rang_Critere: null },
       { Cod_Page: "TEST", Cod_Champ: "Total", Cod_Table: "ENT", Nom_Colonne: "Total", Libelle: "Total",
         Typ_Controle: "CALCULE", Rang: 2, Ligne: null, Colonne: null, Largeur: 3, Valeur_Defaut: null, Aide: null,
         Obligatoire: "false", Etat: "A", Rubrique: null, Num_Zoom: null, Zoom_Retour: null, Source_Metier: null,
         Formule: JSON.stringify({ op: "SUM", table: "LIGNES", colonne: "Mnt" }),
         Persiste: "true", Recalc_Save: "true", Format_Affichage: "MNT", Decimales: 2,
         Regle_Visibilite: null, Regle_Activation: null, Visible_Grille: "true", Rang_Grille: 2,
-        Largeur_Colonne: null, Total_Grille: "", estCritere: "false", Rang_Critere: null },
+        Largeur_Colonne: null, estCritere: "false", Rang_Critere: null },
     ],
     validations: [
       { Cod_Page: "TEST", Cod_Validation: "V_MAT", Portee: "CHAMP", Cod_Table: "ENT", Cod_Champ: "Matricule",
@@ -293,6 +293,23 @@ test("recalculer : champ calculé sans colonne physique (clé = Cod_Champ)", () 
   const r = recalculer(meta, ctx);
   assert.equal(r.cycle, null);
   assert.equal(ctx.entete.Duree, 1800); // 30 minutes en secondes
+});
+test("recalculer : champ calculé de pied de grille (détail + sans colonne) évalué au niveau document", () => {
+  const meta = metaBase();
+  meta.champs.push(
+    { ...meta.champs[1], Cod_Champ: "Pied_Mnt", Cod_Table: "LIGNES", Nom_Colonne: "", Persiste: "false",
+      Formule: JSON.stringify({ op: "SUM", table: "LIGNES", colonne: "Mnt" }) },
+  );
+  const ctx: TSpContexte = { entete: {}, details: { LIGNES: [{ Mnt: 5 }, { Mnt: 7 }] } };
+  const r = recalculer(meta, ctx);
+  assert.equal(r.cycle, null);
+  // Le résultat est porté par l'entête (clé = Cod_Champ), jamais écrit dans les lignes
+  assert.equal(ctx.entete.Pied_Mnt, 12);
+  assert.equal(ctx.details.LIGNES[0].Pied_Mnt, undefined);
+  // Recalcul après modification des lignes
+  ctx.details = { LIGNES: [{ Mnt: 5 }, { Mnt: 7 }, { Mnt: 8 }] };
+  recalculer(meta, ctx);
+  assert.equal(ctx.entete.Pied_Mnt, 20);
 });
 test("construireGraphe : détection de référence circulaire", () => {
   const meta = metaBase();

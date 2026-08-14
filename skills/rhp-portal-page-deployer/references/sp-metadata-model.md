@@ -32,6 +32,7 @@ Primary sources: `RHP_Portail\rhpBE\sql\SP_Designer\001_SP_Designer_Metadata.sql
 | `Act_Imprimer` | nvarchar(5) | NO | `'false'` | Requires `Cod_Modele_Edition` |
 | `Act_Exporter` | nvarchar(5) | NO | `'false'` | Not wired in current frontend (metadata only) |
 | `Acces_Personnalise` | nvarchar(5) | NO | `'true'` | `'false'` = consultation open to every profile |
+| `Figer_Statuts` | nvarchar(50) | NO | `'SG,RJ,SP,VA'` | **SP4** — CSV of statuses freezing the document (e.g. `'SS,SG,RJ,SP,VA'` freezes on submit, like the standard pages) |
 | `Version_Page` | int | NO | 1 | +1 at each publication |
 | `DDL_Genere` | nvarchar(5) | NO | `'false'` | |
 | `Dat_Publication` | datetime | YES | — | |
@@ -52,6 +53,10 @@ PK `(Cod_Page, Cod_Table)`; `UQ` on `Nom_Physique`; FK → `SP_Page`.
 - `Role_Table` ∈ `ENT|DET`; `Regle_Suppression` ∈ `CASCADE|RESTRICT`.
 - Detail editing flags: `Allow_Add/Allow_Edit/Allow_Delete/Allow_Duplicate`
   (defaults `'true','true','true','false'`); `Tri_Defaut` e.g. `'Rang asc'`.
+- **SP4** — `Source_Metier` + `Source_Mapping` : a DET table may be *virtual* —
+  fed read-only by a `SP_Page_Source` with `Typ_Retour='TABLE'` (params mapped
+  from header fields). No physical table is created/read/written for it; the
+  server re-executes the source at save time before validations.
 
 ## 4. `dbo.SP_Page_Colonne` — physical columns
 
@@ -70,6 +75,8 @@ PK `(Cod_Page, Cod_Champ)`; FK → `SP_Page`.
 - `Valeur_Defaut`: constant or variable `GV_MATRICULE`, `GV_NOW`, `GV_LOGIN`.
 - `Rubrique` → `Param_Rubriques.Nom_Controle` (RUBRIQUE + RADIO).
 - `Num_Zoom` + `Zoom_Retour` json `{"ChampCible":"ColonneZoom",…}` (ZOOM, COMBO).
+- **SP4** — `Zoom_Condition` : condition du zoom avec placeholders `{Champ}`
+  évalués dans le contexte (ex. `Matricule='{Matricule}'`) — COMBO et ZOOM.
 - `Source_Metier` → `SP_Page_Source.Cod_Source` (SOURCE).
 - `Formule` json déclaratif (CALCULE, and SOURCE mapping
   `{"source":"…","mapping":{"Param":{"ref":"Colonne"}}}`).

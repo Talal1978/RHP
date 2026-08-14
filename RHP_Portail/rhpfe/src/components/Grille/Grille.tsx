@@ -41,6 +41,7 @@ export default function Grille({
   onclick = () => {},
   onchange = () => {},
   ondelete = () => {},
+  conditionZoom,
 }: TGrille) {
   const setBorder = showBorder
     ? { border: `0.5px groove #7cb2c4 !important` }
@@ -54,7 +55,7 @@ export default function Grille({
   const [filtredData, setFiltredData] = useState<{ [key: string]: any }[]>([]);
   useDeepCompareEffect(() => {
     if (dataSource.length === 0 && numZoom !== "") {
-      myAxios("zoom", { numZoom })
+      myAxios("zoom", { numZoom, conditionZoom })
         .then((dt) => {
           if (dt.data) {
             if (dt.data.result) {
@@ -115,7 +116,7 @@ export default function Grille({
         setFields(typesDeDonnees);
       } else setFields(Colonnes);
     }
-  }, [numZoom, dataSource, Colonnes]);
+  }, [numZoom, dataSource, Colonnes, conditionZoom]);
   useDeepCompareEffect(() => {
     setFiltre(() => {
       const obj: filtreF = {};
@@ -239,6 +240,8 @@ interface filtreF {
 }
 type TGrille = {
   numZoom?: string;
+  /** Condition additionnelle transmise à l'API zoom (ex. "Matricule='D0011'"). */
+  conditionZoom?: string;
   sx?: {};
   readOnlyRows?: number[];
   colonnesAFiltrer?: number[];

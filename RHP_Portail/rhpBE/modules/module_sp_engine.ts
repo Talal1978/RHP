@@ -37,6 +37,7 @@ export type TSpPage = {
   Act_Soumettre: string;
   Act_Imprimer: string;
   Act_Exporter: string;
+  Figer_Statuts: string; // statuts figeant le document (CSV, defaut 'SG,RJ,SP,VA')
   Version_Page: number;
 };
 export type TSpTable = {
@@ -52,6 +53,12 @@ export type TSpTable = {
   Allow_Duplicate: string;
   Tri_Defaut: string;
   Regle_Suppression: string;
+  /** Détail VIRTUEL : code d'une source SP_Page_Source (Typ_Retour='TABLE')
+   *  alimentant la grille en lecture seule - aucune table physique n'est lue
+   *  ni écrite pour ce détail. */
+  Source_Metier: string | null;
+  /** json de mapping des paramètres de la source : {"Param":{"ref":"ColonneEntete"}} */
+  Source_Mapping: string | null;
 };
 export type TSpColonne = {
   Cod_Page: string;
@@ -74,7 +81,7 @@ export type TSpChamp = {
   Cod_Page: string;
   Cod_Champ: string;
   Cod_Table: string;
-  Nom_Colonne: string;
+  Nom_Colonne: string | null; // null/vide : champ non stocké (affiché, ou calculé de pied de grille si rattaché à un détail)
   Libelle: string;
   Typ_Controle: string;
   Rang: number;
@@ -88,6 +95,7 @@ export type TSpChamp = {
   Rubrique: string | null;
   Num_Zoom: string | null;
   Zoom_Retour: string | null;
+  Zoom_Condition: string | null; // condition du zoom avec placeholders "{Champ}" evalues dans le contexte
   Source_Metier: string | null;
   Formule: string | null;
   Persiste: string;
@@ -99,7 +107,6 @@ export type TSpChamp = {
   Visible_Grille: string;
   Rang_Grille: number;
   Largeur_Colonne: number | null;
-  Total_Grille: string;
   estCritere: string;
   Rang_Critere: number | null;
 };
@@ -674,7 +681,9 @@ export function recalculer(meta: TSpMeta, ctx: TSpContexte, ligne?: any): { cycl
   for (const champ of graphe.ordre) {
     try {
       const formule = JSON.parse(champ.Formule!);
-      if (champ.Cod_Table === "ENT") {
+      // Niveau document : champ d'entête, ou pied de grille (champ rattaché à un
+      // détail mais sans colonne physique -> agrégat sur ses lignes, jamais stocké).
+      if (champ.Cod_Table === "ENT" || !champ.Nom_Colonne) {
         ctx.entete[cleChamp(champ)] = evaluer(formule, ctx, ligne);
       } else {
         // Calcul de ligne : appliqué à chaque ligne du détail concerné
@@ -697,7 +706,7 @@ function paramsJson(txt: string | null): any {
 /** Exécute une source du catalogue sécurisé (jamais de SQL libre du client). */
 export async function executerSource(
   codSource: string, mapping: { [p: string]: any },
-  agent: { codProfile: string; id_Societe: string }
+  agent: { codProfile: string; id_Societe: string; Login?: string; Matricule?: string }
 ): Promise<{ ok: boolean; valeur?: any; data?: any[]; typRetour?: string; message?: string }> {
   const vid = validerIdentifiant(codSource);
   if (!vid.ok) return { ok: false, message: vid.message };
@@ -714,6 +723,11 @@ export async function executerSource(
   if (!controle.ok) return { ok: false, message: controle.message };
   const declared: { Nom: string; Typ: string }[] = paramsJson(src.Parametres) instanceof Array
     ? paramsJson(src.Parametres) : [];
+  // Une valeur Date est serialisee en ISO avant le binding NVarChar (le driver
+  // rejette les objets Date sur NVarChar - le chemin HTTP/JSON les apporte
+  // toujours en chaines, cet encodage couvre les appels internes).
+  const valeurParam = (v: any) =>
+    v instanceof Date ? (isNaN(v.getTime()) ? null : v.toISOString()) : (v ?? null);
   const params: { param: string; sqlType: any; valeur: any }[] = [
     { param: "id_Societe", sqlType: sql.Int, valeur: Number(agent.id_Societe) },
   ];
@@ -723,9 +737,15 @@ export async function executerSource(
     params.push({
       param: String(d.Nom),
       sqlType: String(d.Typ ?? "").toLowerCase().startsWith("int") ? sql.Int : sql.NVarChar,
-      valeur: mapping?.[d.Nom] ?? null,
+      valeur: valeurParam(mapping?.[d.Nom]),
     });
   }
+  // Identité de l'utilisateur connecté injectée comme @id_Societe (jamais
+  // declarable dans Parametres ; permet les regles d'appartenance).
+  const declares = new Set(declared.map((d) => String(d.Nom ?? "").toLowerCase()));
+  if (!declares.has("login")) params.push({ param: "Login", sqlType: sql.NVarChar, valeur: String(agent.Login ?? "") });
+  if (!declares.has("matricule")) params.push({ param: "Matricule", sqlType: sql.NVarChar, valeur: String(agent.Matricule ?? "") });
+  if (!declares.has("cod_profile")) params.push({ param: "Cod_Profile", sqlType: sql.NVarChar, valeur: String(agent.codProfile ?? "") });
   const r = await lireSql(String(src.Code_Sql), params);
   if (!r.result) return { ok: false, message: "Erreur d'exécution de la source" };
   const row = r.data?.[0];
@@ -743,16 +763,24 @@ export function estRequeteLectureSeule(code: string): { ok: boolean; message?: s
     .replace(/--.*?(\n|$)/g, " ")
     .replace(/\s+/g, " ")
     .trim();
-  if (/;.*\S/.test(cleaned.replace(/;\s*$/, ""))) {
+  // Les littéraux chaînes sont neutralisés AVANT le contrôle multi-instructions :
+  // un ';' dans un littéral (ex. '1;1;1;1;1;1;0') n'est pas un separateur.
+  const sansLitteraux = cleaned.replace(/'(?:[^']|'')*'/g, "''");
+  if (/;.*\S/.test(sansLitteraux.replace(/;\s*$/, ""))) {
     return { ok: false, message: "Instruction multiple interdite" };
   }
-  const debut = cleaned.toLowerCase();
+  const debut = sansLitteraux.toLowerCase();
   if (!/^(select|with)\b/.test(debut) && !/^exec(ute)?\s+dbo\.sys_\w+/.test(debut)) {
     return { ok: false, message: "Seuls SELECT / WITH / EXEC dbo.Sys_* sont autorisés" };
   }
   const blackList =
-    /\b(insert|update|delete|merge|drop|alter|create|truncate|grant|revoke|backup|restore|shutdown|kill|waitfor|openrowset|opendatasource|xp_\w+|sp_\w+)\b/i;
-  if (blackList.test(cleaned)) {
+    /\b(insert|update|delete|merge|drop|alter|create|truncate|grant|revoke|backup|restore|shutdown|kill|waitfor|openrowset|opendatasource|xp_\w+)\b/i;
+  // sp_* (procédures système) : contrôle SENSIBLE à la casse — les tables
+  // métier du module sont préfixées 'SP_' (majuscules) et restent lisibles ;
+  // les procédures système sont en minuscules ('sp_executesql'...). De plus,
+  // le garde d'entrée (select|with|exec dbo.Sys_*) empêche tout appel de proc.
+  const blackListProcs = /\bsp_\w+\b/;
+  if (blackList.test(sansLitteraux) || blackListProcs.test(sansLitteraux)) {
     return { ok: false, message: "Mots-clés SQL interdits dans la source" };
   }
   return { ok: true };
@@ -761,7 +789,7 @@ export function estRequeteLectureSeule(code: string): { ok: boolean; message?: s
 export async function executerValidations(
   meta: TSpMeta,
   ctx: TSpContexte,
-  agent: { codProfile: string; id_Societe: string; Login?: string }
+  agent: { codProfile: string; id_Societe: string; Login?: string; Matricule?: string }
 ): Promise<{ erreurs: TSpErreur[]; avertissements: TSpErreur[] }> {
   const erreurs: TSpErreur[] = [];
   const avertissements: TSpErreur[] = [];
@@ -987,6 +1015,24 @@ export async function lireDocument(meta: TSpMeta, numDoc: string, agent: TAgentC
   }
   const details: { [codTable: string]: any[] } = {};
   for (const t of tablesDet(meta)) {
+    if (t.Source_Metier) {
+      // Détail virtuel : la grille est alimentée par la source métier
+      // (mapping des paramètres sur l'entête lue), jamais par une table physique.
+      try {
+        const m = JSON.parse(t.Source_Mapping ?? "{}");
+        const params: { [k: string]: any } = {};
+        for (const [nomP, def] of Object.entries<any>(m)) {
+          params[nomP] = def?.ref ? rEnt.data[0]?.[def.ref] : def?.const;
+        }
+        const rSrc = await executerSource(t.Source_Metier, params, agent);
+        details[t.Cod_Table] = rSrc.ok
+          ? (rSrc.data ?? []).map((l: any, i: number) => ({ ...l, RowId: i + 1 }))
+          : [];
+      } catch {
+        details[t.Cod_Table] = [];
+      }
+      continue;
+    }
     const tri = t.Tri_Defaut ? verifierTri(t.Tri_Defaut, meta, t.Cod_Table) : "[RowId] asc";
     const rDet = await lireSql(
       `select ${colonnesSelectDet(meta, t.Cod_Table)} from ${qn(t.Nom_Physique)}
@@ -1029,12 +1075,24 @@ export async function enregistrerDocument(
   const tEnt = tableEnt(meta);
   const dets = tablesDet(meta);
   const colsEnt = colonnesMetier(meta, "ENT");
+  // Détails virtuels : grilles alimentées par une source (aucune table physique)
+  const detsPhysiques = dets.filter((t) => !t.Source_Metier);
+  const detsVirtuels = dets.filter((t) => t.Source_Metier);
+  // Statuts figeant le document (paramétrable par page ; défaut convention RHP)
+  const statutFiges = String(meta.page.Figer_Statuts ?? "SG,RJ,SP,VA")
+    .split(",").map((s) => s.trim()).filter(Boolean);
 
   // 1. Nettoyage des entrées : seules les colonnes déclarées en métadonnées
   const entete: { [k: string]: any } = {};
   for (const c of colsEnt) entete[c.Nom_Colonne] = enteteIn?.[c.Nom_Colonne];
+  // 1.b Colonnes techniques exposées aux validations et aux calculs (jamais
+  // persistées via colsEnt) : permettent notamment l'exclusion du document
+  // courant dans une règle (chevauchement...) et les règles sur le statut.
+  entete.Num_Doc = String(enteteIn?.Num_Doc ?? "");
+  entete.Statut = String(enteteIn?.Statut ?? "");
+  entete.Created_By = String(enteteIn?.Created_By ?? "");
   const details: { [k: string]: any[] } = {};
-  for (const t of dets) {
+  for (const t of detsPhysiques) {
     const cols = colonnesMetier(meta, t.Cod_Table);
     details[t.Cod_Table] = (detailsIn?.[t.Cod_Table] ?? []).map((l: any) => {
       const propre: { [k: string]: any } = {};
@@ -1044,11 +1102,54 @@ export async function enregistrerDocument(
     });
   }
 
+  // 1.c Ré-exécution serveur des champs SOURCE persistés (Recalc_Save) : la
+  // valeur calculée côté client n'est jamais crue ; la source fait foi.
+  for (const c of meta.champs.filter(
+    (x) => x.Cod_Table === "ENT" && x.Typ_Controle === "SOURCE" && x.Formule
+        && x.Nom_Colonne && (x.Recalc_Save ?? "true") === "true"
+  )) {
+    try {
+      const f = JSON.parse(c.Formule!);
+      const params: { [k: string]: any } = {};
+      for (const [nomP, def] of Object.entries<any>(f?.mapping ?? {})) {
+        params[nomP] = def?.ref ? entete?.[def.ref] : def?.const;
+      }
+      const r = await executerSource(String(f.source ?? ""), params, agent);
+      if (!r.ok) {
+        return { result: false, message: `Source '${f.source}' en échec : ${r.message ?? "erreur"}` };
+      }
+      entete[cleChamp(c)] = r.valeur;
+    } catch (e: any) {
+      return { result: false, message: `Champ source '${c.Cod_Champ}' en échec : ${e?.message ?? e}` };
+    }
+  }
+
   // 2. Recalcul serveur des champs calculés (valeurs critiques)
   const ctx: TSpContexte = { entete, details };
   const rRecalc = recalculer(meta, ctx);
   if (rRecalc.cycle) {
     return { result: false, message: `Référence circulaire dans les calculs : ${rRecalc.cycle}` };
+  }
+
+  // 2.b Détails virtuels : ré-exécution serveur de la source (mapping sur
+  // l'entête recalculée) - les lignes vues par les validations sont celles
+  // de la source, jamais celles postées par le client.
+  for (const t of detsVirtuels) {
+    try {
+      const m = JSON.parse(t.Source_Mapping ?? "{}");
+      const params: { [k: string]: any } = {};
+      for (const [nomP, def] of Object.entries<any>(m)) {
+        params[nomP] = def?.ref ? entete?.[def.ref] : def?.const;
+      }
+      const r = await executerSource(String(t.Source_Metier), params, agent);
+      if (!r.ok) {
+        return { result: false, message: `Source '${t.Source_Metier}' en échec : ${r.message ?? "erreur"}` };
+      }
+      details[t.Cod_Table] = (r.data ?? []).map((l: any, i: number) => ({ ...l, RowId: i + 1 }));
+      ctx.details = details;
+    } catch (e: any) {
+      return { result: false, message: `Détail virtuel '${t.Cod_Table}' en échec : ${e?.message ?? e}` };
+    }
   }
 
   // 3. Validations serveur (toujours, quel que soit le moment déclaré)
@@ -1087,7 +1188,7 @@ export async function enregistrerDocument(
         await transaction.rollback();
         return { result: false, message: "Document introuvable" };
       }
-      if (["SG", "RJ", "SP", "VA"].includes(String(rRv.recordset[0].Statut))) {
+      if (statutFiges.includes(String(rRv.recordset[0].Statut))) {
         await transaction.rollback();
         return { result: false, message: "Document déjà traité. Modification impossible." };
       }
@@ -1134,7 +1235,9 @@ export async function enregistrerDocument(
     }
 
     // 4c. Détails : upsert par RowId puis purge des lignes absentes
-    for (const t of dets) {
+    //     (uniquement les détails PHYSIQUES - les détails virtuels sont
+    //     alimentés par leur source et ne sont jamais écrits)
+    for (const t of detsPhysiques) {
       const cols = colonnesMetier(meta, t.Cod_Table);
       const idsConserves: number[] = [];
       for (const ligne of details[t.Cod_Table]) {
@@ -1216,6 +1319,8 @@ export async function supprimerDocument(
   const idSoc = Number(agent.id_Societe);
   const pool = await getPool();
   const transaction = new sql.Transaction(pool);
+  const statutFiges = String(meta.page.Figer_Statuts ?? "SG,RJ,SP,VA")
+    .split(",").map((s) => s.trim()).filter(Boolean);
   try {
     await transaction.begin();
     const rChk = new sql.Request(transaction);
@@ -1228,11 +1333,11 @@ export async function supprimerDocument(
       await transaction.rollback();
       return { result: false, message: "Document introuvable" };
     }
-    if (["SG", "RJ", "SP", "VA"].includes(String(chk.recordset[0].Statut))) {
+    if (statutFiges.includes(String(chk.recordset[0].Statut))) {
       await transaction.rollback();
       return { result: false, message: "Document traité. Suppression impossible." };
     }
-    for (const t of tablesDet(meta)) {
+    for (const t of tablesDet(meta).filter((x) => !x.Source_Metier)) {
       if (t.Regle_Suppression === "RESTRICT") {
         const rNb = new sql.Request(transaction);
         const nb = await rNb

@@ -63,7 +63,7 @@ function ComboBox({
     } else if (rubrique && rubrique !== "") {
       setDataSource(listRubriques(rubrique));
     }
-  }, [numZoom, rubrique, propDataSource]);
+  }, [numZoom, rubrique, propDataSource, conditionZoom]);
   return (
     <FormControl
       variant="standard"

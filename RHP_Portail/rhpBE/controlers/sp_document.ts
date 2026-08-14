@@ -136,25 +136,58 @@ export async function sp_document_liste(req: Request, res: Response) {
   const nomsOk = new Set(cols.map((c) => c.Nom_Colonne));
   // Colonnes affichées : champs d'entête visibles en grille + techniques
   const visibles = meta.champs
-    .filter((c) => c.Cod_Table === "ENT" && c.Visible_Grille === "true" && nomsOk.has(c.Nom_Colonne))
+    .filter((c) => c.Cod_Table === "ENT" && c.Visible_Grille === "true" && c.Nom_Colonne && nomsOk.has(c.Nom_Colonne))
     .sort((a, b) => a.Rang_Grille - b.Rang_Grille)
-    .map((c) => `${qn(c.Nom_Colonne)} as [${c.Libelle.replace(/]/g, "]]")}]`);
+    .map((c) => `t.${qn(c.Nom_Colonne!)} as [${c.Libelle.replace(/]/g, "]]")}]`);
+  // Nom de l'agent (comme les listes standards) : jointure dès qu'un champ
+  // Matricule est visible, inséré juste après la colonne Matricule.
+  const avecAgent = nomsOk.has("Matricule");
+  if (avecAgent) {
+    const idx = visibles.findIndex((v) => v.startsWith("t.[Matricule]"));
+    visibles.splice(idx >= 0 ? idx + 1 : 0, 0, `isnull(ag.Nom,'') as [Nom]`);
+  }
   const selectCols = [
-    "[Num_Doc] as [N°]",
-    "isnull([Statut],'') as [Statut]",
+    "t.[Num_Doc] as [N°]",
+    "dbo.FindRubrique('Statut_Signature', isnull(t.[Statut],'')) as [Statut]",
     ...visibles,
-    "[Dat_Crea] as [Créé le]",
-    "[Created_By] as [Créé par]",
+    "t.[Dat_Crea] as [Créé le]",
+    "t.[Created_By] as [Créé par]",
   ].join(", ");
-  // Filtres : uniquement sur colonnes déclarées, valeurs paramétrées et typées
+  // Filtres : uniquement sur colonnes déclarées, valeurs paramétrées et typées.
+  //   <col>__Du / <col>__Au : plage de dates sur une colonne date déclarée ;
+  //   Statut               : critère technique (prefix match) si un champ
+  //                          d'entête lié à Statut est déclaré critère.
+  const statutCritere = meta.champs.some(
+    (c) => c.Cod_Table === "ENT" && c.Nom_Colonne === "Statut" && c.estCritere === "true"
+  );
   const filtres: { [k: string]: any } = req.body?.filtres ?? {};
-  const wheres: string[] = ["[id_Societe]=@p_idSoc"];
+  const wheres: string[] = ["t.[id_Societe]=@p_idSoc"];
   const params: { param: string; sqlType: any; valeur: any }[] = [
     { param: "p_idSoc", sqlType: sql.Int, valeur: Number(agent.id_Societe) },
   ];
   let i = 0;
   for (const [nom, val] of Object.entries(filtres)) {
-    if (!nomsOk.has(nom) || val === undefined || val === null || String(val) === "") continue;
+    if (val === undefined || val === null || String(val) === "") continue;
+    // Plage de dates : <col>__Du / <col>__Au
+    const mPlage = /^(.+)__(Du|Au)$/.exec(nom);
+    if (mPlage && nomsOk.has(mPlage[1])) {
+      const col = cols.find((c) => c.Nom_Colonne === mPlage[1])!;
+      if (!["date", "datetime", "smalldatetime"].includes(col.Typ_Sql.toLowerCase())) continue;
+      const d = new Date(val);
+      if (isNaN(d.getTime())) continue;
+      i++;
+      wheres.push(`convert(date, t.${qn(col.Nom_Colonne)}) ${mPlage[2] === "Du" ? ">=" : "<="} @p_f${i}`);
+      params.push({ param: `p_f${i}`, sqlType: sql.Date, valeur: d });
+      continue;
+    }
+    // Critère technique Statut (déclaré critère par un champ lié)
+    if (nom === "Statut" && statutCritere) {
+      i++;
+      wheres.push(`isnull(t.[Statut],'') like @p_f${i} + '%'`);
+      params.push({ param: `p_f${i}`, sqlType: sql.NVarChar, valeur: String(val) });
+      continue;
+    }
+    if (!nomsOk.has(nom)) continue;
     const col = cols.find((c) => c.Nom_Colonne === nom)!;
     i++;
     const typ = col.Typ_Sql.toLowerCase();
@@ -162,28 +195,32 @@ export async function sp_document_liste(req: Request, res: Response) {
       // Critère date : égalité sur le jour (la valeur arrive en ISO du DatePicker)
       const d = new Date(val);
       if (isNaN(d.getTime())) continue;
-      wheres.push(`convert(date, ${qn(nom)}) = @p_f${i}`);
+      wheres.push(`convert(date, t.${qn(nom)}) = @p_f${i}`);
       params.push({ param: `p_f${i}`, sqlType: sql.Date, valeur: d });
     } else if (["int", "bigint", "float", "decimal"].includes(typ) &&
                !isNaN(Number(String(val).replace(",", ".")))) {
-      wheres.push(`${qn(nom)} = @p_f${i}`);
+      wheres.push(`t.${qn(nom)} = @p_f${i}`);
       params.push({ param: `p_f${i}`, sqlType: sql.Float, valeur: Number(String(val).replace(",", ".")) });
     } else {
-      wheres.push(`${qn(nom)} like @p_f${i}`);
+      wheres.push(`t.${qn(nom)} like @p_f${i}`);
       params.push({ param: `p_f${i}`, sqlType: sql.NVarChar, valeur: `%${String(val)}%` });
     }
   }
   // Cloisonnement : un non-TeamLeader ne voit que ses documents (si Matricule existe)
   if (nomsOk.has("Matricule") && agent.TeamLeader !== "true" && String(agent.codProfile) !== "1") {
-    wheres.push("[Matricule]=@p_mat");
+    wheres.push("t.[Matricule]=@p_mat");
     params.push({ param: "p_mat", sqlType: sql.NVarChar, valeur: agent.Matricule });
   }
   const page = Math.max(1, Number(req.body?.page ?? 1) || 1);
   const pageSize = Math.min(200, Math.max(1, Number(req.body?.pageSize ?? 50) || 50));
+  const jointureAgent = avecAgent
+    ? ` outer apply (select Nom_Agent + ' ' + Prenom_Agent as Nom from dbo.RH_Agent a
+       where a.id_Societe = t.id_Societe and a.Matricule = t.Matricule) ag`
+    : "";
   const rsl = await lireSql(
-    `select ${selectCols} from ${qn(tEnt.Nom_Physique)}
+    `select ${selectCols} from ${qn(tEnt.Nom_Physique)} t${jointureAgent}
      where ${wheres.join(" and ")}
-     order by [Dat_Crea] desc
+     order by t.[Dat_Crea] desc
      offset @p_off rows fetch next @p_ps rows only`,
     [
       ...params,

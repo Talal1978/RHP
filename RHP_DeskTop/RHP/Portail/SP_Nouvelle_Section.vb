@@ -123,7 +123,7 @@ Public Class SP_Nouvelle_Section
         txtCode.Text = ""
         numRang.Value = ProchainRang()
         If cmbIcone.Items.Count > 0 Then cmbIcone.SelectedIndex = 0   ' '' = aucune icône
-        Supprimer_ud.Enabled = False
+        Supprimer_pb.Enabled = False
         _enChargement = False
         txtLibelle.Select()
     End Sub
@@ -141,7 +141,7 @@ Public Class SP_Nouvelle_Section
         numRang.Value = Math.Max(numRang.Minimum, Math.Min(numRang.Maximum, rg))
         ChoisirIcone(IsNull(r("Icone"), ""))
         ' La suppression ne s'applique pas aux sections standards (Typ = 'S')
-        Supprimer_ud.Enabled = (IsNull(r("Typ"), "U") <> "S")
+        Supprimer_pb.Enabled = (IsNull(r("Typ"), "U") <> "S")
         _enChargement = False
     End Sub
 
@@ -392,7 +392,7 @@ Public Class SP_Nouvelle_Section
         ElseIf e.KeyCode = Keys.Enter AndAlso Not cmbIcone.DroppedDown AndAlso
                Not (TypeOf Me.ActiveControl Is DataGridView) Then
             e.SuppressKeyPress = True
-            Save_ud.PerformClick()
+            Save_ud_Click(Save_pb, EventArgs.Empty)
         End If
     End Sub
 

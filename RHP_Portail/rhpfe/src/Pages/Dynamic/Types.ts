@@ -22,6 +22,8 @@ export type TSpPage = {
   Act_Soumettre: string;
   Act_Imprimer: string;
   Act_Exporter: string;
+  /** Statuts figeant le document (CSV ; défaut moteur 'SG,RJ,SP,VA'). */
+  Figer_Statuts: string;
   Version_Page: number;
 };
 export type TSpTable = {
@@ -36,6 +38,11 @@ export type TSpTable = {
   Allow_Duplicate: string;
   Tri_Defaut: string;
   Regle_Suppression: string;
+  /** Détail virtuel : code d'une source (Typ_Retour='TABLE') alimentant la
+   *  grille en lecture seule - aucune table physique associée. */
+  Source_Metier: string | null;
+  /** json de mapping des paramètres : {"Param":{"ref":"ColonneEntete"}} */
+  Source_Mapping: string | null;
 };
 export type TSpColonne = {
   Cod_Table: string;
@@ -53,7 +60,7 @@ export type TSpColonne = {
 export type TSpChamp = {
   Cod_Champ: string;
   Cod_Table: string;
-  Nom_Colonne: string;
+  Nom_Colonne: string | null; // null/vide : champ non stocké (affiché, ou calculé de pied de grille si rattaché à un détail)
   Libelle: string;
   Typ_Controle:
     | "TEXT" | "MEMO" | "INT" | "DEC" | "MNT" | "DATE" | "DATETIME"
@@ -69,6 +76,9 @@ export type TSpChamp = {
   Rubrique: string | null;
   Num_Zoom: string | null;
   Zoom_Retour: string | null;
+  /** Condition du zoom avec placeholders "{Champ}" évalués dans le contexte
+   *  (ex. "Matricule='{Matricule}'") - COMBO et ZOOM. */
+  Zoom_Condition: string | null;
   Source_Metier: string | null;
   Formule: string | null;
   Persiste: string;
@@ -80,7 +90,6 @@ export type TSpChamp = {
   Visible_Grille: string;
   Rang_Grille: number;
   Largeur_Colonne: number | null;
-  Total_Grille: string;
   estCritere: string;
   Rang_Critere: number | null;
 };

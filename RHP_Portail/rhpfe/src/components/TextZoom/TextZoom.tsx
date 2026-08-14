@@ -25,6 +25,7 @@ const TextZoom = ({
   valeur = "",
   onchange = () => { },
   style,
+  conditionZoom,
 }: TextFieldProps & {
   readonly?: boolean;
   numZoom: string;
@@ -34,6 +35,8 @@ const TextZoom = ({
   /** Affiche le libellé (2e colonne de la déclaration du zoom dans
    *  Controle_Def_Zoom) à la place du code, résolu via l'API zoomlibelle. */
   libelleZoom?: boolean;
+  /** Condition additionnelle transmise au zoom (ex. "Matricule='D0011'"). */
+  conditionZoom?: string;
   valeur?: string;
   onchange?: (v: string, x: any) => void;
 } & Omit<TextFieldProps, "variant" | "onChange">) => {
@@ -136,6 +139,7 @@ const TextZoom = ({
 
             <Grille
               numZoom={numZoom}
+              conditionZoom={conditionZoom}
               readonly={true}
               sx={{ "& .cl0": { cursor: "pointer !important" } }}
               onclick={({ row, colListe }) => {

@@ -378,7 +378,9 @@ export function recalculer(
     if (!cibles.has(cleChamp(champ))) continue;
     try {
       const formule = JSON.parse(champ.Formule!);
-      if (champ.Cod_Table === "ENT") {
+      // Niveau document : champ d'entête, ou pied de grille (champ rattaché à un
+      // détail mais sans colonne physique -> agrégat sur ses lignes, jamais stocké).
+      if (champ.Cod_Table === "ENT" || !champ.Nom_Colonne) {
         nouvelEntete[cleChamp(champ)] = evaluer(formule, ctx);
       } else {
         // Calcul de ligne : appliqué à chaque ligne du détail concerné

@@ -29,13 +29,13 @@ BEGIN
         'true', 'true', 'false', 'false', 'true', GETDATE(), 'SCRIPT');
 END
 
+DELETE FROM SP_Page_Colonne WHERE Cod_Page = @CP;   -- FK-safe : colonnes avant tables
 DELETE FROM SP_Page_Table WHERE Cod_Page = @CP;
 INSERT INTO SP_Page_Table (Cod_Page, Cod_Table, Nom_Physique, Role_Table, Libelle, Rang, Allow_Add, Allow_Edit, Allow_Delete, Allow_Duplicate, Tri_Defaut, Regle_Suppression, Dat_Crea, Created_By)
 VALUES
     (@CP, 'ENT',    'SP_FKM_Ent',        'ENT', 'Entête',            0, 'false', 'false', 'false', 'false', NULL, 'CASCADE', GETDATE(), 'SCRIPT'),
     (@CP, 'LIGNES', 'SP_FKM_Det_LIGNES', 'DET', 'Trajets parcourus', 1, 'true',  'true',  'true',  'true',  NULL, 'CASCADE', GETDATE(), 'SCRIPT');
 
-DELETE FROM SP_Page_Colonne WHERE Cod_Page = @CP;
 INSERT INTO SP_Page_Colonne (Cod_Page, Cod_Table, Nom_Colonne, Libelle, Typ_Sql, Longueur, Precision_Sql, Echelle_Sql, Nullable, Valeur_Defaut, estUnique, estIndexe, Technique, Rang, Dat_Crea, Created_By)
 VALUES
     (@CP, 'ENT',    'Matricule',   'Matricule',        'nvarchar', 20,   NULL, NULL, 'false', NULL, 'false', 'false', 'false', 1, GETDATE(), 'SCRIPT'),
@@ -49,18 +49,22 @@ VALUES
 
 DELETE FROM SP_Page_Champ WHERE Cod_Page = @CP;
 INSERT INTO SP_Page_Champ (Cod_Page, Cod_Champ, Cod_Table, Nom_Colonne, Libelle, Typ_Controle, Rang, Largeur, Valeur_Defaut, Obligatoire, Etat,
-    Rubrique, Num_Zoom, Source_Metier, Formule, Persiste, Format_Affichage, Decimales, Visible_Grille, Rang_Grille, Largeur_Colonne, Total_Grille, Aide, Dat_Crea, Created_By)
+    Rubrique, Num_Zoom, Source_Metier, Formule, Persiste, Format_Affichage, Decimales, Visible_Grille, Rang_Grille, Largeur_Colonne, Aide, Dat_Crea, Created_By)
 VALUES
-    (@CP, 'Matricule',   'ENT', 'Matricule',   'Matricule',       'ZOOM',    1, 3, 'GV_MATRICULE', 'true',  'S', NULL, 'MS067', NULL, NULL, 'false', NULL, NULL, 'true', 1, NULL, '', 'Choisir l''agent via le zoom MS067', GETDATE(), 'SCRIPT'),
-    (@CP, 'Dat_Demande', 'ENT', 'Dat_Demande', 'Date de demande', 'DATE',    2, 3, 'GV_NOW',       'false', 'S', NULL, NULL,    NULL, NULL, 'false', NULL, NULL, 'true', 2, NULL, '', NULL, GETDATE(), 'SCRIPT'),
-    (@CP, 'Commentaire', 'ENT', 'Commentaire', 'Commentaire',     'MEMO',    3, 6, NULL,           'false', 'S', NULL, NULL,    NULL, NULL, 'false', NULL, NULL, 'true', 3, NULL, '', NULL, GETDATE(), 'SCRIPT'),
+    (@CP, 'Matricule',   'ENT', 'Matricule',   'Matricule',       'ZOOM',    1, 3, 'GV_MATRICULE', 'true',  'S', NULL, 'MS067', NULL, NULL, 'false', NULL, NULL, 'true', 1, NULL, 'Choisir l''agent via le zoom MS067', GETDATE(), 'SCRIPT'),
+    (@CP, 'Dat_Demande', 'ENT', 'Dat_Demande', 'Date de demande', 'DATE',    2, 3, 'GV_NOW',       'false', 'S', NULL, NULL,    NULL, NULL, 'false', NULL, NULL, 'true', 2, NULL, NULL, GETDATE(), 'SCRIPT'),
+    (@CP, 'Commentaire', 'ENT', 'Commentaire', 'Commentaire',     'MEMO',    3, 6, NULL,           'false', 'S', NULL, NULL,    NULL, NULL, 'false', NULL, NULL, 'true', 3, NULL, NULL, GETDATE(), 'SCRIPT'),
     (@CP, 'Total',       'ENT', 'Total',       'Total frais',     'CALCULE', 4, 3, NULL,           'false', 'A', NULL, NULL,    NULL,
-        '{"op":"SUM","table":"LIGNES","colonne":"Mnt"}', 'true', 'MNT', 2, 'true', 4, NULL, '', 'Somme des montants des trajets', GETDATE(), 'SCRIPT'),
-    (@CP, 'L_Trajet', 'LIGNES', 'Trajet', 'Trajet',          'TEXT',    1, NULL, NULL, 'false', 'S', NULL, NULL, NULL, NULL, 'false', NULL, NULL, 'true', 1, 20, '', NULL, GETDATE(), 'SCRIPT'),
-    (@CP, 'L_Km',     'LIGNES', 'Km',     'Km',            'DEC',     2, NULL, NULL, 'false', 'S', NULL, NULL, NULL, NULL, 'false', NULL, 2,    'true', 2, 5,  '', NULL, GETDATE(), 'SCRIPT'),
-    (@CP, 'L_Tx',     'LIGNES', 'Tx',     'Taux / km',     'DEC',     3, NULL, NULL, 'false', 'S', NULL, NULL, NULL, NULL, 'false', NULL, 2,    'true', 3, 5,  '', NULL, GETDATE(), 'SCRIPT'),
+        '{"op":"SUM","table":"LIGNES","colonne":"Mnt"}', 'true', 'MNT', 2, 'true', 4, NULL, 'Somme des montants des trajets', GETDATE(), 'SCRIPT'),
+    (@CP, 'L_Trajet', 'LIGNES', 'Trajet', 'Trajet',          'TEXT',    1, NULL, NULL, 'false', 'S', NULL, NULL, NULL, NULL, 'false', NULL, NULL, 'true', 1, 20, NULL, GETDATE(), 'SCRIPT'),
+    (@CP, 'L_Km',     'LIGNES', 'Km',     'Km',            'DEC',     2, NULL, NULL, 'false', 'S', NULL, NULL, NULL, NULL, 'false', NULL, 2,    'true', 2, 5,  NULL, GETDATE(), 'SCRIPT'),
+    (@CP, 'L_Tx',     'LIGNES', 'Tx',     'Taux / km',     'DEC',     3, NULL, NULL, 'false', 'S', NULL, NULL, NULL, NULL, 'false', NULL, 2,    'true', 3, 5,  NULL, GETDATE(), 'SCRIPT'),
     (@CP, 'L_Mnt',    'LIGNES', 'Mnt',    'Montant',       'CALCULE', 4, NULL, NULL, 'false', 'A', NULL, NULL, NULL,
-        '{"op":"ROUND","args":[{"op":"MUL","args":[{"ref":"Km"},{"ref":"Tx"}]},{"const":2}]}', 'true', NULL, 2, 'true', 4, 8, 'SUM', 'Montant = Km x Taux', GETDATE(), 'SCRIPT');
+        '{"op":"ROUND","args":[{"op":"MUL","args":[{"ref":"Km"},{"ref":"Tx"}]},{"const":2}]}', 'true', NULL, 2, 'true', 4, 8, 'Montant = Km x Taux', GETDATE(), 'SCRIPT'),
+    -- Pied de grille : champ calculé rattaché au détail SANS colonne physique
+    -- (non persisté) -> affiché sous la grille, évalué au niveau document.
+    (@CP, 'Pied_Mnt', 'LIGNES', '',   'Total des trajets', 'CALCULE', 5, NULL, NULL, 'false', 'A', NULL, NULL, NULL,
+        '{"op":"SUM","table":"LIGNES","colonne":"Mnt"}', 'false', 'MNT', 2, 'false', 5, NULL, 'Pied de grille : somme des montants des trajets', GETDATE(), 'SCRIPT');
 
 DELETE FROM SP_Page_Validation WHERE Cod_Page = @CP;
 INSERT INTO SP_Page_Validation (Cod_Page, Cod_Validation, Portee, Cod_Table, Cod_Champ, Typ_Regle, Parametres, Condition_Regle, Message, Niveau, Rang, Moment, Actif, Dat_Crea, Created_By)

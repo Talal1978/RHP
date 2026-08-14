@@ -20,6 +20,7 @@ import { cntX } from "../../Menu/MenuMain";
 import { colorBase } from "../../modules/module_general";
 import { ObjetGenerique } from "../../types";
 import { TSpChamp, TSpMeta } from "./Types";
+import { cleChamp } from "./dynamicEngine";
 import DynamicField from "./DynamicField";
 
 const PAGE_SIZE = 20; // aligné sur la limitation d'affichage de la Grille partagée
@@ -43,7 +44,10 @@ const DynamicPage_Liste = ({ codPage }: { codPage: string }) => {
       .then((dt) => { if (dt?.data?.result) setMeta(dt.data.data[0]); })
       .catch(() => {});
   }, [codPage]);
-  /** Champs d'entête déclarés comme critères dans le Designer (estCritere). */
+  /** Champs d'entête déclarés comme critères dans le Designer (estCritere).
+   *  Un critère de type DATE/DATETIME est décliné en deux bornes "<col>__Du" /
+   *  "<col>__Au" (plage, comme les listes standards) - le serveur traduit en
+   *  >= / <= sur la colonne déclarée. */
   const champsCriteres = useMemo<TSpChamp[]>(
     () =>
       (meta?.champs ?? [])
@@ -54,7 +58,16 @@ const DynamicPage_Liste = ({ codPage }: { codPage: string }) => {
           !["CALCULE", "SOURCE", "GED", "CHECK", "RADIO"].includes(c.Typ_Controle)
         )
         .sort((a, b) => (a.Rang_Critere ?? 99) - (b.Rang_Critere ?? 99))
-        .map((c) => ({ ...c, Obligatoire: "false", Etat: "S" as const })),
+        .flatMap((c) => {
+          const base = { ...c, Obligatoire: "false", Etat: "S" as const };
+          if (["DATE", "DATETIME"].includes(c.Typ_Controle) && c.Nom_Colonne) {
+            return [
+              { ...base, Cod_Champ: `${c.Cod_Champ}__Du`, Nom_Colonne: `${c.Nom_Colonne}__Du`, Libelle: `${c.Libelle} (du)` },
+              { ...base, Cod_Champ: `${c.Cod_Champ}__Au`, Nom_Colonne: `${c.Nom_Colonne}__Au`, Libelle: `${c.Libelle} (au)` },
+            ];
+          }
+          return [base];
+        }),
     [meta]
   );
   const ctx = useMemo(() => ({ entete: criteres ?? {}, details: {} }), [criteres]);
@@ -114,7 +127,7 @@ const DynamicPage_Liste = ({ codPage }: { codPage: string }) => {
               <Grid key={champ.Cod_Champ} xs={12} sm={12} lg={4} xl={3}>
                 <DynamicField
                   champ={champ}
-                  valeur={criteres?.[champ.Nom_Colonne]}
+                  valeur={criteres?.[cleChamp(champ)]}
                   ctx={ctx}
                   onchange={stateChange}
                 />

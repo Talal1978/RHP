@@ -24,12 +24,12 @@ import useMsgBox from "../../hooks/useMsgBox";
 import useAlert from "../../hooks/useAlert";
 import { Agent } from "../../modules/module_general";
 import { findRubrique, listRubriques } from "../../modules/module_rubriques";
-import { Monetaire } from "../../modules/module_general_formulas";
 import { ObjetGenerique } from "../../types";
 import { TReport } from "../../Report/ReportViewer";
 import { TSpChamp, TSpContexte, TSpMeta, TSpTable } from "./Types";
 import { champVisible, cleChamp, construireGraphe, recalculer, validerClient } from "./dynamicEngine";
-import DynamicField from "./DynamicField";
+import DynamicField, { valeurAffichee } from "./DynamicField";
+import SpPrintDialog from "./SpPrintDialog";
 
 /** Valeur initiale d'un champ (constante ou variable GV_*). */
 function valeurInitiale(champ: TSpChamp): any {
@@ -74,7 +74,7 @@ function enteteInitial(meta: TSpMeta): ObjetGenerique {
 function ligneInitiale(meta: TSpMeta, codTable: string): ObjetGenerique {
   const l: ObjetGenerique = { RowId: 0 };
   meta.champs
-    .filter((c) => c.Cod_Table === codTable)
+    .filter((c) => c.Cod_Table === codTable && c.Nom_Colonne) // sans colonne = pied de grille, pas une donnée de ligne
     .forEach((c) => { l[cleChamp(c)] = valeurInitiale(c); });
   return l;
 }
@@ -135,6 +135,7 @@ const DynamicPage = ({ codPage }: { codPage: string }) => {
   const savingRef = useRef(false);
   const [isAccessible, setAccessible] = useState({ canModify: true, Taken_By_User: "", Process_Id: "" });
   const [actionsGrille, setActionsGrille] = useState<{ [k: string]: TGrilleAction }>({});
+  const [showPrint, setShowPrint] = useState(false);
   const ligneSelectionnee = useRef<{ [k: string]: number }>({});
   const nameEcran = `SPP_${codPage}`;
   const tablesDet = useMemo(
@@ -169,10 +170,13 @@ const DynamicPage = ({ codPage }: { codPage: string }) => {
         await myAxios("sp_get_document", { codPage, numDoc: currentNum })
           .then((dt) => {
             if (dt?.data?.result) {
-              setEntete(dt.data.entete);
-              setDetails(dt.data.details ?? {});
-              enteteRef.current = dt.data.entete;
-              detailsRef.current = dt.data.details ?? {};
+              // Recalcul complet au chargement : les champs calculés non persistés
+              // (dont les pieds de grille) ne sont jamais stockés, ils se dérivent.
+              const r = recalculer(meta, dt.data.entete, dt.data.details ?? {});
+              setEntete(r.entete);
+              setDetails(r.details);
+              enteteRef.current = r.entete;
+              detailsRef.current = r.details;
             } else {
               resetDocument();
             }
@@ -242,12 +246,57 @@ const DynamicPage = ({ codPage }: { codPage: string }) => {
         myAxios("sp_exec_source", { codSource: f.source, params }).then((dt) => {
           if (dt?.data?.result) {
             const val = dt.data.data?.[0]?.valeur;
-            setEntete((prv) => ({ ...prv, [cleChamp(c)]: val }));
+            // Cascade SOURCE -> CALCULE : les champs calculés référençant cette
+            // source sont recalculés dès sa résolution (graphe de dépendances).
+            setEntete((prv) => {
+              const nouvel = { ...prv, [cleChamp(c)]: val };
+              const r = recalculer(meta, nouvel, details, cleChamp(c), undefined);
+              if (r.details !== details) setDetails(r.details);
+              return r.entete;
+            });
           }
         }).catch(() => {});
       } catch { /* source invalide : ignorée */ }
     });
   }, [depsSources, meta]);
+
+  /* ---- Détails VIRTUELS : grilles alimentées par une source (Typ_Retour
+     TABLE), rafraîchies quand les paramètres mappés changent. Lecture seule. ---- */
+  const tablesVirtuelles = useMemo(
+    () => tablesDet.filter((t) => t.Source_Metier),
+    [tablesDet]
+  );
+  const depsVirtuelles = JSON.stringify(
+    tablesVirtuelles.map((t) => {
+      try {
+        const m = JSON.parse(t.Source_Mapping ?? "{}");
+        return Object.values(m).map((d: any) => (d?.ref ? entete?.[d.ref] : d?.const));
+      } catch { return []; }
+    })
+  );
+  useEffect(() => {
+    if (!meta || tablesVirtuelles.length === 0) return;
+    tablesVirtuelles.forEach((t) => {
+      try {
+        const m = JSON.parse(t.Source_Mapping ?? "{}");
+        const params: { [k: string]: any } = {};
+        for (const [nomP, def] of Object.entries<any>(m)) {
+          params[nomP] = def?.ref ? entete?.[def.ref] : def?.const;
+        }
+        myAxios("sp_exec_source", { codSource: t.Source_Metier, params }).then((dt) => {
+          if (dt?.data?.result) {
+            const lignes = (dt.data.data ?? []).map((l: any, i: number) => ({ ...l, RowId: i + 1 }));
+            setDetails((prv) => {
+              const nouveaux = { ...prv, [t.Cod_Table]: lignes };
+              const r = recalculer(meta, entete, nouveaux, undefined, t.Cod_Table);
+              if (r.entete !== entete) setEntete(r.entete);
+              return r.details;
+            });
+          }
+        }).catch(() => {});
+      } catch { /* mapping invalide : ignoré */ }
+    });
+  }, [depsVirtuelles, meta]);
 
   /* ---- Changement d'un champ d'entête (convention onchange(nom, valeur)) ---- */
   function stateChange(nomColonne: string, valeur: any) {
@@ -327,7 +376,7 @@ const DynamicPage = ({ codPage }: { codPage: string }) => {
   /** Colonnes d'une grille de détail, construites depuis les métadonnées. */
   function colonnesGrille(codTable: string, lectureSeule: boolean): TColonneCollection {
     const champs = (meta?.champs ?? [])
-      .filter((c) => c.Cod_Table === codTable)
+      .filter((c) => c.Cod_Table === codTable && c.Nom_Colonne) // sans colonne = pied de grille, jamais une colonne
       .sort((a, b) => a.Rang_Grille - b.Rang_Grille);
     const colonnes: TColonneCollection = {};
     const colMeta = new Map((meta?.colonnes ?? []).map((c) => [`${c.Cod_Table}|${c.Nom_Colonne}`, c]));
@@ -352,25 +401,21 @@ const DynamicPage = ({ codPage }: { codPage: string }) => {
     colonnes["RowId"] = { columnName: "RowId", dataType: "int", readOnly: true, visible: false, headerText: "RowId", typeColonne: "Text" };
     return colonnes;
   }
-  /** Totaux de colonnes configurés (Total_Grille). */
-  function totauxGrille(codTable: string): { libelle: string; valeur: string }[] {
-    const lignes = details[codTable] ?? [];
+  /** Pieds de grille : champs calculés rattachés au détail mais sans colonne
+   *  physique (la formule porte l'agrégat, Format/Décimales le rendu). */
+  function piedsGrille(codTable: string): TSpChamp[] {
     return (meta?.champs ?? [])
-      .filter((c) => c.Cod_Table === codTable && c.Total_Grille)
-      .map((c) => {
-        const vals = lignes.map((l) => Number(l?.[cleChamp(c)]) || 0);
-        let v = 0;
-        if (c.Total_Grille === "SUM") v = vals.reduce((t, x) => t + x, 0);
-        else if (c.Total_Grille === "AVG" && vals.length > 0) v = vals.reduce((t, x) => t + x, 0) / vals.length;
-        else if (c.Total_Grille === "MIN" && vals.length > 0) v = Math.min(...vals);
-        else if (c.Total_Grille === "MAX" && vals.length > 0) v = Math.max(...vals);
-        else if (c.Total_Grille === "COUNT") v = lignes.length;
-        return { libelle: `${c.Total_Grille === "COUNT" ? "Nombre" : "Total"} ${c.Libelle}`, valeur: Monetaire(v) };
-      });
+      .filter((c) => c.Cod_Table === codTable && !c.Nom_Colonne && c.Typ_Controle === "CALCULE")
+      .sort((a, b) => a.Rang_Grille - b.Rang_Grille);
   }
 
   /* ---- Actions du document ---- */
-  const statutFiges = ["SG", "RJ", "SP", "VA"];
+  // Statuts figeant le document : paramétrables par page (SP_Page.Figer_Statuts),
+  // défaut = convention RHP. Ex. 'SS,SG,RJ,SP,VA' fige dès la soumission.
+  const statutFiges = useMemo(
+    () => String(meta?.page?.Figer_Statuts ?? "SG,RJ,SP,VA").split(",").map((s) => s.trim()).filter(Boolean),
+    [meta]
+  );
   const estNouveau = currentNum === "" || currentNum === "new" || currentNum === undefined;
   const droitAction = estNouveau ? meta?.droits?.Creer : meta?.droits?.Modifier;
   const canSave =
@@ -408,10 +453,17 @@ const DynamicPage = ({ codPage }: { codPage: string }) => {
       }
       if (savingRef.current) return;
       savingRef.current = true;
+      // Les détails virtuels (alimentés par une source) ne sont jamais postés :
+      // le serveur les ré-exécute lui-même avant validation/persistance.
+      const tablesExclues = new Set(tablesVirtuelles.map((t) => t.Cod_Table));
       const rslSave = await myAxios("sp_save_document", {
         codPage,
         entete: valeursPourEnvoi(entete),
-        details: Object.fromEntries(Object.entries(details ?? {}).map(([t, ls]) => [t, (ls ?? []).map(valeursPourEnvoi)])),
+        details: Object.fromEntries(
+          Object.entries(details ?? {})
+            .filter(([t]) => !tablesExclues.has(t))
+            .map(([t, ls]) => [t, (ls ?? []).map(valeursPourEnvoi)])
+        ),
         statut: Statut,
       }).finally(() => { savingRef.current = false; });
       if (rslSave?.data?.result) {
@@ -493,10 +545,12 @@ const DynamicPage = ({ codPage }: { codPage: string }) => {
       ...(meta.droits?.Supprimer
         ? [{ name: "Supprimer", disabled: !canSave, libelle: "Supprimer", action: Supprimer, icon: <DeleteOutline />, color: "error.main" }]
         : []),
-      ...(p.Act_Imprimer === "true" && p.Cod_Modele_Edition && meta.droits?.Imprimer
+      ...(p.Act_Imprimer === "true" && meta.droits?.Imprimer
         ? [{
             name: "Imprimer", disabled: estNouveau, libelle: "Imprimer",
-            action: () => navigate("/viewer", { state: { reportName: p.Cod_Modele_Edition, params: { NumDoc: currentNum } } as TReport }),
+            action: p.Cod_Modele_Edition
+              ? () => navigate("/viewer", { state: { reportName: p.Cod_Modele_Edition, params: { NumDoc: currentNum } } as TReport })
+              : () => setShowPrint(true), // impression générique (métadonnées)
             icon: <PrintOutlined />,
           }]
         : []),
@@ -588,9 +642,9 @@ const DynamicPage = ({ codPage }: { codPage: string }) => {
                   ondelete={(e: any) => supprimerLigne(t, e)}
                   onclick={(e: any) => { if (e?.rowIndex !== undefined) ligneSelectionnee.current[t.Cod_Table] = e.rowIndex; }}
                 />
-                {totauxGrille(t.Cod_Table).map((tot, i) => (
-                  <Box key={i} sx={{ padding: "0.5em", fontWeight: "bold", textAlign: "center", color: "var(--color-base-01, #3899b9)" }}>
-                    {tot.libelle} : {tot.valeur}
+                {piedsGrille(t.Cod_Table).filter((c) => champVisible(c, ctx)).map((champ) => (
+                  <Box key={champ.Cod_Champ} sx={{ padding: "0.5em", fontWeight: "bold", textAlign: "center", color: "var(--color-base-01, #3899b9)" }}>
+                    {champ.Libelle} : {valeurAffichee(champ, entete?.[cleChamp(champ)])}
                   </Box>
                 ))}
               </Box>
@@ -598,6 +652,7 @@ const DynamicPage = ({ codPage }: { codPage: string }) => {
           </GroupBox>
         );
       })}
+      <SpPrintDialog meta={meta} ctx={ctx} open={showPrint} onClose={() => setShowPrint(false)} />
     </>
   );
 };

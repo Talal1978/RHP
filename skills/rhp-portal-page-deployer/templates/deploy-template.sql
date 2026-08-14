@@ -103,11 +103,11 @@ BEGIN
       suppression controlee - strictement limitee a Cod_Page = @CP - puis
       re-insertion deterministe)
    -------------------------------------------------------------------------- */
-    DELETE FROM dbo.SP_Page_Table      WHERE Cod_Page = @CP;
-    DELETE FROM dbo.SP_Page_Colonne    WHERE Cod_Page = @CP;
+    DELETE FROM dbo.SP_Page_Colonne    WHERE Cod_Page = @CP;  -- FK-safe : avant Table
     DELETE FROM dbo.SP_Page_Champ      WHERE Cod_Page = @CP;
     DELETE FROM dbo.SP_Page_Validation WHERE Cod_Page = @CP;
     DELETE FROM dbo.SP_Page_Droit      WHERE Cod_Page = @CP;
+    DELETE FROM dbo.SP_Page_Table      WHERE Cod_Page = @CP;
 
     -- 4.a Tables (ENT d'abord, Rang 0)
 {{TABLE_INSERTS}}

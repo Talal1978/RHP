@@ -210,7 +210,7 @@ BEGIN
         Cod_Page       nvarchar(30)  NOT NULL,
         Cod_Champ      nvarchar(50)  NOT NULL,      -- identifiant technique du champ
         Cod_Table      nvarchar(20)  NOT NULL,      -- table associée (ENT ou code détail)
-        Nom_Colonne    nvarchar(50)  NOT NULL,      -- colonne physique associée
+        Nom_Colonne    nvarchar(50)  NOT NULL,      -- colonne physique associée ('' = champ non stocké : affiché, ou calculé de pied de grille)
         Libelle        nvarchar(150) NOT NULL,
         Typ_Controle   nvarchar(20)  NOT NULL,      -- TEXT/MEMO/INT/DEC/MNT/DATE/DATETIME/CHECK/RADIO/COMBO/RUBRIQUE/ZOOM/CALCULE/SOURCE
         -- Placement entête (grille responsive 12 colonnes)
@@ -234,7 +234,7 @@ BEGIN
         Persiste       nvarchar(5)   NOT NULL CONSTRAINT DF_SPChamp_Persiste DEFAULT ('false'),
         Recalc_Save    nvarchar(5)   NOT NULL CONSTRAINT DF_SPChamp_Recalc DEFAULT ('true'),
         -- Formatage
-        Format_Affichage nvarchar(50) NULL,
+        Format_Affichage nvarchar(50) NULL,          -- '', NUM, MNT, PCT, DAT, DTM (formats usuels type Excel)
         Decimales      int           NULL,
         -- Règles dynamiques (json déclaratif)
         Regle_Visibilite nvarchar(max) NULL,
@@ -243,7 +243,8 @@ BEGIN
         Visible_Grille nvarchar(5)   NOT NULL CONSTRAINT DF_SPChamp_VisGrd DEFAULT ('true'),
         Rang_Grille    int           NOT NULL CONSTRAINT DF_SPChamp_RangGrd DEFAULT (1),
         Largeur_Colonne int          NULL,          -- largeur colonne grille (em)
-        Total_Grille   nvarchar(10)  NOT NULL CONSTRAINT DF_SPChamp_TotGrd DEFAULT (''), -- '', SUM, AVG, MIN, MAX, COUNT
+        -- Pied de grille : champ CALCULE rattaché à un détail SANS Nom_Colonne
+        -- (formule d'agrégat SUM/AVG/MIN/MAX/COUNT) -> affiché sous sa grille, jamais stocké
         -- Critères de sélection de la page Liste
         estCritere     nvarchar(5)   NOT NULL CONSTRAINT DF_SPChamp_Critere DEFAULT ('false'),
         Rang_Critere   int           NULL,
