@@ -1,5 +1,5 @@
 <Global.Microsoft.VisualBasic.CompilerServices.DesignerGenerated()>
-Partial Class SP_Nouvelle_Section
+Partial Class Zoom_SP_Nouvelle_Section
     Inherits Ecran
 
     'Form remplace la méthode Dispose pour nettoyer la liste des composants.
@@ -349,7 +349,7 @@ Partial Class SP_Nouvelle_Section
         Me.Save_pb.TabIndex = 36
         Me.Save_pb.TabStop = False
         '
-        'SP_Nouvelle_Section
+        'Zoom_SP_Nouvelle_Section
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(120.0!, 120.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi
@@ -361,7 +361,7 @@ Partial Class SP_Nouvelle_Section
         Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None
         Me.KeyPreview = True
         Me.Margin = New System.Windows.Forms.Padding(4)
-        Me.Name = "SP_Nouvelle_Section"
+        Me.Name = "Zoom_SP_Nouvelle_Section"
         Me.Padding = New System.Windows.Forms.Padding(2)
         Me.ShowInTaskbar = False
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent

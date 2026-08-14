@@ -19,7 +19,7 @@ Imports Newtonsoft.Json.Linq
 ''' Le formulaire est entièrement construit dans le code (à l'abri de la
 ''' régénération du Designer par Visual Studio).
 ''' </summary>
-Public Class SP_Assistant_Formule
+Public Class Zoom_SP_Assistant_Formule
     Inherits Form
 
     '---------------- Résultat (lu par l'appelant après DialogResult.OK) ----------------

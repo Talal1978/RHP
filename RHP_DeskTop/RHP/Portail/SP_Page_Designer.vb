@@ -1,4 +1,5 @@
 Imports System.Text.RegularExpressions
+Imports Newtonsoft.Json.Linq
 
 ''' <summary>
 ''' Designer de pages portail (module SP_).
@@ -27,7 +28,7 @@ Public Class SP_Page_Designer
     Dim Tbl_Droits As DataTable
     Dim Tbl_Sources As DataTable
 
-    Private Const SQL_TABLES = "select Cod_Table, Nom_Physique, Role_Table, Libelle, Rang, Allow_Add, Allow_Edit, Allow_Delete, Allow_Duplicate, Tri_Defaut, Regle_Suppression from SP_Page_Table"
+    Private Const SQL_TABLES = "select Cod_Table, Nom_Physique, Role_Table, Libelle, Rang, Allow_Add, Allow_Edit, Allow_Delete, Allow_Duplicate, Tri_Defaut, Regle_Suppression, Source_Metier, Source_Mapping from SP_Page_Table"
     Private Const SQL_COLONNES = "select Cod_Table, Nom_Colonne, Libelle, Typ_Sql, Longueur, Precision_Sql, Echelle_Sql, Nullable, Valeur_Defaut, estUnique, estIndexe, Rang from SP_Page_Colonne where isnull(Technique,'false')='false'"
     Private Const SQL_CHAMPS = "select Cod_Champ, Cod_Table, Nom_Colonne, Libelle, Typ_Controle, Rang, Ligne, Colonne, Largeur, Valeur_Defaut, Obligatoire, Etat, Rubrique, Num_Zoom, Source_Metier, Formule, Persiste, Format_Affichage, Decimales, Visible_Grille, Rang_Grille, Largeur_Colonne, estCritere, Rang_Critere, Aide from SP_Page_Champ"
     Private Const SQL_VALIDATIONS = "select Cod_Validation, Portee, Cod_Table, Cod_Champ, Typ_Regle, Parametres, Condition_Regle, Message, Niveau, Rang, Moment, Actif from SP_Page_Validation"
@@ -219,11 +220,21 @@ Public Class SP_Page_Designer
         End If
         If Menu_Parent_cmb.Items.Count = 0 Then Menu_Parent_cmb.fromRubrique("SP_Menu_Portail")
         If Statut_Page_cmb.Items.Count = 0 Then Statut_Page_cmb.fromRubrique("SP_Statut_Page")
+        ' Les grilles virtuelles (détail alimenté par une source TABLE) reposent sur
+        ' SP_Page_Table.Source_Metier / Source_Mapping (migration 006_SP_Designer_Evolutions.sql)
+        If ScalarInt("select isnull(col_length('dbo.SP_Page_Table','Source_Metier'),-1)") < 0 Then
+            ShowMessageBox("La base n'est pas à jour pour le Designer de pages :" & vbCrLf &
+                           "les colonnes SP_Page_Table.Source_Metier / Source_Mapping sont absentes." & vbCrLf &
+                           "Appliquez la migration 006_SP_Designer_Evolutions.sql (grilles virtuelles).",
+                           "Chargement", MessageBoxButtons.OK, msgIcon.Stop)
+            Return
+        End If
         CreerSchemas()
         ChargerListesColonnes()
         StyliserGrilles()
         ChargerIcones()
         MajComboSources()
+        MajComboSourcesVirtuelles()
         MajComboProfilsSources()
         MajEtatColonneConsulter()
     End Sub
@@ -291,7 +302,7 @@ Public Class SP_Page_Designer
     '---------------- Gestion des sections portail (bouton "+") ----------------
 
     ''' <summary>Ouvre l'écran modal de gestion des sections du menu portail
-    ''' (SP_Nouvelle_Section : création avec code généré automatiquement, modification
+    ''' (Zoom_SP_Nouvelle_Section : création avec code généré automatiquement, modification
     ''' du nom / rang / icône, suppression hors sections standards). Les sections sont
     ''' enregistrées dans la rubrique SP_Menu_Portail (Param_Rubriques, icône dans la
     ''' colonne libre Champs02). Au retour : la liste est rechargée et la dernière
@@ -353,6 +364,7 @@ Public Class SP_Page_Designer
             Grd_Validations.DataSource = Tbl_Validations
             Grd_Droits.DataSource = Tbl_Droits
             MajComboSources()
+            MajComboSourcesVirtuelles()
             MajComboProfilsSources()
             MajEtatColonneConsulter()
             StyliserGrilles()
@@ -412,7 +424,9 @@ Public Class SP_Page_Designer
 
     ''' <summary>Recalcule les noms physiques SP_&lt;Cod&gt;_Ent / _Det_&lt;Cod_Table&gt;
     ''' et le rôle (ENT/DET) : les deux sont entièrement dérivés du type document et
-    ''' du code table, jamais saisis (contraintes CK_SPTable_Role / UQ nom respectées).</summary>
+    ''' du code table, jamais saisis (contraintes CK_SPTable_Role / UQ nom respectées).
+    ''' Une table de détail alimentée par une source métier est une GRILLE VIRTUELLE :
+    ''' son nom est dérivé en _Virt_&lt;Cod_Table&gt; et aucune table physique n'est créée.</summary>
     Sub MajNomsPhysiques()
         Dim cod As String = Cod_Document_txt.Text.Trim
         If cod = "" Then Return
@@ -425,7 +439,8 @@ Public Class SP_Page_Designer
                 r("Nom_Physique") = NomTableEnt(cod)
                 r("Role_Table") = "ENT"
             Else
-                r("Nom_Physique") = "SP_" & cod & "_Det_" & ct
+                Dim virtuel As Boolean = IsNull(r("Source_Metier"), "").Trim <> ""
+                r("Nom_Physique") = "SP_" & cod & If(virtuel, "_Virt_", "_Det_") & ct
                 r("Role_Table") = "DET"
             End If
         Next
@@ -517,6 +532,7 @@ Public Class SP_Page_Designer
             .Item("Allow_Add") = "true" : .Item("Allow_Edit") = "true" : .Item("Allow_Delete") = "true"
             .Item("Allow_Duplicate") = "false"
             .Item("Regle_Suppression") = "CASCADE"
+            .Item("Source_Metier") = "" : .Item("Source_Mapping") = ""   ' vide = table physique classique
         End With
     End Sub
 
@@ -866,6 +882,28 @@ Public Class SP_Page_Designer
         MajItemsCombo(TryCast(Grd_Champs.Columns("Grd_Champs_Source_Metier"), DataGridViewComboBoxColumn), dispo)
     End Sub
 
+    ''' <summary>Alimente la liste déroulante 'Source métier' des tables (grille
+    ''' virtuelle) : sources de retour TABLE uniquement — catalogue en base (sources
+    ''' actives) union les lignes en cours d'édition de la grille Sources. Vide =
+    ''' table physique classique.</summary>
+    Private Sub MajComboSourcesVirtuelles()
+        Dim dispo As New List(Of String) From {""}
+        Dim tbl As DataTable = DATA_READER_GRD("select Cod_Source from SP_Page_Source where isnull(Actif,'true')='true' and isnull(Typ_Retour,'SCALAIRE')='TABLE' order by Cod_Source")
+        For Each r As DataRow In tbl.Rows
+            Dim cs As String = IsNull(r("Cod_Source"), "").Trim
+            If cs <> "" AndAlso Not dispo.Contains(cs) Then dispo.Add(cs)
+        Next
+        If Tbl_Sources IsNot Nothing Then
+            For Each r As DataRow In Tbl_Sources.Rows
+                If r.RowState = DataRowState.Deleted Then Continue For
+                If IsNull(r("Typ_Retour"), "SCALAIRE").Trim <> "TABLE" Then Continue For
+                Dim cs As String = IsNull(r("Cod_Source"), "").Trim
+                If cs <> "" AndAlso Not dispo.Contains(cs) Then dispo.Add(cs)
+            Next
+        End If
+        MajItemsCombo(TryCast(Grd_Tables.Columns("Grd_Tables_Source_Metier"), DataGridViewComboBoxColumn), dispo)
+    End Sub
+
     ''' <summary>Alimente la liste déroulante 'Profil requis' du catalogue des sources
     ''' ('' = tous profils) avec les profils déclarés (Controle_Profile).</summary>
     Private Sub MajComboProfilsSources()
@@ -880,27 +918,268 @@ Public Class SP_Page_Designer
 
     Private Sub Grd_Sources_CellEndEdit(sender As Object, e As DataGridViewCellEventArgs) Handles Grd_Sources.CellEndEdit
         MajComboSources()
+        MajComboSourcesVirtuelles()
     End Sub
 
     Private Sub Grd_Sources_RowsRemoved(sender As Object, e As DataGridViewRowsRemovedEventArgs) Handles Grd_Sources.RowsRemoved
         MajComboSources()
+        MajComboSourcesVirtuelles()
     End Sub
 
     ''' <summary>Après édition d'un code table : majuscules, régénération des noms
-    ''' physiques (et du rôle) + mise à jour des listes déroulantes dépendantes.</summary>
+    ''' physiques (et du rôle) + mise à jour des listes déroulantes dépendantes.
+    ''' Après édition de la source métier : bascule grille virtuelle / table physique.</summary>
     Private Sub Grd_Tables_CellEndEdit(sender As Object, e As DataGridViewCellEventArgs) Handles Grd_Tables.CellEndEdit
         If e.RowIndex < 0 OrElse e.ColumnIndex < 0 Then Return
-        If Grd_Tables.Columns(e.ColumnIndex).DataPropertyName <> "Cod_Table" Then Return
-        Dim v As String = IsNull(Grd_Tables.Rows(e.RowIndex).Cells(e.ColumnIndex).Value, "").Trim
-        If v <> "" AndAlso v <> v.ToUpper() Then Grd_Tables.Rows(e.RowIndex).Cells(e.ColumnIndex).Value = v.ToUpper()
+        Dim prop As String = Grd_Tables.Columns(e.ColumnIndex).DataPropertyName
+        If prop = "Cod_Table" Then
+            Dim v As String = IsNull(Grd_Tables.Rows(e.RowIndex).Cells(e.ColumnIndex).Value, "").Trim
+            If v <> "" AndAlso v <> v.ToUpper() Then Grd_Tables.Rows(e.RowIndex).Cells(e.ColumnIndex).Value = v.ToUpper()
+            MajNomsPhysiques()
+            MajCombosDependantes()
+        ElseIf prop = "Source_Metier" Then
+            AppliquerSourceMetierTable(e.RowIndex)
+        End If
+    End Sub
+
+    ''' <summary>Valeur de 'Source métier' au début de l'édition de la cellule :
+    ''' le mapping n'est réinitialisé que si la source a réellement changé.</summary>
+    Private _sourceMetierAvantEdit As String = ""
+
+    Private Sub Grd_Tables_CellBeginEdit(sender As Object, e As DataGridViewCellCancelEventArgs) Handles Grd_Tables.CellBeginEdit
+        _sourceMetierAvantEdit = ""
+        If e.RowIndex < 0 OrElse e.ColumnIndex < 0 Then Return
+        If Grd_Tables.Columns(e.ColumnIndex).DataPropertyName <> "Source_Metier" Then Return
+        _sourceMetierAvantEdit = IsNull(Grd_Tables.Rows(e.RowIndex).Cells(e.ColumnIndex).Value, "").Trim
+    End Sub
+
+    ''' <summary>Après le choix d'une source métier sur une table de détail : la table
+    ''' devient une GRILLE VIRTUELLE (alimentée par la source, lecture seule, aucune
+    ''' table physique créée) ; la source vidée, elle redevient une table physique
+    ''' classique. Le mapping (dépendant des paramètres de la source) est réinitialisé
+    ''' dès que la source change.</summary>
+    Private Sub AppliquerSourceMetierTable(rowIndex As Integer)
+        Dim lig As DataGridViewRow = Grd_Tables.Rows(rowIndex)
+        Dim drv = TryCast(lig.DataBoundItem, DataRowView)
+        If drv Is Nothing Then Return
+        Dim r As DataRow = drv.Row
+        Dim ct As String = IsNull(r("Cod_Table"), "").Trim
+        Dim sm As String = IsNull(r("Source_Metier"), "").Trim
+        If sm <> "" AndAlso ct.Equals("ENT", StringComparison.OrdinalIgnoreCase) Then
+            r("Source_Metier") = ""
+            ShowMessageBox("La source métier (grille virtuelle) ne concerne que les tables de détail :" & vbCrLf &
+                           "l'entête ENT est toujours une table physique.", "Grille virtuelle", MessageBoxButtons.OK, msgIcon.Warning)
+            Return
+        End If
+        Dim ancien As String = _sourceMetierAvantEdit
+        If sm <> ancien AndAlso IsNull(r("Source_Mapping"), "").Trim <> "" Then r("Source_Mapping") = ""
+        If sm <> "" Then
+            ' Grille alimentée par la source : toujours en lecture seule
+            r("Allow_Add") = "false" : r("Allow_Edit") = "false"
+            r("Allow_Delete") = "false" : r("Allow_Duplicate") = "false"
+            ShowMessageBox("La table '" & ct & "' est maintenant une GRILLE VIRTUELLE alimentée par la source '" & sm & "' :" & vbCrLf &
+                           " - aucune table physique ne sera créée (la grille est recalculée par la source) ;" & vbCrLf &
+                           " - la grille est en lecture seule (Ajout/Modif./Suppr. décochés) ;" & vbCrLf &
+                           " - déclarez dans 'Colonnes physiques' les colonnes RESTITUÉES par la source ;" & vbCrLf &
+                           " - double-cliquez sur 'Mapping paramètres' pour alimenter les paramètres de la source.",
+                           "Grille virtuelle", MessageBoxButtons.OK, msgIcon.Information)
+        End If
         MajNomsPhysiques()
-        MajCombosDependantes()
     End Sub
 
     Private Sub Grd_Tables_RowsRemoved(sender As Object, e As DataGridViewRowsRemovedEventArgs) Handles Grd_Tables.RowsRemoved
         If Tbl_Tables Is Nothing Then Return
         MajNomsPhysiques()
         MajCombosDependantes()
+    End Sub
+
+    '---------------- Grille virtuelle : mapping des paramètres de la source ----------------
+    ' Une table de détail dont la colonne 'Source métier' est renseignée est une
+    ' GRILLE VIRTUELLE : alimentée par la source (retour TABLE), recalculée à chaque
+    ' changement d'un champ mappé, jamais persistée. Le mapping json
+    ' (SP_Page_Table.Source_Mapping) est généré par l'assistant Zoom_SP_MappingSource,
+    ' jamais saisi au clavier (miroir des assistants de validation / formule).
+
+    ''' <summary>Double-clic sur 'Mapping paramètres' : ouvre l'assistant d'alimentation
+    ''' des paramètres de la source (création du mapping de la ligne).</summary>
+    Private Sub Grd_Tables_CellDoubleClick(sender As Object, e As DataGridViewCellEventArgs) Handles Grd_Tables.CellDoubleClick
+        If e.RowIndex < 0 OrElse e.ColumnIndex < 0 Then Return
+        If Grd_Tables.Rows(e.RowIndex).IsNewRow Then Return
+        If Grd_Tables.Columns(e.ColumnIndex).DataPropertyName <> "Source_Mapping" Then Return
+        OuvrirAssistantMapping(e.RowIndex)
+    End Sub
+
+    ''' <summary>Curseur "main" sur les cellules 'Mapping paramètres' : elles s'ouvrent
+    ''' avec l'assistant au double-clic.</summary>
+    Private Sub Grd_Tables_CellMouseEnter(sender As Object, e As DataGridViewCellEventArgs) Handles Grd_Tables.CellMouseEnter
+        If e.ColumnIndex >= 0 AndAlso Grd_Tables.Columns(e.ColumnIndex).DataPropertyName = "Source_Mapping" Then
+            Grd_Tables.Cursor = Cursors.Hand
+        Else
+            Grd_Tables.Cursor = Cursors.Default
+        End If
+    End Sub
+
+    ''' <summary>Ouvre l'assistant de mapping source ↔ champs de l'entête pour la table
+    ''' virtuelle de la ligne, puis écrit le json généré dans 'Mapping paramètres'.</summary>
+    Private Sub OuvrirAssistantMapping(rowIndex As Integer)
+        Grd_Tables.EndEdit() : Grd_Colonnes.EndEdit()
+        Dim drv = TryCast(Grd_Tables.Rows(rowIndex).DataBoundItem, DataRowView)
+        If drv Is Nothing Then Return
+        Dim r As DataRow = drv.Row
+        Dim ct As String = IsNull(r("Cod_Table"), "").Trim
+        If ct.Equals("ENT", StringComparison.OrdinalIgnoreCase) Then
+            ShowMessageBox("L'entête (ENT) est toujours une table physique : le mapping ne la concerne pas.",
+                           "Mapping de la source", MessageBoxButtons.OK, msgIcon.Information)
+            Return
+        End If
+        Dim sm As String = IsNull(r("Source_Metier"), "").Trim
+        If sm = "" Then
+            ShowMessageBox("Choisissez d'abord une source métier (colonne 'Source métier') :" & vbCrLf &
+                           "seules les sources de retour TABLE alimentent une grille virtuelle.",
+                           "Mapping de la source", MessageBoxButtons.OK, msgIcon.Information)
+            Return
+        End If
+        Dim src As DataRow = TrouverSource(sm)
+        If src Is Nothing Then
+            ShowMessageBox("La source '" & sm & "' est introuvable dans le catalogue (onglet 'Sources métier').",
+                           "Mapping de la source", MessageBoxButtons.OK, msgIcon.Warning)
+            Return
+        End If
+        Using f As New Zoom_SP_MappingSource(ct, sm, IsNull(src("Parametres"), ""), ColonnesEntDisponibles(), IsNull(r("Source_Mapping"), ""))
+            If f.ShowDialog(Me) <> DialogResult.OK Then Return
+            r("Source_Mapping") = f.Mapping
+        End Using
+    End Sub
+
+    ''' <summary>Ligne du catalogue des sources (la grille en cours d'édition prime
+    ''' sur la base, pour tenir compte des modifications non encore enregistrées).</summary>
+    Private Function TrouverSource(codSource As String) As DataRow
+        If Tbl_Sources IsNot Nothing Then
+            For Each r As DataRow In Tbl_Sources.Rows
+                If r.RowState = DataRowState.Deleted Then Continue For
+                If IsNull(r("Cod_Source"), "").Trim.Equals(codSource, StringComparison.OrdinalIgnoreCase) Then Return r
+            Next
+        End If
+        Dim tbl As DataTable = DATA_READER_GRD("select * from SP_Page_Source where Cod_Source='" & codSource.Replace("'", "''") & "'")
+        If tbl.Rows.Count = 0 Then Return Nothing
+        Return tbl.Rows(0)
+    End Function
+
+    ''' <summary>Colonnes de l'entête (métier déclarées dans la grille + techniques,
+    ''' hors RV) proposées pour alimenter les paramètres d'une source (mapping ref).</summary>
+    Private Function ColonnesEntDisponibles() As List(Of String)
+        Dim lst As New List(Of String)
+        If Tbl_Colonnes IsNot Nothing Then
+            For Each r As DataRow In Tbl_Colonnes.Rows
+                If r.RowState = DataRowState.Deleted Then Continue For
+                If Not IsNull(r("Cod_Table"), "").Trim.Equals("ENT", StringComparison.OrdinalIgnoreCase) Then Continue For
+                Dim nc As String = IsNull(r("Nom_Colonne"), "").Trim
+                If nc <> "" AndAlso Not lst.Contains(nc) Then lst.Add(nc)
+            Next
+        End If
+        AjouterTechniquesEnt(lst)
+        Return lst
+    End Function
+
+    ''' <summary>Colonnes de l'entête relues en base (contrôles de publication).</summary>
+    Private Function ColonnesEntBase(codPage As String) As List(Of String)
+        Dim lst As New List(Of String)
+        Dim tbl As DataTable = DATA_READER_GRD("select Nom_Colonne from SP_Page_Colonne where Cod_Page=" & SqlV(codPage) &
+                                               " and Cod_Table='ENT' and isnull(Technique,'false')='false'")
+        For Each r As DataRow In tbl.Rows
+            Dim nc As String = IsNull(r("Nom_Colonne"), "").Trim
+            If nc <> "" AndAlso Not lst.Contains(nc) Then lst.Add(nc)
+        Next
+        AjouterTechniquesEnt(lst)
+        Return lst
+    End Function
+
+    ''' <summary>Ajoute les colonnes techniques de l'entête (Num_Doc, Statut...) à la
+    ''' liste ; RV (rowversion) est exclu : sans usage comme paramètre de source.</summary>
+    Private Sub AjouterTechniquesEnt(lst As List(Of String))
+        For Each nc In ColonnesTechniquesTable("ENT")
+            If nc.Equals("RV", StringComparison.OrdinalIgnoreCase) Then Continue For
+            If Not lst.Contains(nc) Then lst.Add(nc)
+        Next
+    End Sub
+
+    ''' <summary>Contrôles d'une grille virtuelle (détail alimenté par une source
+    ''' TABLE) : source existante, active et de retour TABLE ; mapping json
+    ''' {"Paramètre":{"ref":"ChampEntete"} | {"const":"valeur"}} cohérent avec les
+    ''' paramètres déclarés de la source (obligatoires couverts) et les colonnes de
+    ''' l'entête (refs existantes). Miroir de l'interprétation du moteur SP_ portail
+    ''' (executerSource / lireDocument).</summary>
+    Private Sub VerifierTableVirtuelle(ct As String, sm As String, mapping As String, champsEnt As List(Of String), erreurs As List(Of String))
+        Dim src As DataRow = TrouverSource(sm)
+        If src Is Nothing Then
+            erreurs.Add("Table '" & ct & "' : source métier '" & sm & "' inexistante (catalogue des sources).")
+            Return
+        End If
+        If IsNull(src("Actif"), "true") <> "true" Then
+            erreurs.Add("Table '" & ct & "' : la source '" & sm & "' est inactive.")
+        End If
+        If Not IsNull(src("Typ_Retour"), "SCALAIRE").Trim.Equals("TABLE", StringComparison.OrdinalIgnoreCase) Then
+            erreurs.Add("Table '" & ct & "' : la source '" & sm & "' est de type '" & IsNull(src("Typ_Retour"), "SCALAIRE") &
+                        "' — une grille virtuelle exige une source de retour TABLE.")
+        End If
+        ' Paramètres déclarés de la source
+        Dim declares As New List(Of String)
+        Dim obligatoires As New List(Of String)
+        Dim paramsJson As String = IsNull(src("Parametres"), "").Trim
+        If paramsJson <> "" Then
+            Try
+                For Each t In CType(JToken.Parse(paramsJson), JArray)
+                    Dim o = TryCast(t, JObject)
+                    If o Is Nothing OrElse o("Nom") Is Nothing Then Continue For
+                    Dim np As String = o("Nom").ToString()
+                    If Not declares.Contains(np) Then declares.Add(np)
+                    Dim ob As String = If(o("Obligatoire") Is Nothing, "false", o("Obligatoire").ToString())
+                    If ob.Equals("true", StringComparison.OrdinalIgnoreCase) OrElse ob = "1" Then obligatoires.Add(np)
+                Next
+            Catch
+                erreurs.Add("Table '" & ct & "' : les paramètres de la source '" & sm & "' ne sont pas lisibles (json attendu : [{""Nom"":...,""Typ"":...,""Obligatoire"":...}]).")
+            End Try
+        End If
+        ' Mapping
+        Dim alimentes As New HashSet(Of String)(StringComparer.OrdinalIgnoreCase)
+        Dim mj As String = IsNull(mapping, "").Trim
+        If mj <> "" Then
+            Dim j As JObject = Nothing
+            Try
+                j = CType(JToken.Parse(mj), JObject)
+            Catch
+                j = Nothing
+            End Try
+            If j Is Nothing Then
+                erreurs.Add("Table '" & ct & "' : mapping invalide (json objet attendu : {""Paramètre"":{""ref"":""Champ""}}).")
+            Else
+                For Each p As JProperty In j.Properties()
+                    If Not declares.Contains(p.Name, StringComparer.OrdinalIgnoreCase) Then
+                        erreurs.Add("Table '" & ct & "' : le mapping alimente '" & p.Name & "', non déclaré dans les paramètres de la source '" & sm & "'.")
+                        Continue For
+                    End If
+                    Dim d = TryCast(p.Value, JObject)
+                    Dim ref As String = If(d IsNot Nothing AndAlso d("ref") IsNot Nothing, d("ref").ToString().Trim, "")
+                    Dim aConst As Boolean = (d IsNot Nothing AndAlso d("const") IsNot Nothing)
+                    If ref = "" AndAlso Not aConst Then
+                        erreurs.Add("Table '" & ct & "' : le paramètre '" & p.Name & "' n'est alimenté ni par un champ ni par une constante.")
+                        Continue For
+                    End If
+                    If ref <> "" AndAlso Not champsEnt.Contains(ref, StringComparer.OrdinalIgnoreCase) Then
+                        erreurs.Add("Table '" & ct & "' : le paramètre '" & p.Name & "' référence le champ d'entête '" & ref &
+                                    "', inexistant (onglet 'Colonnes physiques', table ENT).")
+                        Continue For
+                    End If
+                    alimentes.Add(p.Name)
+                Next
+            End If
+        End If
+        For Each p In obligatoires
+            If Not alimentes.Contains(p) Then
+                erreurs.Add("Table '" & ct & "' : le paramètre obligatoire '" & p & "' de la source '" & sm &
+                            "' n'est pas alimenté (double-clic sur 'Mapping paramètres').")
+            End If
+        Next
     End Sub
 
     '---------------- Suppression contrôlée (sélection par l'en-tête de ligne + Suppr) ----------------
@@ -1193,7 +1472,7 @@ Public Class SP_Page_Designer
     ''' (miroir du garde-fou serveur, qui rejoue le même contrôle à l'exécution).</summary>
     Sub ZoomCodeSqlSource()
         Dim r As DataRow = LigneSourceCourante()
-        Using f As New SP_Zoom_SqlSource(If(r IsNot Nothing, IsNull(r("Cod_Source"), ""), "nouvelle source"),
+        Using f As New Zoom_SP_SqlSource(If(r IsNot Nothing, IsNull(r("Cod_Source"), ""), "nouvelle source"),
                                          If(r IsNot Nothing, IsNull(r("Code_Sql"), ""), ""))
             If f.ShowDialog(Me) <> DialogResult.OK Then Return
             If r Is Nothing Then
@@ -1225,7 +1504,8 @@ Public Class SP_Page_Designer
     ''' nouvelle ligne si aucune) et répercute le json généré dans la grille.</summary>
     Sub AssistantParametresSource()
         Dim r As DataRow = LigneSourceCourante()
-        Using f As New SP_Assistant_ParamSource(If(r IsNot Nothing, IsNull(r("Parametres"), ""), ""))
+        Using f As New SP_Assistant_ParamSource(If(r IsNot Nothing, IsNull(r("Parametres"), ""), ""),
+                                                If(r IsNot Nothing, IsNull(r("Code_Sql"), ""), ""))
             If f.ShowDialog(Me) <> DialogResult.OK Then Return
             If r Is Nothing Then
                 r = Tbl_Sources.NewRow()
@@ -1446,6 +1726,24 @@ Public Class SP_Page_Designer
             If TableExiste(np) AndAlso ScalarInt("select count(*) from SP_Page_Table where Nom_Physique=" & SqlV(np)) = 0 Then
                 Return New savingResult With {.result = False, .message = "La table '" & np & "' existe déjà dans la base sans être rattachée à une page : choisissez un autre code document."}
             End If
+            '---------------- Grille virtuelle (détail alimenté par une source TABLE) ----------------
+            Dim sm As String = IsNull(r("Source_Metier"), "").Trim
+            If sm <> "" Then
+                If role = "ENT" Then
+                    Return New savingResult With {.result = False, .message = "L'entête (ENT) est toujours une table physique : retirez sa source métier."}
+                End If
+                If TableExiste(np) Then
+                    Return New savingResult With {.result = False, .message = "La table '" & ct & "' est une grille virtuelle mais '" & np & "' existe physiquement en base : " &
+                                                                              "changez le code table (ou supprimez la table physique si elle est inutilisée)."}
+                End If
+                ' Normalisation : une grille virtuelle est toujours en lecture seule
+                r("Allow_Add") = "false" : r("Allow_Edit") = "false" : r("Allow_Delete") = "false" : r("Allow_Duplicate") = "false"
+                Dim errsV As New List(Of String)
+                VerifierTableVirtuelle(ct, sm, IsNull(r("Source_Mapping"), "").Trim, ColonnesEntDisponibles(), errsV)
+                If errsV.Count > 0 Then
+                    Return New savingResult With {.result = False, .message = String.Join(vbCrLf, errsV)}
+                End If
+            End If
         Next
         If nbEnt <> 1 Then
             Return New savingResult With {.result = False, .message = "Il doit y avoir exactement une table d'entête (Cod_Table = ENT)."}
@@ -1639,11 +1937,11 @@ Public Class SP_Page_Designer
             ' 3. Tables
             For Each r As DataRow In Tbl_Tables.Rows
                 If r.RowState = DataRowState.Deleted Then Continue For
-                cnTx.Execute("insert into SP_Page_Table (Cod_Page, Cod_Table, Nom_Physique, Role_Table, Libelle, Rang, Allow_Add, Allow_Edit, Allow_Delete, Allow_Duplicate, Tri_Defaut, Regle_Suppression, Dat_Crea, Created_By) values (" &
+                cnTx.Execute("insert into SP_Page_Table (Cod_Page, Cod_Table, Nom_Physique, Role_Table, Libelle, Rang, Allow_Add, Allow_Edit, Allow_Delete, Allow_Duplicate, Tri_Defaut, Regle_Suppression, Source_Metier, Source_Mapping, Dat_Crea, Created_By) values (" &
                             SqlV(codPage) & "," & SqlV(r("Cod_Table")) & "," & SqlV(r("Nom_Physique")) & "," & SqlV(IsNull(r("Role_Table"), "DET")) & "," &
                             SqlV(r("Libelle")) & "," & Val(IsNull(r("Rang"), "1") & "") & "," & SqlV(IsNull(r("Allow_Add"), "true")) & "," & SqlV(IsNull(r("Allow_Edit"), "true")) & "," &
                             SqlV(IsNull(r("Allow_Delete"), "true")) & "," & SqlV(IsNull(r("Allow_Duplicate"), "false")) & "," & SqlV(r("Tri_Defaut")) & "," &
-                            SqlV(IsNull(r("Regle_Suppression"), "CASCADE")) & ", getdate(), " & SqlV(theUser.Login) & ")")
+                            SqlV(IsNull(r("Regle_Suppression"), "CASCADE")) & "," & SqlV(IsNull(r("Source_Metier"), "")) & "," & SqlV(IsNull(r("Source_Mapping"), "")) & ", getdate(), " & SqlV(theUser.Login) & ")")
             Next
             ' 4. Colonnes
             For Each r As DataRow In Tbl_Colonnes.Rows
@@ -1810,10 +2108,19 @@ Public Class SP_Page_Designer
         End If
         '---------------- Contrôles de cohérence ----------------
         Dim erreurs As New List(Of String)
-        ' 1. Existence des tables et colonnes physiques
+        ' 1. Existence des tables et colonnes physiques (les GRILLES VIRTUELLES -
+        '    Source_Metier renseignée - n'ont aucune table physique : la source et
+        '    son mapping sont contrôlés à la place, miroir des contrôles d'enregistrement)
         Dim tblT As DataTable = DATA_READER_GRD("select * from SP_Page_Table where Cod_Page=" & SqlV(codPage))
         For Each r As DataRow In tblT.Rows
             Dim np As String = IsNull(r("Nom_Physique"), "")
+            Dim sm As String = If(tblT.Columns.Contains("Source_Metier"), IsNull(r("Source_Metier"), "").Trim, "")
+            If sm <> "" Then
+                Dim errsV As New List(Of String)
+                VerifierTableVirtuelle(IsNull(r("Cod_Table"), ""), sm, IsNull(r("Source_Mapping"), "").Trim, ColonnesEntBase(codPage), errsV)
+                erreurs.AddRange(errsV)
+                Continue For
+            End If
             If Not TableExiste(np) Then
                 erreurs.Add("Table physique inexistante : " & np & " (enregistrez la page pour générer le DDL)")
                 Continue For

@@ -208,6 +208,15 @@ Public Module Module_SP_DDL
             Dim v = ValiderNomTableMetier(nomPhysique)
             If v <> "" Then erreurs.Add(v) : Continue For
 
+            ' Grille virtuelle (détail alimenté par une source métier de retour
+            ' TABLE) : aucune table physique n'est créée ni migrée — la grille est
+            ' recalculée par la source à l'exécution, jamais persistée.
+            Dim srcMetier As String = If(tblTables.Columns.Contains("Source_Metier"), IsNull(rt("Source_Metier"), "").Trim, "")
+            If srcMetier <> "" Then
+                messages.Add("Grille virtuelle " & nomPhysique & " : alimentée par la source '" & srcMetier & "' (aucune table physique créée).")
+                Continue For
+            End If
+
             ' Colonnes de la table : filtrées depuis les grilles (pas de relecture base)
             Dim tblCols As DataRow() = tblColsToutes.Select("Cod_Table='" & codTable.Replace("'", "''") & "'", "Rang")
             Dim techniques As List(Of String) = ColonnesTechniques(roleTable, nomPhysique, regleSuppr)

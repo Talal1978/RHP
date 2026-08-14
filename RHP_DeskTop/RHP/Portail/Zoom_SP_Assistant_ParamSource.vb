@@ -1,3 +1,4 @@
+Imports System.Text.RegularExpressions
 Imports Newtonsoft.Json
 Imports Newtonsoft.Json.Linq
 
@@ -19,6 +20,13 @@ Public Class SP_Assistant_ParamSource
     Private _enMaj As Boolean = False          ' true pendant le chargement initial
     Private _uiPrete As Boolean = False        ' true une fois l'interface construite
     Private _modeAvance As Boolean = False     ' true si le json existant n'est pas représentable
+    Private _paramsSql As New List(Of String)  ' @xxx réellement utilisés par la requête (vide si SQL absent)
+
+    ' Paramètres injectés automatiquement par le serveur quand ils ne sont pas
+    ' déclarés (executerSource) : id_Societe toujours ; Login / Matricule /
+    ' Cod_Profile uniquement s'ils ne sont pas déclarés — les déclarer permet de
+    ' les alimenter depuis un champ de la page (ex. matricule d'un autre salarié).
+    Private Shared ReadOnly PARAMS_AUTO As String() = {"id_Societe", "Login", "Matricule", "Cod_Profile"}
 
     ' Types proposés (libellé français -> code json) ; le moteur distingue int / nvarchar
     Private Shared ReadOnly TYPES_PARAM As New Dictionary(Of String, String)(StringComparer.OrdinalIgnoreCase) From {
@@ -35,8 +43,11 @@ Public Class SP_Assistant_ParamSource
     Friend WithEvents btnAnnuler As Button
 
     ''' <summary>Crée l'assistant. jsonExistant = contenu actuel de la cellule
-    ''' 'Paramètres (json)' de la source ("" pour une nouvelle source).</summary>
-    Public Sub New(jsonExistant As String)
+    ''' 'Paramètres (json)' de la source ("" pour une nouvelle source) ;
+    ''' codeSql = requête SQL de la source : la liste déroulante des noms de
+    ''' paramètres est alimentée par les @xxx qu'elle utilise, et la cohérence
+    ''' déclaration ↔ requête est contrôlée à l'application.</summary>
+    Public Sub New(jsonExistant As String, Optional codeSql As String = "")
         Me.Font = New Font("Century Gothic", 8.25!)
         Me.Text = "Assistant de paramètres de la source"
         Me.FormBorderStyle = FormBorderStyle.FixedDialog
@@ -46,6 +57,11 @@ Public Class SP_Assistant_ParamSource
         Me.BackColor = Color.White
         Me.ShowInTaskbar = False
         ConstruireUI()
+        _paramsSql = ExtraireParamsSql(codeSql)
+        Dim colNom = DirectCast(grdParams.Columns("colParNom"), DataGridViewComboBoxColumn)
+        For Each p In _paramsSql
+            If Not colNom.Items.Contains(p) Then colNom.Items.Add(p)
+        Next
         _uiPrete = True
         ChargerJson(jsonExistant)
         Regenerer()
@@ -63,7 +79,7 @@ Public Class SP_Assistant_ParamSource
     Private Sub ConstruireUI()
         Dim main As New TableLayoutPanel With {.Dock = DockStyle.Fill, .ColumnCount = 1, .Padding = New Padding(10, 8, 10, 8)}
         main.ColumnStyles.Add(New ColumnStyle(SizeType.Percent, 100.0!))
-        For Each h As Single In New Single() {24, 66, 240, 40, 66, 42}
+        For Each h As Single In New Single() {24, 84, 240, 32, 66, 42}
             main.RowStyles.Add(New RowStyle(SizeType.Absolute, h))
         Next
         Me.Controls.Add(main)
@@ -75,8 +91,10 @@ Public Class SP_Assistant_ParamSource
 
         lblAideIntro = LblAide("Déclarez ici les paramètres de la requête SQL (ceux écrits @xxx dans la requête) :" & vbCrLf &
                           "la syntaxe json de la colonne 'Paramètres' est générée automatiquement, aucun code à écrire." & vbCrLf &
-                          "Le paramètre @id_Societe est injecté automatiquement par le serveur : ne le déclarez pas.",
-                          0, 0, 680, 60)
+                          "Le paramètre @id_Societe est injecté automatiquement par le serveur : ne le déclarez pas." & vbCrLf &
+                          "La liste des noms propose les @xxx détectés dans la requête ; @Login / @Matricule / @Cod_Profile non déclarés" & vbCrLf &
+                          "sont injectés avec l'identité de l'utilisateur connecté (déclarez-les pour les alimenter depuis la page).",
+                          0, 0, 680, 78)
         lblAideIntro.Dock = DockStyle.Fill
         main.Controls.Add(lblAideIntro, 0, 1)
 
@@ -86,7 +104,7 @@ Public Class SP_Assistant_ParamSource
                                            .RowHeadersVisible = False, .AutoGenerateColumns = False,
                                            .EnableHeadersVisualStyles = False, .BackgroundColor = Color.White,
                                            .ColumnHeadersDefaultCellStyle = New DataGridViewCellStyle With {.BackColor = colorBase01, .ForeColor = Color.White, .Font = Me.Font}}
-        Dim colNom As New DataGridViewTextBoxColumn With {.Name = "colParNom", .HeaderText = "Nom (sans le @)", .Width = 240}
+        Dim colNom As New DataGridViewComboBoxColumn With {.Name = "colParNom", .HeaderText = "Nom (sans le @)", .Width = 240, .FlatStyle = FlatStyle.Standard}
         grdParams.Columns.Add(colNom)
         Dim colTyp As New DataGridViewComboBoxColumn With {.Name = "colParTyp", .HeaderText = "Type", .Width = 200}
         For Each k In TYPES_PARAM.Keys : colTyp.Items.Add(k) : Next
@@ -169,6 +187,7 @@ Public Class SP_Assistant_ParamSource
             Return
         End If
         _enMaj = True
+        Dim colNom = DirectCast(grdParams.Columns("colParNom"), DataGridViewComboBoxColumn)
         For Each t In arr
             Dim o = CType(t, JObject)
             Dim lbl As String = LabelType(IsNull(o("Typ"), "nvarchar").ToString())
@@ -179,7 +198,9 @@ Public Class SP_Assistant_ParamSource
                 Dim v As String = o("Obligatoire").ToString()
                 ob = v.Equals("true", StringComparison.OrdinalIgnoreCase) OrElse v = "1"
             End If
-            grdParams.Rows.Add(o("Nom").ToString(), lbl, ob)
+            Dim nomP As String = o("Nom").ToString()
+            If Not colNom.Items.Contains(nomP) Then colNom.Items.Add(nomP)   ' valeur existante hors liste (données anciennes)
+            grdParams.Rows.Add(nomP, lbl, ob)
         Next
         _enMaj = False
     End Sub
@@ -233,8 +254,52 @@ Public Class SP_Assistant_ParamSource
 
     '---------------- Validation et application ----------------
 
+    '---------------- Cohérence déclaration ↔ requête SQL ----------------
+
+    ''' <summary>Noms des paramètres @xxx réellement utilisés par la requête (hors
+    ''' commentaires, littéraux et variables système @@...). Ce contrôle est vital :
+    ''' une faute de frappe sur un nom spécial (Matricule, Login, Cod_Profile)
+    ''' rebascule silencieusement sur l'injection de l'identité de l'utilisateur
+    ''' connecté, et un @xxx non déclaré fait échouer l'exécution.</summary>
+    Private Shared Function ExtraireParamsSql(codeSql As String) As List(Of String)
+        Dim lst As New List(Of String)
+        Dim code As String = IsNull(codeSql, "")
+        If code.Trim = "" Then Return lst
+        code = Regex.Replace(code, "/\*.*?\*/", "", RegexOptions.Singleline)
+        code = Regex.Replace(code, "--.*?(\n|$)", " ")
+        code = Regex.Replace(code, "'(?:[^']|'')*'", "''")
+        For Each m As Match In Regex.Matches(code, "(?<!@)@([A-Za-z_][A-Za-z0-9_]*)")
+            Dim nom As String = m.Groups(1).Value
+            If Not lst.Contains(nom, StringComparer.OrdinalIgnoreCase) Then lst.Add(nom)
+        Next
+        Return lst
+    End Function
+
+    ''' <summary>Contrôles croisés entre les paramètres déclarés et les @xxx de la
+    ''' requête : erreurs bloquantes (déclaré absent de la requête = faute de frappe
+    ''' probable ; utilisé non déclaré et non injectable = échec d'exécution) et
+    ''' avertissements non bloquants (injection automatique de l'identité connectée).</summary>
+    Private Sub ControlerCoherenceSql(nomsDeclares As List(Of String), erreurs As List(Of String), avertissements As List(Of String))
+        If _paramsSql.Count = 0 Then Return   ' requête non écrite : rien à croiser
+        For Each nom In nomsDeclares
+            If Not _paramsSql.Contains(nom, StringComparer.OrdinalIgnoreCase) Then
+                erreurs.Add("'" & nom & "' est déclaré mais '@" & nom & "' n'apparaît pas dans la requête SQL (faute de frappe ?).")
+            End If
+        Next
+        For Each p In _paramsSql
+            If nomsDeclares.Contains(p, StringComparer.OrdinalIgnoreCase) Then Continue For
+            If PARAMS_AUTO.Contains(p, StringComparer.OrdinalIgnoreCase) Then
+                avertissements.Add("'@" & p & "' n'est pas déclaré : il sera injecté automatiquement avec l'identité de l'utilisateur connecté." & vbCrLf &
+                                   "    Pour l'alimenter depuis un champ de la page (ex. matricule d'un autre salarié), déclarez-le ici et mappez-le.")
+            Else
+                erreurs.Add("'@" & p & "' est utilisé dans la requête mais n'est pas déclaré : l'exécution échouerait (variable SQL non déclarée).")
+            End If
+        Next
+    End Sub
+
     Private Sub btnAppliquer_Click(sender As Object, e As EventArgs) Handles btnAppliquer.Click
         Dim erreurs As New List(Of String)
+        Dim avertissements As New List(Of String)
         If _modeAvance Then
             Dim src As String = txtJsonAvance.Text.Trim
             If src <> "" Then
@@ -249,8 +314,10 @@ Public Class SP_Assistant_ParamSource
             Dim lst = LireLignes(incompletes)
             If incompletes > 0 Then erreurs.Add("Certaines lignes n'ont pas de nom : complétez-les ou supprimez-les.")
             Dim vus As New HashSet(Of String)(StringComparer.OrdinalIgnoreCase)
+            Dim noms As New List(Of String)
             For Each o In lst
                 Dim nom As String = o("Nom").ToString()
+                noms.Add(nom)
                 Dim v = ValiderIdentifiantSql(nom)
                 If v <> "" Then erreurs.Add(v.Replace("identifiant", "nom de paramètre"))
                 If nom.Equals("id_Societe", StringComparison.OrdinalIgnoreCase) Then
@@ -258,11 +325,16 @@ Public Class SP_Assistant_ParamSource
                 End If
                 If Not vus.Add(nom) Then erreurs.Add("Paramètre en doublon : '" & nom & "'.")
             Next
+            ' Cohérence avec la requête SQL (piège de l'injection automatique)
+            ControlerCoherenceSql(noms, erreurs, avertissements)
         End If
         If erreurs.Count > 0 Then
             ShowMessageBox("Corrigez les points suivants :" & vbCrLf & " - " & String.Join(vbCrLf & " - ", erreurs),
                            "Assistant", MessageBoxButtons.OK, msgIcon.Warning)
             Return
+        End If
+        If avertissements.Count > 0 Then
+            ShowMessageBox(String.Join(vbCrLf, avertissements), "Assistant", MessageBoxButtons.OK, msgIcon.Information)
         End If
         Me.Parametres = ConstruireJson()
         Me.DialogResult = DialogResult.OK
@@ -299,6 +371,18 @@ Public Class SP_Assistant_ParamSource
     ''' <summary>Une valeur hors liste (données anciennes) ne doit pas interrompre l'assistant.</summary>
     Private Sub grdParams_DataError(sender As Object, e As DataGridViewDataErrorEventArgs) Handles grdParams.DataError
         e.ThrowException = False
+    End Sub
+
+    ''' <summary>La colonne 'Nom' est une liste déroulante ÉDITABLE : elle propose les
+    ''' @xxx détectés dans la requête SQL, tout en laissant la saisie libre possible
+    ''' (requête pas encore écrite, cas particuliers) — la cohérence est contrôlée
+    ''' à l'application.</summary>
+    Private Sub grdParams_EditingControlShowing(sender As Object, e As DataGridViewEditingControlShowingEventArgs) Handles grdParams.EditingControlShowing
+        Dim combo = TryCast(e.Control, ComboBox)
+        If combo Is Nothing OrElse grdParams.CurrentCell Is Nothing Then Return
+        If grdParams.Columns(grdParams.CurrentCell.ColumnIndex).Name = "colParNom" Then
+            combo.DropDownStyle = ComboBoxStyle.DropDown
+        End If
     End Sub
 
     Private Sub txtJsonAvance_TextChanged(sender As Object, e As EventArgs) Handles txtJsonAvance.TextChanged

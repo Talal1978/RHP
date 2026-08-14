@@ -667,16 +667,22 @@
     <Compile Include="Portail\SP_Assistant_Formule.vb">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Portail\SP_Zoom_SqlSource.Designer.vb">
-      <DependentUpon>SP_Zoom_SqlSource.vb</DependentUpon>
+    <Compile Include="Portail\Zoom_SP_SqlSource.Designer.vb">
+      <DependentUpon>Zoom_SP_SqlSource.vb</DependentUpon>
     </Compile>
-    <Compile Include="Portail\SP_Zoom_SqlSource.vb">
+    <Compile Include="Portail\Zoom_SP_SqlSource.vb">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Portail\SP_Nouvelle_Section.Designer.vb">
-      <DependentUpon>SP_Nouvelle_Section.vb</DependentUpon>
+    <Compile Include="Portail\Zoom_SP_MappingSource.Designer.vb">
+      <DependentUpon>Zoom_SP_MappingSource.vb</DependentUpon>
     </Compile>
-    <Compile Include="Portail\SP_Nouvelle_Section.vb">
+    <Compile Include="Portail\Zoom_SP_MappingSource.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Portail\Zoom_SP_Nouvelle_Section.Designer.vb">
+      <DependentUpon>Zoom_SP_Nouvelle_Section.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Portail\Zoom_SP_Nouvelle_Section.vb">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Portail\SP_Page_Designer.Designer.vb">
@@ -2133,8 +2139,8 @@
     <EmbeddedResource Include="Portail\SP_Page_Designer.resx">
       <DependentUpon>SP_Page_Designer.vb</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Portail\SP_Nouvelle_Section.resx">
-      <DependentUpon>SP_Nouvelle_Section.vb</DependentUpon>
+    <EmbeddedResource Include="Portail\Zoom_SP_Nouvelle_Section.resx">
+      <DependentUpon>Zoom_SP_Nouvelle_Section.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Outillage\RH_Outillage_Mouvement.resx">
       <DependentUpon>RH_Outillage_Mouvement.vb</DependentUpon>
@@ -2358,6 +2364,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Param_Python\Param_Python_Saisi.resx">
       <DependentUpon>Param_Python_Saisi.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Portail\Zoom_SP_SqlSource.resx">
+      <DependentUpon>Zoom_SP_SqlSource.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="SimulationSalaire\GrdFilter_Simulation.resx">
       <DependentUpon>GrdFilter_Simulation.vb</DependentUpon>

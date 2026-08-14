@@ -44,6 +44,7 @@ Partial Class SP_Page_Designer
         Dim DataGridViewCellStyle23 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
         Dim DataGridViewCellStyle24 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
         Dim DataGridViewCellStyle25 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
+        Dim DataGridViewCellStyle26 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
         Me.TabControl1 = New System.Windows.Forms.TabControl()
         Me.Tab_Donnees_SQL = New System.Windows.Forms.TabPage()
         Me.TabControl_Details = New System.Windows.Forms.TabControl()
@@ -112,6 +113,8 @@ Partial Class SP_Page_Designer
         Me.Grd_Tables_Allow_Duplicate = New System.Windows.Forms.DataGridViewCheckBoxColumn()
         Me.Grd_Tables_Tri_Defaut = New System.Windows.Forms.DataGridViewTextBoxColumn()
         Me.Grd_Tables_Regle_Suppression = New System.Windows.Forms.DataGridViewComboBoxColumn()
+        Me.Grd_Tables_Source_Metier = New System.Windows.Forms.DataGridViewComboBoxColumn()
+        Me.Grd_Tables_Source_Mapping = New System.Windows.Forms.DataGridViewTextBoxColumn()
         Me.Grd_Colonnes_Cod_Table = New System.Windows.Forms.DataGridViewComboBoxColumn()
         Me.Grd_Colonnes_Nom_Colonne = New System.Windows.Forms.DataGridViewTextBoxColumn()
         Me.Grd_Colonnes_Libelle = New System.Windows.Forms.DataGridViewTextBoxColumn()
@@ -270,7 +273,7 @@ Partial Class SP_Page_Designer
         DataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.[True]
         Me.Grd_Tables.ColumnHeadersDefaultCellStyle = DataGridViewCellStyle1
         Me.Grd_Tables.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize
-        Me.Grd_Tables.Columns.AddRange(New System.Windows.Forms.DataGridViewColumn() {Me.Grd_Tables_Cod_Table, Me.Grd_Tables_Nom_Physique, Me.Grd_Tables_Role_Table, Me.Grd_Tables_Libelle, Me.Grd_Tables_Rang, Me.Grd_Tables_Allow_Add, Me.Grd_Tables_Allow_Edit, Me.Grd_Tables_Allow_Delete, Me.Grd_Tables_Allow_Duplicate, Me.Grd_Tables_Tri_Defaut, Me.Grd_Tables_Regle_Suppression})
+        Me.Grd_Tables.Columns.AddRange(New System.Windows.Forms.DataGridViewColumn() {Me.Grd_Tables_Cod_Table, Me.Grd_Tables_Nom_Physique, Me.Grd_Tables_Role_Table, Me.Grd_Tables_Libelle, Me.Grd_Tables_Rang, Me.Grd_Tables_Allow_Add, Me.Grd_Tables_Allow_Edit, Me.Grd_Tables_Allow_Delete, Me.Grd_Tables_Allow_Duplicate, Me.Grd_Tables_Tri_Defaut, Me.Grd_Tables_Regle_Suppression, Me.Grd_Tables_Source_Metier, Me.Grd_Tables_Source_Mapping})
         DataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft
         DataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window
         DataGridViewCellStyle2.Font = New System.Drawing.Font("Century Gothic", 8.25!)
@@ -374,6 +377,24 @@ Partial Class SP_Page_Designer
         Me.Grd_Tables_Regle_Suppression.DataPropertyName = "Regle_Suppression"
         Me.Grd_Tables_Regle_Suppression.HeaderText = "Règle suppression"
         Me.Grd_Tables_Regle_Suppression.Name = "Grd_Tables_Regle_Suppression"
+        '
+        'Grd_Tables_Source_Metier
+        '
+        Me.Grd_Tables_Source_Metier.DataPropertyName = "Source_Metier"
+        Me.Grd_Tables_Source_Metier.HeaderText = "Source métier (grille virtuelle)"
+        Me.Grd_Tables_Source_Metier.Name = "Grd_Tables_Source_Metier"
+        Me.Grd_Tables_Source_Metier.ToolTipText = "Source de retour TABLE alimentant la grille : aucune table physique n'est créée et la grille est en lecture seule (vide = table physique classique)"
+        '
+        'Grd_Tables_Source_Mapping
+        '
+        DataGridViewCellStyle26.BackColor = System.Drawing.Color.FromArgb(CType(CType(240, Byte), Integer), CType(CType(243, Byte), Integer), CType(CType(245, Byte), Integer))
+        DataGridViewCellStyle26.ForeColor = System.Drawing.Color.FromArgb(CType(CType(90, Byte), Integer), CType(CType(90, Byte), Integer), CType(CType(90, Byte), Integer))
+        Me.Grd_Tables_Source_Mapping.DefaultCellStyle = DataGridViewCellStyle26
+        Me.Grd_Tables_Source_Mapping.DataPropertyName = "Source_Mapping"
+        Me.Grd_Tables_Source_Mapping.HeaderText = "Mapping paramètres"
+        Me.Grd_Tables_Source_Mapping.Name = "Grd_Tables_Source_Mapping"
+        Me.Grd_Tables_Source_Mapping.ReadOnly = True
+        Me.Grd_Tables_Source_Mapping.ToolTipText = "Double-clic : assistant d'alimentation des paramètres de la source (champs de l'entête ou constantes) - json généré automatiquement"
         '
         'Tab_Colonnes
         '
@@ -1713,6 +1734,8 @@ Partial Class SP_Page_Designer
     Friend WithEvents Grd_Tables_Allow_Duplicate As DataGridViewCheckBoxColumn
     Friend WithEvents Grd_Tables_Tri_Defaut As DataGridViewTextBoxColumn
     Friend WithEvents Grd_Tables_Regle_Suppression As DataGridViewComboBoxColumn
+    Friend WithEvents Grd_Tables_Source_Metier As DataGridViewComboBoxColumn
+    Friend WithEvents Grd_Tables_Source_Mapping As DataGridViewTextBoxColumn
     Friend WithEvents Grd_Colonnes_Cod_Table As DataGridViewComboBoxColumn
     Friend WithEvents Grd_Colonnes_Nom_Colonne As DataGridViewTextBoxColumn
     Friend WithEvents Grd_Colonnes_Libelle As DataGridViewTextBoxColumn

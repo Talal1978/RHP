@@ -5,12 +5,12 @@
 - **Code de design des formulaires (instruction permanente)** : tout le code de
   design (déclaration et disposition des contrôles, `InitializeComponent`)
   doit être écrit dans le fichier `.Designer.vb` du formulaire (ex.
-  `SP_Nouvelle_Section.Designer.vb`), jamais dans le fichier de logique `.vb`.
+  `Zoom_SP_Nouvelle_Section.Designer.vb`), jamais dans le fichier de logique `.vb`.
   Le fichier `.vb` ne contient que la logique (événements, accès données,
   validations). Cette règle s'applique **y compris aux écrans construits
   entièrement par code** (sans Concepteur visuel Visual Studio) : la
   construction de l'interface est alors placée dans `InitializeComponent()`
-  du `.Designer.vb` — référence : `SP_Zoom_SqlSource.Designer.vb`
+  du `.Designer.vb` — référence : `Zoom_SP_SqlSource.Designer.vb`
   (déclarations de champs en bas, `Partial Class`, `Inherits` uniquement dans
   le `.Designer.vb`, `.resx` absent si inutile, entrée `<Compile>` avec
   `<DependentUpon>` dans le `.vbproj`). Le constructeur du `.vb` appelle
@@ -56,9 +56,22 @@
   `Cursors.Hand` au survol de la cellule (`CellMouseEnter`), un tooltip sur
   la colonne et un style de cellule lecture seule (fond grisé). Ex. :
   `Grd_Sources` (`Parametres`, `Code_Sql`) dans `SP_Page_Designer`.
-- Thème visuel des écrans modaux : suivre `Zoom_Org_Organigramme_Affectation`
-  (formulaire sans bordure cadré `colorBase01`, bandeau titre, panel clair,
-  contrôles `ud_TextBox` / `ud_ComboBox` / `ud_button`).
+- **Écrans affichés exclusivement en modal : nommage et thème (instruction
+  permanente)** : tout écran qui s'affiche exclusivement en modal porte un nom
+  (classe et fichiers) commençant par `Zoom` (ex. `Zoom_SP_SqlSource`,
+  `Zoom_SP_Nouvelle_Section`) et suit le thème de
+  `Zoom_SP_Nouvelle_Section.Designer.vb` : classe héritant de `Ecran`,
+  formulaire sans bordure cadré `colorBase01` (`FormBorderStyle.None`,
+  `Padding = 2`, `ControlBox = False`, `ShowInTaskbar = False`,
+  `StartPosition = CenterParent`, `KeyPreview = True`), bandeau titre
+  `ent_pnl` (`TableLayoutPanel` docké haut, hauteur 45, fond gris
+  240,240,240) contenant le titre `Zoom_lbl` (Century Gothic 9,75 gras,
+  `colorBase01`, fond transparent) et les boutons d'action en `PictureBox`
+  36×37 (`Save_pb`, `Close_pb`, `Nouveau_pb`, `Supprimer_pb`... — images
+  `btn_save` / `btn_close` / `btn_add` / `btn_delete` de `My.Resources`,
+  `Cursors.Hand`, `SizeMode.CenterImage`), et un panel de contenu clair
+  docké `Fill` (fond 250,250,250) portant les contrôles `ud_TextBox` /
+  `ud_ComboBox` / `ud_button`.
 
 ## RHP_Portail (React/TypeScript)
 

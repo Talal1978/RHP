@@ -12,11 +12,11 @@ Imports System.Text.RegularExpressions
 '''     delete, drop, xp_*, openrowset...) ;
 '''   - procédures système sp_* interdites (contrôle sensible à la casse : les
 '''     tables métier SP_ restent lisibles).
-''' Interface : SP_Zoom_SqlSource.Designer.vb (convention permanente : tout le
+''' Interface : Zoom_SP_SqlSource.Designer.vb (convention permanente : tout le
 ''' code de design est dans le .Designer.vb ; ce fichier ne contient que la
 ''' logique — contrôle d'injection, événements, résultat).
 ''' </summary>
-Public Class SP_Zoom_SqlSource
+Public Class Zoom_SP_SqlSource
 
     '---------------- Résultat (lu par l'appelant après DialogResult.OK) ----------------
     Public CodeSql As String = ""
@@ -25,7 +25,7 @@ Public Class SP_Zoom_SqlSource
     ''' codeSqlExistant = contenu actuel de la cellule 'Requête SQL'.</summary>
     Public Sub New(codSource As String, codeSqlExistant As String)
         InitializeComponent()
-        titre.Text = "  Édition de la requête SQL — source '" & codSource & "'"
+        Zoom_lbl.Text = "Édition de la requête SQL — source '" & codSource & "'"
         txtSql.Text = IsNull(codeSqlExistant, "")
         txtSql.Select(0, 0)
         Verifier()
@@ -80,7 +80,7 @@ Public Class SP_Zoom_SqlSource
         Verifier()
     End Sub
 
-    Private Sub btnAppliquer_Click(sender As Object, e As EventArgs) Handles btnAppliquer.Click
+    Private Sub Save_pb_Click(sender As Object, e As EventArgs) Handles Save_pb.Click
         Dim msg As String = ControleLectureSeule(txtSql.Text)
         If msg <> "" Then
             ShowMessageBox("La requête ne passe pas le contrôle d'injection :" & vbCrLf & msg,
@@ -92,12 +92,12 @@ Public Class SP_Zoom_SqlSource
         Me.Close()
     End Sub
 
-    Private Sub btnAnnuler_Click(sender As Object, e As EventArgs) Handles btnAnnuler.Click
+    Private Sub Close_pb_Click(sender As Object, e As EventArgs) Handles Close_pb.Click
         Me.DialogResult = DialogResult.Cancel
         Me.Close()
     End Sub
 
-    Private Sub SP_Zoom_SqlSource_KeyDown(sender As Object, e As KeyEventArgs) Handles Me.KeyDown
+    Private Sub Zoom_SP_SqlSource_KeyDown(sender As Object, e As KeyEventArgs) Handles Me.KeyDown
         If e.KeyCode = Keys.Escape Then
             Me.DialogResult = DialogResult.Cancel
             Me.Close()

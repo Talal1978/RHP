@@ -12,10 +12,10 @@ Imports System.Text.RegularExpressions
 ''' (Typ &lt;&gt; 'S') et refuse les sections encore utilisées par des pages.
 ''' L'icône est stockée dans la colonne libre Champs02 de Param_Rubriques : le
 ''' portail la renvoie aux sections du menu latéral (endpoint sp_menu_portail).
-''' Thème visuel et layout : SP_Nouvelle_Section.Designer.vb (identique à
-''' Zoom_Org_Organigramme_Affectation).
+''' Thème visuel et layout : Zoom_SP_Nouvelle_Section.Designer.vb (thème de
+''' référence des écrans exclusivement modaux — instruction permanente).
 ''' </summary>
-Public Class SP_Nouvelle_Section
+Public Class Zoom_SP_Nouvelle_Section
 
     '---------------- Résultat (lu par l'appelant après fermeture) ----------------
     ''' <summary>Dernière section créée/modifiée : re-sélectionnée dans la liste de l'appelant.</summary>
@@ -385,7 +385,7 @@ Public Class SP_Nouvelle_Section
     '---------------- Raccourcis clavier / focus initial ----------------
 
     ''' <summary>Entrée = enregistrer (hors liste déroulante ouverte), Échap = fermer.</summary>
-    Private Sub SP_Nouvelle_Section_KeyDown(sender As Object, e As KeyEventArgs) Handles MyBase.KeyDown
+    Private Sub Zoom_SP_Nouvelle_Section_KeyDown(sender As Object, e As KeyEventArgs) Handles MyBase.KeyDown
         If e.KeyCode = Keys.Escape Then
             e.SuppressKeyPress = True
             Me.Close()
@@ -397,7 +397,7 @@ Public Class SP_Nouvelle_Section
     End Sub
 
     ''' <summary>Focus initial sur le nom (Select de ud_TextBox : focus la zone interne).</summary>
-    Private Sub SP_Nouvelle_Section_Shown(sender As Object, e As EventArgs) Handles MyBase.Shown
+    Private Sub Zoom_SP_Nouvelle_Section_Shown(sender As Object, e As EventArgs) Handles MyBase.Shown
         txtLibelle.Select()
     End Sub
 
