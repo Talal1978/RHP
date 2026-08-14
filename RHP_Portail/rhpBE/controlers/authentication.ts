@@ -162,7 +162,6 @@ export const getNewPwd = async (req: Request, res: Response) => {
       html: `Bonjour ${userData.Nom}<BR/>Vous avez réinitialisé votre mot de passe<BR/>Ci-après votre nouveau mot de pass : <b>${password}</b>.`,
       headers: {},
     };
-    console.log("mailOptions", mailOptions)
     let info = await envoiMail(mailOptions);
     return res.send({ result: info.accepted.length > 0, data: info.accepted });
   } catch (err) {

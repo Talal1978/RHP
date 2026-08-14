@@ -8,11 +8,12 @@ Imports Newtonsoft.Json.Linq
 ''' une grille simple (nom, type, obligatoire) et la syntaxe json attendue par le
 ''' moteur (colonne Parametres de SP_Page_Source : [{"Nom":"X","Typ":"nvarchar",
 ''' "Obligatoire":true}]) est générée automatiquement - aucune saisie de code.
-''' Le formulaire est entièrement construit dans le code (à l'abri de la
-''' régénération du Designer par Visual Studio).
+''' Interface : Zoom_SP_Assistant_ParamSource.Designer.vb (convention permanente :
+''' tout le code de design est dans le .Designer.vb ; ce fichier ne contient que la
+''' logique — génération du json, contrôles de cohérence avec la requête SQL,
+''' événements — et l'alimentation des données).
 ''' </summary>
-Public Class SP_Assistant_ParamSource
-    Inherits Form
+Public Class Zoom_SP_Assistant_ParamSource
 
     '---------------- Résultat (lu par l'appelant après DialogResult.OK) ----------------
     Public Parametres As String = ""
@@ -34,13 +35,7 @@ Public Class SP_Assistant_ParamSource
         {"Nombre décimal (decimal)", "decimal"}, {"Date (date)", "date"},
         {"Date et heure (datetime)", "datetime"}, {"Oui/Non (bit)", "bit"}}
 
-    Friend WithEvents grdParams As DataGridView
-    Friend WithEvents lblAideIntro As Label
-    Friend WithEvents txtJsonAvance As TextBox
-    Friend WithEvents lblJsonAvance As Label
-    Friend WithEvents txtParamJson As TextBox
-    Friend WithEvents btnAppliquer As Button
-    Friend WithEvents btnAnnuler As Button
+    ' (Contrôles et disposition : Zoom_SP_Assistant_ParamSource.Designer.vb)
 
     ''' <summary>Crée l'assistant. jsonExistant = contenu actuel de la cellule
     ''' 'Paramètres (json)' de la source ("" pour une nouvelle source) ;
@@ -48,101 +43,17 @@ Public Class SP_Assistant_ParamSource
     ''' paramètres est alimentée par les @xxx qu'elle utilise, et la cohérence
     ''' déclaration ↔ requête est contrôlée à l'application.</summary>
     Public Sub New(jsonExistant As String, Optional codeSql As String = "")
-        Me.Font = New Font("Century Gothic", 8.25!)
-        Me.Text = "Assistant de paramètres de la source"
-        Me.FormBorderStyle = FormBorderStyle.FixedDialog
-        Me.MaximizeBox = False : Me.MinimizeBox = False
-        Me.StartPosition = FormStartPosition.CenterParent
-        Me.ClientSize = New Size(720, 520)
-        Me.BackColor = Color.White
-        Me.ShowInTaskbar = False
-        ConstruireUI()
+        InitializeComponent()
+        ' Domaine de la colonne 'Type' (source unique : TYPES_PARAM) et noms @xxx
+        ' détectés dans la requête (proposés par la colonne 'Nom')
+        For Each k In TYPES_PARAM.Keys : colParTyp.Items.Add(k) : Next
         _paramsSql = ExtraireParamsSql(codeSql)
-        Dim colNom = DirectCast(grdParams.Columns("colParNom"), DataGridViewComboBoxColumn)
         For Each p In _paramsSql
-            If Not colNom.Items.Contains(p) Then colNom.Items.Add(p)
+            If Not colParNom.Items.Contains(p) Then colParNom.Items.Add(p)
         Next
         _uiPrete = True
         ChargerJson(jsonExistant)
         Regenerer()
-    End Sub
-
-    Private Function Lbl(texte As String, x As Integer, y As Integer, w As Integer, Optional hauteur As Integer = 20) As Label
-        Return New Label With {.Text = texte, .Location = New Point(x, y), .Size = New Size(w, hauteur), .AutoSize = False}
-    End Function
-    Private Function LblAide(texte As String, x As Integer, y As Integer, w As Integer, Optional hauteur As Integer = 20) As Label
-        Return New Label With {.Text = texte, .Location = New Point(x, y), .Size = New Size(w, hauteur),
-                               .ForeColor = Color.FromArgb(110, 110, 110), .AutoSize = False}
-    End Function
-
-    ''' <summary>Construit toute l'interface (disposition fixe, formulaire non redimensionnable).</summary>
-    Private Sub ConstruireUI()
-        Dim main As New TableLayoutPanel With {.Dock = DockStyle.Fill, .ColumnCount = 1, .Padding = New Padding(10, 8, 10, 8)}
-        main.ColumnStyles.Add(New ColumnStyle(SizeType.Percent, 100.0!))
-        For Each h As Single In New Single() {24, 84, 240, 32, 66, 42}
-            main.RowStyles.Add(New RowStyle(SizeType.Absolute, h))
-        Next
-        Me.Controls.Add(main)
-
-        Dim lblTitre As Label = Lbl("Assistant de paramètres de la source", 0, 0, 600)
-        lblTitre.Font = New Font("Century Gothic", 11.0!, FontStyle.Bold)
-        lblTitre.ForeColor = colorBase01
-        main.Controls.Add(lblTitre, 0, 0)
-
-        lblAideIntro = LblAide("Déclarez ici les paramètres de la requête SQL (ceux écrits @xxx dans la requête) :" & vbCrLf &
-                          "la syntaxe json de la colonne 'Paramètres' est générée automatiquement, aucun code à écrire." & vbCrLf &
-                          "Le paramètre @id_Societe est injecté automatiquement par le serveur : ne le déclarez pas." & vbCrLf &
-                          "La liste des noms propose les @xxx détectés dans la requête ; @Login / @Matricule / @Cod_Profile non déclarés" & vbCrLf &
-                          "sont injectés avec l'identité de l'utilisateur connecté (déclarez-les pour les alimenter depuis la page).",
-                          0, 0, 680, 78)
-        lblAideIntro.Dock = DockStyle.Fill
-        main.Controls.Add(lblAideIntro, 0, 1)
-
-        '---------------- Grille des paramètres ----------------
-        Dim grpParams As New GroupBox With {.Text = "Paramètres de la requête", .Dock = DockStyle.Fill}
-        grdParams = New DataGridView With {.Dock = DockStyle.Fill, .AllowUserToDeleteRows = True,
-                                           .RowHeadersVisible = False, .AutoGenerateColumns = False,
-                                           .EnableHeadersVisualStyles = False, .BackgroundColor = Color.White,
-                                           .ColumnHeadersDefaultCellStyle = New DataGridViewCellStyle With {.BackColor = colorBase01, .ForeColor = Color.White, .Font = Me.Font}}
-        Dim colNom As New DataGridViewComboBoxColumn With {.Name = "colParNom", .HeaderText = "Nom (sans le @)", .Width = 240, .FlatStyle = FlatStyle.Standard}
-        grdParams.Columns.Add(colNom)
-        Dim colTyp As New DataGridViewComboBoxColumn With {.Name = "colParTyp", .HeaderText = "Type", .Width = 200}
-        For Each k In TYPES_PARAM.Keys : colTyp.Items.Add(k) : Next
-        grdParams.Columns.Add(colTyp)
-        Dim colObli As New DataGridViewCheckBoxColumn With {.Name = "colParObli", .HeaderText = "Obligatoire", .Width = 90}
-        grdParams.Columns.Add(colObli)
-        '---------------- Mode avancé (json existant non standard) ----------------
-        lblJsonAvance = LblAide("Le json existant n'est pas une liste de paramètres standard : il est conservé tel quel." & vbCrLf &
-                                "Vous pouvez le corriger ci-dessous (mode avancé).", 10, 22, 650, 40)
-        lblJsonAvance.Visible = False
-        txtJsonAvance = New TextBox With {.Location = New Point(10, 64), .Size = New Size(650, 150), .Multiline = True,
-                                          .ScrollBars = ScrollBars.Vertical, .Visible = False}
-        grpParams.Controls.Add(grdParams)
-        grpParams.Controls.Add(lblJsonAvance)
-        grpParams.Controls.Add(txtJsonAvance)
-        main.Controls.Add(grpParams, 0, 2)
-
-        Dim lblEx As Label = LblAide("Exemple : pour la requête '... where Matricule = @Matricule', déclarez un paramètre 'Matricule'.", 0, 0, 680)
-        lblEx.Dock = DockStyle.Fill
-        main.Controls.Add(lblEx, 0, 3)
-
-        '---------------- Aperçu de la syntaxe générée ----------------
-        Dim grpApercu As New GroupBox With {.Text = "Aperçu de la syntaxe générée (automatique — rien à saisir)", .Dock = DockStyle.Fill}
-        txtParamJson = New TextBox With {.Location = New Point(140, 22), .Size = New Size(530, 24), .ReadOnly = True,
-                                         .BackColor = Color.FromArgb(240, 243, 245)}
-        grpApercu.Controls.Add(Lbl("Paramètres (json) :", 10, 24, 125))
-        grpApercu.Controls.Add(txtParamJson)
-        main.Controls.Add(grpApercu, 0, 4)
-
-        '---------------- Boutons ----------------
-        Dim pnlBoutons As New FlowLayoutPanel With {.Dock = DockStyle.Fill, .FlowDirection = FlowDirection.RightToLeft}
-        btnAnnuler = New Button With {.Text = "Annuler", .Size = New Size(110, 30)}
-        btnAppliquer = New Button With {.Text = "Appliquer", .Size = New Size(190, 30), .FlatStyle = FlatStyle.Flat,
-                                        .BackColor = colorBase01, .ForeColor = Color.White}
-        pnlBoutons.Controls.Add(btnAnnuler)
-        pnlBoutons.Controls.Add(btnAppliquer)
-        main.Controls.Add(pnlBoutons, 0, 5)
-        Me.CancelButton = btnAnnuler
     End Sub
 
     '---------------- Chargement du json existant ----------------
@@ -187,19 +98,17 @@ Public Class SP_Assistant_ParamSource
             Return
         End If
         _enMaj = True
-        Dim colNom = DirectCast(grdParams.Columns("colParNom"), DataGridViewComboBoxColumn)
         For Each t In arr
             Dim o = CType(t, JObject)
             Dim lbl As String = LabelType(IsNull(o("Typ"), "nvarchar").ToString())
-            Dim colTyp = DirectCast(grdParams.Columns("colParTyp"), DataGridViewComboBoxColumn)
-            If Not colTyp.Items.Contains(lbl) Then colTyp.Items.Add(lbl)
+            If Not colParTyp.Items.Contains(lbl) Then colParTyp.Items.Add(lbl)
             Dim ob As Boolean = False
             If o("Obligatoire") IsNot Nothing Then
                 Dim v As String = o("Obligatoire").ToString()
                 ob = v.Equals("true", StringComparison.OrdinalIgnoreCase) OrElse v = "1"
             End If
             Dim nomP As String = o("Nom").ToString()
-            If Not colNom.Items.Contains(nomP) Then colNom.Items.Add(nomP)   ' valeur existante hors liste (données anciennes)
+            If Not colParNom.Items.Contains(nomP) Then colParNom.Items.Add(nomP)   ' valeur existante hors liste (données anciennes)
             grdParams.Rows.Add(nomP, lbl, ob)
         Next
         _enMaj = False
@@ -297,7 +206,7 @@ Public Class SP_Assistant_ParamSource
         Next
     End Sub
 
-    Private Sub btnAppliquer_Click(sender As Object, e As EventArgs) Handles btnAppliquer.Click
+    Private Sub Save_pb_Click(sender As Object, e As EventArgs) Handles Save_pb.Click
         Dim erreurs As New List(Of String)
         Dim avertissements As New List(Of String)
         If _modeAvance Then
@@ -341,9 +250,16 @@ Public Class SP_Assistant_ParamSource
         Me.Close()
     End Sub
 
-    Private Sub btnAnnuler_Click(sender As Object, e As EventArgs) Handles btnAnnuler.Click
+    Private Sub Close_pb_Click(sender As Object, e As EventArgs) Handles Close_pb.Click
         Me.DialogResult = DialogResult.Cancel
         Me.Close()
+    End Sub
+
+    Private Sub Zoom_SP_Assistant_ParamSource_KeyDown(sender As Object, e As KeyEventArgs) Handles Me.KeyDown
+        If e.KeyCode = Keys.Escape Then
+            Me.DialogResult = DialogResult.Cancel
+            Me.Close()
+        End If
     End Sub
 
     '---------------- Événements : régénération automatique de l'aperçu ----------------

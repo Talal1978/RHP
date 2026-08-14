@@ -658,13 +658,22 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Portail\Module_SP_DDL.vb" />
-    <Compile Include="Portail\SP_Assistant_ParamSource.vb">
+    <Compile Include="Portail\Zoom_SP_Assistant_ParamSource.Designer.vb">
+      <DependentUpon>Zoom_SP_Assistant_ParamSource.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Portail\Zoom_SP_Assistant_ParamSource.vb">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Portail\SP_Assistant_Validation.vb">
+    <Compile Include="Portail\Zoom_SP_Assistant_Validation.Designer.vb">
+      <DependentUpon>Zoom_SP_Assistant_Validation.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Portail\Zoom_SP_Assistant_Validation.vb">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Portail\SP_Assistant_Formule.vb">
+    <Compile Include="Portail\Zoom_SP_Assistant_Formule.Designer.vb">
+      <DependentUpon>Zoom_SP_Assistant_Formule.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Portail\Zoom_SP_Assistant_Formule.vb">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Portail\Zoom_SP_SqlSource.Designer.vb">

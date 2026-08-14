@@ -1,4 +1,4 @@
-Imports System.Text.RegularExpressions
+﻿Imports System.Text.RegularExpressions
 Imports Newtonsoft.Json.Linq
 
 ''' <summary>
@@ -13,11 +13,15 @@ Imports Newtonsoft.Json.Linq
 ''' Onglet 5 : habilitations par profil (périmètre : toute la page).
 ''' L'enregistrement crée/migre les tables métier SP_ dans la même transaction
 ''' (aperçu DDL disponible via le bouton "Aperçu DDL", journal SP_Page_DDL_Log).
+''' Actions de la barre : Nouveau / Enregistrer / Supprimer (brouillon sans
+''' document uniquement) / Dupliquer (copie du paramétrage sous une nouvelle
+''' identité, écrite à l'enregistrement) / Aperçu DDL / Publier-Désactiver.
 ''' </summary>
 Public Class SP_Page_Designer
     Dim New_D As ud_btn
     Dim Save_D As ud_btn
     Dim Del_D As ud_btn
+    Dim Dupliquer_D As ud_btn
     Dim Exec_D As ud_btn
     Dim Publi_D As ud_btn
 
@@ -215,6 +219,9 @@ Public Class SP_Page_Designer
             New_D = dictButtons("New_D")
             Save_D = dictButtons("Save_D")
             Del_D = dictButtons("Del_D")
+            ' Ajouté après coup : absent des bases n'ayant pas rejoué
+            ' Script_SQL_SP_Page_Designer.sql (bouton simplement non proposé)
+            Dupliquer_D = If(dictButtons.ContainsKey("Dupliquer_D"), dictButtons("Dupliquer_D"), Nothing)
             Exec_D = dictButtons("Exec_D")
             Publi_D = dictButtons("Publi_D")
         End If
@@ -504,6 +511,63 @@ Public Class SP_Page_Designer
         Dim rsl As savingResult = Saving()
         ShowMessageBox(rsl.message, "Enregistrer", MessageBoxButtons.OK, IIf(rsl.result, msgIcon.Information, msgIcon.Stop))
         If rsl.result Then Request(Cod_Page_txt.Text.Trim)
+    End Sub
+
+    ''' <summary>
+    ''' Duplique la page affichée en une NOUVELLE page : tout le paramétrage affiché
+    ''' (tables, colonnes physiques, champs, validations, habilitations) est conservé
+    ''' tel quel dans les grilles, seule l'identité est régénérée :
+    '''   - nouveau code page généré automatiquement (immuable) ;
+    '''   - type document vidé, à ressaisir : il est unique (UQ_SP_Page_Document) et
+    '''     pilote les noms physiques des tables (SP_&lt;Cod&gt;_Ent / _Det / _Virt),
+    '''     recalculés à sa saisie et à l'enregistrement ;
+    '''   - nom préfixé « Copie de », statut BROUILLON.
+    ''' Rien n'est écrit en base à ce stade : c'est 'Enregistrer' qui crée la copie et
+    ''' génère ses tables métier, avec tous ses contrôles (unicité du type document,
+    ''' cohérence des grilles, DDL...). La page d'origine n'est jamais modifiée (les
+    ''' éventuelles saisies en cours sont emportées dans la copie, elle seule).
+    ''' Aboutissants NON repris par la copie :
+    '''   - catalogue des sources métier : GLOBAL (commun à toutes les pages), partagé ;
+    '''   - règles du workflow de signature : propres au type document, à redéfinir pour
+    '''     le nouveau code (bouton 'Règles du workflow de signature') ;
+    '''   - artefacts de publication (écran portail SPP_, n° de version, dates) : recréés
+    '''     à la publication de la copie ; tables physiques et documents de la page
+    '''     d'origine restent rattachés à celle-ci.
+    ''' </summary>
+    Sub Dupliquer()
+        Dim codPage As String = Cod_Page_txt.Text.Trim
+        If codPage = "" OrElse Not PageEnregistree() Then
+            ShowMessageBox("Sélectionnez d'abord une page enregistrée (zoom sur 'Code page') :" & vbCrLf &
+                           "seule une page existante peut être dupliquée.", "Dupliquer", MessageBoxButtons.OK, msgIcon.Warning)
+            Return
+        End If
+        Dim msg As String = "Dupliquer la page '" & codPage & "' (" & Nom_Page_txt.Text.Trim & ") ?" & vbCrLf & vbCrLf &
+                            "La copie reprend tout le paramétrage affiché (tables, colonnes, champs," & vbCrLf &
+                            "validations, habilitations) sous une nouvelle identité :" & vbCrLf &
+                            " - nouveau code page généré automatiquement ;" & vbCrLf &
+                            " - nouveau type document À RENSEIGNER (unique : il pilote les noms physiques) ;" & vbCrLf &
+                            " - statut 'Brouillon' ; rien n'est écrit en base avant 'Enregistrer'." & vbCrLf & vbCrLf &
+                            "La page d'origine n'est pas modifiée."
+        If Workflow_Actif_chk.Checked Then
+            msg &= vbCrLf & vbCrLf &
+                   "Workflow de signature actif : ses règles, propres au type document '" & Cod_Document_txt.Text.Trim &
+                   "', ne sont PAS copiées — redéfinissez-les pour le nouveau type document."
+        End If
+        If ShowMessageBox(msg, "Dupliquer", MessageBoxButtons.OKCancel, msgIcon.Question) = DialogResult.Cancel Then Return
+        ' La copie embarque le contenu affiché des grilles : termine toute saisie en cours
+        For Each g As DataGridView In {Grd_Tables, Grd_Colonnes, Grd_Champs, Grd_Validations, Grd_Droits, Grd_Sources}
+            TerminerEditionGrille(g)
+        Next
+        ' Nouvelle identité de la copie (les grilles conservent le paramétrage affiché)
+        Cod_Page_txt.Text = GenererCodPage()
+        Cod_Page_txt.ReadOnly = True
+        Cod_Document_txt.Text = ""
+        Cod_Document_txt.ReadOnly = False
+        Nom_Page_txt.Text = "Copie de " & Nom_Page_txt.Text.Trim
+        If Nom_Page_txt.Text.Length > 60 Then Nom_Page_txt.Text = Nom_Page_txt.Text.Substring(0, 60)
+        Statut_Page_cmb.SelectedValue = "BROUILLON"
+        MajEtatWorkflowSignature()
+        Cod_Document_txt.Select()
     End Sub
 
     '---------------- Valeurs par défaut des nouvelles lignes ----------------
@@ -1312,7 +1376,7 @@ Public Class SP_Page_Designer
 
     '---------------- Assistant de validation (génération guidée des syntaxes json) ----------------
     ' Les colonnes "Paramètres (json)" et "Condition (json)" de la grille des validations
-    ' attendent une syntaxe déclarative précise : l'assistant (SP_Assistant_Validation)
+    ' attendent une syntaxe déclarative précise : l'assistant (Zoom_SP_Assistant_Validation)
     ' permet à un utilisateur non technique de décrire la règle en français et génère
     ' automatiquement ces syntaxes (création ou modification de la ligne sélectionnée).
     ' Le menu contextuel de la grille est déclaré dans le Designer (SP_Page_Designer.Designer.vb).
@@ -1377,7 +1441,7 @@ Public Class SP_Page_Designer
             ShowMessageBox("Définissez d'abord les champs de la page (onglet 'Champs de la page').", "Assistant", MessageBoxButtons.OK, msgIcon.Warning)
             Return
         End If
-        Using f As New SP_Assistant_Validation(Tbl_Champs, Tbl_Tables, ligne)
+        Using f As New Zoom_SP_Assistant_Validation(Tbl_Champs, Tbl_Tables, ligne)
             If f.ShowDialog(Me) <> DialogResult.OK Then Return
             Dim r As DataRow = ligne
             If r Is Nothing Then
@@ -1423,7 +1487,7 @@ Public Class SP_Page_Designer
     '---------------- Assistant des paramètres de source (génération guidée du json) ----------------
     ' La colonne "Paramètres (json)" de la grille des sources attend une liste json
     ' [{"Nom":"X","Typ":"nvarchar","Obligatoire":true}] : l'assistant
-    ' (SP_Assistant_ParamSource) la génère depuis une simple grille nom/type/obligatoire.
+    ' (Zoom_SP_Assistant_ParamSource) la génère depuis une simple grille nom/type/obligatoire.
     ' Le menu contextuel de la grille est déclaré dans le Designer.
 
     ''' <summary>Double-clic sur la cellule 'Paramètres' d'une source : ouvre l'assistant
@@ -1504,7 +1568,7 @@ Public Class SP_Page_Designer
     ''' nouvelle ligne si aucune) et répercute le json généré dans la grille.</summary>
     Sub AssistantParametresSource()
         Dim r As DataRow = LigneSourceCourante()
-        Using f As New SP_Assistant_ParamSource(If(r IsNot Nothing, IsNull(r("Parametres"), ""), ""),
+        Using f As New Zoom_SP_Assistant_ParamSource(If(r IsNot Nothing, IsNull(r("Parametres"), ""), ""),
                                                 If(r IsNot Nothing, IsNull(r("Code_Sql"), ""), ""))
             If f.ShowDialog(Me) <> DialogResult.OK Then Return
             If r Is Nothing Then
@@ -1554,7 +1618,7 @@ Public Class SP_Page_Designer
         End If
     End Sub
 
-    ''' <summary>Ouvre l'assistant de formule (SP_Assistant_Formule) pour le champ de la ligne :
+    ''' <summary>Ouvre l'assistant de formule (Zoom_SP_Assistant_Formule) pour le champ de la ligne :
     ''' composition guidée sans code, puis le json généré est écrit dans la colonne Formule.</summary>
     Private Sub OuvrirAssistantFormule(rowIndex As Integer)
         Grd_Champs.EndEdit()
@@ -1567,7 +1631,7 @@ Public Class SP_Page_Designer
                            "Assistant de formule", MessageBoxButtons.OK, msgIcon.Information)
             Return
         End If
-        Using f As New SP_Assistant_Formule(Tbl_Champs, IsNull(r("Nom_Colonne"), "").Trim,
+        Using f As New Zoom_SP_Assistant_Formule(Tbl_Champs, IsNull(r("Nom_Colonne"), "").Trim,
                                             IsNull(r("Cod_Champ"), "").Trim, IsNull(r("Formule"), ""))
             If f.ShowDialog(Me) <> DialogResult.OK Then Return
             r("Formule") = f.FormuleJson
@@ -2031,24 +2095,101 @@ Public Class SP_Page_Designer
         End Try
     End Function
 
+    ''' <summary>
+    ''' Suppression d'une page — réservée aux BROUILLONS sans aucun document.
+    ''' Tenants :
+    '''   - seule une page enregistrée en base peut être supprimée ;
+    '''   - un brouillon n'a jamais été publié : aucun artefact de publication à
+    '''     nettoyer (écran portail SPP_, déclaration Param_Workflow_Typ_Document,
+    '''     qui n'existent que pour une page passée par 'Publier').
+    ''' Aboutissants :
+    '''   - blocage si des documents existent dans la table d'entête physique : une
+    '''     page ayant produit des documents se désactive, ne se supprime pas ;
+    '''   - les tables métier physiques SP_ (et leurs données) ne sont JAMAIS
+    '''     supprimées par ce module ;
+    '''   - les règles du workflow de signature posées sur le type document (toutes
+    '''     sociétés, configurables dès le brouillon) deviendraient orphelines :
+    '''     signalées dans la confirmation puis supprimées avec la page ;
+    '''   - le catalogue des sources métier (global) n'est pas touché ;
+    '''   - purge dans UNE transaction dédiée (miroir de Saving : la connexion globale
+    '''     peut conserver des recordsets firehose faisant échouer BeginTrans), dans
+    '''     l'ordre des FK (colonnes avant tables), journal DDL inclus ; l'écran repart
+    '''     ensuite sur une nouvelle page.
+    ''' </summary>
     Sub Deleting()
         Dim codPage As String = Cod_Page_txt.Text.Trim
         If codPage = "" Then Return
-        Dim statut As String = IsNull(FindLibelle("Statut_Page", "Cod_Page", codPage, "SP_Page"), "")
+        Dim Tbl As DataTable = DATA_READER_GRD("select Cod_Page, Cod_Document, Statut_Page, Table_Ent from SP_Page where Cod_Page=" & SqlV(codPage))
+        If Tbl.Rows.Count = 0 Then
+            ShowMessageBox("La page '" & codPage & "' n'est pas enregistrée en base : rien à supprimer.",
+                           "Suppression", MessageBoxButtons.OK, msgIcon.Warning)
+            Return
+        End If
+        Dim statut As String = IsNull(Tbl.Rows(0)("Statut_Page"), "")
         If statut <> "BROUILLON" Then
             ShowMessageBox("Seule une page en brouillon peut être supprimée. Passez-la en 'Désactivé' pour la retirer du portail." & vbCrLf &
                            "Les tables métier SP_ ne sont jamais supprimées par ce module.", "Suppression", MessageBoxButtons.OK, msgIcon.Stop)
             Return
         End If
-        If ShowMessageBox("Supprimer la configuration de la page '" & codPage & "' ?" & vbCrLf &
-                          "Les tables métier physiques SP_ (et leurs données) sont conservées.", "Suppression", MessageBoxButtons.OKCancel, msgIcon.Warning) = DialogResult.Cancel Then Return
-        CnExecuting("delete from SP_Page_Colonne where Cod_Page=" & SqlV(codPage) &
-                    " delete from SP_Page_Champ where Cod_Page=" & SqlV(codPage) &
-                    " delete from SP_Page_Validation where Cod_Page=" & SqlV(codPage) &
-                    " delete from SP_Page_Droit where Cod_Page=" & SqlV(codPage) &
-                    " delete from SP_Page_Table where Cod_Page=" & SqlV(codPage) &
-                    " delete from SP_Page_DDL_Log where Cod_Page=" & SqlV(codPage) &
-                    " delete from SP_Page where Cod_Page=" & SqlV(codPage))
+        ' Aucun document ne doit exister : la suppression porte sur la configuration,
+        ' jamais sur des données (un détail ne peut exister sans entête : FK)
+        Dim tableEnt As String = IsNull(Tbl.Rows(0)("Table_Ent"), "").Trim
+        If tableEnt <> "" AndAlso ValiderNomTableMetier(tableEnt) = "" AndAlso TableExiste(tableEnt) Then
+            Dim nbDoc As Integer = ScalarInt("select count(*) from dbo.[" & tableEnt & "]")
+            If nbDoc > 0 Then
+                ShowMessageBox("La page '" & codPage & "' possède " & nbDoc & " document(s) dans la table " & tableEnt & "." & vbCrLf &
+                               "Une page ayant produit des documents ne peut pas être supprimée : désactivez-la.",
+                               "Suppression", MessageBoxButtons.OK, msgIcon.Stop)
+                Return
+            End If
+        End If
+        ' Règles du workflow de signature posées sur le type document (bouton dédié,
+        ' accessible dès l'enregistrement d'un brouillon) : orphelines après suppression
+        Dim codDoc As String = IsNull(Tbl.Rows(0)("Cod_Document"), "").Trim
+        Dim nbWf As Integer = 0
+        If codDoc <> "" Then nbWf = ScalarInt("select count(*) from Workflow_Signatures where Typ_Document=" & SqlV(codDoc))
+        Dim msg As String = "Supprimer la configuration de la page '" & codPage & "' ?" & vbCrLf &
+                            "Les tables métier physiques SP_ (et leurs données) sont conservées."
+        If nbWf > 0 Then
+            msg &= vbCrLf & vbCrLf & nbWf & " règle(s) du workflow de signature (type document '" & codDoc &
+                   "', toutes sociétés) seront supprimées avec la page."
+        End If
+        If ShowMessageBox(msg, "Suppression", MessageBoxButtons.OKCancel, msgIcon.Warning) = DialogResult.Cancel Then Return
+        Dim cnTx As New ADODB.Connection
+        Dim enTransaction As Boolean = False
+        Try
+            cnTx.ConnectionString = connectionString
+            cnTx.Open()
+            cnTx.BeginTrans() : enTransaction = True
+            If nbWf > 0 Then
+                ' Même ordre que l'écran Workflow_Signatures (détails avant l'entête)
+                cnTx.Execute("delete from Workflow_Signatures_Detail where Typ_Document=" & SqlV(codDoc))
+                cnTx.Execute("delete from Workflow_Signatures_Tables where Typ_Document=" & SqlV(codDoc))
+                cnTx.Execute("delete from Workflow_Signatures_Signataires where Typ_Document=" & SqlV(codDoc))
+                cnTx.Execute("delete from Workflow_Signatures where Typ_Document=" & SqlV(codDoc))
+            End If
+            ' Ordre imposé par les FK (colonnes avant tables), journal DDL inclus
+            cnTx.Execute("delete from SP_Page_Colonne where Cod_Page=" & SqlV(codPage))
+            cnTx.Execute("delete from SP_Page_Champ where Cod_Page=" & SqlV(codPage))
+            cnTx.Execute("delete from SP_Page_Validation where Cod_Page=" & SqlV(codPage))
+            cnTx.Execute("delete from SP_Page_Droit where Cod_Page=" & SqlV(codPage))
+            cnTx.Execute("delete from SP_Page_Table where Cod_Page=" & SqlV(codPage))
+            cnTx.Execute("delete from SP_Page_DDL_Log where Cod_Page=" & SqlV(codPage))
+            cnTx.Execute("delete from SP_Page where Cod_Page=" & SqlV(codPage))
+            cnTx.CommitTrans() : enTransaction = False
+        Catch ex As Exception
+            If enTransaction Then
+                Try : cnTx.RollbackTrans() : Catch : End Try
+            End If
+            ShowMessageBox("Erreur lors de la suppression de la page '" & codPage & "' :" & vbCrLf & ex.Message,
+                           "Suppression", MessageBoxButtons.OK, msgIcon.Stop)
+            Return
+        Finally
+            Try
+                If cnTx.State = 1 Then cnTx.Close()
+            Catch
+            End Try
+        End Try
         Nouveau()
     End Sub
 

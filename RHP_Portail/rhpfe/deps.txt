@@ -1,1 +1,0 @@
-@mui/material @emotion/react @emotion/styled @mui/icons-material @mui/x-date-pickers @react-pdf-viewer/core @react-pdf-viewer/default-layout @react-pdf-viewer/zoom axios date-fns lodash.isequal lottie-react lucide-react pdfjs-dist react-router-dom react-virtuoso rtf-parser sass socket.io-client styled-components @tanstack/react-query tailwindcss postcss autoprefixer

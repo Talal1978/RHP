@@ -2,11 +2,11 @@
    RHP - Designer de pages portail (module SP_)
    Script d'enregistrement de l'écran SP_Page_Designer dans RHP_DeskTop
    ----------------------------------------------------------------------------
-   - Écran rattaché à : Système / Utilitaires avancés (résolu dynamiquement)
-   - Boutons : Nouveau / Enregistrer / Supprimer / Aperçu DDL / Publier
-   - Droits : profil super-admin (1) par défaut ; à étendre via Admin_Profile
-   Prérequis : 001_SP_Designer_Metadata.sql exécuté (tables SP_Page*).
-   ============================================================================ */
+    - Écran rattaché à : Système / Utilitaires avancés (résolu dynamiquement)
+    - Boutons : Nouveau / Enregistrer / Supprimer / Dupliquer / Aperçu DDL / Publier
+    - Droits : profil super-admin (1) par défaut ; à étendre via Admin_Profile
+    Prérequis : 001_SP_Designer_Metadata.sql exécuté (tables SP_Page*).
+    ============================================================================ */
 
 /* -------------------------------------------------------------------------- */
 /* 1. Définition de l'écran et de ses boutons                                 */
@@ -19,11 +19,12 @@ GO
 DELETE FROM Controle_Def_Ecran_Button WHERE Name_Ecran = 'SP_Page_Designer';
 GO
 INSERT INTO Controle_Def_Ecran_Button (Name_Ecran, Cod_Button, Lib_Button, ProcName, Img, Width, Height, Rang, Typ_Security) VALUES
-    ('SP_Page_Designer', 'New_D',   'Nouveau',            'Nouveau',     'btn_add',      25, 25, 1, ''),
-    ('SP_Page_Designer', 'Save_D',  'Enregistrer',        'Enregistrer', 'btn_save',     25, 25, 2, 'SC'),
-    ('SP_Page_Designer', 'Del_D',   'Supprimer',          'Deleting',    'btn_delete',   25, 25, 3, 'SC'),
-    ('SP_Page_Designer', 'Exec_D',  'Aperçu DDL',         'ApercuDDL',   'btn_request',  25, 25, 4, ''),
-    ('SP_Page_Designer', 'Publi_D', 'Publier / Désactiver', 'Publier',   'btn_validate', 25, 25, 5, 'SC');
+    ('SP_Page_Designer', 'New_D',   'Nouveau',            'Nouveau',     'btn_add',       25, 25, 1, ''),
+    ('SP_Page_Designer', 'Save_D',  'Enregistrer',        'Enregistrer', 'btn_save',      25, 25, 2, 'SC'),
+    ('SP_Page_Designer', 'Del_D',   'Supprimer',          'Deleting',    'btn_delete',    25, 25, 3, 'SC'),
+    ('SP_Page_Designer', 'Dupliquer_D', 'Dupliquer',      'Dupliquer',   'btn_duplicate', 25, 25, 4, 'SC'),
+    ('SP_Page_Designer', 'Exec_D',  'Aperçu DDL',         'ApercuDDL',   'btn_request',   25, 25, 5, ''),
+    ('SP_Page_Designer', 'Publi_D', 'Publier / Désactiver', 'Publier',   'btn_validate',  25, 25, 6, 'SC');
 GO
 
 /* -------------------------------------------------------------------------- */
@@ -52,7 +53,10 @@ IF NOT EXISTS (SELECT 1 FROM Controle_Menu_Avance WHERE Name_Ecran='SP_Page_Desi
     VALUES ('SP_Page_Designer', 'Save_D', 'Enregistrer', 'STD_Btn', 'SC', 1, 'Enregistrer (crée/migre les tables SP_)', 'S', 1526881);
 IF NOT EXISTS (SELECT 1 FROM Controle_Menu_Avance WHERE Name_Ecran='SP_Page_Designer' AND Name_Controle='Del_D')
     INSERT INTO Controle_Menu_Avance (Name_Ecran, Name_Controle, Text_Controle, Typ_Controle, Typ_Security, Gere_Security, InfoBulle, Source, Flag_Maj)
-    VALUES ('SP_Page_Designer', 'Del_D', 'Supprimer', 'STD_Btn', 'SC', 1, 'Supprimer (brouillon uniquement)', 'S', 1526881);
+    VALUES ('SP_Page_Designer', 'Del_D', 'Supprimer', 'STD_Btn', 'SC', 1, 'Supprimer (brouillon sans document uniquement)', 'S', 1526881);
+IF NOT EXISTS (SELECT 1 FROM Controle_Menu_Avance WHERE Name_Ecran='SP_Page_Designer' AND Name_Controle='Dupliquer_D')
+    INSERT INTO Controle_Menu_Avance (Name_Ecran, Name_Controle, Text_Controle, Typ_Controle, Typ_Security, Gere_Security, InfoBulle, Source, Flag_Maj)
+    VALUES ('SP_Page_Designer', 'Dupliquer_D', 'Dupliquer', 'STD_Btn', 'SC', 1, 'Dupliquer le paramétrage sous une nouvelle identité (écrit à l''enregistrement)', 'S', 1526881);
 IF NOT EXISTS (SELECT 1 FROM Controle_Menu_Avance WHERE Name_Ecran='SP_Page_Designer' AND Name_Controle='Publi_D')
     INSERT INTO Controle_Menu_Avance (Name_Ecran, Name_Controle, Text_Controle, Typ_Controle, Typ_Security, Gere_Security, InfoBulle, Source, Flag_Maj)
     VALUES ('SP_Page_Designer', 'Publi_D', 'Publier / Désactiver', 'STD_Btn', 'SC', 1, 'Publier la page sur le portail', 'S', 1526881);

@@ -16,8 +16,6 @@ export const getOrganigramme = async (req: Request, res: Response) => {
          left join dbo.RH_Agent a on o.Responsable = a.Matricule and a.id_Societe = @idSociete`;
         const result = await lireSql(query, [{ param: "idSociete", sqlType: Int, valeur: id_Societe }, { param: "cod_entite", sqlType: NVarChar, valeur: entity }]);
 
-        console.log("getOrganigramme result:", result.result, result.sort);
-
         if (result.result && result.data) {
             result.data.forEach((row: any) => {
                 if (row.Resp_Photo) {
@@ -41,7 +39,6 @@ export const getPoste = async (req: Request, res: Response) => {
                             Dependance_Hierarchique, Dependance_fonctionnelle
                         FROM Org_Poste
                         where Cod_Poste=@cod_poste and id_Societe=@idSociete`;
-        console.log(cod_poste, query);
         const result = await lireSql(query, [
             { param: "idSociete", sqlType: Int, valeur: id_Societe },
             { param: "cod_poste", sqlType: NVarChar, valeur: cod_poste }

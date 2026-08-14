@@ -708,7 +708,6 @@ Rules:
 
             // --- PERSONAL CONTEXT CLEANUP ---
             if (answer && answer.includes("###PERSONAL_CONTEXT###")) {
-                console.log("[AI] Answer based on Personal Context - Clearing Sources.");
                 answer = answer.replace("###PERSONAL_CONTEXT###", "").trim();
                 docs = []; // Prevent listing irrelevant sources
             }

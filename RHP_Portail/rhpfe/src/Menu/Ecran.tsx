@@ -68,10 +68,8 @@ const Ecran = ({ style }: { style?: React.CSSProperties }) => {
   // le menu flottant que lors d'un VRAI changement d'écran, et non quand
   // cet effet se rejoue après celui de la page (qui vient de poser ses boutons).
   const ecranRef = useRef<string | undefined>(undefined);
-  console.log("[Ecran] render, ecran=", ecran);
 
   useEffect(() => {
-    console.log("[Ecran] useEffect ecran changed:", ecran);
     if (ecranRef.current !== ecran) {
       settbnMenu([]);
     }

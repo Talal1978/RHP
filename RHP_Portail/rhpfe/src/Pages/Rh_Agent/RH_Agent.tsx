@@ -36,7 +36,6 @@ function getPhotoSrc(photo: any): string | undefined {
   return undefined;
 }
 const RH_Agent = ({ readonly = false }: { readonly?: boolean }) => {
-  console.log("[RH_Agent] render start");
   const myAxios = useAxiosPost();
   const { settbnMenu, isSmall, setShowLoading } = useContext(cntX);
   const msgbox = useMsgBox();
@@ -51,7 +50,6 @@ const RH_Agent = ({ readonly = false }: { readonly?: boolean }) => {
   const [photoZoomOpen, setPhotoZoomOpen] = useState<boolean>(false);
 
   const stateChange = useCallback((champs: string, valeur: any) => {
-    console.log("[RH_Agent] stateChange called:", champs, valeur);
     setRhAgent((agt: IRH_Agent) => {
       return { ...agt, [champs]: valeur };
     });
@@ -60,7 +58,7 @@ const RH_Agent = ({ readonly = false }: { readonly?: boolean }) => {
   const Enregistrer = useCallback(() => {
     msgbox({
       titre: "Enregistrer",
-      msg: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Distinctio, quisquam. Alias aliquam quibusdam sapiente suscipit sed ab tempora. Vero veritatis quis animi, quaerat voluptatum perferendis odio nulla ad asperiores deserunt.",
+      msg: "Confirmez-vous l'enregistrement de la fiche agent ?",
       typMsg: "warning",
       typReply: "YesNoCancel",
       handleOk: async () => {},

@@ -16,11 +16,11 @@ Imports Newtonsoft.Json.Linq
 ''' les champs connus, les GV_* connues et les opérateurs whitelistés peuvent être
 ''' produits — aucune injection n'est possible. Un évaluateur miroir (VB) permet de
 ''' tester la formule avec des valeurs d'essai avant enregistrement.
-''' Le formulaire est entièrement construit dans le code (à l'abri de la
-''' régénération du Designer par Visual Studio).
+''' Interface : Zoom_SP_Assistant_Formule.Designer.vb (convention permanente : tout le
+''' code de design est dans le .Designer.vb ; ce fichier ne contient que la logique —
+''' parser, évaluateur miroir, événements, résultat — et l'alimentation des données).
 ''' </summary>
 Public Class Zoom_SP_Assistant_Formule
-    Inherits Form
 
     '---------------- Résultat (lu par l'appelant après DialogResult.OK) ----------------
     Public FormuleJson As String = ""
@@ -119,46 +119,24 @@ Public Class Zoom_SP_Assistant_Formule
     Private _valAgg As New Dictionary(Of String, List(Of Double))(StringComparer.OrdinalIgnoreCase)
     Private _valCnt As New Dictionary(Of String, Double)(StringComparer.OrdinalIgnoreCase)
 
-    '---------------- Contrôles (déclarés WithEvents : créés dans ConstruireUI) ----------------
-    Private WithEvents lstChamps As ListBox
-    Private WithEvents lstGV As ListBox
-    Private WithEvents btnInsererChamp As Button
-    Private WithEvents btnInsererGV As Button
-    Private WithEvents cmbExemples As ComboBox
-    Private WithEvents txtFormule As TextBox
-    Private WithEvents lblStatut As Label
-    Private WithEvents grdTest As DataGridView
-    Private WithEvents btnCalculer As Button
-    Private WithEvents lblResultat As Label
-    Private WithEvents txtJson As TextBox
-    Private WithEvents btnAide As Button
-    Private WithEvents btnEnregistrer As Button
-    Private WithEvents btnAnnuler As Button
-    Private menuTexte As ContextMenuStrip
-    Private menuDates As ContextMenuStrip
-    Private menuNombres As ContextMenuStrip
-    Private menuCondition As ContextMenuStrip
-    Private menuAgregat As ContextMenuStrip
-
     '---------------- Construction ----------------
+    ' (Contrôles et disposition : Zoom_SP_Assistant_Formule.Designer.vb)
 
     ''' <summary>Crée l'assistant. nomColonneCible / codChampCible identifient le champ
     ''' calculé en cours d'édition (exclu de la liste : auto-référence interdite) ;
     ''' formuleExistante (json) est reconvertie en texte français si représentable.</summary>
     Public Sub New(tblChamps As DataTable, nomColonneCible As String, codChampCible As String, formuleExistante As String)
-        Me.Font = New Font("Century Gothic", 8.25!)
-        Me.Text = "Assistant de formule (champ calculé)"
-        Me.FormBorderStyle = FormBorderStyle.FixedDialog
-        Me.MaximizeBox = False : Me.MinimizeBox = False
-        Me.StartPosition = FormStartPosition.CenterParent
-        Me.ClientSize = New Size(900, 718)
-        Me.BackColor = Color.White
-        Me.ShowInTaskbar = False
+        InitializeComponent()
         _nomCible = IsNull(nomColonneCible, "").Trim
         _codCible = IsNull(codChampCible, "").Trim
         _jsonInitial = IsNull(formuleExistante, "").Trim
         ChargerReferences(tblChamps)
-        ConstruireUI()
+        ' Données : champs de la page, variables GV_, menus des fonctions, exemples
+        For Each c In _champs : lstChamps.Items.Add(c) : Next
+        For Each g In _gvs : lstGV.Items.Add(g) : Next
+        ConstruireMenusFonctions()
+        ChargerExemples()
+        _uiPrete = True
         If _jsonInitial <> "" Then
             Dim txt As String = TexteDepuisJson(_jsonInitial)
             If txt IsNot Nothing Then
@@ -201,89 +179,11 @@ Public Class Zoom_SP_Assistant_Formule
         For Each g In _gvs : _gvNoms.Add(g.Nom) : Next
     End Sub
 
-    Private Function Lbl(texte As String, x As Integer, y As Integer, w As Integer, Optional hauteur As Integer = 20) As Label
-        Return New Label With {.Text = texte, .Location = New Point(x, y), .Size = New Size(w, hauteur), .AutoSize = False}
-    End Function
-    Private Function LblAide(texte As String, x As Integer, y As Integer, w As Integer, Optional hauteur As Integer = 20) As Label
-        Return New Label With {.Text = texte, .Location = New Point(x, y), .Size = New Size(w, hauteur),
-                               .ForeColor = Color.FromArgb(110, 110, 110), .AutoSize = False}
-    End Function
-    ''' <summary>Bouton plat de la zone opérateurs / fonctions.</summary>
-    Private Function BtnOp(texte As String, insere As String, x As Integer, y As Integer, Optional w As Integer = 62) As Button
-        Dim b As New Button With {.Text = texte, .Location = New Point(x, y), .Size = New Size(w, 26),
-                                  .FlatStyle = FlatStyle.Flat, .BackColor = Color.FromArgb(245, 248, 250)}
-        b.FlatAppearance.BorderColor = Color.FromArgb(200, 210, 215)
-        If insere <> "" Then AddHandler b.Click, Sub() InsererAuCurseur(insere)
-        Return b
-    End Function
-    ''' <summary>Construit toute l'interface (disposition fixe, formulaire non redimensionnable).</summary>
-    Private Sub ConstruireUI()
-        Dim main As New TableLayoutPanel With {.Dock = DockStyle.Fill, .ColumnCount = 1, .Padding = New Padding(10, 8, 10, 8)}
-        main.ColumnStyles.Add(New ColumnStyle(SizeType.Percent, 100.0!))
-        For Each h As Single In New Single() {24, 30, 250, 106, 190, 56, 46}
-            main.RowStyles.Add(New RowStyle(SizeType.Absolute, h))
-        Next
-        Me.Controls.Add(main)
-
-        Dim lblTitre As Label = Lbl("Assistant de formule — champ calculé", 0, 0, 800)
-        lblTitre.Font = New Font("Century Gothic", 11.0!, FontStyle.Bold)
-        lblTitre.ForeColor = colorBase01
-        main.Controls.Add(lblTitre, 0, 0)
-        Dim lblIntro As Label = LblAide("Composez la formule en cliquant : aucun code à écrire. Seuls les champs de la page, les variables GV_ et les opérateurs autorisés sont acceptés ; la syntaxe json du moteur est générée automatiquement.", 0, 0, 870)
-        lblIntro.Dock = DockStyle.Fill
-        main.Controls.Add(lblIntro, 0, 1)
-
-        '---------------- 1. Éléments à insérer ----------------
-        Dim grpElem As New GroupBox With {.Text = "1. Choisissez les éléments (double-clic pour insérer à la position du curseur)", .Dock = DockStyle.Fill}
-        grpElem.Controls.Add(Lbl("Champs de la page :", 10, 16, 330))
-        lstChamps = New ListBox With {.Location = New Point(10, 36), .Size = New Size(330, 142)}
-        For Each c In _champs : lstChamps.Items.Add(c) : Next
-        grpElem.Controls.Add(lstChamps)
-        btnInsererChamp = New Button With {.Text = "Insérer le champ sélectionné", .Location = New Point(10, 182), .Size = New Size(330, 26),
-                                           .FlatStyle = FlatStyle.Flat, .BackColor = Color.FromArgb(245, 248, 250)}
-        grpElem.Controls.Add(btnInsererChamp)
-        grpElem.Controls.Add(Lbl("Variables globales (automatiques) :", 350, 16, 240))
-        lstGV = New ListBox With {.Location = New Point(350, 36), .Size = New Size(240, 142)}
-        For Each g In _gvs : lstGV.Items.Add(g) : Next
-        grpElem.Controls.Add(lstGV)
-        btnInsererGV = New Button With {.Text = "Insérer la variable", .Location = New Point(350, 182), .Size = New Size(240, 26),
-                                        .FlatStyle = FlatStyle.Flat, .BackColor = Color.FromArgb(245, 248, 250)}
-        grpElem.Controls.Add(btnInsererGV)
-        grpElem.Controls.Add(Lbl("Partir d'un exemple :", 10, 216, 135))
-        cmbExemples = New ComboBox With {.Location = New Point(150, 214), .Size = New Size(440, 24), .DropDownStyle = ComboBoxStyle.DropDownList}
-        grpElem.Controls.Add(cmbExemples)
-
-        ' Zone opérateurs (x = 600..866)
-        Dim ops1 As String() = {"+", "-", "*", "/"}
-        For i As Integer = 0 To 3 : grpElem.Controls.Add(BtnOp(ops1(i), " " & ops1(i) & " ", 600 + i * 68, 20)) : Next
-        grpElem.Controls.Add(BtnOp("(", "(", 600, 50))
-        grpElem.Controls.Add(BtnOp(")", ")", 668, 50))
-        grpElem.Controls.Add(BtnOp("=", " = ", 736, 50))
-        grpElem.Controls.Add(BtnOp("<>", " <> ", 804, 50))
-        Dim ops3 As String() = {">", ">=", "<", "<="}
-        For i As Integer = 0 To 3 : grpElem.Controls.Add(BtnOp(ops3(i), " " & ops3(i) & " ", 600 + i * 68, 80)) : Next
-        grpElem.Controls.Add(BtnOp("ET", " ET ", 600, 110))
-        grpElem.Controls.Add(BtnOp("OU", " OU ", 668, 110))
-        grpElem.Controls.Add(BtnOp("NON", "NON ", 736, 110))
-
-        ' Zone fonctions : menus par famille ; chaque élément insère un modèle
-        ' avec le paramètre à compléter présélectionné
-        Dim btnTexte As Button = BtnOp("Texte ▾", "", 600, 144, 129)
-        grpElem.Controls.Add(btnTexte)
-        Dim btnDates As Button = BtnOp("Dates ▾", "", 737, 144, 129)
-        grpElem.Controls.Add(btnDates)
-        Dim btnNombres As Button = BtnOp("Nombres ▾", "", 600, 174, 129)
-        grpElem.Controls.Add(btnNombres)
-        Dim btnCondition As Button = BtnOp("Condition ▾", "", 737, 174, 129)
-        grpElem.Controls.Add(btnCondition)
-        Dim btnAgregat As Button = BtnOp("Tableau (somme…) ▾", "", 600, 204, 129)
-        grpElem.Controls.Add(btnAgregat)
-        btnAide = New Button With {.Text = "? Guide pas à pas", .Location = New Point(737, 204), .Size = New Size(129, 26),
-                                   .FlatStyle = FlatStyle.Flat, .BackColor = Color.FromArgb(245, 248, 250)}
-        grpElem.Controls.Add(btnAide)
-
+    ''' <summary>Alimente les menus des familles de fonctions (éléments des listes
+    ''' déroulantes, alimentés au chargement) : chaque élément insère un modèle avec
+    ''' le paramètre à compléter présélectionné.</summary>
+    Private Sub ConstruireMenusFonctions()
         ' Menu "Texte" : traitement des chaînes de caractères
-        menuTexte = New ContextMenuStrip()
         menuTexte.Items.Add(ItemModele("GAUCHE : les n premiers caractères", "GAUCHE(texte; 3)", 7, 5))
         menuTexte.Items.Add(ItemModele("DROITE : les n derniers caractères", "DROITE(texte; 3)", 7, 5))
         menuTexte.Items.Add(ItemModele("STXT : extrait une partie du texte", "STXT(texte; 2; 3)", 5, 5))
@@ -297,10 +197,8 @@ Public Class Zoom_SP_Assistant_Formule
         menuTexte.Items.Add(New ToolStripSeparator())
         menuTexte.Items.Add(ItemModele("CONCAT : assemble plusieurs textes", "CONCAT(texte1; texte2)", 7, 6))
         menuTexte.Items.Add(ItemModele("CONTIENT : vrai si le texte contient…", "CONTIENT(texte; ""morceau"")", 9, 5))
-        AddHandler btnTexte.Click, Sub() menuTexte.Show(btnTexte, New Point(0, btnTexte.Height))
 
         ' Menu "Dates" : durées, ajout d'unités, extraction de parties (choix guidé)
-        menuDates = New ContextMenuStrip()
         Dim mDuree As New ToolStripMenuItem("Durée entre 2 dates (fin − début)")
         For Each u In New String()() {New String() {"en secondes", "S"}, New String() {"en minutes", "MI"},
                                       New String() {"en heures", "H"}, New String() {"en jours", "J"}}
@@ -322,10 +220,8 @@ Public Class Zoom_SP_Assistant_Formule
         menuDates.Items.Add(ItemModele("Minute (0 à 59)", "PARTDATE(date; ""MI"")", 9, 4))
         menuDates.Items.Add(ItemModele("Seconde (0 à 59)", "PARTDATE(date; ""S"")", 9, 4))
         menuDates.Items.Add(ItemModele("Jour de la semaine (1 = lundi … 7 = dimanche)", "JOURSEM(date)", 8, 4))
-        AddHandler btnDates.Click, Sub() menuDates.Show(btnDates, New Point(0, btnDates.Height))
 
         ' Menu "Nombres" : arrondis et comparaisons de valeurs
-        menuNombres = New ContextMenuStrip()
         menuNombres.Items.Add(ItemModele("ARRONDI : arrondit (ici à 2 décimales)", "ARRONDI(valeur; 2)", 8, 6))
         menuNombres.Items.Add(ItemModele("ABS : valeur absolue", "ABS(valeur)", 4, 6))
         menuNombres.Items.Add(New ToolStripSeparator())
@@ -335,71 +231,18 @@ Public Class Zoom_SP_Assistant_Formule
         menuNombres.Items.Add(New ToolStripSeparator())
         menuNombres.Items.Add(ItemModele("MIN : la plus petite de plusieurs valeurs", "MIN(a; b)", 4, 1))
         menuNombres.Items.Add(ItemModele("MAX : la plus grande de plusieurs valeurs", "MAX(a; b)", 4, 1))
-        AddHandler btnNombres.Click, Sub() menuNombres.Show(btnNombres, New Point(0, btnNombres.Height))
 
         ' Menu "Condition" : si/alors/sinon et tests de présence
-        menuCondition = New ContextMenuStrip()
         menuCondition.Items.Add(ItemModele("SI : si / alors / sinon", "SI(condition; valeur_si_vrai; valeur_si_faux)", 3, 9))
         menuCondition.Items.Add(ItemModele("VIDE : vrai si le champ est vide", "VIDE(champ)", 5, 5))
         menuCondition.Items.Add(ItemModele("REMPLI : vrai si le champ est rempli", "REMPLI(champ)", 7, 5))
-        AddHandler btnCondition.Click, Sub() menuCondition.Show(btnCondition, New Point(0, btnCondition.Height))
 
         ' Menu "Tableau" : agrégats sur les lignes d'un tableau de détail
-        menuAgregat = New ContextMenuStrip()
         menuAgregat.Items.Add(ItemModele("Somme des lignes", "SOMME(colonne)", 6, 7))
         menuAgregat.Items.Add(ItemModele("Moyenne des lignes", "MOYENNE(colonne)", 8, 7))
         menuAgregat.Items.Add(ItemModele("Valeur minimale des lignes", "MIN(colonne)", 4, 7))
         menuAgregat.Items.Add(ItemModele("Valeur maximale des lignes", "MAX(colonne)", 4, 7))
         menuAgregat.Items.Add(ItemModele("Nombre de lignes", "NB()", 3, 0))
-        AddHandler btnAgregat.Click, Sub() menuAgregat.Show(btnAgregat, New Point(0, btnAgregat.Height))
-        main.Controls.Add(grpElem, 0, 2)
-
-        '---------------- 2. Formule ----------------
-        Dim grpFormule As New GroupBox With {.Text = "2. Votre formule", .Dock = DockStyle.Fill}
-        txtFormule = New TextBox With {.Location = New Point(10, 20), .Size = New Size(856, 44), .Multiline = True,
-                                       .ScrollBars = ScrollBars.Vertical, .Font = New Font("Consolas", 10.0!)}
-        lblStatut = Lbl("", 10, 68, 856, 32)
-        grpFormule.Controls.Add(txtFormule)
-        grpFormule.Controls.Add(lblStatut)
-        main.Controls.Add(grpFormule, 0, 3)
-
-        '---------------- 3. Test avec des valeurs ----------------
-        Dim grpTest As New GroupBox With {.Text = "3. Testez la formule avec des valeurs (facultatif)", .Dock = DockStyle.Fill}
-        grdTest = New DataGridView With {.Location = New Point(10, 20), .Size = New Size(560, 132),
-                                         .AllowUserToAddRows = False, .AllowUserToDeleteRows = False, .RowHeadersVisible = False,
-                                         .AutoGenerateColumns = False, .EnableHeadersVisualStyles = False, .BackgroundColor = Color.White,
-                                         .ColumnHeadersDefaultCellStyle = New DataGridViewCellStyle With {.BackColor = colorBase01, .ForeColor = Color.White, .Font = Me.Font}}
-        grdTest.Columns.Add(New DataGridViewTextBoxColumn With {.Name = "colEl", .HeaderText = "Élément de la formule", .Width = 350, .ReadOnly = True})
-        grdTest.Columns.Add(New DataGridViewTextBoxColumn With {.Name = "colVal", .HeaderText = "Valeur de test", .Width = 190})
-        btnCalculer = New Button With {.Text = "Calculer", .Location = New Point(580, 20), .Size = New Size(140, 28),
-                                       .FlatStyle = FlatStyle.Flat, .BackColor = colorBase01, .ForeColor = Color.White}
-        lblResultat = Lbl("Résultat : —", 580, 56, 286, 56)
-        lblResultat.Font = New Font("Century Gothic", 9.0!, FontStyle.Bold)
-        grpTest.Controls.Add(grdTest)
-        grpTest.Controls.Add(btnCalculer)
-        grpTest.Controls.Add(lblResultat)
-        grpTest.Controls.Add(LblAide("Les variables GV_ sont évaluées" & vbCrLf & "automatiquement (date du jour…).", 580, 116, 286, 36))
-        grpTest.Controls.Add(LblAide("Dates au format jj/mm/aaaa ; pour une colonne de tableau, saisissez les valeurs des lignes séparées par des points-virgules (ex : 10 ; 20,5 ; 3).", 10, 158, 850))
-        main.Controls.Add(grpTest, 0, 4)
-
-        '---------------- Aperçu json ----------------
-        Dim grpApercu As New GroupBox With {.Text = "Syntaxe générée (automatique — rien à saisir)", .Dock = DockStyle.Fill}
-        txtJson = New TextBox With {.Location = New Point(10, 20), .Size = New Size(856, 24), .ReadOnly = True,
-                                    .BackColor = Color.FromArgb(240, 243, 245)}
-        grpApercu.Controls.Add(txtJson)
-        main.Controls.Add(grpApercu, 0, 5)
-
-        '---------------- Boutons ----------------
-        Dim pnlBoutons As New FlowLayoutPanel With {.Dock = DockStyle.Fill, .FlowDirection = FlowDirection.RightToLeft}
-        btnAnnuler = New Button With {.Text = "Annuler", .Size = New Size(110, 30)}
-        btnEnregistrer = New Button With {.Text = "Enregistrer la formule", .Size = New Size(200, 30), .FlatStyle = FlatStyle.Flat,
-                                          .BackColor = colorBase01, .ForeColor = Color.White}
-        pnlBoutons.Controls.Add(btnAnnuler)
-        pnlBoutons.Controls.Add(btnEnregistrer)
-        main.Controls.Add(pnlBoutons, 0, 6)
-        Me.CancelButton = btnAnnuler
-        ChargerExemples()
-        _uiPrete = True
     End Sub
 
     ''' <summary>Exemples construits à partir des champs réels de la page : ils sont
@@ -1752,6 +1595,33 @@ Public Class Zoom_SP_Assistant_Formule
         InsererVariableSelectionnee()
     End Sub
 
+    ''' <summary>Boutons opérateurs : insèrent à la position du curseur le texte
+    ''' porté par le Tag du bouton (renseigné dans le Designer).</summary>
+    Private Sub BtnOperateur_Click(sender As Object, e As EventArgs) Handles btnOpPlus.Click, btnOpMoins.Click,
+            btnOpMul.Click, btnOpDiv.Click, btnOpParenO.Click, btnOpParenF.Click, btnOpEgal.Click, btnOpDiff.Click,
+            btnOpSup.Click, btnOpSupEgal.Click, btnOpInf.Click, btnOpInfEgal.Click,
+            btnOpEt.Click, btnOpOu.Click, btnOpNon.Click
+        InsererAuCurseur(CStr(DirectCast(sender, Button).Tag))
+    End Sub
+
+    '---------------- Boutons des familles de fonctions : ouvrent le menu associé ----------------
+
+    Private Sub btnTexte_Click(sender As Object, e As EventArgs) Handles btnTexte.Click
+        menuTexte.Show(btnTexte, New Point(0, btnTexte.Height))
+    End Sub
+    Private Sub btnDates_Click(sender As Object, e As EventArgs) Handles btnDates.Click
+        menuDates.Show(btnDates, New Point(0, btnDates.Height))
+    End Sub
+    Private Sub btnNombres_Click(sender As Object, e As EventArgs) Handles btnNombres.Click
+        menuNombres.Show(btnNombres, New Point(0, btnNombres.Height))
+    End Sub
+    Private Sub btnCondition_Click(sender As Object, e As EventArgs) Handles btnCondition.Click
+        menuCondition.Show(btnCondition, New Point(0, btnCondition.Height))
+    End Sub
+    Private Sub btnAgregat_Click(sender As Object, e As EventArgs) Handles btnAgregat.Click
+        menuAgregat.Show(btnAgregat, New Point(0, btnAgregat.Height))
+    End Sub
+
     Private Sub cmbExemples_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cmbExemples.SelectedIndexChanged
         If _enMaj OrElse Not _uiPrete Then Return
         Dim ex = TryCast(cmbExemples.SelectedItem, ItemExemple)
@@ -1795,12 +1665,12 @@ Public Class Zoom_SP_Assistant_Formule
         End Try
     End Sub
 
-    Private Sub btnEnregistrer_Click(sender As Object, e As EventArgs) Handles btnEnregistrer.Click
+    Private Sub Save_pb_Click(sender As Object, e As EventArgs) Handles Save_pb.Click
         Dim txt As String = txtFormule.Text.Trim
         If txt = "" Then
             ShowMessageBox(If(_nonRepresentable,
-                              "La formule existante sera conservée : cliquez sur Annuler. Pour la remplacer, composez d'abord une nouvelle formule.",
-                              "Composez d'abord une formule (étapes 1 et 2), ou cliquez sur Annuler."),
+                              "La formule existante sera conservée : fermez simplement la fenêtre. Pour la remplacer, composez d'abord une nouvelle formule.",
+                              "Composez d'abord une formule (étapes 1 et 2), ou fermez la fenêtre sans enregistrer."),
                            "Assistant de formule", MessageBoxButtons.OK, msgIcon.Warning)
             Return
         End If
@@ -1821,9 +1691,16 @@ Public Class Zoom_SP_Assistant_Formule
         Me.Close()
     End Sub
 
-    Private Sub btnAnnuler_Click(sender As Object, e As EventArgs) Handles btnAnnuler.Click
+    Private Sub Close_pb_Click(sender As Object, e As EventArgs) Handles Close_pb.Click
         Me.DialogResult = DialogResult.Cancel
         Me.Close()
+    End Sub
+
+    Private Sub Zoom_SP_Assistant_Formule_KeyDown(sender As Object, e As KeyEventArgs) Handles Me.KeyDown
+        If e.KeyCode = Keys.Escape Then
+            Me.DialogResult = DialogResult.Cancel
+            Me.Close()
+        End If
     End Sub
 
     ''' <summary>Guide pas-à-pas + exemples autorisés + rappel sécurité (aide intégrée).</summary>

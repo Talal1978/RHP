@@ -2,3 +2,9 @@ node_modules
 dist
 .env
 serverConfig.json
+
+# fichiers temporaires d'exécution (multer, exports de rapports) :
+# on ré-inclut le dossier (ignoré par le .gitignore racine) mais pas son contenu
+!tmp/
+tmp/*
+!tmp/.gitkeep

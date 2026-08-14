@@ -86,12 +86,10 @@ export const Login = () => {
     }
 
     setIsLoading(true);
-    // Optimistic UI or loading could be added here
     const rsl = await myAxiosPost("getNewPwd", {
       login: credention.login,
     });
     setIsLoading(false);
-    console.log(rsl);
 
     if (rsl?.data?.result) {
       showAlert({

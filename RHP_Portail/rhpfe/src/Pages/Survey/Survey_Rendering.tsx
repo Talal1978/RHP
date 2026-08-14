@@ -629,7 +629,6 @@ const Survey_Rendering = forwardRef<ChildHandle, TProps>(({ cod_survey, cod_repl
 
         // Validation
         const { isValid, newAnswers } = validateSurvey();
-        console.log("DEBUG saveAnswers Validation:", { isValid, newAnswers, answers });
 
         if (!isValid) {
             setAnswers(newAnswers);
@@ -655,7 +654,6 @@ const Survey_Rendering = forwardRef<ChildHandle, TProps>(({ cod_survey, cod_repl
                 typ_survey,
                 ref_evaluation
             });
-            console.log("DEBUG myAxiosPost Response:", rsl);
 
             if (rsl.data) {
                 if (rsl.data.result) hasAnswersRef.current = true;

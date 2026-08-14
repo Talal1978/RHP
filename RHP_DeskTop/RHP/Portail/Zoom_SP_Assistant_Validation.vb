@@ -8,11 +8,12 @@ Imports Newtonsoft.Json.Linq
 ''' et les syntaxes json attendues par le moteur (colonnes Parametres et
 ''' Condition_Regle de SP_Page_Validation) sont générées automatiquement :
 ''' aucune saisie de code n'est nécessaire.
-''' Le formulaire est entièrement construit dans le code (à l'abri de la
-''' régénération du Designer par Visual Studio).
+''' Interface : Zoom_SP_Assistant_Validation.Designer.vb (convention permanente :
+''' tout le code de design est dans le .Designer.vb ; ce fichier ne contient que
+''' la logique — génération des syntaxes json, chargement d'une règle existante,
+''' événements — et l'alimentation des données).
 ''' </summary>
-Public Class SP_Assistant_Validation
-    Inherits Form
+Public Class Zoom_SP_Assistant_Validation
 
     '---------------- Résultat (lu par l'appelant après DialogResult.OK) ----------------
     Public Portee As String = "CHAMP"
@@ -98,73 +99,32 @@ Public Class SP_Assistant_Validation
         {"LT", "est inférieur à"}, {"LE", "est inférieur ou égal à"},
         {"CONTIENT", "contient"}}
 
-    '---------------- Contrôles (déclarés WithEvents : créés dans ConstruireUI) ----------------
-    Friend WithEvents cmbType As ComboBox
-    Friend WithEvents lblTypeAide As Label
-    Friend WithEvents grpChamp As GroupBox
-    Friend WithEvents cmbChamp As ComboBox
-    Friend WithEvents grpParams As GroupBox
-    Friend WithEvents lblAucun As Label
-    Friend WithEvents pnlAucun As Panel
-    Friend WithEvents pnlValeur As Panel
-    Friend WithEvents lblValeur As Label
-    Friend WithEvents numValeur As NumericUpDown
-    Friend WithEvents lblValeurAide As Label
-    Friend WithEvents pnlBetween As Panel
-    Friend WithEvents numMin As NumericUpDown
-    Friend WithEvents numMax As NumericUpDown
-    Friend WithEvents pnlIn As Panel
-    Friend WithEvents txtValeurs As TextBox
-    Friend WithEvents pnlRegex As Panel
-    Friend WithEvents cmbPreset As ComboBox
-    Friend WithEvents txtPattern As TextBox
-    Friend WithEvents pnlCompare As Panel
-    Friend WithEvents cmbOperateur As ComboBox
-    Friend WithEvents cmbAutreChamp As ComboBox
-    Friend WithEvents pnlCompareConst As Panel
-    Friend WithEvents cmbOperateur2 As ComboBox
-    Friend WithEvents txtConstante As TextBox
-    Friend WithEvents pnlUnique As Panel
-    Friend WithEvents txtColonnes As TextBox
-    Friend WithEvents pnlNbLignes As Panel
-    Friend WithEvents chkNbMin As CheckBox
-    Friend WithEvents numNbMin As NumericUpDown
-    Friend WithEvents chkNbMax As CheckBox
-    Friend WithEvents numNbMax As NumericUpDown
-    Friend WithEvents grpCondition As GroupBox
-    Friend WithEvents rbToujours As RadioButton
-    Friend WithEvents rbSi As RadioButton
-    Friend WithEvents rbCustom As RadioButton
-    Friend WithEvents txtCustomCond As TextBox
-    Friend WithEvents grdCond As DataGridView
-    Friend WithEvents rbEt As RadioButton
-    Friend WithEvents rbOu As RadioButton
-    Friend WithEvents txtMessage As TextBox
-    Friend WithEvents cmbNiveau As ComboBox
-    Friend WithEvents txtParamJson As TextBox
-    Friend WithEvents txtCondJson As TextBox
-    Friend WithEvents btnInserer As Button
-    Friend WithEvents btnAnnuler As Button
-    Private _panelsParams As New Dictionary(Of String, Panel)
-
     '---------------- Construction ----------------
+    ' (Contrôles et disposition : Zoom_SP_Assistant_Validation.Designer.vb)
+
+    Private _panelsParams As New Dictionary(Of String, Panel)
 
     ''' <summary>Crée l'assistant. Si ligne est fournie, l'assistant se pré-remplit
     ''' depuis la règle existante (modification) ; sinon il propose une nouvelle règle.</summary>
     Public Sub New(tblChamps As DataTable, tblTables As DataTable, Optional ligne As DataRow = Nothing)
-        Me.Font = New Font("Century Gothic", 8.25!)
-        Me.Text = "Assistant de règle de validation"
-        Me.FormBorderStyle = FormBorderStyle.FixedDialog
-        Me.MaximizeBox = False : Me.MinimizeBox = False
-        Me.StartPosition = FormStartPosition.CenterParent
-        Me.ClientSize = New Size(880, 752)
-        Me.BackColor = Color.White
-        Me.ShowInTaskbar = False
+        InitializeComponent()
         ChargerReferences(tblChamps, tblTables)
-        ConstruireUI()
+        ChargerListesReference()
+        ' Panneaux de paramètres selon le type de règle (un seul visible à la fois)
+        _panelsParams.Clear()
+        _panelsParams("AUCUN") = pnlAucun
+        _panelsParams("VALEUR") = pnlValeur
+        _panelsParams("BETWEEN") = pnlBetween
+        _panelsParams("IN") = pnlIn
+        _panelsParams("REGEX") = pnlRegex
+        _panelsParams("COMPARE") = pnlCompare
+        _panelsParams("COMPARE_CONST") = pnlCompareConst
+        _panelsParams("UNIQUE") = pnlUnique
+        _panelsParams("NB_LIGNES") = pnlNbLignes
+        _uiPrete = True
         MajSections()
         If ligne IsNot Nothing Then
-            btnInserer.Text = "Mettre à jour la règle"
+            ToolTip1.SetToolTip(Save_pb, "Mettre à jour la règle")
             ChargerLigne(ligne)
         Else
             cmbNiveau.SelectedIndex = 0
@@ -197,27 +157,11 @@ Public Class SP_Assistant_Validation
         End If
     End Sub
 
-    Private Function Lbl(texte As String, x As Integer, y As Integer, w As Integer, Optional hauteur As Integer = 20) As Label
-        Return New Label With {.Text = texte, .Location = New Point(x, y), .Size = New Size(w, hauteur), .AutoSize = False}
-    End Function
-    Private Function LblAide(texte As String, x As Integer, y As Integer, w As Integer, Optional hauteur As Integer = 20) As Label
-        Return New Label With {.Text = texte, .Location = New Point(x, y), .Size = New Size(w, hauteur),
-                               .ForeColor = Color.FromArgb(110, 110, 110), .AutoSize = False}
-    End Function
-    Private Function Cmb(x As Integer, y As Integer, w As Integer) As ComboBox
-        Return New ComboBox With {.Location = New Point(x, y), .Size = New Size(w, 24), .DropDownStyle = ComboBoxStyle.DropDownList}
-    End Function
-    Private Function Txt(x As Integer, y As Integer, w As Integer) As TextBox
-        Return New TextBox With {.Location = New Point(x, y), .Size = New Size(w, 24)}
-    End Function
-    Private Function Num(x As Integer, y As Integer, w As Integer, Optional decimales As Integer = 0) As NumericUpDown
-        Return New NumericUpDown With {.Location = New Point(x, y), .Size = New Size(w, 24),
-                                       .Minimum = -999999999, .Maximum = 999999999, .DecimalPlaces = decimales}
-    End Function
-
-    ''' <summary>Construit toute l'interface (disposition fixe, formulaire non redimensionnable).</summary>
-    Private Sub ConstruireUI()
-        '---------------- Listes de référence ----------------
+    ''' <summary>Listes de référence de l'assistant (types de règle, opérateurs de
+    ''' comparaison, niveaux de gravité, modèles de format) et alimentation des
+    ''' listes déroulantes (éléments alimentés au chargement depuis ces sources
+    ''' uniques, partagées avec les validations).</summary>
+    Private Sub ChargerListesReference()
         _types.AddRange(New ItemTypeRegle() {
             New ItemTypeRegle With {.Key = "REQUIRED", .Label = "Un champ doit être renseigné (obligatoire)", .Aide = "Le champ devra obligatoirement être renseigné avant l'enregistrement."},
             New ItemTypeRegle With {.Key = "COMPARE", .Label = "Comparer deux champs entre eux (ex : date de fin >= date de début)", .Aide = "La valeur du champ sera comparée à celle d'un autre champ (dates, montants, nombres...)."},
@@ -251,199 +195,19 @@ Public Class SP_Assistant_Validation
             New ItemRegex With {.Label = "Lettres uniquement", .Pattern = "^[A-Za-zÀ-ÿ\s'\-]+$"},
             New ItemRegex With {.Label = "Personnalisé (saisie libre ci-dessous)", .Pattern = ""}})
 
-        '---------------- Disposition générale ----------------
-        Dim main As New TableLayoutPanel With {.Dock = DockStyle.Fill, .ColumnCount = 1, .Padding = New Padding(10, 8, 10, 8)}
-        main.ColumnStyles.Add(New ColumnStyle(SizeType.Percent, 100.0!))
-        For Each h As Single In New Single() {24, 30, 76, 62, 122, 216, 66, 94, 42}
-            main.RowStyles.Add(New RowStyle(SizeType.Absolute, h))
-        Next
-        Me.Controls.Add(main)
-
-        Dim lblTitre As Label = Lbl("Assistant de règle de validation", 0, 0, 800)
-        lblTitre.Font = New Font("Century Gothic", 11.0!, FontStyle.Bold)
-        lblTitre.ForeColor = colorBase01
-        main.Controls.Add(lblTitre, 0, 0)
-        Dim lblIntro As Label = LblAide("Décrivez la règle en français : les syntaxes json des colonnes ""Paramètres"" et ""Condition"" de la grille sont générées automatiquement (aucun code à écrire).", 0, 0, 860)
-        lblIntro.Dock = DockStyle.Fill
-        main.Controls.Add(lblIntro, 0, 1)
-
-        '---------------- 1. Type de règle ----------------
-        Dim grpType As New GroupBox With {.Text = "1. Que voulez-vous vérifier ?", .Dock = DockStyle.Fill}
-        cmbType = Cmb(10, 20, 640)
+        '---------------- Alimentation des listes déroulantes ----------------
         For Each t In _types : cmbType.Items.Add(t) : Next
         cmbType.SelectedIndex = 0
-        lblTypeAide = LblAide("", 10, 48, 830)
-        grpType.Controls.Add(cmbType)
-        grpType.Controls.Add(lblTypeAide)
-        main.Controls.Add(grpType, 0, 2)
-
-        '---------------- 2. Champ / tableau concerné ----------------
-        grpChamp = New GroupBox With {.Text = "2. Champ concerné", .Dock = DockStyle.Fill}
-        cmbChamp = Cmb(10, 24, 640)
-        grpChamp.Controls.Add(cmbChamp)
-        main.Controls.Add(grpChamp, 0, 3)
-
-        '---------------- 3. Paramètres (panneau dépendant du type) ----------------
-        grpParams = New GroupBox With {.Text = "3. Paramètres de la règle", .Dock = DockStyle.Fill}
-        Dim pnlHost As New Panel With {.Dock = DockStyle.Fill}
-        grpParams.Controls.Add(pnlHost)
-
-        pnlAucun = New Panel With {.Dock = DockStyle.Fill}
-        lblAucun = LblAide("Aucun paramètre nécessaire.", 10, 34, 810, 40)
-        pnlAucun.Controls.Add(lblAucun)
-
-        pnlValeur = New Panel With {.Dock = DockStyle.Fill}
-        lblValeur = Lbl("Valeur :", 10, 14, 260)
-        numValeur = Num(10, 34, 120, 2)
-        lblValeurAide = LblAide("", 145, 36, 680)
-        pnlValeur.Controls.Add(lblValeur) : pnlValeur.Controls.Add(numValeur) : pnlValeur.Controls.Add(lblValeurAide)
-
-        pnlBetween = New Panel With {.Dock = DockStyle.Fill}
-        numMin = Num(55, 34, 110, 2)
-        numMax = Num(215, 34, 110, 2)
-        pnlBetween.Controls.Add(Lbl("Entre", 10, 36, 45))
-        pnlBetween.Controls.Add(numMin)
-        pnlBetween.Controls.Add(Lbl("et", 175, 36, 30))
-        pnlBetween.Controls.Add(numMax)
-        pnlBetween.Controls.Add(LblAide("(bornes incluses)", 340, 36, 300))
-
-        pnlIn = New Panel With {.Dock = DockStyle.Fill}
-        txtValeurs = Txt(10, 32, 620)
-        pnlIn.Controls.Add(Lbl("Valeurs autorisées, séparées par des points-virgules :", 10, 10, 500))
-        pnlIn.Controls.Add(txtValeurs)
-        pnlIn.Controls.Add(LblAide("Ex : CDI ; CDD ; INTERIM     (nombres acceptés : 1 ; 2 ; 3)", 10, 62, 700))
-
-        pnlRegex = New Panel With {.Dock = DockStyle.Fill}
-        cmbPreset = Cmb(10, 30, 240)
         For Each pr In _regex : cmbPreset.Items.Add(pr) : Next
         cmbPreset.SelectedIndex = 0
-        txtPattern = Txt(270, 30, 560)
-        pnlRegex.Controls.Add(Lbl("Modèle prédéfini :", 10, 10, 240))
-        pnlRegex.Controls.Add(cmbPreset)
-        pnlRegex.Controls.Add(Lbl("Expression régulière :", 270, 10, 300))
-        pnlRegex.Controls.Add(txtPattern)
-        pnlRegex.Controls.Add(LblAide("Le texte saisi devra correspondre entièrement au modèle.", 10, 62, 700))
-
-        pnlCompare = New Panel With {.Dock = DockStyle.Fill}
-        cmbOperateur = Cmb(10, 34, 180)
         For Each o In _opsCompare : cmbOperateur.Items.Add(o) : Next
         cmbOperateur.SelectedIndex = 1
-        cmbAutreChamp = Cmb(280, 34, 400)
-        pnlCompare.Controls.Add(Lbl("La valeur du champ doit être :", 10, 12, 300))
-        pnlCompare.Controls.Add(cmbOperateur)
-        pnlCompare.Controls.Add(Lbl("celle de :", 200, 36, 75))
-        pnlCompare.Controls.Add(cmbAutreChamp)
-        pnlCompare.Controls.Add(LblAide("La comparaison porte sur les valeurs des deux champs (dates, montants, nombres...).", 10, 66, 700))
-
-        pnlCompareConst = New Panel With {.Dock = DockStyle.Fill}
-        cmbOperateur2 = Cmb(10, 34, 180)
         For Each o In _opsCompare : cmbOperateur2.Items.Add(o) : Next
         cmbOperateur2.SelectedIndex = 1
-        txtConstante = Txt(285, 34, 160)
-        pnlCompareConst.Controls.Add(Lbl("La valeur du champ doit être :", 10, 12, 300))
-        pnlCompareConst.Controls.Add(cmbOperateur2)
-        pnlCompareConst.Controls.Add(Lbl("la valeur :", 200, 36, 80))
-        pnlCompareConst.Controls.Add(txtConstante)
-        pnlCompareConst.Controls.Add(LblAide("Ex : 0 ; 100 ; 01/01/2026 ; ACTIF", 10, 66, 700))
-
-        pnlUnique = New Panel With {.Dock = DockStyle.Fill}
-        txtColonnes = Txt(10, 60, 500)
-        pnlUnique.Controls.Add(LblAide("Le contrôle de doublon porte sur le champ choisi. Pour interdire les doublons sur une combinaison" & vbCrLf &
-                                       "de champs, ajoutez ci-dessous les codes des autres champs (séparés par des points-virgules).", 10, 8, 810, 44))
-        pnlUnique.Controls.Add(txtColonnes)
-
-        pnlNbLignes = New Panel With {.Dock = DockStyle.Fill}
-        chkNbMin = New CheckBox With {.Text = "au moins", .Location = New Point(10, 12), .Size = New Size(90, 24), .Checked = True}
-        numNbMin = New NumericUpDown With {.Location = New Point(105, 12), .Size = New Size(70, 24), .Minimum = 0, .Maximum = 99999, .Value = 1}
-        chkNbMax = New CheckBox With {.Text = "au plus", .Location = New Point(200, 12), .Size = New Size(80, 24)}
-        numNbMax = New NumericUpDown With {.Location = New Point(280, 12), .Size = New Size(70, 24), .Minimum = 0, .Maximum = 99999, .Value = 10}
-        pnlNbLignes.Controls.Add(chkNbMin) : pnlNbLignes.Controls.Add(numNbMin)
-        pnlNbLignes.Controls.Add(chkNbMax) : pnlNbLignes.Controls.Add(numNbMax)
-        pnlNbLignes.Controls.Add(Lbl("ligne(s) dans le tableau.", 360, 14, 200))
-        pnlNbLignes.Controls.Add(LblAide("Cochez uniquement la ou les bornes à contrôler.", 10, 48, 700))
-
-        _panelsParams.Clear()
-        _panelsParams("AUCUN") = pnlAucun
-        _panelsParams("VALEUR") = pnlValeur
-        _panelsParams("BETWEEN") = pnlBetween
-        _panelsParams("IN") = pnlIn
-        _panelsParams("REGEX") = pnlRegex
-        _panelsParams("COMPARE") = pnlCompare
-        _panelsParams("COMPARE_CONST") = pnlCompareConst
-        _panelsParams("UNIQUE") = pnlUnique
-        _panelsParams("NB_LIGNES") = pnlNbLignes
-        For Each p In _panelsParams.Values
-            p.Visible = False
-            pnlHost.Controls.Add(p)
-        Next
-        main.Controls.Add(grpParams, 0, 4)
-
-        '---------------- 4. Conditions d'application ----------------
-        grpCondition = New GroupBox With {.Text = "4. Quand la règle doit-elle s'appliquer ? (facultatif)", .Dock = DockStyle.Fill}
-        rbToujours = New RadioButton With {.Text = "Toujours (la règle s'applique à chaque enregistrement)", .Location = New Point(10, 18), .Size = New Size(560, 20), .Checked = True}
-        rbSi = New RadioButton With {.Text = "Seulement si les conditions ci-dessous sont réunies", .Location = New Point(10, 40), .Size = New Size(560, 20)}
-        rbCustom = New RadioButton With {.Text = "Condition personnalisée existante (conservée telle quelle) :", .Location = New Point(10, 62), .Size = New Size(560, 20), .Visible = False}
-        txtCustomCond = New TextBox With {.Location = New Point(10, 88), .Size = New Size(660, 104), .Multiline = True,
-                                          .ScrollBars = ScrollBars.Vertical, .ReadOnly = True, .Visible = False}
-        grdCond = New DataGridView With {.Location = New Point(10, 64), .Size = New Size(660, 128),
-                                         .AllowUserToDeleteRows = True, .RowHeadersVisible = False, .AutoGenerateColumns = False,
-                                         .EnableHeadersVisualStyles = False, .BackgroundColor = Color.White,
-                                         .ColumnHeadersDefaultCellStyle = New DataGridViewCellStyle With {.BackColor = colorBase01, .ForeColor = Color.White, .Font = Me.Font}}
-        Dim colChamp As New DataGridViewComboBoxColumn With {.Name = "colCondChamp", .HeaderText = "Champ", .Width = 250}
-        For Each c In _champs : colChamp.Items.Add(c.CodChamp) : Next
-        grdCond.Columns.Add(colChamp)
-        Dim colOp As New DataGridViewComboBoxColumn With {.Name = "colCondOp", .HeaderText = "Condition", .Width = 170}
-        For Each k In OPS_CONDITIONS.Keys : colOp.Items.Add(k) : Next
-        grdCond.Columns.Add(colOp)
-        Dim colVal As New DataGridViewTextBoxColumn With {.Name = "colCondValeur", .HeaderText = "Valeur (ou nom d'un champ)", .Width = 240}
-        grdCond.Columns.Add(colVal)
-        rbEt = New RadioButton With {.Text = "Toutes les conditions (ET)", .Location = New Point(680, 126), .Size = New Size(175, 20), .Checked = True}
-        rbOu = New RadioButton With {.Text = "Au moins une (OU)", .Location = New Point(680, 148), .Size = New Size(175, 20)}
-        grpCondition.Controls.Add(rbToujours)
-        grpCondition.Controls.Add(rbSi)
-        grpCondition.Controls.Add(rbCustom)
-        grpCondition.Controls.Add(txtCustomCond)
-        grpCondition.Controls.Add(grdCond)
-        grpCondition.Controls.Add(LblAide("Dans 'Valeur', tapez une valeur" & vbCrLf & "ou le nom d'un champ pour" & vbCrLf & "le référencer.", 680, 64, 175, 56))
-        grpCondition.Controls.Add(rbEt)
-        grpCondition.Controls.Add(rbOu)
-        main.Controls.Add(grpCondition, 0, 5)
-
-        '---------------- 5. Message et gravité ----------------
-        Dim grpMessage As New GroupBox With {.Text = "5. Message affiché si la règle n'est pas respectée", .Dock = DockStyle.Fill}
-        txtMessage = Txt(10, 24, 560)
-        cmbNiveau = Cmb(648, 24, 205)
         For Each n In _niveaux : cmbNiveau.Items.Add(n) : Next
         cmbNiveau.SelectedIndex = 0
-        grpMessage.Controls.Add(txtMessage)
-        grpMessage.Controls.Add(Lbl("Gravité :", 585, 26, 60))
-        grpMessage.Controls.Add(cmbNiveau)
-        main.Controls.Add(grpMessage, 0, 6)
-
-        '---------------- 6. Aperçu de la syntaxe générée ----------------
-        Dim grpApercu As New GroupBox With {.Text = "Aperçu de la syntaxe générée (automatique — rien à saisir)", .Dock = DockStyle.Fill}
-        txtParamJson = Txt(145, 22, 700)
-        txtParamJson.ReadOnly = True
-        txtParamJson.BackColor = Color.FromArgb(240, 243, 245)
-        txtCondJson = Txt(145, 54, 700)
-        txtCondJson.ReadOnly = True
-        txtCondJson.BackColor = Color.FromArgb(240, 243, 245)
-        grpApercu.Controls.Add(Lbl("Paramètres (json) :", 10, 24, 130))
-        grpApercu.Controls.Add(txtParamJson)
-        grpApercu.Controls.Add(Lbl("Condition (json) :", 10, 56, 130))
-        grpApercu.Controls.Add(txtCondJson)
-        main.Controls.Add(grpApercu, 0, 7)
-
-        '---------------- Boutons ----------------
-        Dim pnlBoutons As New FlowLayoutPanel With {.Dock = DockStyle.Fill, .FlowDirection = FlowDirection.RightToLeft}
-        btnAnnuler = New Button With {.Text = "Annuler", .Size = New Size(110, 30)}
-        btnInserer = New Button With {.Text = "Insérer la règle", .Size = New Size(190, 30), .FlatStyle = FlatStyle.Flat,
-                                      .BackColor = colorBase01, .ForeColor = Color.White}
-        pnlBoutons.Controls.Add(btnAnnuler)
-        pnlBoutons.Controls.Add(btnInserer)
-        main.Controls.Add(pnlBoutons, 0, 8)
-        Me.CancelButton = btnAnnuler
-        _uiPrete = True
+        For Each c In _champs : colCondChamp.Items.Add(c.CodChamp) : Next
+        For Each k In OPS_CONDITIONS.Keys : colCondOp.Items.Add(k) : Next
     End Sub
 
     '---------------- Sélections courantes ----------------
@@ -1110,7 +874,7 @@ Public Class SP_Assistant_Validation
         Return erreurs
     End Function
 
-    Private Sub btnInserer_Click(sender As Object, e As EventArgs) Handles btnInserer.Click
+    Private Sub Save_pb_Click(sender As Object, e As EventArgs) Handles Save_pb.Click
         Dim erreurs = ValiderSaisie()
         If erreurs.Count > 0 Then
             ShowMessageBox("Corrigez les points suivants :" & vbCrLf & " - " & String.Join(vbCrLf & " - ", erreurs),
@@ -1151,9 +915,16 @@ Public Class SP_Assistant_Validation
         Me.Close()
     End Sub
 
-    Private Sub btnAnnuler_Click(sender As Object, e As EventArgs) Handles btnAnnuler.Click
+    Private Sub Close_pb_Click(sender As Object, e As EventArgs) Handles Close_pb.Click
         Me.DialogResult = DialogResult.Cancel
         Me.Close()
+    End Sub
+
+    Private Sub Zoom_SP_Assistant_Validation_KeyDown(sender As Object, e As KeyEventArgs) Handles Me.KeyDown
+        If e.KeyCode = Keys.Escape Then
+            Me.DialogResult = DialogResult.Cancel
+            Me.Close()
+        End If
     End Sub
 
     '---------------- Événements : régénération automatique de l'aperçu ----------------
