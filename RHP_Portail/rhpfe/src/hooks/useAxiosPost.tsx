@@ -1,6 +1,6 @@
 import axios, { AxiosResponse } from "axios";
 import { useCallback } from "react";
-import { Connexion, myJwt, setJwt } from "../modules/module_general";
+import { Connexion, forceLogout, myJwt, setJwt } from "../modules/module_general";
 import { ObjetGenerique } from "../types";
 
 const useAxiosPost = () => {
@@ -42,10 +42,10 @@ const useAxiosPost = () => {
             });
           }
         } catch (refreshErr) {
+          // Session perdue côté serveur (redémarrage backend, expiration longue)
+          // => déconnexion forcée et retour propre à la page de connexion.
           console.error("Token refresh failed", refreshErr);
-          localStorage.removeItem("auth_token");
-          localStorage.removeItem("auth_agent");
-          window.location.href = "/";
+          forceLogout();
         }
       }
 

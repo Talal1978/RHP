@@ -51,20 +51,32 @@ export const Login = () => {
             throw new Error("Données agent corrompues");
         }
 
-        setJwt(storedToken);
-        setAgent(parsedAgent);
-        setSocket(storedToken);
-        navigate("/myspace");
+        // La session stockée peut être invalidée côté serveur (redémarrage du
+        // backend, qui efface les sessions en mémoire, ou expiration du jeton
+        // de rafraîchissement) : on la VALIDE par un appel authentifié léger
+        // avant de restaurer. En cas d'échec, la chaîne 403/refresh des hooks
+        // déclenche forceLogout() (stockage nettoyé, retour à la connexion).
+        setIsLoading(true);
+        myAxiosGet({ apiStr: "sp_menu_portail" })
+          .then((rsl) => {
+            if (rsl && (rsl as any).status !== -1 && (rsl as any).data) {
+              // Jeton éventuellement renouvelé par le refresh transparent du hook
+              const tokenCourant = localStorage.getItem("auth_token") || storedToken;
+              setJwt(tokenCourant);
+              setAgent(parsedAgent);
+              setSocket(tokenCourant);
+              navigate("/myspace");
+            }
+          })
+          .finally(() => setIsLoading(false));
       } catch (e) {
         console.error("Error restoring session (Corruption detected):", e);
         // Nettoyage complet en cas de corruption
         localStorage.removeItem("auth_token");
         localStorage.removeItem("auth_agent");
-        // Optionnel : vider tout le localStorage si on soupçonne une corruption globale
-        // localStorage.clear(); 
       }
     }
-  }, [navigate]);
+  }, [navigate, myAxiosGet]);
 
   const handleForgotPassword = useCallback(async () => {
     if (!credention.login) {

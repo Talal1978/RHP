@@ -667,6 +667,12 @@
     <Compile Include="Portail\SP_Assistant_Formule.vb">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="Portail\SP_Zoom_SqlSource.Designer.vb">
+      <DependentUpon>SP_Zoom_SqlSource.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Portail\SP_Zoom_SqlSource.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Portail\SP_Nouvelle_Section.Designer.vb">
       <DependentUpon>SP_Nouvelle_Section.vb</DependentUpon>
     </Compile>

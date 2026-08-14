@@ -299,7 +299,7 @@ Public Class SP_Page_Designer
     ''' menu latéral dès qu'une première page y est publiée (endpoint sp_menu_portail).</summary>
     Private Sub Btn_Add_Section_Click(sender As Object, e As EventArgs) Handles Btn_Add_Section.Click
         Try
-            Using f As New SP_Nouvelle_Section()
+            Using f As New Zoom_SP_Nouvelle_Section()
                 f.ShowDialog(Me)
                 If Not f.Modifie Then Return
                 Menu_Parent_cmb.fromRubrique("SP_Menu_Portail")
@@ -1148,16 +1148,23 @@ Public Class SP_Page_Designer
     ' Le menu contextuel de la grille est déclaré dans le Designer.
 
     ''' <summary>Double-clic sur la cellule 'Paramètres' d'une source : ouvre l'assistant
-    ''' (modifie les paramètres de la ligne, ou crée une nouvelle source sur la ligne vide).</summary>
+    ''' (modifie les paramètres de la ligne, ou crée une nouvelle source sur la ligne vide) ;
+    ''' sur la cellule 'Requête SQL' (lecture seule) : ouvre le zoom d'édition SQL
+    ''' avec contrôle d'injection.</summary>
     Private Sub Grd_Sources_CellDoubleClick(sender As Object, e As DataGridViewCellEventArgs) Handles Grd_Sources.CellDoubleClick
         If e.RowIndex < 0 OrElse e.ColumnIndex < 0 Then Return
-        If Grd_Sources.Columns(e.ColumnIndex).DataPropertyName <> "Parametres" Then Return
-        AssistantParametresSource()
+        Dim prop As String = Grd_Sources.Columns(e.ColumnIndex).DataPropertyName
+        If prop = "Parametres" Then
+            AssistantParametresSource()
+        ElseIf prop = "Code_Sql" Then
+            ZoomCodeSqlSource()
+        End If
     End Sub
 
-    ''' <summary>Curseur "main" sur la cellule json : elle s'ouvre avec l'assistant au double-clic.</summary>
+    ''' <summary>Curseur "main" sur les cellules en lecture seule ouvrant un zoom /
+    ''' un assistant au double-clic ('Requête SQL' et 'Paramètres').</summary>
     Private Sub Grd_Sources_CellMouseEnter(sender As Object, e As DataGridViewCellEventArgs) Handles Grd_Sources.CellMouseEnter
-        If e.ColumnIndex >= 0 AndAlso Grd_Sources.Columns(e.ColumnIndex).DataPropertyName = "Parametres" Then
+        If e.ColumnIndex >= 0 AndAlso {"Parametres", "Code_Sql"}.Contains(Grd_Sources.Columns(e.ColumnIndex).DataPropertyName) Then
             Grd_Sources.Cursor = Cursors.Hand
         Else
             Grd_Sources.Cursor = Cursors.Default
@@ -1173,6 +1180,36 @@ Public Class SP_Page_Designer
     ''' <summary>Item de menu "Définir les paramètres avec l'assistant" (clic droit sur la grille).</summary>
     Private Sub MenuItem_Source_Params_Click(sender As Object, e As EventArgs) Handles MenuItem_Source_Params.Click
         AssistantParametresSource()
+    End Sub
+
+    ''' <summary>Item de menu "Éditer la requête SQL" (clic droit sur la grille).</summary>
+    Private Sub MenuItem_Source_Sql_Click(sender As Object, e As EventArgs) Handles MenuItem_Source_Sql.Click
+        ZoomCodeSqlSource()
+    End Sub
+
+    ''' <summary>Ouvre le zoom d'édition de la requête SQL sur la source sélectionnée
+    ''' (ou une nouvelle ligne si aucune) : la colonne 'Requête SQL' est en lecture
+    ''' seule, l'édition passe exclusivement par ce zoom avec contrôle d'injection
+    ''' (miroir du garde-fou serveur, qui rejoue le même contrôle à l'exécution).</summary>
+    Sub ZoomCodeSqlSource()
+        Dim r As DataRow = LigneSourceCourante()
+        Using f As New SP_Zoom_SqlSource(If(r IsNot Nothing, IsNull(r("Cod_Source"), ""), "nouvelle source"),
+                                         If(r IsNot Nothing, IsNull(r("Code_Sql"), ""), ""))
+            If f.ShowDialog(Me) <> DialogResult.OK Then Return
+            If r Is Nothing Then
+                r = Tbl_Sources.NewRow()
+                Tbl_Sources.Rows.Add(r)   ' déclenche les valeurs par défaut (TableNewRow)
+            End If
+            r("Code_Sql") = f.CodeSql
+            ' Positionne la grille sur la ligne créée / modifiée
+            For Each gr As DataGridViewRow In Grd_Sources.Rows
+                Dim drv = TryCast(gr.DataBoundItem, DataRowView)
+                If drv IsNot Nothing AndAlso drv.Row Is r Then
+                    Grd_Sources.CurrentCell = gr.Cells("Grd_Sources_Code_Sql")
+                    Exit For
+                End If
+            Next
+        End Using
     End Sub
 
     ''' <summary>Ligne de source actuellement sélectionnée (Nothing si aucune / ligne vide).</summary>

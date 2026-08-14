@@ -2,11 +2,20 @@
 
 ## RHP_DeskTop (WinForms VB.NET)
 
-- **Code de design des formulaires** : tout le code de design (déclaration et
-  disposition des contrôles, `InitializeComponent`) doit être écrit dans le
-  fichier `.Designer.vb` du formulaire (ex. `SP_Nouvelle_Section.Designer.vb`),
-  jamais dans le fichier de logique `.vb`. Le fichier `.vb` ne contient que la
-  logique (événements, accès données, validations).
+- **Code de design des formulaires (instruction permanente)** : tout le code de
+  design (déclaration et disposition des contrôles, `InitializeComponent`)
+  doit être écrit dans le fichier `.Designer.vb` du formulaire (ex.
+  `SP_Nouvelle_Section.Designer.vb`), jamais dans le fichier de logique `.vb`.
+  Le fichier `.vb` ne contient que la logique (événements, accès données,
+  validations). Cette règle s'applique **y compris aux écrans construits
+  entièrement par code** (sans Concepteur visuel Visual Studio) : la
+  construction de l'interface est alors placée dans `InitializeComponent()`
+  du `.Designer.vb` — référence : `SP_Zoom_SqlSource.Designer.vb`
+  (déclarations de champs en bas, `Partial Class`, `Inherits` uniquement dans
+  le `.Designer.vb`, `.resx` absent si inutile, entrée `<Compile>` avec
+  `<DependentUpon>` dans le `.vbproj`). Le constructeur du `.vb` appelle
+  `InitializeComponent()` puis n'affecte que des **données** (textes
+  dynamiques, valeurs), jamais de disposition.
 - **Colonnes des grilles** : comme tout autre contrôle, les colonnes des
   `DataGridView` / `ud_Grd` (y compris `DataGridViewComboBoxColumn`) sont
   déclarées dans le `.Designer.vb` — c'est la règle suivie par l'ensemble de
@@ -21,6 +30,32 @@
   jour/agent — `RH_Conge_Planning`, `Zoom_Planning_Entretien` ; résultats de
   requêtes libres et imports — `Param_Query`, `Saisie_Massive_Avances` ;
   composants d'enquête dynamiques — `ud_valeur_unique`).
+- **Entêtes de colonnes littéraux (instruction permanente)** : le `HeaderText`
+  d'une colonne de `ud_Grd` / `DataGridView` est toujours un libellé
+  littéral en langage utilisateur (ex. « Type source », « Requête SQL »),
+  jamais le nom technique de la donnée avec des underscores (`Typ_Source`,
+  `Code_Sql`...). Les noms techniques restent dans `DataPropertyName` et
+  `Name`, pas dans l'entête affiché. Ne jamais laisser une grille en
+  `AutoGenerateColumns = True` (elle afficherait les noms bruts) : colonnes
+  déclarées + `AutoGenerateColumns = False`.
+- **Colonnes booléennes = cases à cocher (instruction permanente)** : toute
+  colonne booléenne d'une grille (`Actif`, `Obligatoire`, `Allow_Add`...) est
+  une `DataGridViewCheckBoxColumn`, jamais une colonne texte affichant
+  « true »/« false ». Pour les données stockées en chaîne 'true'/'false',
+  renseigner `TrueValue = "true"` et `FalseValue = "false"`.
+- **Colonnes à valeurs prédéterminées = listes déroulantes (instruction
+  permanente)** : toute colonne dont le domaine de valeurs est fermé
+  (ex. `Typ_Source` ∈ SQL/PROC, `Typ_Retour` ∈ SCALAIRE/TABLE, `Typ_Sql`,
+  `Etat`, `Portee`...) est une `DataGridViewComboBoxColumn`, jamais une
+  saisie libre. Les éléments sont alimentés au chargement depuis une source
+  unique (constantes partagées avec les validations ou rubrique
+  `Param_Rubriques`), pas saisis à la main.
+- **Colonnes ReadOnly cliquables = curseur main (instruction permanente)** :
+  toute colonne en lecture seule d'une `ud_Grd` associée à un événement de
+  clic (ouverture d'un zoom, d'un assistant...) signale l'interaction par
+  `Cursors.Hand` au survol de la cellule (`CellMouseEnter`), un tooltip sur
+  la colonne et un style de cellule lecture seule (fond grisé). Ex. :
+  `Grd_Sources` (`Parametres`, `Code_Sql`) dans `SP_Page_Designer`.
 - Thème visuel des écrans modaux : suivre `Zoom_Org_Organigramme_Affectation`
   (formulaire sans bordure cadré `colorBase01`, bandeau titre, panel clair,
   contrôles `ud_TextBox` / `ud_ComboBox` / `ud_button`).

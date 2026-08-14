@@ -48,6 +48,29 @@ export function refreshAgentFromStorage(): void {
   myJwt = localStorage.getItem("auth_token") || "";
 }
 
+/** Déconnexion forcée (session expirée ou invalidée côté serveur, ex. après
+ *  un redémarrage du backend qui efface les sessions en mémoire) :
+ *  nettoie le stockage de session, réinitialise les variables module et
+ *  renvoie à la page de connexion. Gardée contre les appels concurrents
+ *  (plusieurs requêtes API peuvent échouer en même temps). */
+let logoutEnCours = false;
+export function forceLogout(): void {
+  if (logoutEnCours) return;
+  logoutEnCours = true;
+  try {
+    localStorage.removeItem("auth_token");
+    localStorage.removeItem("auth_agent");
+    myJwt = "";
+    Agent = { ...defaultAgent };
+    // replace (et non href) : pas d'entrée d'historique, pas de boucle retour.
+    window.location.replace("/");
+  } finally {
+    // La navigation recharge l'application ; la garde est levée au cas où le
+    // remplacement ne naviguerait pas (environnement de test, etc.).
+    setTimeout(() => { logoutEnCours = false; }, 3000);
+  }
+}
+
 export const colorBase = {
   colorBase01: "#3899b9",
   colorBase02: "#5eb975",

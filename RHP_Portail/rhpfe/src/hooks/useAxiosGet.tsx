@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useCallback } from "react";
-import { Connexion, myJwt, setJwt } from "../modules/module_general";
+import { Connexion, forceLogout, myJwt, setJwt } from "../modules/module_general";
 
 const useAxiosGet = () => {
   const myAxios = useCallback(async ({
@@ -58,8 +58,10 @@ const useAxiosGet = () => {
             });
           }
         } catch (refreshErr) {
+          // Session perdue côté serveur (redémarrage backend, expiration longue)
+          // => déconnexion forcée et retour propre à la page de connexion.
           console.error("Token refresh failed", refreshErr);
-          window.location.href = "/";
+          forceLogout();
         }
       }
 
