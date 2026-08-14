@@ -118,10 +118,16 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <metadata name="Menu_Sources.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>17, 17</value>
+    <value>160, 17</value>
   </metadata>
+  <data name="LabelChamps.Text" xml:space="preserve">
+    <value>Champs : Cod_Table = ENT pour l'entête, sinon le code du détail. Table et colonne vides : champ affiché uniquement (État = A), jamais stocké. Champ calculé rattaché à un détail sans colonne : pied de grille (total...), affiché sous sa grille.</value>
+  </data>
   <metadata name="Menu_Validations.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>171, 17</value>
+    <value>314, 17</value>
+  </metadata>
+  <metadata name="Menu_Droits.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>17, 17</value>
   </metadata>
   <data name="LabelDroits.Text" xml:space="preserve">
     <value>Décoché : tous les profils (même créés ultérieurement) peuvent consulter la page. Coché : consultation réservée aux profils cochés ci-dessous. Clic droit sur une colonne : cocher / décocher pour tous les profils.</value>

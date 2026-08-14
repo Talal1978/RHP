@@ -24,27 +24,21 @@ Partial Class SP_Page_Designer
         Dim DataGridViewCellStyle4 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
         Dim DataGridViewCellStyle5 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
         Dim DataGridViewCellStyle6 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
-        Dim DataGridViewCellStyle7 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
-        Dim DataGridViewCellStyle8 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
-        Dim DataGridViewCellStyle9 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
         Dim DataGridViewCellStyle10 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
         Dim DataGridViewCellStyle11 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
         Dim DataGridViewCellStyle12 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
+        Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(SP_Page_Designer))
+        Dim DataGridViewCellStyle7 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
+        Dim DataGridViewCellStyle8 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
+        Dim DataGridViewCellStyle9 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
         Dim DataGridViewCellStyle13 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
         Dim DataGridViewCellStyle14 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
         Dim DataGridViewCellStyle15 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
         Dim DataGridViewCellStyle16 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
         Dim DataGridViewCellStyle17 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
         Dim DataGridViewCellStyle18 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
-        Dim DataGridViewCellStyle19 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
-        Dim DataGridViewCellStyle20 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
-        Dim DataGridViewCellStyle21 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
-        Dim DataGridViewCellStyle22 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
-        Dim DataGridViewCellStyle23 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
-        Dim DataGridViewCellStyle24 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
-        Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(SP_Page_Designer))
         Me.TabControl1 = New System.Windows.Forms.TabControl()
-        Me.Tab_Document = New System.Windows.Forms.TabPage()
+        Me.Tab_Donnees_SQL = New System.Windows.Forms.TabPage()
         Me.TabControl_Details = New System.Windows.Forms.TabControl()
         Me.Tab_Tables = New System.Windows.Forms.TabPage()
         Me.Grd_Tables = New RHP.ud_Grd()
@@ -52,7 +46,6 @@ Partial Class SP_Page_Designer
         Me.Grd_Colonnes = New RHP.ud_Grd()
         Me.LabelColonnes = New System.Windows.Forms.Label()
         Me.Tab_Champs = New System.Windows.Forms.TabPage()
-        Me.SplitContainer5 = New System.Windows.Forms.SplitContainer()
         Me.Grd_Champs = New RHP.ud_Grd()
         Me.LabelChamps = New System.Windows.Forms.Label()
         Me.Grd_Sources = New RHP.ud_Grd()
@@ -84,12 +77,12 @@ Partial Class SP_Page_Designer
         Me.Grd_Validations = New RHP.ud_Grd()
         Me.Menu_Validations = New System.Windows.Forms.ContextMenuStrip(Me.components)
         Me.MenuItem_Assistant = New System.Windows.Forms.ToolStripMenuItem()
-        Me.Menu_Droits = New System.Windows.Forms.ContextMenuStrip(Me.components)
-        Me.MenuItem_Droits_Cocher = New System.Windows.Forms.ToolStripMenuItem()
-        Me.MenuItem_Droits_Decocher = New System.Windows.Forms.ToolStripMenuItem()
         Me.LabelValidations = New System.Windows.Forms.Label()
         Me.Tab_Droits = New System.Windows.Forms.TabPage()
         Me.Grd_Droits = New RHP.ud_Grd()
+        Me.Menu_Droits = New System.Windows.Forms.ContextMenuStrip(Me.components)
+        Me.MenuItem_Droits_Cocher = New System.Windows.Forms.ToolStripMenuItem()
+        Me.MenuItem_Droits_Decocher = New System.Windows.Forms.ToolStripMenuItem()
         Me.Panel_Droits = New System.Windows.Forms.Panel()
         Me.Acces_Personnalise_chk = New RHP.ud_CheckBox()
         Me.LabelDroits = New System.Windows.Forms.Label()
@@ -99,95 +92,15 @@ Partial Class SP_Page_Designer
         Me.Nom_Page_txt = New RHP.ud_TextBox()
         Me.Cod_Page_txt = New RHP.ud_TextBox()
         Me.LabelCodPage = New System.Windows.Forms.LinkLabel()
-        Me.Grd_Tables_Cod_Table = New System.Windows.Forms.DataGridViewTextBoxColumn()
-        Me.Grd_Tables_Nom_Physique = New System.Windows.Forms.DataGridViewTextBoxColumn()
-        Me.Grd_Tables_Role_Table = New System.Windows.Forms.DataGridViewTextBoxColumn()
-        Me.Grd_Tables_Libelle = New System.Windows.Forms.DataGridViewTextBoxColumn()
-        Me.Grd_Tables_Rang = New System.Windows.Forms.DataGridViewTextBoxColumn()
-        Me.Grd_Tables_Allow_Add = New System.Windows.Forms.DataGridViewCheckBoxColumn()
-        Me.Grd_Tables_Allow_Edit = New System.Windows.Forms.DataGridViewCheckBoxColumn()
-        Me.Grd_Tables_Allow_Delete = New System.Windows.Forms.DataGridViewCheckBoxColumn()
-        Me.Grd_Tables_Allow_Duplicate = New System.Windows.Forms.DataGridViewCheckBoxColumn()
-        Me.Grd_Tables_Tri_Defaut = New System.Windows.Forms.DataGridViewTextBoxColumn()
-        Me.Grd_Tables_Regle_Suppression = New System.Windows.Forms.DataGridViewComboBoxColumn()
-        Me.Grd_Colonnes_Cod_Table = New System.Windows.Forms.DataGridViewComboBoxColumn()
-        Me.Grd_Colonnes_Nom_Colonne = New System.Windows.Forms.DataGridViewTextBoxColumn()
-        Me.Grd_Colonnes_Libelle = New System.Windows.Forms.DataGridViewTextBoxColumn()
-        Me.Grd_Colonnes_Typ_Sql = New System.Windows.Forms.DataGridViewComboBoxColumn()
-        Me.Grd_Colonnes_Longueur = New System.Windows.Forms.DataGridViewTextBoxColumn()
-        Me.Grd_Colonnes_Precision_Sql = New System.Windows.Forms.DataGridViewTextBoxColumn()
-        Me.Grd_Colonnes_Echelle_Sql = New System.Windows.Forms.DataGridViewTextBoxColumn()
-        Me.Grd_Colonnes_Nullable = New System.Windows.Forms.DataGridViewCheckBoxColumn()
-        Me.Grd_Colonnes_Valeur_Defaut = New System.Windows.Forms.DataGridViewTextBoxColumn()
-        Me.Grd_Colonnes_estUnique = New System.Windows.Forms.DataGridViewCheckBoxColumn()
-        Me.Grd_Colonnes_estIndexe = New System.Windows.Forms.DataGridViewCheckBoxColumn()
-        Me.Grd_Colonnes_Rang = New System.Windows.Forms.DataGridViewTextBoxColumn()
-        Me.Grd_Droits_Cod_Profile = New System.Windows.Forms.DataGridViewTextBoxColumn()
-        Me.Grd_Droits_Lib_Profile = New System.Windows.Forms.DataGridViewTextBoxColumn()
-        Me.Grd_Droits_Consulter = New System.Windows.Forms.DataGridViewCheckBoxColumn()
-        Me.Grd_Droits_Creer = New System.Windows.Forms.DataGridViewCheckBoxColumn()
-        Me.Grd_Droits_Modifier = New System.Windows.Forms.DataGridViewCheckBoxColumn()
-        Me.Grd_Droits_Supprimer = New System.Windows.Forms.DataGridViewCheckBoxColumn()
-        Me.Grd_Droits_Valider = New System.Windows.Forms.DataGridViewCheckBoxColumn()
-        Me.Grd_Droits_Imprimer = New System.Windows.Forms.DataGridViewCheckBoxColumn()
-        Me.Grd_Droits_GED = New System.Windows.Forms.DataGridViewCheckBoxColumn()
-        Me.Grd_Champs_Cod_Champ = New System.Windows.Forms.DataGridViewTextBoxColumn()
-        Me.Grd_Champs_Cod_Table = New System.Windows.Forms.DataGridViewComboBoxColumn()
-        Me.Grd_Champs_Nom_Colonne = New System.Windows.Forms.DataGridViewComboBoxColumn()
-        Me.Grd_Champs_Libelle = New System.Windows.Forms.DataGridViewTextBoxColumn()
-        Me.Grd_Champs_Typ_Controle = New System.Windows.Forms.DataGridViewComboBoxColumn()
-        Me.Grd_Champs_Rang = New System.Windows.Forms.DataGridViewTextBoxColumn()
-        Me.Grd_Champs_Ligne = New System.Windows.Forms.DataGridViewTextBoxColumn()
-        Me.Grd_Champs_Colonne = New System.Windows.Forms.DataGridViewTextBoxColumn()
-        Me.Grd_Champs_Largeur = New System.Windows.Forms.DataGridViewTextBoxColumn()
-        Me.Grd_Champs_Valeur_Defaut = New System.Windows.Forms.DataGridViewTextBoxColumn()
-        Me.Grd_Champs_Obligatoire = New System.Windows.Forms.DataGridViewCheckBoxColumn()
-        Me.Grd_Champs_Etat = New System.Windows.Forms.DataGridViewComboBoxColumn()
-        Me.Grd_Champs_Rubrique = New System.Windows.Forms.DataGridViewTextBoxColumn()
-        Me.Grd_Champs_Num_Zoom = New System.Windows.Forms.DataGridViewTextBoxColumn()
-        Me.Grd_Champs_Source_Metier = New System.Windows.Forms.DataGridViewComboBoxColumn()
-        Me.Grd_Champs_Formule = New System.Windows.Forms.DataGridViewTextBoxColumn()
-        Me.Grd_Champs_Persiste = New System.Windows.Forms.DataGridViewCheckBoxColumn()
-        Me.Grd_Champs_Format_Affichage = New System.Windows.Forms.DataGridViewComboBoxColumn()
-        Me.Grd_Champs_Decimales = New System.Windows.Forms.DataGridViewTextBoxColumn()
-        Me.Grd_Champs_Visible_Grille = New System.Windows.Forms.DataGridViewCheckBoxColumn()
-        Me.Grd_Champs_Rang_Grille = New System.Windows.Forms.DataGridViewTextBoxColumn()
-        Me.Grd_Champs_Largeur_Colonne = New System.Windows.Forms.DataGridViewTextBoxColumn()
-        Me.Grd_Champs_estCritere = New System.Windows.Forms.DataGridViewCheckBoxColumn()
-        Me.Grd_Champs_Rang_Critere = New System.Windows.Forms.DataGridViewTextBoxColumn()
-        Me.Grd_Champs_Aide = New System.Windows.Forms.DataGridViewTextBoxColumn()
-        Me.Grd_Validations_Cod_Validation = New System.Windows.Forms.DataGridViewTextBoxColumn()
-        Me.Grd_Validations_Portee = New System.Windows.Forms.DataGridViewComboBoxColumn()
-        Me.Grd_Validations_Cod_Table = New System.Windows.Forms.DataGridViewComboBoxColumn()
-        Me.Grd_Validations_Cod_Champ = New System.Windows.Forms.DataGridViewTextBoxColumn()
-        Me.Grd_Validations_Typ_Regle = New System.Windows.Forms.DataGridViewComboBoxColumn()
-        Me.Grd_Validations_Parametres = New System.Windows.Forms.DataGridViewTextBoxColumn()
-        Me.Grd_Validations_Condition_Regle = New System.Windows.Forms.DataGridViewTextBoxColumn()
-        Me.Grd_Validations_Message = New System.Windows.Forms.DataGridViewTextBoxColumn()
-        Me.Grd_Validations_Niveau = New System.Windows.Forms.DataGridViewComboBoxColumn()
-        Me.Grd_Validations_Rang = New System.Windows.Forms.DataGridViewTextBoxColumn()
-        Me.Grd_Validations_Moment = New System.Windows.Forms.DataGridViewComboBoxColumn()
-        Me.Grd_Validations_Actif = New System.Windows.Forms.DataGridViewCheckBoxColumn()
-        Me.Grd_Sources_Cod_Source = New System.Windows.Forms.DataGridViewTextBoxColumn()
-        Me.Grd_Sources_Libelle = New System.Windows.Forms.DataGridViewTextBoxColumn()
-        Me.Grd_Sources_Typ_Source = New System.Windows.Forms.DataGridViewComboBoxColumn()
-        Me.Grd_Sources_Code_Sql = New System.Windows.Forms.DataGridViewTextBoxColumn()
-        Me.Grd_Sources_Parametres = New System.Windows.Forms.DataGridViewTextBoxColumn()
-        Me.Grd_Sources_Typ_Retour = New System.Windows.Forms.DataGridViewComboBoxColumn()
-        Me.Grd_Sources_Cod_Profile = New System.Windows.Forms.DataGridViewComboBoxColumn()
-        Me.Grd_Sources_Actif = New System.Windows.Forms.DataGridViewCheckBoxColumn()
+        Me.Tab_Sources = New System.Windows.Forms.TabPage()
         Me.TabControl1.SuspendLayout()
-        Me.Tab_Document.SuspendLayout()
+        Me.Tab_Donnees_SQL.SuspendLayout()
         Me.TabControl_Details.SuspendLayout()
         Me.Tab_Tables.SuspendLayout()
         CType(Me.Grd_Tables, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.Tab_Colonnes.SuspendLayout()
         CType(Me.Grd_Colonnes, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.Tab_Champs.SuspendLayout()
-        CType(Me.SplitContainer5, System.ComponentModel.ISupportInitialize).BeginInit()
-        Me.SplitContainer5.Panel1.SuspendLayout()
-        Me.SplitContainer5.Panel2.SuspendLayout()
-        Me.SplitContainer5.SuspendLayout()
         CType(Me.Grd_Champs, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.Grd_Sources, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.Menu_Sources.SuspendLayout()
@@ -197,16 +110,18 @@ Partial Class SP_Page_Designer
         Me.Tab_Comportement.SuspendLayout()
         CType(Me.Grd_Validations, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.Menu_Validations.SuspendLayout()
-        Me.Menu_Droits.SuspendLayout()
         Me.Tab_Droits.SuspendLayout()
         CType(Me.Grd_Droits, System.ComponentModel.ISupportInitialize).BeginInit()
+        Me.Menu_Droits.SuspendLayout()
         Me.Panel_Droits.SuspendLayout()
         Me.GroupBox_Def.SuspendLayout()
+        Me.Tab_Sources.SuspendLayout()
         Me.SuspendLayout()
         '
         'TabControl1
         '
-        Me.TabControl1.Controls.Add(Me.Tab_Document)
+        Me.TabControl1.Controls.Add(Me.Tab_Donnees_SQL)
+        Me.TabControl1.Controls.Add(Me.Tab_Sources)
         Me.TabControl1.Controls.Add(Me.Tab_Champs)
         Me.TabControl1.Controls.Add(Me.Tab_Conception)
         Me.TabControl1.Controls.Add(Me.Tab_Comportement)
@@ -219,16 +134,16 @@ Partial Class SP_Page_Designer
         Me.TabControl1.Size = New System.Drawing.Size(1250, 628)
         Me.TabControl1.TabIndex = 0
         '
-        'Tab_Document
+        'Tab_Donnees_SQL
         '
-        Me.Tab_Document.Controls.Add(Me.TabControl_Details)
-        Me.Tab_Document.Location = New System.Drawing.Point(4, 28)
-        Me.Tab_Document.Name = "Tab_Document"
-        Me.Tab_Document.Padding = New System.Windows.Forms.Padding(3)
-        Me.Tab_Document.Size = New System.Drawing.Size(1242, 596)
-        Me.Tab_Document.TabIndex = 0
-        Me.Tab_Document.Text = "Structure des tables"
-        Me.Tab_Document.UseVisualStyleBackColor = True
+        Me.Tab_Donnees_SQL.Controls.Add(Me.TabControl_Details)
+        Me.Tab_Donnees_SQL.Location = New System.Drawing.Point(4, 28)
+        Me.Tab_Donnees_SQL.Name = "Tab_Donnees_SQL"
+        Me.Tab_Donnees_SQL.Padding = New System.Windows.Forms.Padding(3)
+        Me.Tab_Donnees_SQL.Size = New System.Drawing.Size(1242, 596)
+        Me.Tab_Donnees_SQL.TabIndex = 0
+        Me.Tab_Donnees_SQL.Text = "Structure des tables"
+        Me.Tab_Donnees_SQL.UseVisualStyleBackColor = True
         '
         'TabControl_Details
         '
@@ -257,7 +172,6 @@ Partial Class SP_Page_Designer
         '
         Me.Grd_Tables.AfficherLesEntetesLignes = True
         Me.Grd_Tables.AlternerLesLignes = False
-        Me.Grd_Tables.AutoGenerateColumns = False
         Me.Grd_Tables.BorderStyle = System.Windows.Forms.BorderStyle.None
         Me.Grd_Tables.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.[Single]
         DataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter
@@ -270,7 +184,6 @@ Partial Class SP_Page_Designer
         DataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.[True]
         Me.Grd_Tables.ColumnHeadersDefaultCellStyle = DataGridViewCellStyle1
         Me.Grd_Tables.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize
-        Me.Grd_Tables.Columns.AddRange(New System.Windows.Forms.DataGridViewColumn() {Me.Grd_Tables_Cod_Table, Me.Grd_Tables_Nom_Physique, Me.Grd_Tables_Role_Table, Me.Grd_Tables_Libelle, Me.Grd_Tables_Rang, Me.Grd_Tables_Allow_Add, Me.Grd_Tables_Allow_Edit, Me.Grd_Tables_Allow_Delete, Me.Grd_Tables_Allow_Duplicate, Me.Grd_Tables_Tri_Defaut, Me.Grd_Tables_Regle_Suppression})
         DataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft
         DataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window
         DataGridViewCellStyle2.Font = New System.Drawing.Font("Century Gothic", 8.25!)
@@ -293,88 +206,6 @@ Partial Class SP_Page_Designer
         Me.Grd_Tables.Size = New System.Drawing.Size(1222, 552)
         Me.Grd_Tables.TabIndex = 0
         '
-        'Grd_Tables_Cod_Table
-        '
-        Me.Grd_Tables_Cod_Table.DataPropertyName = "Cod_Table"
-        Me.Grd_Tables_Cod_Table.HeaderText = "Table"
-        Me.Grd_Tables_Cod_Table.Name = "Grd_Tables_Cod_Table"
-        '
-        'Grd_Tables_Nom_Physique
-        '
-        DataGridViewCellStyle19.BackColor = System.Drawing.Color.FromArgb(CType(CType(240, Byte), Integer), CType(CType(243, Byte), Integer), CType(CType(245, Byte), Integer))
-        DataGridViewCellStyle19.ForeColor = System.Drawing.Color.FromArgb(CType(CType(90, Byte), Integer), CType(CType(90, Byte), Integer), CType(CType(90, Byte), Integer))
-        Me.Grd_Tables_Nom_Physique.DefaultCellStyle = DataGridViewCellStyle19
-        Me.Grd_Tables_Nom_Physique.DataPropertyName = "Nom_Physique"
-        Me.Grd_Tables_Nom_Physique.HeaderText = "Nom physique"
-        Me.Grd_Tables_Nom_Physique.Name = "Grd_Tables_Nom_Physique"
-        Me.Grd_Tables_Nom_Physique.ReadOnly = True
-        '
-        'Grd_Tables_Role_Table
-        '
-        DataGridViewCellStyle20.BackColor = System.Drawing.Color.FromArgb(CType(CType(240, Byte), Integer), CType(CType(243, Byte), Integer), CType(CType(245, Byte), Integer))
-        DataGridViewCellStyle20.ForeColor = System.Drawing.Color.FromArgb(CType(CType(90, Byte), Integer), CType(CType(90, Byte), Integer), CType(CType(90, Byte), Integer))
-        Me.Grd_Tables_Role_Table.DefaultCellStyle = DataGridViewCellStyle20
-        Me.Grd_Tables_Role_Table.DataPropertyName = "Role_Table"
-        Me.Grd_Tables_Role_Table.HeaderText = "Rôle"
-        Me.Grd_Tables_Role_Table.Name = "Grd_Tables_Role_Table"
-        Me.Grd_Tables_Role_Table.ReadOnly = True
-        '
-        'Grd_Tables_Libelle
-        '
-        Me.Grd_Tables_Libelle.DataPropertyName = "Libelle"
-        Me.Grd_Tables_Libelle.HeaderText = "Libellé"
-        Me.Grd_Tables_Libelle.Name = "Grd_Tables_Libelle"
-        '
-        'Grd_Tables_Rang
-        '
-        Me.Grd_Tables_Rang.DataPropertyName = "Rang"
-        Me.Grd_Tables_Rang.HeaderText = "Rang"
-        Me.Grd_Tables_Rang.Name = "Grd_Tables_Rang"
-        '
-        'Grd_Tables_Allow_Add
-        '
-        Me.Grd_Tables_Allow_Add.DataPropertyName = "Allow_Add"
-        Me.Grd_Tables_Allow_Add.FalseValue = "false"
-        Me.Grd_Tables_Allow_Add.HeaderText = "Ajout"
-        Me.Grd_Tables_Allow_Add.Name = "Grd_Tables_Allow_Add"
-        Me.Grd_Tables_Allow_Add.TrueValue = "true"
-        '
-        'Grd_Tables_Allow_Edit
-        '
-        Me.Grd_Tables_Allow_Edit.DataPropertyName = "Allow_Edit"
-        Me.Grd_Tables_Allow_Edit.FalseValue = "false"
-        Me.Grd_Tables_Allow_Edit.HeaderText = "Modif."
-        Me.Grd_Tables_Allow_Edit.Name = "Grd_Tables_Allow_Edit"
-        Me.Grd_Tables_Allow_Edit.TrueValue = "true"
-        '
-        'Grd_Tables_Allow_Delete
-        '
-        Me.Grd_Tables_Allow_Delete.DataPropertyName = "Allow_Delete"
-        Me.Grd_Tables_Allow_Delete.FalseValue = "false"
-        Me.Grd_Tables_Allow_Delete.HeaderText = "Suppr."
-        Me.Grd_Tables_Allow_Delete.Name = "Grd_Tables_Allow_Delete"
-        Me.Grd_Tables_Allow_Delete.TrueValue = "true"
-        '
-        'Grd_Tables_Allow_Duplicate
-        '
-        Me.Grd_Tables_Allow_Duplicate.DataPropertyName = "Allow_Duplicate"
-        Me.Grd_Tables_Allow_Duplicate.FalseValue = "false"
-        Me.Grd_Tables_Allow_Duplicate.HeaderText = "Dupliq."
-        Me.Grd_Tables_Allow_Duplicate.Name = "Grd_Tables_Allow_Duplicate"
-        Me.Grd_Tables_Allow_Duplicate.TrueValue = "true"
-        '
-        'Grd_Tables_Tri_Defaut
-        '
-        Me.Grd_Tables_Tri_Defaut.DataPropertyName = "Tri_Defaut"
-        Me.Grd_Tables_Tri_Defaut.HeaderText = "Tri par défaut"
-        Me.Grd_Tables_Tri_Defaut.Name = "Grd_Tables_Tri_Defaut"
-        '
-        'Grd_Tables_Regle_Suppression
-        '
-        Me.Grd_Tables_Regle_Suppression.DataPropertyName = "Regle_Suppression"
-        Me.Grd_Tables_Regle_Suppression.HeaderText = "Règle suppression"
-        Me.Grd_Tables_Regle_Suppression.Name = "Grd_Tables_Regle_Suppression"
-        '
         'Tab_Colonnes
         '
         Me.Tab_Colonnes.Controls.Add(Me.Grd_Colonnes)
@@ -391,7 +222,6 @@ Partial Class SP_Page_Designer
         '
         Me.Grd_Colonnes.AfficherLesEntetesLignes = True
         Me.Grd_Colonnes.AlternerLesLignes = False
-        Me.Grd_Colonnes.AutoGenerateColumns = False
         Me.Grd_Colonnes.BorderStyle = System.Windows.Forms.BorderStyle.None
         Me.Grd_Colonnes.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.[Single]
         DataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter
@@ -404,7 +234,6 @@ Partial Class SP_Page_Designer
         DataGridViewCellStyle4.WrapMode = System.Windows.Forms.DataGridViewTriState.[True]
         Me.Grd_Colonnes.ColumnHeadersDefaultCellStyle = DataGridViewCellStyle4
         Me.Grd_Colonnes.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize
-        Me.Grd_Colonnes.Columns.AddRange(New System.Windows.Forms.DataGridViewColumn() {Me.Grd_Colonnes_Cod_Table, Me.Grd_Colonnes_Nom_Colonne, Me.Grd_Colonnes_Libelle, Me.Grd_Colonnes_Typ_Sql, Me.Grd_Colonnes_Longueur, Me.Grd_Colonnes_Precision_Sql, Me.Grd_Colonnes_Echelle_Sql, Me.Grd_Colonnes_Nullable, Me.Grd_Colonnes_Valeur_Defaut, Me.Grd_Colonnes_estUnique, Me.Grd_Colonnes_estIndexe, Me.Grd_Colonnes_Rang})
         DataGridViewCellStyle5.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft
         DataGridViewCellStyle5.BackColor = System.Drawing.SystemColors.Window
         DataGridViewCellStyle5.Font = New System.Drawing.Font("Century Gothic", 8.25!)
@@ -427,84 +256,6 @@ Partial Class SP_Page_Designer
         Me.Grd_Colonnes.Size = New System.Drawing.Size(1222, 527)
         Me.Grd_Colonnes.TabIndex = 1
         '
-        'Grd_Colonnes_Cod_Table
-        '
-        Me.Grd_Colonnes_Cod_Table.DataPropertyName = "Cod_Table"
-        Me.Grd_Colonnes_Cod_Table.HeaderText = "Table"
-        Me.Grd_Colonnes_Cod_Table.Name = "Grd_Colonnes_Cod_Table"
-        '
-        'Grd_Colonnes_Nom_Colonne
-        '
-        Me.Grd_Colonnes_Nom_Colonne.DataPropertyName = "Nom_Colonne"
-        Me.Grd_Colonnes_Nom_Colonne.HeaderText = "Colonne"
-        Me.Grd_Colonnes_Nom_Colonne.Name = "Grd_Colonnes_Nom_Colonne"
-        '
-        'Grd_Colonnes_Libelle
-        '
-        Me.Grd_Colonnes_Libelle.DataPropertyName = "Libelle"
-        Me.Grd_Colonnes_Libelle.HeaderText = "Libellé"
-        Me.Grd_Colonnes_Libelle.Name = "Grd_Colonnes_Libelle"
-        '
-        'Grd_Colonnes_Typ_Sql
-        '
-        Me.Grd_Colonnes_Typ_Sql.DataPropertyName = "Typ_Sql"
-        Me.Grd_Colonnes_Typ_Sql.HeaderText = "Type SQL"
-        Me.Grd_Colonnes_Typ_Sql.Name = "Grd_Colonnes_Typ_Sql"
-        '
-        'Grd_Colonnes_Longueur
-        '
-        Me.Grd_Colonnes_Longueur.DataPropertyName = "Longueur"
-        Me.Grd_Colonnes_Longueur.HeaderText = "Longueur"
-        Me.Grd_Colonnes_Longueur.Name = "Grd_Colonnes_Longueur"
-        '
-        'Grd_Colonnes_Precision_Sql
-        '
-        Me.Grd_Colonnes_Precision_Sql.DataPropertyName = "Precision_Sql"
-        Me.Grd_Colonnes_Precision_Sql.HeaderText = "Précision"
-        Me.Grd_Colonnes_Precision_Sql.Name = "Grd_Colonnes_Precision_Sql"
-        '
-        'Grd_Colonnes_Echelle_Sql
-        '
-        Me.Grd_Colonnes_Echelle_Sql.DataPropertyName = "Echelle_Sql"
-        Me.Grd_Colonnes_Echelle_Sql.HeaderText = "Échelle"
-        Me.Grd_Colonnes_Echelle_Sql.Name = "Grd_Colonnes_Echelle_Sql"
-        '
-        'Grd_Colonnes_Nullable
-        '
-        Me.Grd_Colonnes_Nullable.DataPropertyName = "Nullable"
-        Me.Grd_Colonnes_Nullable.FalseValue = "false"
-        Me.Grd_Colonnes_Nullable.HeaderText = "Nullable"
-        Me.Grd_Colonnes_Nullable.Name = "Grd_Colonnes_Nullable"
-        Me.Grd_Colonnes_Nullable.TrueValue = "true"
-        '
-        'Grd_Colonnes_Valeur_Defaut
-        '
-        Me.Grd_Colonnes_Valeur_Defaut.DataPropertyName = "Valeur_Defaut"
-        Me.Grd_Colonnes_Valeur_Defaut.HeaderText = "Valeur par défaut"
-        Me.Grd_Colonnes_Valeur_Defaut.Name = "Grd_Colonnes_Valeur_Defaut"
-        '
-        'Grd_Colonnes_estUnique
-        '
-        Me.Grd_Colonnes_estUnique.DataPropertyName = "estUnique"
-        Me.Grd_Colonnes_estUnique.FalseValue = "false"
-        Me.Grd_Colonnes_estUnique.HeaderText = "Unique"
-        Me.Grd_Colonnes_estUnique.Name = "Grd_Colonnes_estUnique"
-        Me.Grd_Colonnes_estUnique.TrueValue = "true"
-        '
-        'Grd_Colonnes_estIndexe
-        '
-        Me.Grd_Colonnes_estIndexe.DataPropertyName = "estIndexe"
-        Me.Grd_Colonnes_estIndexe.FalseValue = "false"
-        Me.Grd_Colonnes_estIndexe.HeaderText = "Indexée"
-        Me.Grd_Colonnes_estIndexe.Name = "Grd_Colonnes_estIndexe"
-        Me.Grd_Colonnes_estIndexe.TrueValue = "true"
-        '
-        'Grd_Colonnes_Rang
-        '
-        Me.Grd_Colonnes_Rang.DataPropertyName = "Rang"
-        Me.Grd_Colonnes_Rang.HeaderText = "Rang"
-        Me.Grd_Colonnes_Rang.Name = "Grd_Colonnes_Rang"
-        '
         'LabelColonnes
         '
         Me.LabelColonnes.Dock = System.Windows.Forms.DockStyle.Top
@@ -518,7 +269,8 @@ Partial Class SP_Page_Designer
         '
         'Tab_Champs
         '
-        Me.Tab_Champs.Controls.Add(Me.SplitContainer5)
+        Me.Tab_Champs.Controls.Add(Me.Grd_Champs)
+        Me.Tab_Champs.Controls.Add(Me.LabelChamps)
         Me.Tab_Champs.Location = New System.Drawing.Point(4, 28)
         Me.Tab_Champs.Name = "Tab_Champs"
         Me.Tab_Champs.Size = New System.Drawing.Size(1242, 596)
@@ -526,230 +278,42 @@ Partial Class SP_Page_Designer
         Me.Tab_Champs.Text = "Champs de la page"
         Me.Tab_Champs.UseVisualStyleBackColor = True
         '
-        'SplitContainer5
-        '
-        Me.SplitContainer5.Dock = System.Windows.Forms.DockStyle.Fill
-        Me.SplitContainer5.Location = New System.Drawing.Point(0, 0)
-        Me.SplitContainer5.Name = "SplitContainer5"
-        Me.SplitContainer5.Orientation = System.Windows.Forms.Orientation.Horizontal
-        '
-        'SplitContainer5.Panel1
-        '
-        Me.SplitContainer5.Panel1.Controls.Add(Me.Grd_Champs)
-        Me.SplitContainer5.Panel1.Controls.Add(Me.LabelChamps)
-        '
-        'SplitContainer5.Panel2
-        '
-        Me.SplitContainer5.Panel2.Controls.Add(Me.Grd_Sources)
-        Me.SplitContainer5.Panel2.Controls.Add(Me.LabelSources)
-        Me.SplitContainer5.Size = New System.Drawing.Size(1242, 596)
-        Me.SplitContainer5.SplitterDistance = 374
-        Me.SplitContainer5.TabIndex = 0
-        '
         'Grd_Champs
         '
         Me.Grd_Champs.AfficherLesEntetesLignes = True
         Me.Grd_Champs.AlternerLesLignes = False
-        Me.Grd_Champs.AutoGenerateColumns = False
         Me.Grd_Champs.BorderStyle = System.Windows.Forms.BorderStyle.None
         Me.Grd_Champs.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.[Single]
-        DataGridViewCellStyle7.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter
-        DataGridViewCellStyle7.BackColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
-        DataGridViewCellStyle7.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        DataGridViewCellStyle7.ForeColor = System.Drawing.Color.White
-        DataGridViewCellStyle7.Padding = New System.Windows.Forms.Padding(5)
-        DataGridViewCellStyle7.SelectionBackColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
-        DataGridViewCellStyle7.SelectionForeColor = System.Drawing.Color.White
-        DataGridViewCellStyle7.WrapMode = System.Windows.Forms.DataGridViewTriState.[True]
-        Me.Grd_Champs.ColumnHeadersDefaultCellStyle = DataGridViewCellStyle7
+        DataGridViewCellStyle10.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter
+        DataGridViewCellStyle10.BackColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
+        DataGridViewCellStyle10.Font = New System.Drawing.Font("Century Gothic", 8.25!)
+        DataGridViewCellStyle10.ForeColor = System.Drawing.Color.White
+        DataGridViewCellStyle10.Padding = New System.Windows.Forms.Padding(5)
+        DataGridViewCellStyle10.SelectionBackColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
+        DataGridViewCellStyle10.SelectionForeColor = System.Drawing.Color.White
+        DataGridViewCellStyle10.WrapMode = System.Windows.Forms.DataGridViewTriState.[True]
+        Me.Grd_Champs.ColumnHeadersDefaultCellStyle = DataGridViewCellStyle10
         Me.Grd_Champs.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize
-        Me.Grd_Champs.Columns.AddRange(New System.Windows.Forms.DataGridViewColumn() {Me.Grd_Champs_Cod_Champ, Me.Grd_Champs_Cod_Table, Me.Grd_Champs_Nom_Colonne, Me.Grd_Champs_Libelle, Me.Grd_Champs_Typ_Controle, Me.Grd_Champs_Rang, Me.Grd_Champs_Ligne, Me.Grd_Champs_Colonne, Me.Grd_Champs_Largeur, Me.Grd_Champs_Valeur_Defaut, Me.Grd_Champs_Obligatoire, Me.Grd_Champs_Etat, Me.Grd_Champs_Rubrique, Me.Grd_Champs_Num_Zoom, Me.Grd_Champs_Source_Metier, Me.Grd_Champs_Formule, Me.Grd_Champs_Persiste, Me.Grd_Champs_Format_Affichage, Me.Grd_Champs_Decimales, Me.Grd_Champs_Visible_Grille, Me.Grd_Champs_Rang_Grille, Me.Grd_Champs_Largeur_Colonne, Me.Grd_Champs_estCritere, Me.Grd_Champs_Rang_Critere, Me.Grd_Champs_Aide})
-        DataGridViewCellStyle8.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft
-        DataGridViewCellStyle8.BackColor = System.Drawing.SystemColors.Window
-        DataGridViewCellStyle8.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        DataGridViewCellStyle8.ForeColor = System.Drawing.SystemColors.ControlText
-        DataGridViewCellStyle8.SelectionBackColor = System.Drawing.Color.FromArgb(CType(CType(94, Byte), Integer), CType(CType(185, Byte), Integer), CType(CType(117, Byte), Integer))
-        DataGridViewCellStyle8.SelectionForeColor = System.Drawing.SystemColors.HighlightText
-        DataGridViewCellStyle8.WrapMode = System.Windows.Forms.DataGridViewTriState.[False]
-        Me.Grd_Champs.DefaultCellStyle = DataGridViewCellStyle8
+        DataGridViewCellStyle11.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft
+        DataGridViewCellStyle11.BackColor = System.Drawing.SystemColors.Window
+        DataGridViewCellStyle11.Font = New System.Drawing.Font("Century Gothic", 8.25!)
+        DataGridViewCellStyle11.ForeColor = System.Drawing.SystemColors.ControlText
+        DataGridViewCellStyle11.SelectionBackColor = System.Drawing.Color.FromArgb(CType(CType(94, Byte), Integer), CType(CType(185, Byte), Integer), CType(CType(117, Byte), Integer))
+        DataGridViewCellStyle11.SelectionForeColor = System.Drawing.SystemColors.HighlightText
+        DataGridViewCellStyle11.WrapMode = System.Windows.Forms.DataGridViewTriState.[False]
+        Me.Grd_Champs.DefaultCellStyle = DataGridViewCellStyle11
         Me.Grd_Champs.Dock = System.Windows.Forms.DockStyle.Fill
         Me.Grd_Champs.EnableHeadersVisualStyles = False
         Me.Grd_Champs.GridColor = System.Drawing.Color.FromArgb(CType(CType(179, Byte), Integer), CType(CType(216, Byte), Integer), CType(CType(228, Byte), Integer))
         Me.Grd_Champs.Location = New System.Drawing.Point(0, 25)
         Me.Grd_Champs.Name = "Grd_Champs"
         Me.Grd_Champs.RowHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.[Single]
-        DataGridViewCellStyle9.BackColor = System.Drawing.Color.FromArgb(CType(CType(169, Byte), Integer), CType(CType(210, Byte), Integer), CType(CType(224, Byte), Integer))
-        DataGridViewCellStyle9.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        Me.Grd_Champs.RowHeadersDefaultCellStyle = DataGridViewCellStyle9
+        DataGridViewCellStyle12.BackColor = System.Drawing.Color.FromArgb(CType(CType(169, Byte), Integer), CType(CType(210, Byte), Integer), CType(CType(224, Byte), Integer))
+        DataGridViewCellStyle12.Font = New System.Drawing.Font("Century Gothic", 8.25!)
+        Me.Grd_Champs.RowHeadersDefaultCellStyle = DataGridViewCellStyle12
         Me.Grd_Champs.RowHeadersWidth = 51
-        Me.Grd_Champs.Size = New System.Drawing.Size(1242, 349)
+        Me.Grd_Champs.Size = New System.Drawing.Size(1242, 571)
         Me.Grd_Champs.TabIndex = 1
-        '
-        'Grd_Champs_Cod_Champ
-        '
-        Me.Grd_Champs_Cod_Champ.DataPropertyName = "Cod_Champ"
-        Me.Grd_Champs_Cod_Champ.HeaderText = "Champ"
-        Me.Grd_Champs_Cod_Champ.Name = "Grd_Champs_Cod_Champ"
-        '
-        'Grd_Champs_Cod_Table
-        '
-        Me.Grd_Champs_Cod_Table.DataPropertyName = "Cod_Table"
-        Me.Grd_Champs_Cod_Table.HeaderText = "Table"
-        Me.Grd_Champs_Cod_Table.Name = "Grd_Champs_Cod_Table"
-        '
-        'Grd_Champs_Nom_Colonne
-        '
-        Me.Grd_Champs_Nom_Colonne.DataPropertyName = "Nom_Colonne"
-        Me.Grd_Champs_Nom_Colonne.HeaderText = "Colonne"
-        Me.Grd_Champs_Nom_Colonne.Name = "Grd_Champs_Nom_Colonne"
-        '
-        'Grd_Champs_Libelle
-        '
-        Me.Grd_Champs_Libelle.DataPropertyName = "Libelle"
-        Me.Grd_Champs_Libelle.HeaderText = "Libellé"
-        Me.Grd_Champs_Libelle.Name = "Grd_Champs_Libelle"
-        '
-        'Grd_Champs_Typ_Controle
-        '
-        Me.Grd_Champs_Typ_Controle.DataPropertyName = "Typ_Controle"
-        Me.Grd_Champs_Typ_Controle.HeaderText = "Type contrôle"
-        Me.Grd_Champs_Typ_Controle.Name = "Grd_Champs_Typ_Controle"
-        '
-        'Grd_Champs_Rang
-        '
-        Me.Grd_Champs_Rang.DataPropertyName = "Rang"
-        Me.Grd_Champs_Rang.HeaderText = "Rang"
-        Me.Grd_Champs_Rang.Name = "Grd_Champs_Rang"
-        '
-        'Grd_Champs_Ligne
-        '
-        Me.Grd_Champs_Ligne.DataPropertyName = "Ligne"
-        Me.Grd_Champs_Ligne.HeaderText = "Ligne"
-        Me.Grd_Champs_Ligne.Name = "Grd_Champs_Ligne"
-        '
-        'Grd_Champs_Colonne
-        '
-        Me.Grd_Champs_Colonne.DataPropertyName = "Colonne"
-        Me.Grd_Champs_Colonne.HeaderText = "Position"
-        Me.Grd_Champs_Colonne.Name = "Grd_Champs_Colonne"
-        '
-        'Grd_Champs_Largeur
-        '
-        Me.Grd_Champs_Largeur.DataPropertyName = "Largeur"
-        Me.Grd_Champs_Largeur.HeaderText = "Largeur"
-        Me.Grd_Champs_Largeur.Name = "Grd_Champs_Largeur"
-        '
-        'Grd_Champs_Valeur_Defaut
-        '
-        Me.Grd_Champs_Valeur_Defaut.DataPropertyName = "Valeur_Defaut"
-        Me.Grd_Champs_Valeur_Defaut.HeaderText = "Valeur par défaut"
-        Me.Grd_Champs_Valeur_Defaut.Name = "Grd_Champs_Valeur_Defaut"
-        '
-        'Grd_Champs_Obligatoire
-        '
-        Me.Grd_Champs_Obligatoire.DataPropertyName = "Obligatoire"
-        Me.Grd_Champs_Obligatoire.FalseValue = "false"
-        Me.Grd_Champs_Obligatoire.HeaderText = "Obligatoire"
-        Me.Grd_Champs_Obligatoire.Name = "Grd_Champs_Obligatoire"
-        Me.Grd_Champs_Obligatoire.TrueValue = "true"
-        '
-        'Grd_Champs_Etat
-        '
-        Me.Grd_Champs_Etat.DataPropertyName = "Etat"
-        Me.Grd_Champs_Etat.HeaderText = "État"
-        Me.Grd_Champs_Etat.Name = "Grd_Champs_Etat"
-        '
-        'Grd_Champs_Rubrique
-        '
-        DataGridViewCellStyle21.BackColor = System.Drawing.Color.FromArgb(CType(CType(240, Byte), Integer), CType(CType(243, Byte), Integer), CType(CType(245, Byte), Integer))
-        DataGridViewCellStyle21.ForeColor = System.Drawing.Color.FromArgb(CType(CType(90, Byte), Integer), CType(CType(90, Byte), Integer), CType(CType(90, Byte), Integer))
-        Me.Grd_Champs_Rubrique.DefaultCellStyle = DataGridViewCellStyle21
-        Me.Grd_Champs_Rubrique.DataPropertyName = "Rubrique"
-        Me.Grd_Champs_Rubrique.HeaderText = "Rubrique"
-        Me.Grd_Champs_Rubrique.Name = "Grd_Champs_Rubrique"
-        Me.Grd_Champs_Rubrique.ReadOnly = True
-        '
-        'Grd_Champs_Num_Zoom
-        '
-        DataGridViewCellStyle22.BackColor = System.Drawing.Color.FromArgb(CType(CType(240, Byte), Integer), CType(CType(243, Byte), Integer), CType(CType(245, Byte), Integer))
-        DataGridViewCellStyle22.ForeColor = System.Drawing.Color.FromArgb(CType(CType(90, Byte), Integer), CType(CType(90, Byte), Integer), CType(CType(90, Byte), Integer))
-        Me.Grd_Champs_Num_Zoom.DefaultCellStyle = DataGridViewCellStyle22
-        Me.Grd_Champs_Num_Zoom.DataPropertyName = "Num_Zoom"
-        Me.Grd_Champs_Num_Zoom.HeaderText = "N° Zoom"
-        Me.Grd_Champs_Num_Zoom.Name = "Grd_Champs_Num_Zoom"
-        Me.Grd_Champs_Num_Zoom.ReadOnly = True
-        '
-        'Grd_Champs_Source_Metier
-        '
-        Me.Grd_Champs_Source_Metier.DataPropertyName = "Source_Metier"
-        Me.Grd_Champs_Source_Metier.HeaderText = "Source métier"
-        Me.Grd_Champs_Source_Metier.Name = "Grd_Champs_Source_Metier"
-        '
-        'Grd_Champs_Formule
-        '
-        Me.Grd_Champs_Formule.DataPropertyName = "Formule"
-        Me.Grd_Champs_Formule.HeaderText = "Formule (json)"
-        Me.Grd_Champs_Formule.Name = "Grd_Champs_Formule"
-        '
-        'Grd_Champs_Persiste
-        '
-        Me.Grd_Champs_Persiste.DataPropertyName = "Persiste"
-        Me.Grd_Champs_Persiste.FalseValue = "false"
-        Me.Grd_Champs_Persiste.HeaderText = "Persisté"
-        Me.Grd_Champs_Persiste.Name = "Grd_Champs_Persiste"
-        Me.Grd_Champs_Persiste.TrueValue = "true"
-        '
-        'Grd_Champs_Format_Affichage
-        '
-        Me.Grd_Champs_Format_Affichage.DataPropertyName = "Format_Affichage"
-        Me.Grd_Champs_Format_Affichage.HeaderText = "Format"
-        Me.Grd_Champs_Format_Affichage.Name = "Grd_Champs_Format_Affichage"
-        '
-        'Grd_Champs_Decimales
-        '
-        Me.Grd_Champs_Decimales.DataPropertyName = "Decimales"
-        Me.Grd_Champs_Decimales.HeaderText = "Décimales"
-        Me.Grd_Champs_Decimales.Name = "Grd_Champs_Decimales"
-        '
-        'Grd_Champs_Visible_Grille
-        '
-        Me.Grd_Champs_Visible_Grille.DataPropertyName = "Visible_Grille"
-        Me.Grd_Champs_Visible_Grille.FalseValue = "false"
-        Me.Grd_Champs_Visible_Grille.HeaderText = "Visible grille"
-        Me.Grd_Champs_Visible_Grille.Name = "Grd_Champs_Visible_Grille"
-        Me.Grd_Champs_Visible_Grille.TrueValue = "true"
-        '
-        'Grd_Champs_Rang_Grille
-        '
-        Me.Grd_Champs_Rang_Grille.DataPropertyName = "Rang_Grille"
-        Me.Grd_Champs_Rang_Grille.HeaderText = "Rang grille"
-        Me.Grd_Champs_Rang_Grille.Name = "Grd_Champs_Rang_Grille"
-        '
-        'Grd_Champs_Largeur_Colonne
-        '
-        Me.Grd_Champs_Largeur_Colonne.DataPropertyName = "Largeur_Colonne"
-        Me.Grd_Champs_Largeur_Colonne.HeaderText = "Largeur col."
-        Me.Grd_Champs_Largeur_Colonne.Name = "Grd_Champs_Largeur_Colonne"
-        '
-        'Grd_Champs_estCritere
-        '
-        Me.Grd_Champs_estCritere.DataPropertyName = "estCritere"
-        Me.Grd_Champs_estCritere.FalseValue = "false"
-        Me.Grd_Champs_estCritere.HeaderText = "Critère"
-        Me.Grd_Champs_estCritere.Name = "Grd_Champs_estCritere"
-        Me.Grd_Champs_estCritere.TrueValue = "true"
-        '
-        'Grd_Champs_Rang_Critere
-        '
-        Me.Grd_Champs_Rang_Critere.DataPropertyName = "Rang_Critere"
-        Me.Grd_Champs_Rang_Critere.HeaderText = "Rang critère"
-        Me.Grd_Champs_Rang_Critere.Name = "Grd_Champs_Rang_Critere"
-        '
-        'Grd_Champs_Aide
-        '
-        Me.Grd_Champs_Aide.DataPropertyName = "Aide"
-        Me.Grd_Champs_Aide.HeaderText = "Aide"
-        Me.Grd_Champs_Aide.Name = "Grd_Champs_Aide"
         '
         'LabelChamps
         '
@@ -759,100 +323,46 @@ Partial Class SP_Page_Designer
         Me.LabelChamps.Padding = New System.Windows.Forms.Padding(5, 3, 0, 0)
         Me.LabelChamps.Size = New System.Drawing.Size(1242, 25)
         Me.LabelChamps.TabIndex = 0
-        Me.LabelChamps.Text = "Champs : Cod_Table = ENT pour l'entête, sinon le code du détail. Table et colonne vides : champ affiché uniquement (État = A), jamais stocké. Champ calculé rattaché à un détail sans colonne : pied de grille (total...), affiché sous sa grille."
+        Me.LabelChamps.Text = resources.GetString("LabelChamps.Text")
         '
         'Grd_Sources
         '
         Me.Grd_Sources.AfficherLesEntetesLignes = True
         Me.Grd_Sources.AlternerLesLignes = False
-        Me.Grd_Sources.AutoGenerateColumns = False
         Me.Grd_Sources.BorderStyle = System.Windows.Forms.BorderStyle.None
         Me.Grd_Sources.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.[Single]
-        DataGridViewCellStyle10.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter
-        DataGridViewCellStyle10.BackColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
-        DataGridViewCellStyle10.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        DataGridViewCellStyle10.ForeColor = System.Drawing.Color.White
-        DataGridViewCellStyle10.Padding = New System.Windows.Forms.Padding(5)
-        DataGridViewCellStyle10.SelectionBackColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
-        DataGridViewCellStyle10.SelectionForeColor = System.Drawing.Color.White
-        DataGridViewCellStyle10.WrapMode = System.Windows.Forms.DataGridViewTriState.[True]
-        Me.Grd_Sources.ColumnHeadersDefaultCellStyle = DataGridViewCellStyle10
+        DataGridViewCellStyle7.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter
+        DataGridViewCellStyle7.BackColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
+        DataGridViewCellStyle7.Font = New System.Drawing.Font("Century Gothic", 8.25!)
+        DataGridViewCellStyle7.ForeColor = System.Drawing.Color.White
+        DataGridViewCellStyle7.Padding = New System.Windows.Forms.Padding(5)
+        DataGridViewCellStyle7.SelectionBackColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
+        DataGridViewCellStyle7.SelectionForeColor = System.Drawing.Color.White
+        DataGridViewCellStyle7.WrapMode = System.Windows.Forms.DataGridViewTriState.[True]
+        Me.Grd_Sources.ColumnHeadersDefaultCellStyle = DataGridViewCellStyle7
         Me.Grd_Sources.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize
         Me.Grd_Sources.ContextMenuStrip = Me.Menu_Sources
-        Me.Grd_Sources.Columns.AddRange(New System.Windows.Forms.DataGridViewColumn() {Me.Grd_Sources_Cod_Source, Me.Grd_Sources_Libelle, Me.Grd_Sources_Typ_Source, Me.Grd_Sources_Code_Sql, Me.Grd_Sources_Parametres, Me.Grd_Sources_Typ_Retour, Me.Grd_Sources_Cod_Profile, Me.Grd_Sources_Actif})
-        DataGridViewCellStyle11.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft
-        DataGridViewCellStyle11.BackColor = System.Drawing.SystemColors.Window
-        DataGridViewCellStyle11.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        DataGridViewCellStyle11.ForeColor = System.Drawing.SystemColors.ControlText
-        DataGridViewCellStyle11.SelectionBackColor = System.Drawing.Color.FromArgb(CType(CType(94, Byte), Integer), CType(CType(185, Byte), Integer), CType(CType(117, Byte), Integer))
-        DataGridViewCellStyle11.SelectionForeColor = System.Drawing.SystemColors.HighlightText
-        DataGridViewCellStyle11.WrapMode = System.Windows.Forms.DataGridViewTriState.[False]
-        Me.Grd_Sources.DefaultCellStyle = DataGridViewCellStyle11
+        DataGridViewCellStyle8.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft
+        DataGridViewCellStyle8.BackColor = System.Drawing.SystemColors.Window
+        DataGridViewCellStyle8.Font = New System.Drawing.Font("Century Gothic", 8.25!)
+        DataGridViewCellStyle8.ForeColor = System.Drawing.SystemColors.ControlText
+        DataGridViewCellStyle8.SelectionBackColor = System.Drawing.Color.FromArgb(CType(CType(94, Byte), Integer), CType(CType(185, Byte), Integer), CType(CType(117, Byte), Integer))
+        DataGridViewCellStyle8.SelectionForeColor = System.Drawing.SystemColors.HighlightText
+        DataGridViewCellStyle8.WrapMode = System.Windows.Forms.DataGridViewTriState.[False]
+        Me.Grd_Sources.DefaultCellStyle = DataGridViewCellStyle8
         Me.Grd_Sources.Dock = System.Windows.Forms.DockStyle.Fill
         Me.Grd_Sources.EnableHeadersVisualStyles = False
         Me.Grd_Sources.GridColor = System.Drawing.Color.FromArgb(CType(CType(179, Byte), Integer), CType(CType(216, Byte), Integer), CType(CType(228, Byte), Integer))
-        Me.Grd_Sources.Location = New System.Drawing.Point(0, 25)
+        Me.Grd_Sources.Location = New System.Drawing.Point(3, 28)
         Me.Grd_Sources.Name = "Grd_Sources"
         Me.Grd_Sources.RowHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.[Single]
-        DataGridViewCellStyle12.BackColor = System.Drawing.Color.FromArgb(CType(CType(169, Byte), Integer), CType(CType(210, Byte), Integer), CType(CType(224, Byte), Integer))
-        DataGridViewCellStyle12.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        Me.Grd_Sources.RowHeadersDefaultCellStyle = DataGridViewCellStyle12
+        DataGridViewCellStyle9.BackColor = System.Drawing.Color.FromArgb(CType(CType(169, Byte), Integer), CType(CType(210, Byte), Integer), CType(CType(224, Byte), Integer))
+        DataGridViewCellStyle9.Font = New System.Drawing.Font("Century Gothic", 8.25!)
+        Me.Grd_Sources.RowHeadersDefaultCellStyle = DataGridViewCellStyle9
         Me.Grd_Sources.RowHeadersVisible = False
         Me.Grd_Sources.RowHeadersWidth = 51
-        Me.Grd_Sources.Size = New System.Drawing.Size(1242, 193)
+        Me.Grd_Sources.Size = New System.Drawing.Size(1236, 565)
         Me.Grd_Sources.TabIndex = 1
-        '
-        'Grd_Sources_Cod_Source
-        '
-        Me.Grd_Sources_Cod_Source.DataPropertyName = "Cod_Source"
-        Me.Grd_Sources_Cod_Source.HeaderText = "Code source"
-        Me.Grd_Sources_Cod_Source.Name = "Grd_Sources_Cod_Source"
-        '
-        'Grd_Sources_Libelle
-        '
-        Me.Grd_Sources_Libelle.DataPropertyName = "Libelle"
-        Me.Grd_Sources_Libelle.HeaderText = "Libellé"
-        Me.Grd_Sources_Libelle.Name = "Grd_Sources_Libelle"
-        '
-        'Grd_Sources_Typ_Source
-        '
-        Me.Grd_Sources_Typ_Source.DataPropertyName = "Typ_Source"
-        Me.Grd_Sources_Typ_Source.HeaderText = "Type"
-        Me.Grd_Sources_Typ_Source.Name = "Grd_Sources_Typ_Source"
-        '
-        'Grd_Sources_Code_Sql
-        '
-        Me.Grd_Sources_Code_Sql.DataPropertyName = "Code_Sql"
-        Me.Grd_Sources_Code_Sql.HeaderText = "Requête SQL"
-        Me.Grd_Sources_Code_Sql.Name = "Grd_Sources_Code_Sql"
-        '
-        'Grd_Sources_Parametres
-        '
-        Me.Grd_Sources_Parametres.DataPropertyName = "Parametres"
-        Me.Grd_Sources_Parametres.HeaderText = "Paramètres (json)"
-        Me.Grd_Sources_Parametres.Name = "Grd_Sources_Parametres"
-        Me.Grd_Sources_Parametres.ReadOnly = True
-        Me.Grd_Sources_Parametres.ToolTipText = "Double-cliquez pour définir les paramètres avec l'assistant"
-        '
-        'Grd_Sources_Typ_Retour
-        '
-        Me.Grd_Sources_Typ_Retour.DataPropertyName = "Typ_Retour"
-        Me.Grd_Sources_Typ_Retour.HeaderText = "Retour"
-        Me.Grd_Sources_Typ_Retour.Name = "Grd_Sources_Typ_Retour"
-        '
-        'Grd_Sources_Cod_Profile
-        '
-        Me.Grd_Sources_Cod_Profile.DataPropertyName = "Cod_Profile"
-        Me.Grd_Sources_Cod_Profile.HeaderText = "Profil requis"
-        Me.Grd_Sources_Cod_Profile.Name = "Grd_Sources_Cod_Profile"
-        '
-        'Grd_Sources_Actif
-        '
-        Me.Grd_Sources_Actif.DataPropertyName = "Actif"
-        Me.Grd_Sources_Actif.FalseValue = "false"
-        Me.Grd_Sources_Actif.HeaderText = "Active"
-        Me.Grd_Sources_Actif.Name = "Grd_Sources_Actif"
-        Me.Grd_Sources_Actif.TrueValue = "true"
         '
         'Menu_Sources
         '
@@ -870,10 +380,10 @@ Partial Class SP_Page_Designer
         'LabelSources
         '
         Me.LabelSources.Dock = System.Windows.Forms.DockStyle.Top
-        Me.LabelSources.Location = New System.Drawing.Point(0, 0)
+        Me.LabelSources.Location = New System.Drawing.Point(3, 3)
         Me.LabelSources.Name = "LabelSources"
         Me.LabelSources.Padding = New System.Windows.Forms.Padding(5, 3, 0, 0)
-        Me.LabelSources.Size = New System.Drawing.Size(1242, 25)
+        Me.LabelSources.Size = New System.Drawing.Size(1236, 25)
         Me.LabelSources.TabIndex = 0
         Me.LabelSources.Text = "Catalogue sécurisé des sources métier autorisées (commun à toutes les pages). Dou" &
     "ble-clic sur 'Paramètres' pour définir les paramètres avec l'assistant."
@@ -1185,7 +695,6 @@ Partial Class SP_Page_Designer
         '
         Me.Grd_Validations.AfficherLesEntetesLignes = True
         Me.Grd_Validations.AlternerLesLignes = False
-        Me.Grd_Validations.AutoGenerateColumns = False
         Me.Grd_Validations.BorderStyle = System.Windows.Forms.BorderStyle.None
         Me.Grd_Validations.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.[Single]
         DataGridViewCellStyle13.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter
@@ -1199,7 +708,6 @@ Partial Class SP_Page_Designer
         Me.Grd_Validations.ColumnHeadersDefaultCellStyle = DataGridViewCellStyle13
         Me.Grd_Validations.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize
         Me.Grd_Validations.ContextMenuStrip = Me.Menu_Validations
-        Me.Grd_Validations.Columns.AddRange(New System.Windows.Forms.DataGridViewColumn() {Me.Grd_Validations_Cod_Validation, Me.Grd_Validations_Portee, Me.Grd_Validations_Cod_Table, Me.Grd_Validations_Cod_Champ, Me.Grd_Validations_Typ_Regle, Me.Grd_Validations_Parametres, Me.Grd_Validations_Condition_Regle, Me.Grd_Validations_Message, Me.Grd_Validations_Niveau, Me.Grd_Validations_Rang, Me.Grd_Validations_Moment, Me.Grd_Validations_Actif})
         DataGridViewCellStyle14.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft
         DataGridViewCellStyle14.BackColor = System.Drawing.SystemColors.Window
         DataGridViewCellStyle14.Font = New System.Drawing.Font("Century Gothic", 8.25!)
@@ -1221,84 +729,6 @@ Partial Class SP_Page_Designer
         Me.Grd_Validations.Size = New System.Drawing.Size(1236, 565)
         Me.Grd_Validations.TabIndex = 1
         '
-        'Grd_Validations_Cod_Validation
-        '
-        Me.Grd_Validations_Cod_Validation.DataPropertyName = "Cod_Validation"
-        Me.Grd_Validations_Cod_Validation.HeaderText = "Code"
-        Me.Grd_Validations_Cod_Validation.Name = "Grd_Validations_Cod_Validation"
-        '
-        'Grd_Validations_Portee
-        '
-        Me.Grd_Validations_Portee.DataPropertyName = "Portee"
-        Me.Grd_Validations_Portee.HeaderText = "Portée"
-        Me.Grd_Validations_Portee.Name = "Grd_Validations_Portee"
-        '
-        'Grd_Validations_Cod_Table
-        '
-        Me.Grd_Validations_Cod_Table.DataPropertyName = "Cod_Table"
-        Me.Grd_Validations_Cod_Table.HeaderText = "Table"
-        Me.Grd_Validations_Cod_Table.Name = "Grd_Validations_Cod_Table"
-        '
-        'Grd_Validations_Cod_Champ
-        '
-        Me.Grd_Validations_Cod_Champ.DataPropertyName = "Cod_Champ"
-        Me.Grd_Validations_Cod_Champ.HeaderText = "Champ"
-        Me.Grd_Validations_Cod_Champ.Name = "Grd_Validations_Cod_Champ"
-        '
-        'Grd_Validations_Typ_Regle
-        '
-        Me.Grd_Validations_Typ_Regle.DataPropertyName = "Typ_Regle"
-        Me.Grd_Validations_Typ_Regle.HeaderText = "Type de règle"
-        Me.Grd_Validations_Typ_Regle.Name = "Grd_Validations_Typ_Regle"
-        '
-        'Grd_Validations_Parametres
-        '
-        Me.Grd_Validations_Parametres.DataPropertyName = "Parametres"
-        Me.Grd_Validations_Parametres.HeaderText = "Paramètres (json)"
-        Me.Grd_Validations_Parametres.Name = "Grd_Validations_Parametres"
-        Me.Grd_Validations_Parametres.ReadOnly = True
-        Me.Grd_Validations_Parametres.ToolTipText = "Double-cliquez pour générer la syntaxe avec l'assistant"
-        '
-        'Grd_Validations_Condition_Regle
-        '
-        Me.Grd_Validations_Condition_Regle.DataPropertyName = "Condition_Regle"
-        Me.Grd_Validations_Condition_Regle.HeaderText = "Condition (json)"
-        Me.Grd_Validations_Condition_Regle.Name = "Grd_Validations_Condition_Regle"
-        Me.Grd_Validations_Condition_Regle.ReadOnly = True
-        Me.Grd_Validations_Condition_Regle.ToolTipText = "Double-cliquez pour générer la syntaxe avec l'assistant"
-        '
-        'Grd_Validations_Message
-        '
-        Me.Grd_Validations_Message.DataPropertyName = "Message"
-        Me.Grd_Validations_Message.HeaderText = "Message d'erreur"
-        Me.Grd_Validations_Message.Name = "Grd_Validations_Message"
-        '
-        'Grd_Validations_Niveau
-        '
-        Me.Grd_Validations_Niveau.DataPropertyName = "Niveau"
-        Me.Grd_Validations_Niveau.HeaderText = "Niveau"
-        Me.Grd_Validations_Niveau.Name = "Grd_Validations_Niveau"
-        '
-        'Grd_Validations_Rang
-        '
-        Me.Grd_Validations_Rang.DataPropertyName = "Rang"
-        Me.Grd_Validations_Rang.HeaderText = "Rang"
-        Me.Grd_Validations_Rang.Name = "Grd_Validations_Rang"
-        '
-        'Grd_Validations_Moment
-        '
-        Me.Grd_Validations_Moment.DataPropertyName = "Moment"
-        Me.Grd_Validations_Moment.HeaderText = "Moment"
-        Me.Grd_Validations_Moment.Name = "Grd_Validations_Moment"
-        '
-        'Grd_Validations_Actif
-        '
-        Me.Grd_Validations_Actif.DataPropertyName = "Actif"
-        Me.Grd_Validations_Actif.FalseValue = "false"
-        Me.Grd_Validations_Actif.HeaderText = "Active"
-        Me.Grd_Validations_Actif.Name = "Grd_Validations_Actif"
-        Me.Grd_Validations_Actif.TrueValue = "true"
-        '
         'Menu_Validations
         '
         Me.Menu_Validations.ImageScalingSize = New System.Drawing.Size(20, 20)
@@ -1311,25 +741,6 @@ Partial Class SP_Page_Designer
         Me.MenuItem_Assistant.Name = "MenuItem_Assistant"
         Me.MenuItem_Assistant.Size = New System.Drawing.Size(360, 24)
         Me.MenuItem_Assistant.Text = "Créer / modifier une règle avec l'assistant..."
-        '
-        'Menu_Droits
-        '
-        Me.Menu_Droits.ImageScalingSize = New System.Drawing.Size(20, 20)
-        Me.Menu_Droits.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.MenuItem_Droits_Cocher, Me.MenuItem_Droits_Decocher})
-        Me.Menu_Droits.Name = "Menu_Droits"
-        Me.Menu_Droits.Size = New System.Drawing.Size(251, 48)
-        '
-        'MenuItem_Droits_Cocher
-        '
-        Me.MenuItem_Droits_Cocher.Name = "MenuItem_Droits_Cocher"
-        Me.MenuItem_Droits_Cocher.Size = New System.Drawing.Size(250, 24)
-        Me.MenuItem_Droits_Cocher.Text = "Cocher pour tous les profils"
-        '
-        'MenuItem_Droits_Decocher
-        '
-        Me.MenuItem_Droits_Decocher.Name = "MenuItem_Droits_Decocher"
-        Me.MenuItem_Droits_Decocher.Size = New System.Drawing.Size(250, 24)
-        Me.MenuItem_Droits_Decocher.Text = "Décocher pour tous les profils"
         '
         'LabelValidations
         '
@@ -1361,7 +772,6 @@ Partial Class SP_Page_Designer
         Me.Grd_Droits.AllowUserToAddRows = False
         Me.Grd_Droits.AllowUserToDeleteRows = False
         Me.Grd_Droits.AlternerLesLignes = False
-        Me.Grd_Droits.AutoGenerateColumns = False
         Me.Grd_Droits.BorderStyle = System.Windows.Forms.BorderStyle.None
         Me.Grd_Droits.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.[Single]
         DataGridViewCellStyle16.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter
@@ -1375,7 +785,6 @@ Partial Class SP_Page_Designer
         Me.Grd_Droits.ColumnHeadersDefaultCellStyle = DataGridViewCellStyle16
         Me.Grd_Droits.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize
         Me.Grd_Droits.ContextMenuStrip = Me.Menu_Droits
-        Me.Grd_Droits.Columns.AddRange(New System.Windows.Forms.DataGridViewColumn() {Me.Grd_Droits_Cod_Profile, Me.Grd_Droits_Lib_Profile, Me.Grd_Droits_Consulter, Me.Grd_Droits_Creer, Me.Grd_Droits_Modifier, Me.Grd_Droits_Supprimer, Me.Grd_Droits_Valider, Me.Grd_Droits_Imprimer, Me.Grd_Droits_GED})
         DataGridViewCellStyle17.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft
         DataGridViewCellStyle17.BackColor = System.Drawing.SystemColors.Window
         DataGridViewCellStyle17.Font = New System.Drawing.Font("Century Gothic", 8.25!)
@@ -1398,81 +807,24 @@ Partial Class SP_Page_Designer
         Me.Grd_Droits.Size = New System.Drawing.Size(1236, 532)
         Me.Grd_Droits.TabIndex = 0
         '
-        'Grd_Droits_Cod_Profile
+        'Menu_Droits
         '
-        DataGridViewCellStyle23.BackColor = System.Drawing.Color.FromArgb(CType(CType(240, Byte), Integer), CType(CType(243, Byte), Integer), CType(CType(245, Byte), Integer))
-        DataGridViewCellStyle23.ForeColor = System.Drawing.Color.FromArgb(CType(CType(90, Byte), Integer), CType(CType(90, Byte), Integer), CType(CType(90, Byte), Integer))
-        Me.Grd_Droits_Cod_Profile.DefaultCellStyle = DataGridViewCellStyle23
-        Me.Grd_Droits_Cod_Profile.DataPropertyName = "Cod_Profile"
-        Me.Grd_Droits_Cod_Profile.HeaderText = "Profil"
-        Me.Grd_Droits_Cod_Profile.Name = "Grd_Droits_Cod_Profile"
-        Me.Grd_Droits_Cod_Profile.ReadOnly = True
+        Me.Menu_Droits.ImageScalingSize = New System.Drawing.Size(20, 20)
+        Me.Menu_Droits.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.MenuItem_Droits_Cocher, Me.MenuItem_Droits_Decocher})
+        Me.Menu_Droits.Name = "Menu_Droits"
+        Me.Menu_Droits.Size = New System.Drawing.Size(277, 52)
         '
-        'Grd_Droits_Lib_Profile
+        'MenuItem_Droits_Cocher
         '
-        DataGridViewCellStyle24.BackColor = System.Drawing.Color.FromArgb(CType(CType(240, Byte), Integer), CType(CType(243, Byte), Integer), CType(CType(245, Byte), Integer))
-        DataGridViewCellStyle24.ForeColor = System.Drawing.Color.FromArgb(CType(CType(90, Byte), Integer), CType(CType(90, Byte), Integer), CType(CType(90, Byte), Integer))
-        Me.Grd_Droits_Lib_Profile.DefaultCellStyle = DataGridViewCellStyle24
-        Me.Grd_Droits_Lib_Profile.DataPropertyName = "Lib_Profile"
-        Me.Grd_Droits_Lib_Profile.HeaderText = "Libellé du profil"
-        Me.Grd_Droits_Lib_Profile.Name = "Grd_Droits_Lib_Profile"
-        Me.Grd_Droits_Lib_Profile.ReadOnly = True
+        Me.MenuItem_Droits_Cocher.Name = "MenuItem_Droits_Cocher"
+        Me.MenuItem_Droits_Cocher.Size = New System.Drawing.Size(276, 24)
+        Me.MenuItem_Droits_Cocher.Text = "Cocher pour tous les profils"
         '
-        'Grd_Droits_Consulter
+        'MenuItem_Droits_Decocher
         '
-        Me.Grd_Droits_Consulter.DataPropertyName = "Consulter"
-        Me.Grd_Droits_Consulter.FalseValue = "false"
-        Me.Grd_Droits_Consulter.HeaderText = "Consulter"
-        Me.Grd_Droits_Consulter.Name = "Grd_Droits_Consulter"
-        Me.Grd_Droits_Consulter.TrueValue = "true"
-        '
-        'Grd_Droits_Creer
-        '
-        Me.Grd_Droits_Creer.DataPropertyName = "Creer"
-        Me.Grd_Droits_Creer.FalseValue = "false"
-        Me.Grd_Droits_Creer.HeaderText = "Créer"
-        Me.Grd_Droits_Creer.Name = "Grd_Droits_Creer"
-        Me.Grd_Droits_Creer.TrueValue = "true"
-        '
-        'Grd_Droits_Modifier
-        '
-        Me.Grd_Droits_Modifier.DataPropertyName = "Modifier"
-        Me.Grd_Droits_Modifier.FalseValue = "false"
-        Me.Grd_Droits_Modifier.HeaderText = "Modifier"
-        Me.Grd_Droits_Modifier.Name = "Grd_Droits_Modifier"
-        Me.Grd_Droits_Modifier.TrueValue = "true"
-        '
-        'Grd_Droits_Supprimer
-        '
-        Me.Grd_Droits_Supprimer.DataPropertyName = "Supprimer"
-        Me.Grd_Droits_Supprimer.FalseValue = "false"
-        Me.Grd_Droits_Supprimer.HeaderText = "Supprimer"
-        Me.Grd_Droits_Supprimer.Name = "Grd_Droits_Supprimer"
-        Me.Grd_Droits_Supprimer.TrueValue = "true"
-        '
-        'Grd_Droits_Valider
-        '
-        Me.Grd_Droits_Valider.DataPropertyName = "Valider"
-        Me.Grd_Droits_Valider.FalseValue = "false"
-        Me.Grd_Droits_Valider.HeaderText = "Valider"
-        Me.Grd_Droits_Valider.Name = "Grd_Droits_Valider"
-        Me.Grd_Droits_Valider.TrueValue = "true"
-        '
-        'Grd_Droits_Imprimer
-        '
-        Me.Grd_Droits_Imprimer.DataPropertyName = "Imprimer"
-        Me.Grd_Droits_Imprimer.FalseValue = "false"
-        Me.Grd_Droits_Imprimer.HeaderText = "Imprimer"
-        Me.Grd_Droits_Imprimer.Name = "Grd_Droits_Imprimer"
-        Me.Grd_Droits_Imprimer.TrueValue = "true"
-        '
-        'Grd_Droits_GED
-        '
-        Me.Grd_Droits_GED.DataPropertyName = "GED"
-        Me.Grd_Droits_GED.FalseValue = "false"
-        Me.Grd_Droits_GED.HeaderText = "GED"
-        Me.Grd_Droits_GED.Name = "Grd_Droits_GED"
-        Me.Grd_Droits_GED.TrueValue = "true"
+        Me.MenuItem_Droits_Decocher.Name = "MenuItem_Droits_Decocher"
+        Me.MenuItem_Droits_Decocher.Size = New System.Drawing.Size(276, 24)
+        Me.MenuItem_Droits_Decocher.Text = "Décocher pour tous les profils"
         '
         'Panel_Droits
         '
@@ -1601,6 +953,18 @@ Partial Class SP_Page_Designer
         Me.LabelCodPage.Text = "Code page"
         Me.LabelCodPage.VisitedLinkColor = System.Drawing.Color.FromArgb(CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer))
         '
+        'Tab_Sources
+        '
+        Me.Tab_Sources.Controls.Add(Me.Grd_Sources)
+        Me.Tab_Sources.Controls.Add(Me.LabelSources)
+        Me.Tab_Sources.Location = New System.Drawing.Point(4, 28)
+        Me.Tab_Sources.Name = "Tab_Sources"
+        Me.Tab_Sources.Padding = New System.Windows.Forms.Padding(3)
+        Me.Tab_Sources.Size = New System.Drawing.Size(1242, 596)
+        Me.Tab_Sources.TabIndex = 5
+        Me.Tab_Sources.Text = "Sources externes"
+        Me.Tab_Sources.UseVisualStyleBackColor = True
+        '
         'SP_Page_Designer
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(120.0!, 120.0!)
@@ -1614,17 +978,13 @@ Partial Class SP_Page_Designer
         Me.Tag = "ECR"
         Me.Text = "Designer de pages portail"
         Me.TabControl1.ResumeLayout(False)
-        Me.Tab_Document.ResumeLayout(False)
+        Me.Tab_Donnees_SQL.ResumeLayout(False)
         Me.TabControl_Details.ResumeLayout(False)
         Me.Tab_Tables.ResumeLayout(False)
         CType(Me.Grd_Tables, System.ComponentModel.ISupportInitialize).EndInit()
         Me.Tab_Colonnes.ResumeLayout(False)
         CType(Me.Grd_Colonnes, System.ComponentModel.ISupportInitialize).EndInit()
         Me.Tab_Champs.ResumeLayout(False)
-        Me.SplitContainer5.Panel1.ResumeLayout(False)
-        Me.SplitContainer5.Panel2.ResumeLayout(False)
-        CType(Me.SplitContainer5, System.ComponentModel.ISupportInitialize).EndInit()
-        Me.SplitContainer5.ResumeLayout(False)
         CType(Me.Grd_Champs, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.Grd_Sources, System.ComponentModel.ISupportInitialize).EndInit()
         Me.Menu_Sources.ResumeLayout(False)
@@ -1635,19 +995,20 @@ Partial Class SP_Page_Designer
         Me.Tab_Comportement.ResumeLayout(False)
         CType(Me.Grd_Validations, System.ComponentModel.ISupportInitialize).EndInit()
         Me.Menu_Validations.ResumeLayout(False)
-        Me.Menu_Droits.ResumeLayout(False)
         Me.Tab_Droits.ResumeLayout(False)
         CType(Me.Grd_Droits, System.ComponentModel.ISupportInitialize).EndInit()
+        Me.Menu_Droits.ResumeLayout(False)
         Me.Panel_Droits.ResumeLayout(False)
         Me.Panel_Droits.PerformLayout()
         Me.GroupBox_Def.ResumeLayout(False)
         Me.GroupBox_Def.PerformLayout()
+        Me.Tab_Sources.ResumeLayout(False)
         Me.ResumeLayout(False)
 
     End Sub
 
     Friend WithEvents TabControl1 As TabControl
-    Friend WithEvents Tab_Document As TabPage
+    Friend WithEvents Tab_Donnees_SQL As TabPage
     Friend WithEvents Tab_Conception As TabPage
     Friend WithEvents Tab_Comportement As TabPage
     Friend WithEvents TabControl_Details As TabControl
@@ -1693,7 +1054,6 @@ Partial Class SP_Page_Designer
     Friend WithEvents Act_Exporter_chk As ud_CheckBox
     Friend WithEvents Grd_Validations As ud_Grd
     Friend WithEvents LabelValidations As Label
-    Friend WithEvents SplitContainer5 As SplitContainer
     Friend WithEvents Menu_Validations As ContextMenuStrip
     Friend WithEvents MenuItem_Assistant As ToolStripMenuItem
     Friend WithEvents Menu_Droits As ContextMenuStrip
@@ -1779,4 +1139,5 @@ Partial Class SP_Page_Designer
     Friend WithEvents Grd_Sources_Cod_Profile As DataGridViewComboBoxColumn
     Friend WithEvents Grd_Sources_Actif As DataGridViewCheckBoxColumn
     Friend WithEvents Tab_Champs As TabPage
+    Friend WithEvents Tab_Sources As TabPage
 End Class
