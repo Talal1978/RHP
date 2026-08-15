@@ -13,7 +13,12 @@ rhp-portal-page-deployer/
 ├── references/
 │   ├── schema-mapping.md                 # verified concept -> RHP object mapping
 │   ├── sp-metadata-model.md              # SP_Page* columns, DDL rules, publication
-│   ├── environment-discovery.md          # discovery procedure + schema levels
+│   ├── formules-calculees.md             # formula logic: AST, 43 ops, GV_*, graph/cycles
+│   ├── comportement-page.md              # states, dynamic rules, 13 validation types,
+│   │                                     # lifecycle, rights, list behavior
+│   ├── sources-metier.md                 # source catalog, read-only guard, parameters,
+│   │                                     # 3 usages (SOURCE field / virtual grid / validation)
+│   ├── environment-discovery.md          # discovery procedure + schema levels (SP1..SP4)
 │   └── testing-acceptance-checklist.md   # test & acceptance checklist
 ├── templates/
 │   ├── input-template.yaml               # annotated input contract
@@ -68,6 +73,8 @@ sqlcmd -S .\SQL2019 -d RHP -i deploy.sql    -o deploy.out.txt          REM @DryR
 
 Everything maps to verified repository objects only
 (see `references/schema-mapping.md` for evidence paths/lines):
-`RHP_Portail\rhpBE\sql\SP_Designer\001..004*.sql`,
-`RHP_DeskTop\RHP\Portail\Module_SP_DDL.vb`, `SP_Page_Designer.vb`,
-`RHP_Portail\rhpBE\modules\module_sp_engine.ts`, `controlers\sp_document.ts`.
+`RHP_Portail\rhpBE\sql\SP_Designer\001..006*.sql`,
+`RHP_DeskTop\RHP\Portail\Module_SP_DDL.vb`, `SP_Page_Designer.vb` and the
+`Zoom_SP_Assistant_*` / `Zoom_SP_SqlSource` / `Zoom_SP_MappingSource` screens,
+`RHP_Portail\rhpBE\modules\module_sp_engine.ts`, `controlers\sp_document.ts`,
+`RHP_Portail\rhpfe\src\Pages\Dynamic\*` (client engine mirror).

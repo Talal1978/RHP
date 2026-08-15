@@ -42,15 +42,23 @@ dashboard widgets, surveys, or any schema change outside the SP_ module.
 |---|---|
 | `references/schema-mapping.md` | Always first — verified concept→object mapping + conventions |
 | `references/sp-metadata-model.md` | Before writing any SQL — exact columns, DDL format, publication procedure |
+| `references/formules-calculees.md` | Any `calculated` field, `visibility_rule`/`activation_rule`, `EXPR` validation or aggregate — exhaustive formula logic: AST, 43 whitelisted ops with exact semantics, GV_* variables, dependency graph/cycles, recalc triggers, French assistant mapping |
+| `references/comportement-page.md` | Any behavior question — field states, dynamic rules, the 13 validation types with exact `Parametres` json, scopes/levels/moments, document lifecycle (numbering, RV concurrency, `Figer_Statuts`), detail-grid flags, rights & FAB actions, list criteria |
+| `references/sources-metier.md` | Any `data_sources` entry, `source` field, virtual detail grid, `SOURCE` validation, zoom condition — catalog, read-only guard (exact rules), parameter declaration/auto-injection, the 3 usages |
 | `references/environment-discovery.md` | Schema uncertain / new environment / preflight design |
 | `templates/input-template.yaml` | Building or completing an input |
 | `templates/deploy-template.sql`, `rollback-template.sql`, `preflight-template.sql` | Generating the package |
 | `references/testing-acceptance-checklist.md` | Finalizing the package (manifest section) |
 | `examples/` | Worked inputs/outputs; `002_SP_Designer_Exemple_FKM.sql` in the repo is the oracle |
 
-Repository ground truth (read-only): `RHP_Portail\rhpBE\sql\SP_Designer\*.sql`,
-`RHP_DeskTop\RHP\Portail\Module_SP_DDL.vb`, `SP_Page_Designer.vb`,
-`RHP_Portail\rhpBE\modules\module_sp_engine.ts`, `controlers\sp_document.ts`.
+Repository ground truth (read-only): `RHP_Portail\rhpBE\sql\SP_Designer\*.sql`
+(001 metadata, 002 FKM oracle, 003 critères, 004 workflow, 005 Total_Grille,
+006 évolutions SP4), `RHP_DeskTop\RHP\Portail\Module_SP_DDL.vb`,
+`SP_Page_Designer.vb`, `Zoom_SP_Assistant_Formule.vb`,
+`Zoom_SP_Assistant_Validation.vb`, `Zoom_SP_Assistant_ParamSource.vb`,
+`Zoom_SP_MappingSource.vb`, `Zoom_SP_SqlSource.vb`,
+`RHP_Portail\rhpBE\modules\module_sp_engine.ts`, `controlers\sp_document.ts`,
+`RHP_Portail\rhpfe\src\Pages\Dynamic\*.tsx/ts`.
 
 ## 4. Input contract
 
@@ -64,22 +72,33 @@ Full annotated contract: `templates/input-template.yaml`. Fixed skeleton:
   `page_name` (→`Libelle`), `title` (→`Nom_Page`), `target_section_code`
   (→`Menu_Parent`), `display_order` (→`Rang`), `enabled`, plus optional
   extensions `icon`, `layout_type`, `actions`, `print_model`, `attachments`,
-  `workflow`, `create_section_if_missing`.
+  `workflow`, `create_section_if_missing`, `freeze_statuses` (→`Figer_Statuts`,
+  SP4).
 - `components`: fields/blocks. `component_type` ∈ whitelist
   (`text,memo,integer,decimal,money,date,datetime,checkbox,radio,combo,
   reference_list,zoom,calculated,source,attachments,detail_grid`) → verified
   `Typ_Controle` values. Layout = 12-col flow grid (`row/column/width/
   display_order` → `Ligne/Colonne/Largeur/Rang`); `height` unsupported.
+  `calculated` formulas and `visibility_rule`/`activation_rule` follow
+  `references/formules-calculees.md` (AST, whitelisted ops, GV_* variables);
+  `zoom`/`combo` accept `zoom_condition` (→`Zoom_Condition`, SP4, `{Champ}`
+  placeholders); a `detail_grid` with `data_source_code` is a **virtual
+  detail** fed by a TABLE source (→`Source_Metier`/`Source_Mapping`, SP4 —
+  see `references/sources-metier.md` §6).
 - `page_validations` / component `validations`: → `SP_Page_Validation`
-  (13 verified `Typ_Regle`, scopes `CHAMP/ENTETE/LIGNE/DETAIL/DOCUMENT`).
+  (13 verified `Typ_Regle` with exact `Parametres` json per type — see
+  `references/comportement-page.md` §3).
 - `data_sources`: → `SP_Page_Source` (read-only catalog; `allowed_operations`
-  write flags are forbidden — server-enforced).
+  write flags are forbidden — server-enforced; full parameter/execution model
+  in `references/sources-metier.md`).
 - `access_control`: `default_policy` deny|open_read → `Acces_Personnalise`;
   `roles[].permissions` view/create/update/delete/export(/submit/attachments)
   → `SP_Page_Droit` flags Consulter/Creer/Modifier/Supprimer/Imprimer
   (/Valider/GED). RHP has **no separate export right** — export maps to
   `Imprimer` (verified `SP_Page_Droit` columns).
-- `deployment`: `update_if_exists`, `expected_schema_version` (SP1|SP2|SP3),
+- `deployment`: `update_if_exists`, `expected_schema_version` (SP1|SP2|SP3|SP4
+  — SP4 = migration 006 : `Figer_Statuts`, `Zoom_Condition`,
+  `SP_Page_Table.Source_Metier/_Mapping`; required when the input uses them),
   `use_feature_flag`/`feature_flag_code` **unsupported** (no such mechanism in
   RHP — verified absence; use `page.enabled` instead).
 
@@ -112,11 +131,20 @@ Hard stops (full list enforced by `validate_input.py`):
 - `radio`/`reference_list` without `rubrique`; `zoom`/`combo` without `zoom`;
   `calculated` without `formula`; `source` without `data_source_code`;
   `attachments` field without `page.attachments.enabled`.
-- Formula AST: non-whitelisted op, unknown `ref`/aggregate target, cycle
-  between calculated fields (mirror of `DetecterCycle`).
+- Formula AST: non-whitelisted op (full 43-op whitelist of the engines —
+  `references/formules-calculees.md` §3/§5-§8), unknown `ref` (GV_* accepted),
+  unknown aggregate target, cycle between calculated fields (mirror of
+  `DetecterCycle`).
+- Virtual detail (`detail_grid` with `data_source_code`) on `ENT`, with a
+  source not `return_type: table`, with a mapping referencing non-header
+  fields, or leaving a required source parameter unfed (mirror of
+  `VerifierTableVirtuelle`).
+- `zoom_condition` placeholder `{X}` not matching a header field;
+  `freeze_statuses` not a CSV of status codes.
 - Duplicate `component_code`, `(block,column)`, validation code, source code,
   role code.
-- Data source failing the read-only guard, declaring `@id_Societe`, or with
+- Data source failing the read-only guard (as re-run by the engine —
+  `references/sources-metier.md` §2), declaring `@id_Societe`, or with
   write `allowed_operations`.
 - `default_policy=deny` with no `view:true` role (page would be invisible —
   mirrors the RHP publication check).
@@ -149,9 +177,13 @@ output: same input + same repo state ⇒ functionally equivalent SQL):
    (`references/sp-metadata-model.md` §9): guarded `CREATE TABLE` with technical
    columns, or `ALTER … ADD`-only migration; `IX_/UX_` indexes; `FK_<det>_Ent`
    `WITH NOCHECK` (+`ON DELETE CASCADE` iff `CASCADE`); **never** drop a column —
-   emit `-- ATTENTION` comments instead. Log to `SP_Page_DDL_Log`.
+   emit `-- ATTENTION` comments instead. **No DDL for virtual details**
+   (`Source_Metier` set — `SP_<doc>_Virt_<table>` is a logical name only).
+   Log to `SP_Page_DDL_Log`.
 9. Publication (only if `page.enabled=true`): precondition checks mirroring
-   `Publier()`, then `Statut_Page='PUBLIE'` + `Version_Page+1`, upsert
+   `Publier()` (including `VerifierTableVirtuelle` for virtual details and the
+   calculated-field cycle check — `references/formules-calculees.md` §9), then
+   `Statut_Page='PUBLIE'` + `Version_Page+1`, upsert
    `Controle_Def_Ecran` (`SPP_<code>`), upsert `Param_Workflow_Typ_Document`
    (iff workflow). `enabled=false` ⇒ stays `BROUILLON`, skip §9 with a note.
 10. Final verification SELECTs; `COMMIT` or `ROLLBACK` per `@DryRun`; CATCH =
@@ -233,3 +265,17 @@ Known limitations:
   repo — their existence/shape is asserted by preflight, not by generation.
 - Layout is flow-based (12-col grid); there is no pixel/absolute positioning.
 - `Act_Exporter` is metadata-only in the current frontend (verified).
+- `Figer_Statuts` / `Zoom_Condition` (SP4) and `Recalc_Save` (base 001) are
+  **not editable in the Desktop Designer** (verified absence in
+  `SP_Page_Designer.vb`) — deployment scripts write them directly. Caveat on
+  Designer re-save (`Saving`): `SP_Page` is updated with a fixed column list
+  (no `Figer_Statuts`) so it is **preserved**; but `SP_Page_Champ` is rebuilt
+  by DELETE+INSERT **without `Zoom_Condition`/`Recalc_Save`** — a Designer
+  re-save **resets them** (`NULL` / `'true'`): re-apply the deployment script
+  afterwards. (`SP_Page_Table` DELETE+INSERT does include
+  `Source_Metier/_Mapping`: virtual details survive Designer re-saves.)
+- The Desktop Designer has no assistant for the mapping json of a SOURCE field
+  (grid-typed only) — the generator must emit the exact
+  `{"source":…,"mapping":{…}}` shape (`references/sources-metier.md` §5).
+- Validation rules of type `SOURCE` are not covered by the Desktop assistant
+  either — emit the exact json of `references/sources-metier.md` §7.

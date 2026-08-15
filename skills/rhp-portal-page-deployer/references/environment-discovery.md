@@ -18,7 +18,8 @@ Derived from the official migration scripts:
 |---|---|---|
 | `SP1` | Base metadata installed | Tables `SP_Page, SP_Page_Droit, SP_Page_Table, SP_Page_Colonne, SP_Page_Champ, SP_Page_Validation, SP_Page_Source, SP_Page_DDL_Log` exist |
 | `SP2` | SP1 + migration 1.1.b/1.1.c | `SP_Page.Acces_Personnalise` exists; `SP_Page.Typ_Document` is `nvarchar(10)`; `Param_Workflow_Typ_Document.Typ_Document` is `nvarchar(10)` |
-| `SP3` | SP2 + migration 003 (current repo state) | `SP_Page_Champ.estCritere` and `SP_Page_Champ.Rang_Critere` exist |
+| `SP3` | SP2 + migration 003 | `SP_Page_Champ.estCritere` and `SP_Page_Champ.Rang_Critere` exist |
+| `SP4` | SP3 + migrations 005/006 (current repo state) | `SP_Page.Figer_Statuts`, `SP_Page_Champ.Zoom_Condition`, `SP_Page_Champ.Total_Grille`, `SP_Page_Table.Source_Metier` and `SP_Page_Table.Source_Mapping` exist. Required when the input uses `freeze_statuses`, `zoom_condition`, `grid_total` or a virtual detail grid |
 
 ## 2. Parameterized discovery template
 
@@ -43,6 +44,12 @@ WHERE c.object_id = OBJECT_ID('dbo.SP_Page')
 SELECT c.name FROM sys.columns c
 WHERE c.object_id = OBJECT_ID('dbo.SP_Page_Champ')
   AND c.name IN ('estCritere','Rang_Critere');      -- expect 2 rows (SP3)
+
+SELECT c.object_id, c.name FROM sys.columns c
+WHERE (c.object_id = OBJECT_ID('dbo.SP_Page')       AND c.name = 'Figer_Statuts')
+   OR (c.object_id = OBJECT_ID('dbo.SP_Page_Champ') AND c.name IN ('Zoom_Condition','Total_Grille'))
+   OR (c.object_id = OBJECT_ID('dbo.SP_Page_Table') AND c.name IN ('Source_Metier','Source_Mapping'))
+ORDER BY c.object_id, c.name;                     -- expect 5 rows (SP4)
 
 /* -- B. Socle objects the deployment touches ------------------------------ */
 SELECT t.name FROM sys.tables t
@@ -95,12 +102,14 @@ ORDER BY 1;
 | Finding | Action |
 |---|---|
 | Fewer than 8 SP_ tables, or missing `Acces_Personnalise`/`estCritere` | **STOP.** Run `001_SP_Designer_Metadata.sql` (+ `003_SP_Designer_Criteres.sql`) first, or set `expected_schema_version` accordingly and regenerate. |
+| SP4 columns missing while the input uses `freeze_statuses`, `zoom_condition`, `grid_total` or a virtual detail | **STOP.** Run `005_SP_Designer_Migration_Total_Grille.sql` + `006_SP_Designer_Evolutions.sql` first, or drop those features from the input and set `expected_schema_version: SP3`. |
 | `Param_Rubriques` columns differ from §B | **STOP.** Report; the skill targets the verified shape only. |
 | Section code absent from `SP_Menu_Portail` | Either pick an existing `Valeur`, or set `create_section_if_missing: true` (+ `new_section_label`). |
 | Profile absent from `Controle_Profile` | **STOP** (or remove the role from `access_control.roles`). |
 | `Cod_Document` already used by another page | **STOP.** Choose a new `document_code`. |
 | Physical table name already exists and belongs to another page (`UQ_SP_Page_Table_Nom` would fail) | **STOP.** Rename via a new `document_code`. |
 | `Sys_Workflow_Signature` missing while `workflow.enabled: true` | **STOP.** The workflow engine is not installed in this environment. |
+| A source used by a virtual detail has `Typ_Retour<>'TABLE'` or is inactive | **STOP.** Fix the source (catalog) or the input (mirror of `VerifierTableVirtuelle`). |
 
 ## 4. Objects intentionally NOT verified here
 

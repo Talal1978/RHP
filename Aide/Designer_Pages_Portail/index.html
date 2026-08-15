@@ -1,0 +1,1792 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aide — Designer de pages portail RHP (module SP_)</title>
+<style>
+/* ============================= BASE ============================= */
+:root{
+  --bleu:#3899B9; --bleuF:#2A7A94; --bleuClair:#E8F4F8;
+  --grisFond:#FAFAFA; --grisBord:#D5D5D5; --grisTxt:#444;
+  --ok:#2E7D32; --warn:#E65100; --err:#C62828; --info:#1565C0;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:"Segoe UI",Arial,sans-serif;color:#222;background:#fff;font-size:15px;line-height:1.55}
+code,kbd,.code{font-family:Consolas,"Courier New",monospace;font-size:.92em;background:#F0F0F0;border:1px solid #E0E0E0;border-radius:3px;padding:0 4px}
+pre{background:#263238;color:#ECEFF1;border-radius:6px;padding:12px 14px;overflow-x:auto;font-family:Consolas,monospace;font-size:13px;line-height:1.45;white-space:pre}
+pre.sql{background:#0D2137}
+pre.json{background:#1E2A20}
+pre .c{color:#7C9E7C;font-style:italic}
+a{color:var(--bleuF);text-decoration:none}
+a:hover{text-decoration:underline}
+h1{font-size:26px;color:var(--bleuF)}
+h2{font-size:21px;color:var(--bleuF);border-bottom:3px solid var(--bleu);padding-bottom:6px;margin-top:0}
+h3{font-size:17px;color:var(--bleuF);margin-top:26px}
+h4{font-size:15px;color:#555;margin-top:20px}
+
+/* ============================= LAYOUT ============================= */
+#layout{display:flex;min-height:100vh}
+#sidebar{width:330px;min-width:330px;background:#F4F8FA;border-right:1px solid var(--grisBord);position:sticky;top:0;height:100vh;overflow-y:auto;padding:14px 12px 40px}
+#main{flex:1;padding:26px 42px 80px;max-width:1180px}
+#sidebar h1{font-size:17px;margin:0 0 2px}
+#sidebar .version{font-size:12px;color:#777;margin-bottom:10px}
+#searchBox{width:100%;padding:8px 10px;border:1px solid var(--bleu);border-radius:5px;font-size:14px;outline:none}
+#searchBox:focus{box-shadow:0 0 0 2px rgba(56,153,185,.25)}
+#searchMeta{font-size:12px;color:#666;margin:6px 2px;min-height:16px}
+#searchResults{background:#fff;border:1px solid var(--grisBord);border-radius:5px;margin-bottom:10px;display:none;max-height:340px;overflow-y:auto;box-shadow:0 4px 14px rgba(0,0,0,.12)}
+#searchResults .sr{padding:7px 10px;border-bottom:1px solid #EEE;cursor:pointer;font-size:13px}
+#searchResults .sr:hover{background:var(--bleuClair)}
+#searchResults .sr b{color:var(--bleuF)}
+#searchResults .sr .snip{color:#666;font-size:12px}
+#searchResults .sr mark{background:#FFE082;border-radius:2px;padding:0 1px}
+mark.hl{background:#FFE082;border-radius:2px;padding:0 1px}
+#toc{list-style:none;margin:6px 0 0;padding:0;font-size:13.5px}
+#toc li{margin:0}
+#toc a{display:block;padding:4px 8px;border-radius:4px;color:#333}
+#toc a:hover{background:var(--bleuClair);text-decoration:none}
+#toc a.t1{font-weight:600;color:var(--bleuF);margin-top:8px;border-top:1px solid #E0E8EB;padding-top:8px}
+#toc a.t2{padding-left:24px;font-size:12.5px}
+#toc a.act{background:var(--bleu);color:#fff}
+section{margin-bottom:46px;scroll-margin-top:14px}
+section[data-title]{border-top:1px dashed transparent}
+
+/* ============================= COMPOSANTS ============================= */
+table.ref{border-collapse:collapse;width:100%;margin:10px 0 16px;font-size:13.5px}
+table.ref th{background:var(--bleu);color:#fff;text-align:left;padding:7px 9px;border:1px solid var(--bleuF);font-weight:600}
+table.ref td{border:1px solid var(--grisBord);padding:6px 9px;vertical-align:top}
+table.ref tr:nth-child(even) td{background:#F7FAFB}
+table.ref td.c{text-align:center}
+.note,.warn,.danger,.astuce,.portail{border-radius:6px;padding:11px 14px;margin:12px 0;font-size:14px;border-left:5px solid}
+.note{background:#E3F2FD;border-color:var(--info)}
+.warn{background:#FFF3E0;border-color:var(--warn)}
+.danger{background:#FFEBEE;border-color:var(--err)}
+.astuce{background:#E8F5E9;border-color:var(--ok)}
+.portail{background:#E0F7FA;border-color:#00838F}
+.note b.t,.warn b.t,.danger b.t,.astuce b.t,.portail b.t{display:block;margin-bottom:3px;font-size:13px;text-transform:uppercase;letter-spacing:.4px}
+.etape{background:#fff;border:1px solid var(--grisBord);border-left:5px solid var(--bleu);border-radius:6px;padding:12px 16px;margin:14px 0}
+.etape .num{display:inline-block;background:var(--bleu);color:#fff;font-weight:700;border-radius:50%;width:26px;height:26px;line-height:26px;text-align:center;margin-right:8px}
+.etape h4{display:inline;color:var(--bleuF);font-size:15px;margin:0}
+.kbd{border:1px solid #999;border-bottom-width:2px;border-radius:4px;background:#F5F5F5;padding:0 6px;font-family:Consolas,monospace;font-size:12.5px}
+
+/* ============================= MAQUETTES D'ÉCRAN ============================= */
+.mock{border:2px solid var(--bleu);border-radius:4px;background:var(--grisFond);margin:14px 0 6px;box-shadow:0 3px 10px rgba(0,0,0,.10);overflow:hidden;font-size:12.5px}
+.mock .mk-title{background:linear-gradient(#FFFFFF,#EDEDED);border-bottom:1px solid #CCC;padding:5px 10px;font-weight:600;color:#333;display:flex;justify-content:space-between}
+.mock .mk-title .mk-ico{color:var(--bleuF)}
+.mock .mk-toolbar{background:#F5F5F5;border-bottom:1px solid #DDD;padding:5px 8px;display:flex;gap:6px;flex-wrap:wrap}
+.mock .mk-btn{background:#fff;border:1px solid #BBB;border-radius:4px;padding:3px 10px;font-size:12px;color:#333;white-space:nowrap}
+.mock .mk-btn b{color:var(--bleuF)}
+.mock .mk-group{border:1px solid #C9C9C9;border-radius:5px;margin:10px;padding:8px 10px 10px;background:#FDFDFD;position:relative}
+.mock .mk-group>.mk-gt{position:absolute;top:-9px;left:10px;background:#FDFDFD;padding:0 6px;font-size:11.5px;color:var(--bleuF);font-weight:600}
+.mock .mk-row{display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin:7px 2px}
+.mock .mk-field{display:flex;align-items:center;gap:6px}
+.mock .mk-lbl{color:#555;font-size:12px;white-space:nowrap}
+.mock .mk-inp{background:#fff;border:1px solid #AAA;border-radius:3px;padding:3px 8px;min-width:90px;color:#222}
+.mock .mk-inp.ro{background:#EFEFEF;color:#777;border-style:dashed}
+.mock .mk-inp.combo::after{content:" ▾";color:#777}
+.mock .mk-tabs{display:flex;border-bottom:2px solid var(--bleu);margin:8px 10px 0;padding:0 4px;flex-wrap:wrap}
+.mock .mk-tab{padding:5px 14px;border:1px solid #CCC;border-bottom:none;border-radius:5px 5px 0 0;background:#EEE;color:#555;font-size:12px;margin-right:3px}
+.mock .mk-tab.on{background:#fff;color:var(--bleuF);font-weight:600;border-top:2px solid var(--bleu)}
+.mock .mk-body{border:1px solid #CCC;border-top:none;margin:0 10px 10px;background:#fff;padding:8px}
+table.mk-grid{border-collapse:collapse;width:100%;font-size:11.5px}
+table.mk-grid th{background:#E9EEF1;border:1px solid #C5CDD3;padding:4px 6px;text-align:left;color:#333;white-space:nowrap}
+table.mk-grid td{border:1px solid #DDE3E7;padding:3px 6px;color:#222;background:#fff}
+table.mk-grid tr:nth-child(even) td{background:#F4F8FA}
+table.mk-grid td.ro{background:#EFEFEF !important;color:#888}
+.chk{display:inline-block;width:13px;height:13px;border:1px solid #888;border-radius:2px;background:#fff;vertical-align:-2px;text-align:center;line-height:12px;font-size:10px;color:var(--bleuF)}
+.chk.on::after{content:"✔"}
+.bdg{display:inline-block;background:var(--bleu);color:#fff;font-weight:700;border-radius:50%;width:17px;height:17px;line-height:17px;text-align:center;font-size:10.5px;vertical-align:2px;margin-left:3px}
+.mk-legend{margin:2px 0 18px;font-size:12.5px;color:var(--grisTxt)}
+.mk-legend .bdg{margin:0 4px 0 0}
+.mk-cap{font-size:12px;color:#777;font-style:italic;margin:2px 0 16px}
+.mk-help{background:#FFF8E1;border:1px dashed #D8B600;border-radius:4px;padding:4px 8px;margin:6px 10px;font-size:11.5px;color:#6D5C00}
+
+/* ============================= DIVERS ============================= */
+.toc-inline{background:var(--bleuClair);border:1px solid #BFE0EA;border-radius:6px;padding:10px 16px;font-size:13.5px}
+.toc-inline ol{margin:6px 0}
+.chemin{background:#F5F5F5;border:1px solid #DDD;border-radius:4px;padding:2px 8px;font-size:13px;color:#555}
+#idxAlpha{columns:3;column-gap:30px;font-size:13px}
+#idxAlpha p{break-inside:avoid;margin:0 0 8px}
+#idxAlpha .lt{font-weight:700;color:var(--bleuF)}
+.btn-top{position:fixed;right:26px;bottom:22px;background:var(--bleu);color:#fff;border:none;border-radius:50%;width:44px;height:44px;font-size:20px;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.25);display:none;z-index:50}
+@media(max-width:900px){#sidebar{display:none}#main{padding:16px}}
+@media print{
+  #sidebar,.btn-top,#searchBox,#searchResults{display:none !important}
+  #main{max-width:100%;padding:0}
+  section{page-break-inside:avoid}
+  .mock{box-shadow:none}
+}
+</style>
+</head>
+<body>
+<div id="layout">
+<!-- ============================ BARRE LATÉRALE ============================ -->
+<nav id="sidebar">
+  <h1>🛠 Designer de pages portail</h1>
+  <div class="version">RHP — module SP_ · Aide utilisateur complète · v1.0 · Août 2026</div>
+  <input type="text" id="searchBox" placeholder="🔍 Rechercher dans l'aide… (ex : SOMME, grille virtuelle, zoom)" autocomplete="off">
+  <div id="searchMeta"></div>
+  <div id="searchResults"></div>
+  <ul id="toc">
+    <li><a class="t1" href="#s01">1. Présentation générale</a></li>
+    <li><a class="t2" href="#s01-obj">1.1 À quoi sert le Designer ?</a></li>
+    <li><a class="t2" href="#s01-archi">1.2 Comment ça fonctionne</a></li>
+    <li><a class="t2" href="#s01-cycle">1.3 Cycle de vie d'une page</a></li>
+    <li><a class="t1" href="#s02">2. Prise en main rapide (tutoriel)</a></li>
+    <li><a class="t1" href="#s03">3. Visite guidée de l'écran</a></li>
+    <li><a class="t2" href="#s03-acces">3.1 Accès et droits</a></li>
+    <li><a class="t2" href="#s03-barre">3.2 Barre d'outils</a></li>
+    <li><a class="t2" href="#s03-bandeau">3.3 Bandeau d'identification</a></li>
+    <li><a class="t1" href="#s04">4. Onglet « Structure des tables »</a></li>
+    <li><a class="t2" href="#s04-tables">4.1 Tables (ENT + détails)</a></li>
+    <li><a class="t2" href="#s04-colonnes">4.2 Colonnes physiques</a></li>
+    <li><a class="t1" href="#s05">5. Onglet « Sources externes »</a></li>
+    <li><a class="t1" href="#s06">6. Onglet « Champs de la page »</a></li>
+    <li><a class="t2" href="#s06-controles">6.2 Les 15 types de contrôles</a></li>
+    <li><a class="t2" href="#s06-placement">6.3 Placement dans l'entête</a></li>
+    <li><a class="t2" href="#s06-liste">6.5 Colonnes de la liste et critères</a></li>
+    <li><a class="t1" href="#s07">7. Onglet « Conception de la page »</a></li>
+    <li><a class="t1" href="#s08">8. Onglet « Comportement » (validations)</a></li>
+    <li><a class="t1" href="#s09">9. Onglet « Habilitations »</a></li>
+    <li><a class="t1" href="#s10">10. Assistant de formule — référence complète</a></li>
+    <li><a class="t2" href="#s10-syntaxe">10.3 Syntaxe et opérateurs</a></li>
+    <li><a class="t2" href="#s10-texte">10.5 Fonctions texte</a></li>
+    <li><a class="t2" href="#s10-dates">10.6 Fonctions dates</a></li>
+    <li><a class="t2" href="#s10-nombres">10.7 Fonctions nombres</a></li>
+    <li><a class="t2" href="#s10-cond">10.8 Fonctions condition</a></li>
+    <li><a class="t2" href="#s10-agreg">10.9 Fonctions tableau (agrégats)</a></li>
+    <li><a class="t2" href="#s10-exemples">10.12 Exemples de formules</a></li>
+    <li><a class="t1" href="#s11">11. Assistant de validation — guide</a></li>
+    <li><a class="t1" href="#s12">12. Sources métier — guide complet</a></li>
+    <li><a class="t1" href="#s13">13. Grilles virtuelles — guide complet</a></li>
+    <li><a class="t1" href="#s14">14. Cycle de vie : enregistrer, publier…</a></li>
+    <li><a class="t1" href="#s15">15. Le rendu côté portail</a></li>
+    <li><a class="t1" href="#s16">16. Exemples complets pas à pas</a></li>
+    <li><a class="t2" href="#s16-fkm">16.1 Note de frais kilométriques (FKM)</a></li>
+    <li><a class="t2" href="#s16-conge">16.2 Demande de congé (sources + grille virtuelle)</a></li>
+    <li><a class="t2" href="#s16-divers">16.3 Recettes supplémentaires</a></li>
+    <li><a class="t1" href="#s17">17. Bonnes pratiques et dépannage</a></li>
+    <li><a class="t1" href="#s18">18. FAQ</a></li>
+    <li><a class="t1" href="#s19">19. Glossaire</a></li>
+    <li><a class="t1" href="#s20">20. Index alphabétique</a></li>
+  </ul>
+</nav>
+
+<!-- ============================ CONTENU ============================ -->
+<main id="main">
+<!-- ============================================================ S01 -->
+<section id="s01" data-title="1. Présentation générale">
+<h2>1. Présentation générale</h2>
+
+<h3 id="s01-obj">1.1 À quoi sert le Designer ?</h3>
+<p>Le <b>Designer de pages portail</b> (écran <code>SP_Page_Designer</code> de RHP_DeskTop) permet de créer
+<b>des pages métier complètes du portail web sans écrire une seule ligne de code portail</b> : écrans de saisie de
+documents (demandes, notes de frais, déclarations…), avec entête, une ou plusieurs grilles de détail, champs calculés,
+contrôles de saisie, validations, workflow de signature, pièces jointes (GED) et habilitations par profil.</p>
+<p>Tout ce que vous configurez dans le Designer est stocké dans des tables de métadonnées SQL Server
+(<code>SP_Page</code>, <code>SP_Page_Table</code>, <code>SP_Page_Colonne</code>, <code>SP_Page_Champ</code>,
+<code>SP_Page_Validation</code>, <code>SP_Page_Source</code>, <code>SP_Page_Droit</code>) puis <b>interprété à
+l'exécution</b> par le moteur générique du portail. L'enregistrement d'une page crée ou fait évoluer
+<b>automatiquement les tables métier</b> de la base (préfixe <code>SP_</code>) dans la même transaction.</p>
+<div class="astuce"><b class="t">Ce que vous pouvez construire</b>
+Demandes avec circuit de validation, notes de frais avec lignes et totaux calculés, formulaires déclaratifs,
+consultations de données RH en lecture seule (grilles virtuelles), documents avec pièces jointes et édition
+imprimable — le tout publié dans le menu du portail en un clic.</div>
+
+<h3 id="s01-archi">1.2 Comment ça fonctionne (architecture)</h3>
+<div class="mock">
+  <div class="mk-title"><span><span class="mk-ico">◈</span> Chaîne de conception → exécution</span></div>
+  <div style="padding:14px 16px;font-size:13.5px;line-height:2">
+    <b>① RHP_DeskTop — Designer</b> (<code>SP_Page_Designer</code>) : vous décrivez la page (tables, colonnes, champs, validations, droits)
+    &nbsp;⟶&nbsp; <b>② Tables de métadonnées</b> <code>SP_Page*</code> + <b>tables métier</b> <code>SP_&lt;TypeDoc&gt;_Ent / _Det_…</code> créées par le DDL automatique
+    &nbsp;⟶&nbsp; <b>③ Bouton « Publier »</b> : la page devient visible sur le portail (statut <code>PUBLIE</code>)
+    &nbsp;⟶&nbsp; <b>④ RHP_Portail</b> : la page apparaît dans le menu latéral ; le moteur <code>DynamicPage</code> / <code>DynamicPage_Liste</code>
+    génère l'écran web à la volée ; le serveur ré-applique calculs et validations (le client n'est jamais cru).
+  </div>
+</div>
+<p class="mk-cap">Fig. 1 — De la configuration au rendu : aucun développement web n'est nécessaire.</p>
+<div class="note"><b class="t">Sécurité d'architecture</b>
+Le portail ne reçoit jamais de nom de table ni de colonne du navigateur : seulement le code page et des données.
+Tout est résolu côté serveur depuis les métadonnées publiées ; les requêtes des sources métier restent sur le
+serveur ; formules et validations sont <b>déclaratives (json)</b>, jamais du code libre — aucune injection possible.</div>
+
+<h3 id="s01-cycle">1.3 Cycle de vie d'une page</h3>
+<table class="ref">
+<tr><th style="width:130px">Statut</th><th>Signification</th><th>Comment on y arrive</th></tr>
+<tr><td class="c"><code>BROUILLON</code></td><td>Page en cours de conception, <b>invisible sur le portail</b>. Seul statut où la suppression de la page est possible (et seulement si aucun document n'existe).</td><td>Statut initial à la création (bouton <b>Nouveau</b>) et après <b>Dupliquer</b>.</td></tr>
+<tr><td class="c"><code>PUBLIE</code></td><td>Page <b>visible et utilisable sur le portail</b> : entrée de menu créée, documents saisissables. Le numéro de version (<code>Version_Page</code>) est incrémenté à chaque publication.</td><td>Bouton <b>Publier</b> (après contrôles de cohérence automatiques).</td></tr>
+<tr><td class="c"><code>DESACTIVE</code></td><td>Page <b>retirée du portail</b> ; les documents existants sont conservés.</td><td>Bouton <b>Publier / Désactiver</b> sur une page déjà publiée.</td></tr>
+<tr><td class="c"><code>ARCHIVE</code></td><td>Statut de fin de vie (réservé, positionnable en base).</td><td>—</td></tr>
+</table>
+<div class="warn"><b class="t">Délai de prise en compte</b>
+Le portail met en cache les métadonnées pendant <b>60 secondes</b> : après une (re)publication, attendez au plus
+une minute (ou rechargez la page du navigateur) pour voir vos modifications.</div>
+</section>
+
+<!-- ============================================================ S02 -->
+<section id="s02" data-title="2. Prise en main rapide (tutoriel)">
+<h2>2. Prise en main rapide : votre première page en 10 étapes</h2>
+<p>Ce tutoriel crée de bout en bout une page <b>« Frais kilométriques »</b> : un document avec un entête
+(matricule, date, commentaire), une grille de trajets (km × taux = montant calculé), un total automatique,
+des validations et une publication sur le portail. C'est l'exemple de référence <code>FRAIS_KM</code> livré avec le produit.
+Chaque étape renvoie au chapitre détaillé correspondant.</p>
+
+<div class="etape"><span class="num">1</span><h4>Ouvrir le Designer et créer une nouvelle page</h4>
+<p>Menu RHP_DeskTop : <span class="chemin">Système ▸ Utilitaires avancés ▸ Designer de pages portail</span>.
+Cliquez <b>Nouveau</b> <span class="kbd">➕</span>. Le <b>code page</b> est généré automatiquement
+(ex. <code>PG_20260814_000001</code>) : il est immuable. Saisissez le <b>nom de la page</b> : <code>Frais kilométriques</code>
+(c'est le titre qui apparaîtra dans le menu du portail).</p></div>
+
+<div class="etape"><span class="num">2</span><h4>Définir le type document</h4>
+<p>Onglet <b>« Conception de la page »</b>, champ <b>Type document</b> : saisissez <code>FKM</code>
+(2 à 10 caractères alphanumériques, commence par une lettre, en majuscules). Ce code est <b>unique dans toute
+l'application</b> et <b>immuable après le premier enregistrement</b> : il pilote les noms physiques des tables
+(<code>SP_FKM_Ent</code>, <code>SP_FKM_Det_LIGNES</code>) et sert de code au workflow de signature.
+→ détails §7.</p></div>
+
+<div class="etape"><span class="num">3</span><h4>Déclarer les tables</h4>
+<p>Onglet <b>« Structure des tables »</b> ▸ sous-onglet <b>Tables</b> : la table d'entête <code>ENT</code> existe déjà
+(elle est créée automatiquement, insuppressible). Ajoutez une ligne : <b>Table</b> = <code>LIGNES</code>,
+<b>Libellé</b> = <code>Trajets parcourus</code> ; cochez <b>Ajout</b>, <b>Modif.</b>, <b>Suppr.</b>, <b>Dupliq.</b> ;
+<b>Règle suppression</b> = <code>CASCADE</code>. Le nom physique <code>SP_FKM_Det_LIGNES</code> se calcule tout seul.
+→ détails §4.1.</p></div>
+
+<div class="etape"><span class="num">4</span><h4>Déclarer les colonnes physiques</h4>
+<p>Sous-onglet <b>Colonnes physiques</b>, ajoutez :</p>
+<table class="ref">
+<tr><th>Table</th><th>Colonne</th><th>Libellé</th><th>Type SQL</th><th>Long. / Préc. / Éch.</th><th>Nullable</th></tr>
+<tr><td>ENT</td><td>Matricule</td><td>Matricule</td><td>nvarchar</td><td>20</td><td class="c">☐ (NOT NULL)</td></tr>
+<tr><td>ENT</td><td>Dat_Demande</td><td>Date de demande</td><td>date</td><td>—</td><td class="c">✔</td></tr>
+<tr><td>ENT</td><td>Commentaire</td><td>Commentaire</td><td>nvarchar</td><td>300</td><td class="c">✔</td></tr>
+<tr><td>ENT</td><td>Total</td><td>Total (calculé)</td><td>decimal</td><td>18 / 2</td><td class="c">✔</td></tr>
+<tr><td>LIGNES</td><td>Trajet</td><td>Trajet</td><td>nvarchar</td><td>100</td><td class="c">✔</td></tr>
+<tr><td>LIGNES</td><td>Km</td><td>Kilomètres</td><td>float</td><td>—</td><td class="c">✔</td></tr>
+<tr><td>LIGNES</td><td>Tx</td><td>Taux / km</td><td>float</td><td>—</td><td class="c">✔</td></tr>
+<tr><td>LIGNES</td><td>Mnt</td><td>Montant (calculé)</td><td>decimal</td><td>18 / 2</td><td class="c">✔</td></tr>
+</table>
+<p>Les colonnes techniques (<code>Num_Doc</code>, <code>id_Societe</code>, <code>Statut</code>, audit, <code>RV</code>…)
+sont ajoutées automatiquement : ne les déclarez jamais. → détails §4.2.</p></div>
+
+<div class="etape"><span class="num">5</span><h4>Poser les champs de l'entête</h4>
+<p>Onglet <b>« Champs de la page »</b>. Astuce : tapez dans la colonne <b>Champ</b> le nom exact d'une colonne physique
+(ex. <code>Matricule</code>) → le Designer <b>propose automatiquement</b> colonne, libellé, type de contrôle déduit du type SQL,
+rang, obligatoire… Complétez :</p>
+<ul>
+<li><code>Matricule</code> : type <b>ZOOM</b>, double-clic sur <b>N° Zoom</b> → choisir le zoom des agents <code>MS067</code>,
+<b>Valeur par défaut</b> = <code>GV_MATRICULE</code> (pré-rempli avec l'agent connecté), <b>Obligatoire</b> ✔ ;</li>
+<li><code>Dat_Demande</code> : type <b>DATE</b>, valeur par défaut <code>GV_NOW</code> ;</li>
+<li><code>Commentaire</code> : type <b>MEMO</b>, largeur 6 ;</li>
+<li><code>Total</code> : type <b>CALCULE</b> (l'état passe automatiquement à « Affiché »), <b>Persisté</b> ✔,
+<b>Format</b> = <code>MNT</code>, <b>Décimales</b> = 2 ; double-clic sur <b>Formule (json)</b> → assistant :
+choisir la famille <b>Tableau (somme…) ▸ SOMME</b>, colonne <code>Mnt</code> → la formule <code>SOMME(Mnt)</code> est générée.
+→ détails §6 et §10.</li>
+</ul></div>
+
+<div class="etape"><span class="num">6</span><h4>Poser les champs de la grille de trajets</h4>
+<p>Toujours dans « Champs de la page », table <code>LIGNES</code> :</p>
+<ul>
+<li><code>L_Trajet</code> → colonne <code>Trajet</code>, type <b>TEXT</b> ;</li>
+<li><code>L_Km</code> → colonne <code>Km</code>, type <b>DEC</b>, décimales 2 ;</li>
+<li><code>L_Tx</code> → colonne <code>Tx</code>, type <b>DEC</b>, décimales 2 ;</li>
+<li><code>L_Mnt</code> → colonne <code>Mnt</code>, type <b>CALCULE</b>, <b>Persisté</b> ✔ ; formule (double-clic « Formule ») :
+tapez <code>ARRONDI(Km * Tx; 2)</code> en vous aidant des listes et boutons. Le montant de chaque ligne se calcule en direct à la saisie.</li>
+<li>Pied de grille : champ <code>Pied_Mnt</code>, table <code>LIGNES</code>, <b>colonne laissée vide</b>, type <b>CALCULE</b>,
+formule <code>SOMME(Mnt)</code>, format <code>MNT</code> → affiché sous la grille (« Total des trajets : 152,30 »).</li>
+</ul></div>
+
+<div class="etape"><span class="num">7</span><h4>Ajouter les validations</h4>
+<p>Onglet <b>« Comportement »</b>, clic droit ▸ <i>« Créer / modifier une règle avec l'assistant… »</i> :</p>
+<ul>
+<li><b>V01</b> — « Un champ doit être renseigné » sur <code>Matricule</code>, niveau <b>Bloquant</b> ;</li>
+<li><b>V02</b> — « Nombre de lignes d'un tableau » sur <code>LIGNES</code>, au moins <b>1</b>, bloquant
+(message : « Au moins une ligne de trajet est requise. ») ;</li>
+<li><b>V03</b> — « Valeur entre deux bornes » sur <code>L_Km</code>, entre 0 et 1000, niveau <b>Avertissement</b>
+(l'utilisateur pourra continuer après confirmation).</li>
+</ul>
+<p>→ détails §8 et §11.</p></div>
+
+<div class="etape"><span class="num">8</span><h4>Renseigner la conception (menu, actions, workflow, GED)</h4>
+<p>Onglet <b>« Conception de la page »</b> : <b>Section portail</b> = <code>MesDemandes</code> (créez vos propres sections
+avec le bouton <b>+</b>), <b>Rang</b> = <code>90</code>, <b>Icône</b> = <code>Commute</code> (liste illustrée).
+Cochez <b>Workflow de signature actif</b> (les règles de signataires se règlent ensuite via le bouton
+<i>« Règles du workflow de signature »</i>), <b>GED active</b> pour les pièces jointes, et les actions
+<b>Enregistrer</b> / <b>Soumettre en signature</b>. → détails §7.</p></div>
+
+<div class="etape"><span class="num">9</span><h4>Attribuer les habilitations</h4>
+<p>Onglet <b>« Habilitations »</b> : une ligne par profil. Pour une page ouverte à tous, laissez
+<b>« Accès personnalisé » décoché</b> (consultation libre) et cochez pour chaque profil les actions autorisées
+(<b>Créer</b>, <b>Modifier</b>, <b>Supprimer</b>, <b>Valider</b>, <b>Imprimer</b>, <b>GED</b>).
+Astuce : <b>clic droit sur l'entête d'une colonne</b> → « Cocher … pour tous les profils ». → détails §9.</p></div>
+
+<div class="etape"><span class="num">10</span><h4>Enregistrer, vérifier le DDL, publier</h4>
+<p>① <b>Enregistrer</b> <span class="kbd">💾</span> (ou touche <span class="kbd">Entrée</span>) : les contrôles de cohérence
+s'exécutent, puis les tables <code>SP_FKM_Ent</code> et <code>SP_FKM_Det_LIGNES</code> sont créées dans la même transaction.
+② <b>Aperçu DDL</b> <span class="kbd">📜</span> : visualisez le script SQL qui a été / serait exécuté.
+③ <b>Publier</b> <span class="kbd">✅</span> : après les contrôles de publication, le message confirme :
+<i>« Page publiée avec succès. Elle apparaît dans le portail à la section 'Demandes et documents' (rang 90). »</i>
+Sur le portail, ouvrez <b>Demandes et documents ▸ Frais kilométriques</b> : la liste s'affiche, bouton <b>Nouveau</b> →
+votre document est prêt. → détails §14 et §15.</p></div>
+
+<div class="astuce"><b class="t">Félicitations</b>
+Vous maîtrisez déjà 80 % du Designer. Les chapitres suivants détaillent chaque onglet, chaque assistant
+(formules, validations, sources, mapping) et des exemples avancés (grille virtuelle alimentée par une requête SQL,
+validations par source métier, champs SOURCE…).</div>
+</section>
+
+<!-- ============================================================ S03 -->
+<section id="s03" data-title="3. Visite guidée de l'écran">
+<h2>3. Visite guidée de l'écran</h2>
+
+<h3 id="s03-acces">3.1 Accès et droits nécessaires</h3>
+<ul>
+<li>Chemin : <span class="chemin">RHP_DeskTop ▸ Système ▸ Utilitaires avancés ▸ Designer de pages portail</span>.</li>
+<li>Par défaut, seul le <b>profil super-admin (code <code>1</code>)</b> a tous les droits sur l'écran ; étendez l'accès
+via l'écran standard <code>Admin_Profile</code>. Les boutons <b>Enregistrer</b>, <b>Supprimer</b>, <b>Dupliquer</b> et
+<b>Publier</b> sont de plus protégés par la fonction de sécurité <code>SC</code>.</li>
+<li>Prérequis technique : les scripts du module (<code>001_SP_Designer_Metadata.sql</code> et suivants, dossier
+<code>RHP_Portail\rhpBE\sql\SP_Designer</code>) doivent avoir été appliqués à la base. Sinon l'écran affiche un message
+bloquant indiquant la migration à jouer (ex. <i>« Appliquez la migration 006_SP_Designer_Evolutions.sql (grilles virtuelles) »</i>).</li>
+</ul>
+
+<h3 id="s03-barre">3.2 La barre d'outils</h3>
+<div class="mock">
+  <div class="mk-title"><span><span class="mk-ico">🛠</span> Designer de pages portail</span><span>—</span></div>
+  <div class="mk-toolbar">
+    <span class="mk-btn"><b>➕</b> Nouveau<span class="bdg">1</span></span>
+    <span class="mk-btn"><b>💾</b> Enregistrer<span class="bdg">2</span></span>
+    <span class="mk-btn"><b>🗑</b> Supprimer<span class="bdg">3</span></span>
+    <span class="mk-btn"><b>⧉</b> Dupliquer<span class="bdg">4</span></span>
+    <span class="mk-btn"><b>📜</b> Aperçu DDL<span class="bdg">5</span></span>
+    <span class="mk-btn"><b>✅</b> Publier / Désactiver<span class="bdg">6</span></span>
+  </div>
+  <div class="mk-group"><span class="mk-gt">Définition du type de document</span>
+    <div class="mk-row">
+      <span class="mk-field"><span class="mk-lbl"><u>Code page</u></span><span class="mk-inp ro">PG_20260814_000001</span><span class="bdg">7</span></span>
+      <span class="mk-field"><span class="mk-lbl">Nom de la page</span><span class="mk-inp" style="min-width:230px">Frais kilométriques</span><span class="bdg">8</span></span>
+      <span class="mk-field"><span class="mk-lbl">Statut</span><span class="mk-inp ro combo">BROUILLON</span><span class="bdg">9</span></span>
+    </div>
+  </div>
+  <div class="mk-tabs">
+    <span class="mk-tab on">Structure des tables</span><span class="mk-tab">Sources externes</span><span class="mk-tab">Champs de la page</span><span class="mk-tab">Conception de la page</span><span class="mk-tab">Comportement</span><span class="mk-tab">Habilitations</span><span class="bdg" style="margin-top:4px">10</span>
+  </div>
+  <div class="mk-body" style="color:#888;font-style:italic">… contenu de l'onglet actif (grilles de configuration) …</div>
+</div>
+<p class="mk-cap">Fig. 2 — Vue schématique annotée de l'écran <code>SP_Page_Designer</code> (maquette représentative).</p>
+<div class="mk-legend">
+<p><span class="bdg">1</span><b>Nouveau</b> : réinitialise l'écran, génère un nouveau code page, re-rend le type document saisissable, recrée la table ENT. Statut : BROUILLON.</p>
+<p><span class="bdg">2</span><b>Enregistrer</b> (raccourci : touche <span class="kbd">Entrée</span> hors grille) : contrôle toute la configuration puis écrit métadonnées + crée/migre les tables métier <b>dans une seule transaction</b>. Recharge la page ensuite.</p>
+<p><span class="bdg">3</span><b>Supprimer</b> : uniquement un <b>brouillon sans aucun document</b> saisi. Les tables métier et leurs données ne sont <b>jamais</b> supprimées. → §14.5.</p>
+<p><span class="bdg">4</span><b>Dupliquer</b> : copie tout le paramétrage affiché sous une nouvelle identité (nouveau code page ; nouveau type document à ressaisir ; statut Brouillon). Rien n'est écrit avant « Enregistrer ». → §14.4.</p>
+<p><span class="bdg">5</span><b>Aperçu DDL</b> : affiche le script SQL de création/migration des tables <b>sans l'exécuter</b>, précédé de commentaires <code>-- …</code> (créations, colonnes ajoutées, avertissements non destructifs). → §14.2.</p>
+<p><span class="bdg">6</span><b>Publier / Désactiver</b> : publie la page sur le portail (après contrôles) ; sur une page déjà publiée, propose la désactivation. → §14.3.</p>
+<p><span class="bdg">7</span><b>Code page</b> : identifiant technique généré (<code>PG_&lt;date&gt;_&lt;séquence&gt;</code>), toujours en lecture seule. <b>Cliquez sur le libellé « Code page »</b> (lien) pour ouvrir le zoom de sélection et <b>charger une page existante</b>.</p>
+<p><span class="bdg">8</span><b>Nom de la page</b> : titre affiché dans le menu du portail (obligatoire, 60 caractères max).</p>
+<p><span class="bdg">9</span><b>Statut</b> : BROUILLON / PUBLIE / DESACTIVE / ARCHIVE — <b>non modifiable directement</b> : il ne change que via le bouton Publier / Désactiver.</p>
+<p><span class="bdg">10</span>Les <b>6 onglets</b> de configuration, détaillés aux chapitres 4 à 9.</p>
+</div>
+
+<h3 id="s03-bandeau">3.3 Règles d'or de l'écran</h3>
+<ul>
+<li><b>Rien n'est en base tant que vous n'avez pas cliqué « Enregistrer »</b> : les grilles sont des zones de travail mémoire.</li>
+<li>Les colonnes de grille <b>grisées sont en lecture seule</b> ; celles marquées d'un comportement au <b>double-clic</b>
+(« Requête SQL », « Paramètres », « Formule (json) », « Rubrique », « N° Zoom », « Mapping paramètres ») affichent un
+<b>curseur main</b> au survol et ouvrent un assistant — le json technique est toujours généré, jamais saisi à la main.</li>
+<li>La <b>touche <span class="kbd">Suppr</span></b> supprime la ligne sélectionnée d'une grille (avec contrôles :
+impossible de supprimer la table ENT, une table encore référencée, ou une colonne utilisée par des champs).</li>
+<li>Les listes déroulantes des grilles sont <b>fermées</b> (valeurs prédéterminées partagées avec les contrôles
+d'enregistrement) : impossible de saisir une valeur hors domaine.</li>
+<li>Les booléens sont des <b>cases à cocher</b> ; les entêtes de colonnes sont des libellés utilisateur (« Type source »,
+jamais <code>Typ_Source</code>).</li>
+</ul>
+</section>
+<!-- ============================================================ S04 -->
+<section id="s04" data-title="4. Onglet Structure des tables">
+<h2>4. Onglet « Structure des tables »</h2>
+<p>Cet onglet définit le <b>modèle de données physique</b> de la page : une table d'entête (obligatoire) et
+zéro ou plusieurs tables de détail (grilles). Il contient deux sous-onglets : <b>Tables</b> et <b>Colonnes physiques</b>.
+L'enregistrement traduit ce modèle en <code>CREATE TABLE</code> / <code>ALTER TABLE</code> réels dans la base.</p>
+
+<h3 id="s04-tables">4.1 Sous-onglet « Tables (entête ENT + tables de détail) »</h3>
+<div class="mock">
+  <div class="mk-title"><span><span class="mk-ico">🛠</span> Designer de pages portail — Structure des tables</span></div>
+  <div class="mk-tabs"><span class="mk-tab on">Tables (entête ENT + tables de détail)</span><span class="mk-tab">Colonnes physiques</span></div>
+  <div class="mk-body">
+  <table class="mk-grid">
+    <tr><th>Table<span class="bdg">1</span></th><th>Nom physique<span class="bdg">2</span></th><th>Rôle</th><th>Libellé</th><th>Rang</th><th>Ajout<span class="bdg">3</span></th><th>Modif.</th><th>Suppr.</th><th>Dupliq.</th><th>Tri par défaut</th><th>Règle suppression<span class="bdg">4</span></th><th>Source métier (grille virtuelle)<span class="bdg">5</span></th><th>Mapping paramètres<span class="bdg">6</span></th></tr>
+    <tr><td>ENT</td><td class="ro">SP_FKM_Ent</td><td class="ro">ENT</td><td>Entête</td><td>0</td><td><span class="chk"></span></td><td><span class="chk"></span></td><td><span class="chk"></span></td><td><span class="chk"></span></td><td></td><td>CASCADE</td><td></td><td class="ro"></td></tr>
+    <tr><td>LIGNES</td><td class="ro">SP_FKM_Det_LIGNES</td><td class="ro">DET</td><td>Trajets parcourus</td><td>1</td><td><span class="chk on"></span></td><td><span class="chk on"></span></td><td><span class="chk on"></span></td><td><span class="chk on"></span></td><td></td><td>CASCADE</td><td></td><td class="ro"></td></tr>
+    <tr><td>PERIODES</td><td class="ro">SP_XCG_Virt_PERIODES</td><td class="ro">DET</td><td>Détail par période de paie</td><td>2</td><td><span class="chk"></span></td><td><span class="chk"></span></td><td><span class="chk"></span></td><td><span class="chk"></span></td><td></td><td>CASCADE</td><td>sp_cng_detail</td><td class="ro">{"Matricule":{"ref":"Matricule"},…}</td></tr>
+  </table>
+  </div>
+</div>
+<p class="mk-cap">Fig. 3 — Grille des tables : une entête ENT, un détail physique, un détail virtuel (source métier).</p>
+
+<table class="ref">
+<tr><th style="width:190px">Colonne de la grille</th><th>Rôle et règles</th></tr>
+<tr><td><b>Table</b> <span class="bdg">1</span></td><td>Code technique de la table. <code>ENT</code> = entête du document : <b>toujours présente, créée automatiquement, insuppressible</b>. Tout autre code (ex. <code>LIGNES</code>, <code>PERIODES</code>) désigne une table de détail. Mis en <b>majuscules</b> automatiquement. Identifiant SQL valide, unique dans la page.</td></tr>
+<tr><td><b>Nom physique</b> <span class="bdg">2</span></td><td><i>Lecture seule, calculé.</i> Dérivé du <b>type document</b> : <code>SP_&lt;TypeDoc&gt;_Ent</code> pour l'entête, <code>SP_&lt;TypeDoc&gt;_Det_&lt;Table&gt;</code> pour un détail physique, <code>SP_&lt;TypeDoc&gt;_Virt_&lt;Table&gt;</code> pour une grille virtuelle. Le préfixe <code>SP_</code> est obligatoire (sécurité) et le nom doit être <b>globalement unique dans la base</b>.</td></tr>
+<tr><td><b>Rôle</b></td><td><i>Lecture seule.</i> <code>ENT</code> ou <code>DET</code>, déduit du code.</td></tr>
+<tr><td><b>Libellé</b></td><td>Titre du bloc (groupe) affiché sur le portail au-dessus de la grille de détail.</td></tr>
+<tr><td><b>Rang</b></td><td>Ordre d'affichage des blocs (auto-incrémenté à la création de ligne).</td></tr>
+<tr><td><b>Ajout / Modif. / Suppr. / Dupliq.</b> <span class="bdg">3</span></td><td>Cases à cocher : actions autorisées sur les lignes de la grille côté portail (boutons « Ajouter », « Dupliquer », « Supprimer » et édition). Décochés et sans objet pour ENT. <b>Forcés à décoché sur une grille virtuelle</b> (toujours en lecture seule).</td></tr>
+<tr><td><b>Tri par défaut</b></td><td>Ordre de tri initial des lignes, syntaxe SQL sans « ORDER BY » : ex. <code>Rang asc, Libelle desc</code>.</td></tr>
+<tr><td><b>Règle suppression</b> <span class="bdg">4</span></td><td>Liste <code>CASCADE</code> / <code>RESTRICT</code> : comportement de la clé étrangère détail → entête à la suppression du document. <code>CASCADE</code> (défaut) = les lignes suivent le document (<code>ON DELETE CASCADE</code>) ; <code>RESTRICT</code> = suppression bloquée tant que des lignes existent.</td></tr>
+<tr><td><b>Source métier (grille virtuelle)</b> <span class="bdg">5</span></td><td>Liste des <b>sources de retour TABLE</b> actives du catalogue (onglet « Sources externes »). <b>Vide = table physique classique</b>. Renseignée = la table devient une <b>grille virtuelle</b> : aucune table physique n'est créée, la grille est recalculée par la source à chaque changement d'un champ mappé, en lecture seule. → chapitre 13.</td></tr>
+<tr><td><b>Mapping paramètres</b> <span class="bdg">6</span></td><td><i>Lecture seule, curseur main.</i> <b>Double-clic</b> : assistant d'alimentation des paramètres de la source (champs de l'entête ou constantes) — le json est généré automatiquement. → §13.3.</td></tr>
+</table>
+
+<div class="warn"><b class="t">Suppressions contrôlées (touche Suppr)</b>
+<ul style="margin:4px 0">
+<li>La table <b>ENT ne peut pas être supprimée</b> : <i>« La table d'entête (ENT) est obligatoire : elle ne peut pas être supprimée. »</i></li>
+<li>Une table encore référencée est protégée : <i>« La table 'LIGNES' est référencée par n colonne(s), n champ(s), n validation(s). Supprimez d'abord ces éléments. »</i></li>
+<li>Choisir une source métier sur <b>ENT</b> est refusé : <i>« La source métier (grille virtuelle) ne concerne que les tables de détail : l'entête ENT est toujours une table physique. »</i></li></ul></div>
+<div class="note"><b class="t">Garde d'accès aux colonnes</b>
+Impossible d'entrer dans le sous-onglet « Colonnes physiques » tant que l'onglet Tables est incohérent (type document vide,
+aucune table, code en doublon, ENT manquante…) : le message <i>« Avant de saisir les colonnes, corrigez l'onglet 'Tables' : … »</i>
+liste précisément les problèmes.</div>
+
+<h3 id="s04-colonnes">4.2 Sous-onglet « Colonnes physiques »</h3>
+<p>Déclare les <b>colonnes métier</b> de chaque table. Le bandeau rappelle :
+<i>« Les colonnes techniques (Num_Doc, Statut, audit, RV) sont ajoutées automatiquement. »</i></p>
+
+<table class="ref">
+<tr><th style="width:150px">Colonne</th><th>Rôle et règles</th></tr>
+<tr><td><b>Table</b></td><td>Liste des tables configurées (ENT + détails).</td></tr>
+<tr><td><b>Colonne</b></td><td>Nom SQL de la colonne (identifiant valide : lettres, chiffres, <code>_</code>, 60 car. max, hors mots réservés SQL). À la saisie, le libellé est proposé automatiquement s'il est vide.</td></tr>
+<tr><td><b>Libellé</b></td><td>Libellé métier (reproposé comme libellé de champ au §6).</td></tr>
+<tr><td><b>Type SQL</b></td><td>Liste fermée : <code>nvarchar</code> (texte), <code>int</code> (entier), <code>bigint</code> (entier long), <code>float</code>, <code>decimal</code> (décimal exact), <code>bit</code> (booléen), <code>date</code>, <code>datetime</code>, <code>smalldatetime</code>.</td></tr>
+<tr><td><b>Longueur</b></td><td>Pour <code>nvarchar</code> uniquement (défaut 50, max 4000). <b>-1 = <code>nvarchar(max)</code></b>.</td></tr>
+<tr><td><b>Précision / Échelle</b></td><td>Pour <code>decimal</code> uniquement : <code>decimal(précision, échelle)</code>, défaut <code>18,2</code> ; précision ≤ 38, échelle ≤ précision.</td></tr>
+<tr><td><b>Nullable</b></td><td>Coché = colonne <code>NULL</code> autorisée. <b>Décoché = <code>NOT NULL</code> avec toujours une contrainte DEFAULT générée</b> (création/migration sûre sur table déjà remplie).</td></tr>
+<tr><td><b>Valeur par défaut</b></td><td>Constante de la contrainte DEFAULT SQL ; le mot-clé <code>GV_NOW</code> produit <code>DEFAULT (getdate())</code>. Ex. : <code>0</code>, <code>GV_NOW</code>, <code>ACTIF</code>.</td></tr>
+<tr><td><b>Unique</b></td><td>Génère un index unique <code>UX_&lt;table&gt;_&lt;colonne&gt;</code>.</td></tr>
+<tr><td><b>Indexée</b></td><td>Génère un index <code>IX_&lt;table&gt;_&lt;colonne&gt;</code> (utile pour les colonnes de critères très filtrées).</td></tr>
+<tr><td><b>Rang</b></td><td>Ordre physique dans la table (automatique, par table).</td></tr>
+</table>
+
+<h4>Colonnes techniques ajoutées automatiquement (ne jamais les déclarer)</h4>
+<table class="ref">
+<tr><th>Table</th><th>Colonnes techniques automatiques</th><th>Clé primaire</th></tr>
+<tr><td><b>Entête (ENT)</b></td><td><code>Num_Doc</code> nvarchar(30), <code>id_Societe</code> int, <code>Statut</code> nvarchar(3) (défaut ''), <code>Dat_Crea</code>, <code>Created_By</code>, <code>Dat_Modif</code>, <code>Modified_By</code>, <code>RV</code> rowversion (concurrence optimiste)</td><td><code>(Num_Doc, id_Societe)</code></td></tr>
+<tr><td><b>Détail (DET)</b></td><td><code>RowId</code> int IDENTITY, <code>Num_Doc</code>, <code>id_Societe</code>, <code>Dat_Crea</code>, <code>Created_By</code>, <code>Dat_Modif</code>, <code>Modified_By</code> + FK <code>(Num_Doc, id_Societe)</code> vers l'entête</td><td><code>(RowId)</code></td></tr>
+</table>
+<div class="astuce"><b class="t">Bon à savoir</b>
+<ul style="margin:4px 0">
+<li>Chaque table doit avoir <b>au moins une colonne métier déclarée</b> (sinon l'enregistrement est refusé : une table vide serait inutilisable).</li>
+<li>La suppression d'une colonne utilisée par des champs est bloquée avec la liste des champs concernés.</li>
+<li>La migration est <b>non destructive</b> : une colonne retirée de la configuration n'est <b>pas</b> supprimée en base ; l'aperçu DDL affiche <i>« ATTENTION … Elle n'est PAS supprimée (migration non destructive). »</i></li>
+<li>Pour une <b>grille virtuelle</b>, déclarez ici les colonnes <b>restituées par la source</b> (elles décrivent la sortie ; rien n'est créé en base).</li></ul></div>
+</section>
+
+<!-- ============================================================ S05 -->
+<section id="s05" data-title="5. Onglet Sources externes">
+<h2>5. Onglet « Sources externes » (catalogue des sources métier)</h2>
+<p>Le <b>catalogue des sources métier</b> est une liste <b>globale, commune à toutes les pages</b>, de requêtes SQL
+(ou procédures) <b>sécurisées et réutilisables</b>. Une source peut alimenter un <b>champ SOURCE</b> (valeur calculée
+par la base : solde de congé, encours…), une <b>grille virtuelle</b> (retour TABLE) ou une <b>validation SOURCE</b>.
+Bandeau de l'onglet : <i>« Catalogue sécurisé des sources métier autorisées (commun à toutes les pages). Double-clic
+sur 'Requête SQL' pour éditer le SQL (contrôle d'injection), sur 'Paramètres' pour l'assistant. »</i></p>
+
+<div class="mock">
+  <div class="mk-title"><span><span class="mk-ico">🛠</span> Designer de pages portail — Sources externes</span></div>
+  <div class="mk-tabs"><span class="mk-tab">Structure des tables</span><span class="mk-tab on">Sources externes</span><span class="mk-tab">Champs de la page</span><span class="mk-tab">…</span></div>
+  <div class="mk-body">
+  <div class="mk-help">Catalogue sécurisé des sources métier autorisées (commun à toutes les pages). Double-clic sur 'Requête SQL' pour éditer le SQL (contrôle d'injection), sur 'Paramètres' pour l'assistant.</div>
+  <table class="mk-grid">
+    <tr><th>Code source</th><th>Libellé</th><th>Type</th><th>Requête SQL</th><th>Paramètres (json)</th><th>Retour</th><th>Profil requis</th><th>Active</th></tr>
+    <tr><td>sp_solde_conge_date</td><td>Solde de congé de l'agent à une date</td><td>SQL</td><td class="ro">select isnull(min(c.Solde_Conge),0)…</td><td class="ro">[{"Nom":"Matricule",…}]</td><td>SCALAIRE</td><td></td><td><span class="chk on"></span></td></tr>
+    <tr><td>sp_cng_detail</td><td>Découpe du congé par période de paie</td><td>SQL</td><td class="ro">with d as (…)</td><td class="ro">[{"Nom":"Matricule",…}]</td><td>TABLE</td><td></td><td><span class="chk on"></span></td></tr>
+  </table>
+  </div>
+</div>
+<p class="mk-cap">Fig. 4 — Le catalogue des sources (clic droit : « Définir les paramètres avec l'assistant… » / « Éditer la requête SQL… »).</p>
+
+<table class="ref">
+<tr><th style="width:150px">Colonne</th><th>Rôle et règles</th></tr>
+<tr><td><b>Code source</b></td><td>Clé unique du catalogue (ex. <code>sp_solde_conge_date</code>). C'est ce code qui est référencé partout ailleurs (champs, tables, validations).</td></tr>
+<tr><td><b>Libellé</b></td><td>Description métier — documentez précisément ce que retourne la source.</td></tr>
+<tr><td><b>Type</b></td><td><code>SQL</code> = requête SELECT paramétrée ; <code>PROC</code> = appel de procédure stockée autorisée (<code>EXEC dbo.Sys_*</code>).</td></tr>
+<tr><td><b>Requête SQL</b></td><td><i>Lecture seule.</i> <b>Double-clic</b> (ou clic droit) : éditeur SQL avec <b>contrôle d'injection en temps réel</b>, miroir exact du garde-fou du serveur. → §12.2.</td></tr>
+<tr><td><b>Paramètres (json)</b></td><td><i>Lecture seule.</i> <b>Double-clic</b> : assistant de déclaration des paramètres <code>@xxx</code> (nom, type, obligatoire). → §12.3.</td></tr>
+<tr><td><b>Retour</b></td><td><code>SCALAIRE</code> = une valeur unique (1re colonne de la 1re ligne) — pour les champs SOURCE et validations ; <code>TABLE</code> = un jeu de lignes — <b>exigé pour une grille virtuelle</b>.</td></tr>
+<tr><td><b>Profil requis</b></td><td>Vide = tous les profils ; sinon seul ce profil (ou le super-admin <code>1</code>) peut exécuter la source.</td></tr>
+<tr><td><b>Active</b></td><td>Décochée, la source devient inexécutable et fait échouer la publication des pages qui l'utilisent.</td></tr>
+</table>
+<div class="note"><b class="t">Portée du catalogue</b>
+Le catalogue est <b>partagé par toutes les pages</b> : il est chargé en entier quel que soit le document ouvert, et
+l'enregistrement ne fait que des mises à jour/ajouts par code source (une ligne n'est jamais supprimée en cascade avec
+une page). Toute édition rafraîchit immédiatement les listes « Source métier » des onglets Tables et Champs.
+Le guide complet (création, paramètres, injection automatique, exemples) est au <b>chapitre 12</b>.</div>
+</section>
+<!-- ============================================================ S06 -->
+<section id="s06" data-title="6. Onglet Champs de la page">
+<h2>6. Onglet « Champs de la page »</h2>
+<p>C'est l'onglet central : il décrit <b>chaque champ affiché sur le portail</b> — dans l'entête (table <code>ENT</code>)
+ou dans une grille de détail —, son contrôle de saisie, son placement, son état, sa valeur par défaut, sa formule,
+et sa présence dans la page Liste. Bandeau d'aide : <i>« Champs : Cod_Table = ENT pour l'entête, sinon le code du détail.
+Table et colonne vides : champ affiché uniquement (État = A), jamais stocké. Champ calculé rattaché à un détail sans
+colonne : pied de grille (total...), affiché sous sa grille. »</i></p>
+
+<h3>6.1 Les 25 colonnes de la grille des champs</h3>
+<table class="ref">
+<tr><th style="width:150px">Colonne</th><th>Rôle et règles</th></tr>
+<tr><td><b>Champ</b></td><td>Identifiant technique unique du champ. <b>Astuce</b> : tapez le nom exact d'une colonne physique de la table (ex. <code>Matricule</code>) → le Designer <b>propose toute la ligne</b> : colonne, libellé, type de contrôle déduit du type SQL (nvarchar→TEXT, int→INT, decimal/float→DEC, bit→CHECK, date→DATE…), rang = ordre physique, obligatoire si NOT NULL, valeur par défaut, décimales.</td></tr>
+<tr><td><b>Table</b></td><td><code>ENT</code> (défaut) = champ de l'entête ; sinon code d'un détail = colonne de sa grille. <b>Vide</b> autorisé uniquement pour un champ « affiché uniquement » sans colonne (pur affichage, jamais stocké).</td></tr>
+<tr><td><b>Colonne</b></td><td>Liste filtrée aux <b>colonnes physiquement existantes</b> de la table du champ (déclarées + techniques), <b>moins celles déjà affectées à un autre champ</b> (une colonne = un seul champ). <b>Vide</b> = champ calculé non persisté ou champ d'affichage.</td></tr>
+<tr><td><b>Libellé</b></td><td>Libellé affiché sur le portail (suffixé d'un <code>*</code> si obligatoire). Proposé depuis la colonne si vide.</td></tr>
+<tr><td><b>Type contrôle</b></td><td>L'un des 15 types détaillés au §6.2. Passer à <code>CALCULE</code> force l'état à « Affiché ».</td></tr>
+<tr><td><b>Rang</b></td><td>Ordre du champ dans l'entête / la grille (tri : Ligne, Colonne, Rang).</td></tr>
+<tr><td><b>Ligne</b> / <b>Position</b></td><td>Coordonnées du champ dans l'entête : numéro de <b>ligne</b> et position dans la ligne. → §6.3.</td></tr>
+<tr><td><b>Largeur</b></td><td>Largeur du champ dans l'entête, sur une <b>grille responsive de 12 colonnes</b> (1 = étroit … 12 = pleine largeur ; défaut 3). → §6.3.</td></tr>
+<tr><td><b>Valeur par défaut</b></td><td>Constante (ex. <code>CAD</code>, <code>am</code>, <code>0</code>) ou variable : <code>GV_MATRICULE</code> (agent connecté), <code>GV_NOW</code> (date/heure du jour), <code>GV_LOGIN</code> (utilisateur connecté). → §6.4.</td></tr>
+<tr><td><b>Obligatoire</b></td><td>Ajoute <code>*</code> au libellé ; le contrôle effectif se règle par une validation <code>REQUIRED</code> (§8) — la case seule ne bloque pas l'enregistrement.</td></tr>
+<tr><td><b>État</b></td><td><code>S</code> Saisissable · <code>R</code> Lecture seule (visible, grisé) · <code>A</code> Affiché (calculés, informations) · <code>I</code> Invisible (non rendu). Un champ <code>CALCULE</code> ne peut être que <b>A</b> ou <b>I</b> : <i>« Un champ calculé n'est jamais saisissable : il est 'Affiché' (A) ou 'Invisible' (I). »</i></td></tr>
+<tr><td><b>Rubrique</b></td><td><i>Lecture seule — double-clic</i> : zoom sur les rubriques (<code>Param_Rubriques</code>). <b>Obligatoire si type RUBRIQUE</b> (et utilisé par RADIO). Ex. : rubrique <code>am_pm</code> (am / pm).</td></tr>
+<tr><td><b>N° Zoom</b></td><td><i>Lecture seule — double-clic</i> : zoom sur les zooms déclarés (<code>Controle_Def_Zoom</code>). <b>Obligatoire si type ZOOM</b> (et utilisé par COMBO). Ex. : <code>MS067</code> (agents), <code>MS165</code> (types de congé).</td></tr>
+<tr><td><b>Source métier</b></td><td>Liste des sources actives du catalogue. Référence la source d'un champ de type <code>SOURCE</code>. → §12.4.</td></tr>
+<tr><td><b>Formule (json)</b></td><td>Curseur main — <b>double-clic : assistant de formule</b> (champs <code>CALCULE</code> uniquement ; pour un champ <code>SOURCE</code>, contient le mapping json de la source). Le json est généré, jamais saisi. → §10.</td></tr>
+<tr><td><b>Persisté</b></td><td>Champ calculé <b>stocké en base</b> dans sa colonne (exige une colonne affectée). Non persisté = recalculé à chaque affichage.</td></tr>
+<tr><td><b>Format</b></td><td>Format d'affichage (champs calculés / lecture seule) : <i>vide</i> = Standard · <code>NUM</code> Nombre · <code>MNT</code> Monétaire · <code>PCT</code> Pourcentage (0,15 → « 15 % ») · <code>DAT</code> Date jj/mm/aaaa · <code>DTM</code> Date-heure jj/mm/aaaa hh:mm.</td></tr>
+<tr><td><b>Décimales</b></td><td>Nombre de décimales affichées (proposé depuis l'échelle SQL si decimal).</td></tr>
+<tr><td><b>Visible grille</b> / <b>Rang grille</b> / <b>Largeur col.</b></td><td>Présence et présentation du champ <b>comme colonne de la page Liste</b> du portail (visibilité, ordre, largeur en em). → §6.6.</td></tr>
+<tr><td><b>Critère</b> / <b>Rang critère</b></td><td>Le champ devient un <b>critère de filtre</b> de la page Liste (ordre = Rang critère). Un critère DATE/DATETIME est décliné en deux bornes « (du) » / « (au) ». → §6.6.</td></tr>
+<tr><td><b>Aide</b></td><td>Texte d'aide contextuelle affiché côté portail (300 car. max ; infobulle pour CHECK/RADIO).</td></tr>
+</table>
+
+<h3 id="s06-controles">6.2 Les 15 types de contrôles et leur rendu sur le portail</h3>
+<table class="ref">
+<tr><th style="width:105px">Type</th><th>Usage</th><th>Rendu portail</th><th>Configuration associée</th></tr>
+<tr><td><code>TEXT</code></td><td>Texte court libre</td><td>Zone de texte une ligne</td><td>—</td></tr>
+<tr><td><code>MEMO</code></td><td>Texte long (commentaire…)</td><td>Zone multiligne (3 lignes)</td><td>—</td></tr>
+<tr><td><code>INT</code></td><td>Nombre entier</td><td>Zone numérique entière</td><td>—</td></tr>
+<tr><td><code>DEC</code></td><td>Nombre décimal</td><td>Zone numérique</td><td>Décimales</td></tr>
+<tr><td><code>MNT</code></td><td>Montant</td><td>Zone numérique montant</td><td>Décimales</td></tr>
+<tr><td><code>DATE</code></td><td>Date</td><td>Sélecteur de date (effaçable)</td><td>Valeur par défaut <code>GV_NOW</code> possible</td></tr>
+<tr><td><code>DATETIME</code></td><td>Date + heure</td><td>Sélecteur date et heure</td><td>—</td></tr>
+<tr><td><code>CHECK</code></td><td>Booléen oui/non</td><td>Case à cocher + libellé</td><td>colonne <code>bit</code> ; Aide = infobulle</td></tr>
+<tr><td><code>RADIO</code></td><td>Choix unique, peu d'options visibles</td><td>Boutons radio horizontaux</td><td><b>Rubrique obligatoire</b> (options = rubrique <code>Param_Rubriques</code>)</td></tr>
+<tr><td><code>COMBO</code></td><td>Liste déroulante alimentée par un <b>zoom métier</b> (données d'une table)</td><td>ComboBox ; la condition du zoom peut référencer d'autres champs (<code>{Champ}</code> remplacé par la valeur courante de l'entête)</td><td><b>N° Zoom obligatoire</b></td></tr>
+<tr><td><code>RUBRIQUE</code></td><td>Liste fermée de valeurs de référence</td><td>ComboBox alimentée par la rubrique</td><td><b>Rubrique obligatoire</b> ; ex. <code>am_pm</code></td></tr>
+<tr><td><code>ZOOM</code></td><td>Saisie assistée avec fenêtre de recherche métier</td><td>Champ + bouton zoom, affichage du libellé associé</td><td><b>N° Zoom obligatoire</b> ; ex. MS067 (agents) avec <code>GV_MATRICULE</code></td></tr>
+<tr><td><code>CALCULE</code></td><td>Valeur calculée par formule déclarative</td><td>Zone en lecture seule, valeur formatée ; recalcul temps réel à la saisie <b>et</b> côté serveur</td><td><b>Formule (assistant)</b> ; état A/I ; Persisté ou non ; Format + Décimales ; <i>sans colonne sur un détail = pied de grille</i></td></tr>
+<tr><td><code>SOURCE</code></td><td>Valeur ramenée d'une <b>source métier</b> (solde, encours, durée calculée en base…)</td><td>Zone en lecture seule ; ré-évaluée quand un paramètre mappé change ; <b>ré-exécutée côté serveur</b> à l'enregistrement</td><td><b>Source métier</b> + mapping dans « Formule (json) » ; Persisté recommandé</td></tr>
+<tr><td><code>GED</code></td><td>Accès aux pièces jointes du document</td><td>Bouton trombone ouvrant la GED</td><td>GED active (onglet Conception) + droit GED</td></tr>
+</table>
+<div class="note"><b class="t">Champ sans colonne : deux cas d'usage</b>
+<ul style="margin:4px 0">
+<li><b>Champ d'affichage</b> (table vide ou ENT, colonne vide, état <code>A</code>) : information calculée ou issue d'une source, jamais stockée — ex. « Solde de congé » affiché dans l'entête sans colonne physique.</li>
+<li><b>Pied de grille</b> : champ <code>CALCULE</code> rattaché à un <b>détail</b> mais <b>sans colonne</b> → agrégat (<code>SOMME</code>, <code>NB</code>…) affiché <b>sous la grille</b> (« Total des trajets : 152,30 »), évalué au niveau document, jamais stocké.</li></ul></div>
+
+<h3 id="s06-placement">6.3 Placement de l'entête : la grille 12 colonnes</h3>
+<p>L'entête du document portail est une grille responsive de <b>12 colonnes</b> : chaque champ indique sa
+<b>Ligne</b> (rangée), sa <b>Position</b> (ordre dans la rangée) et sa <b>Largeur</b> (1 à 12 douzièmes).</p>
+<div class="mock">
+  <div class="mk-title"><span><span class="mk-ico">🌐</span> Portail — entête du document (maquette)</span></div>
+  <div class="mk-body">
+    <table style="width:100%;border-collapse:collapse;font-size:11.5px;text-align:center">
+      <tr>
+        <td style="border:1px dashed #9BB8C4;background:#E8F4F8;padding:10px;width:50%">Ligne 1 · Pos 1 · Largeur 6<br><b>N° demande</b> (R)</td>
+        <td style="border:1px dashed #9BB8C4;background:#E8F4F8;padding:10px;width:50%">Ligne 1 · Pos 2 · Largeur 6<br><b>Matricule</b> (zoom)</td>
+      </tr>
+      <tr>
+        <td style="border:1px dashed #9BB8C4;background:#F4FAFC;padding:10px">Ligne 2 · Pos 1 · Largeur 6<br><b>Type de congé</b> (combo)</td>
+        <td style="border:1px dashed #9BB8C4;background:#F4FAFC;padding:10px">Ligne 2 · Pos 2 · Largeur 6<br><b>Commentaire</b></td>
+      </tr>
+      <tr>
+        <td colspan="2" style="border:1px dashed #9BB8C4;background:#EFF7EA;padding:10px">Ligne 3 · Pos 1 · Largeur 4 : <b>Du</b> · Pos 2 · Largeur 2 : <b>AM/PM</b> · Pos 3 · Largeur 4 : <b>Au</b> · Pos 4 · Largeur 2 : <b>AM/PM</b> (4 champs sur la même rangée : 4+2+4+2 = 12)</td>
+      </tr>
+    </table>
+  </div>
+</div>
+<p class="mk-cap">Fig. 5 — Placement : Ligne / Position / Largeur (somme des largeurs d'une rangée = 12 pour un affichage optimal).</p>
+<div class="astuce"><b class="t">Règle pratique</b>
+Faites en sorte que les largeurs des champs d'une même ligne totalisent <b>12</b> (ou un diviseur : 6+6, 4+4+4, 3+3+3+3…).
+Exemple réel (demande de congé) : ligne 3 = <code>Du</code> (4) + <code>AM/PM</code> (2) + <code>Au</code> (4) + <code>AM/PM</code> (2).</div>
+
+<h3 id="s06-defaut">6.4 Valeurs par défaut et variables globales</h3>
+<table class="ref">
+<tr><th style="width:170px">Valeur saisie</th><th>Effet à l'ouverture d'un nouveau document</th></tr>
+<tr><td><code>GV_MATRICULE</code></td><td>Matricule de l'agent connecté (idéal pour un zoom agent en lecture seule).</td></tr>
+<tr><td><code>GV_NOW</code></td><td>Date et heure du moment.</td></tr>
+<tr><td><code>GV_LOGIN</code></td><td>Login de l'utilisateur connecté.</td></tr>
+<tr><td>toute autre valeur</td><td>Constante littérale : <code>CAD</code>, <code>am</code>, <code>0</code>, <code>Standard</code>…</td></tr>
+</table>
+<div class="note"><b class="t">Distinction importante</b>
+Dans les <b>formules</b> (assistant de formule), la liste des variables est différente : <code>GV_NOW</code>, <code>GV_DEBMOIS</code>,
+<code>GV_FINMOIS</code>, <code>GV_DEBYEAR</code>, <code>GV_YEAR</code>, <code>GV_MONTH</code>, <code>GV_DAY</code> — voir §10.4.
+Dans les <b>valeurs par défaut SQL de colonnes</b> (onglet Colonnes), seul <code>GV_NOW</code> est reconnu (→ <code>getdate()</code>).</div>
+
+<h3 id="s06-liste">6.5 Colonnes de la page Liste et critères de recherche</h3>
+<p>Sur le portail, chaque page publiée possède d'abord une <b>page Liste</b> (URL <code>SPPL_&lt;CodPage&gt;</code>) :
+c'est elle qui apparaît dans le menu ; on ouvre ensuite un document (<code>SPP_&lt;CodPage&gt;</code>).</p>
+<table class="ref">
+<tr><th style="width:190px">Configuration (onglet Champs)</th><th>Effet sur la page Liste du portail</th></tr>
+<tr><td><b>Visible grille</b> ✔ + <b>Rang grille</b></td><td>Le champ devient une <b>colonne du tableau des documents</b> (ordre = Rang grille, entête = Libellé, largeur = Largeur col.). La liste affiche en plus, automatiquement : <code>N°</code> (Num_Doc, cliquable pour ouvrir), <code>Statut</code> (libellé du workflow), <code>Créé le</code>, <code>Créé par</code>, et le nom de l'agent si une colonne <code>Matricule</code> existe.</td></tr>
+<tr><td><b>Critère</b> ✔ + <b>Rang critère</b></td><td>Le champ apparaît dans la zone <b>Critères</b> de la liste (sauf types CALCULE/SOURCE/GED/CHECK/RADIO). Un critère de type DATE/DATETIME est automatiquement décliné en <b>deux bornes</b> « Libellé (du) » et « Libellé (au) ».</td></tr>
+</table>
+<div class="portail"><b class="t">Cloisonnement automatique</b>
+Si la table d'entête possède une colonne <code>Matricule</code>, un utilisateur qui n'est ni TeamLeader ni super-admin
+ne voit dans la liste <b>que ses propres documents</b>. Pagination : 20 lignes par page.</div>
+</section>
+<!-- ============================================================ S07 -->
+<section id="s07" data-title="7. Onglet Conception de la page">
+<h2>7. Onglet « Conception de la page »</h2>
+<p>Cet onglet pilote l'<b>identité</b> de la page (type document), son <b>rattachement au menu du portail</b>
+(section, rang, icône) et ses <b>fonctionnalités</b> (workflow de signature, GED, actions, édition).</p>
+
+<div class="mock">
+  <div class="mk-title"><span><span class="mk-ico">🛠</span> Designer de pages portail — Conception de la page</span></div>
+  <div class="mk-tabs"><span class="mk-tab">…</span><span class="mk-tab on">Conception de la page</span><span class="mk-tab">…</span></div>
+  <div class="mk-body">
+    <div class="mk-row">
+      <span class="mk-field"><span class="mk-lbl">Type document</span><span class="mk-inp">FKM</span><span class="bdg">1</span></span>
+      <span class="mk-field"><span class="mk-btn">🖊<span class="bdg">2</span></span></span>
+      <span class="mk-field"><span class="chk on"></span> <span class="mk-lbl">Workflow de signature actif</span><span class="bdg">3</span></span>
+    </div>
+    <div class="mk-row">
+      <span class="mk-field"><span class="mk-lbl">Section portail</span><span class="mk-inp combo">Demandes et documents</span><span class="bdg">4</span></span>
+      <span class="mk-field"><span class="mk-btn">➕<span class="bdg">5</span></span></span>
+      <span class="mk-field"><span class="mk-lbl">Rang</span><span class="mk-inp" style="min-width:40px">90</span><span class="bdg">6</span></span>
+      <span class="mk-field"><span class="mk-lbl">Icône (MUI)</span><span class="mk-inp combo">🚌 Commute</span><span class="bdg">7</span></span>
+    </div>
+    <div class="mk-row">
+      <span class="mk-field"><span class="chk on"></span> <span class="mk-lbl">GED active</span><span class="bdg">8</span></span>
+      <span class="mk-field"><span class="chk"></span> <span class="mk-lbl">Pièce GED obligatoire</span></span>
+      <span class="mk-field"><span class="mk-lbl">Modèle d'édition</span><span class="mk-inp ro"></span><span class="bdg">9</span></span>
+    </div>
+    <div class="mk-row">
+      <span class="mk-field"><span class="chk on"></span> <span class="mk-lbl">Action : Enregistrer</span><span class="bdg">10</span></span>
+      <span class="mk-field"><span class="chk on"></span> <span class="mk-lbl">Action : Soumettre en signature</span></span>
+      <span class="mk-field"><span class="chk"></span> <span class="mk-lbl">Action : Imprimer</span></span>
+      <span class="mk-field"><span class="chk"></span> <span class="mk-lbl">Action : Exporter</span></span>
+    </div>
+  </div>
+</div>
+<p class="mk-cap">Fig. 6 — Onglet Conception (maquette représentative).</p>
+
+<div class="mk-legend">
+<p><span class="bdg">1</span><b>Type document</b> (2 à 10 car. alphanumériques, commence par une lettre, majuscules forcées) : <b>le pivot de toute la page</b>. Il est <b>unique</b> dans l'application, pilote les noms physiques (<code>SP_FKM_Ent</code>…) et sert de <b>code workflow</b>. <b>Immuable dès que la page est enregistrée</b> — choisissez-le avec soin.</p>
+<p><span class="bdg">2</span><b>Règles du workflow de signature</b> (bouton 🖊) : ouvre l'écran standard <code>Workflow_Signatures</code> sur ce type document — actif seulement si page enregistrée + type document renseigné + workflow actif.</p>
+<p><span class="bdg">3</span><b>Workflow de signature actif</b> : le document pourra être « Soumis pour signature » depuis le portail (circuit de signataires paramétré via le bouton 2). À la publication, le type document est déclaré au moteur de workflow.</p>
+<p><span class="bdg">4</span><b>Section portail</b> (obligatoire) : la section du menu latéral où la page apparaîtra. Sections standard : Données organisation, Demandes et documents, Consultations, Evaluations et formations, Recrutements, Déclarations d'accidents de travail, Diverses Éditions, Discipline, Outillage, Communication.</p>
+<p><span class="bdg">5</span><b>Bouton « + »</b> : gérer les sections du menu portail (création, renomme, rang, icône, suppression hors sections standard). Une section n'apparaît sur le portail que si elle contient au moins une page publiée visible.</p>
+<p><span class="bdg">6</span><b>Rang</b> : position de la page dans la section (0–9999, défaut 99).</p>
+<p><span class="bdg">7</span><b>Icône (MUI)</b> : liste illustrée des icônes Material (rubrique <code>SP_Menu_Icones</code>) affichée devant le nom de la page dans le menu. Ex. : <code>Commute</code>, <code>BeachAccess</code>, <code>ReceiptLong</code>.</p>
+<p><span class="bdg">8</span><b>GED active</b> + <b>Pièce GED obligatoire</b> : active les pièces jointes du document (bouton « Pièces jointes » du menu flottant du portail, sous réserve du droit GED du profil).</p>
+<p><span class="bdg">9</span><b>Modèle d'édition</b> : code d'un état Crystal Reports (<code>Param_Mod_Edition.Cod_Report</code>) ; s'il est renseigné, l'action Imprimer du portail ouvre le viewer avec le paramètre <code>NumDoc</code> ; sinon l'impression générique (fiche construite depuis les métadonnées) est utilisée.</p>
+<p><span class="bdg">10</span><b>Actions</b> : boutons affichés dans le menu flottant (FAB) du portail — Enregistrer, Soumettre en signature, Imprimer, Exporter — chacune restant conditionnée aux droits du profil (§9).</p>
+</div>
+</section>
+
+<!-- ============================================================ S08 -->
+<section id="s08" data-title="8. Onglet Comportement (validations)">
+<h2>8. Onglet « Comportement » — validations déclaratives</h2>
+<p>Les validations sont des règles <b>déclaratives</b> contrôlées à la saisie, au changement de valeur, à l'ajout
+d'une ligne et/ou à l'enregistrement. Elles sont <b>toujours rejouées côté serveur</b> lors de l'enregistrement,
+quel que soit le moment déclaré (le navigateur n'est jamais cru). Bandeau : <i>« Validations déclaratives (champs et
+règles globales avant enregistrement). Double-clic sur une cellule 'Paramètres' ou 'Condition' pour générer la syntaxe
+avec l'assistant. »</i></p>
+
+<h3>8.1 Les 12 colonnes de la grille</h3>
+<table class="ref">
+<tr><th style="width:140px">Colonne</th><th>Rôle et règles</th></tr>
+<tr><td><b>Code</b></td><td>Identifiant de la règle (auto <code>V01</code>, <code>V02</code>… via l'assistant), unique dans la page.</td></tr>
+<tr><td><b>Portée</b></td><td><code>CHAMP</code> (un champ de l'entête) · <code>ENTETE</code> (règle globale d'entête) · <code>LIGNE</code> (un champ de chaque ligne d'un détail) · <code>DETAIL</code> (le tableau de détail : UNIQUE, NB_LIGNES) · <code>DOCUMENT</code> (règle globale : EXPR, SOURCE).</td></tr>
+<tr><td><b>Table</b></td><td>Table concernée (vide = règle globale / entête).</td></tr>
+<tr><td><b>Champ</b></td><td>Champ cible (portées CHAMP/LIGNE) ; vide pour DETAIL/DOCUMENT.</td></tr>
+<tr><td><b>Type de règle</b></td><td>L'un des 13 types détaillés au §8.2.</td></tr>
+<tr><td><b>Paramètres (json)</b></td><td><i>Lecture seule — double-clic : assistant.</i> Paramètres de la règle (bornes, liste, opérateur, source…).</td></tr>
+<tr><td><b>Condition (json)</b></td><td><i>Lecture seule — double-clic : assistant.</i> <b>Condition d'application</b> : la règle n'est contrôlée que si la condition est vraie (ex. « seulement si Type = CDI »).</td></tr>
+<tr><td><b>Message d'erreur</b></td><td><b>Obligatoire.</b> Texte affiché à l'utilisateur si la règle n'est pas respectée (préfixé « Ligne n : » sur les détails).</td></tr>
+<tr><td><b>Niveau</b></td><td><code>B</code> Bloquant (empêche l'enregistrement) · <code>W</code> Avertissement (« Voulez-vous continuer ? ») · <code>I</code> Information simple. Défaut : <b>B</b>.</td></tr>
+<tr><td><b>Rang</b></td><td>Ordre d'exécution.</td></tr>
+<tr><td><b>Moment</b></td><td><code>SAISIE</code> · <code>CHANGE</code> (changement du champ) · <code>AJOUT_LIGNE</code> · <code>SAVE</code> (enregistrement — défaut et recommandé ; rappel : <b>toutes les règles actives sont de toute façon rejouées au SAVE côté serveur</b>).</td></tr>
+<tr><td><b>Active</b></td><td>Décochée, la règle est ignorée.</td></tr>
+</table>
+
+<h3 id="s08-types">8.2 Les 13 types de règles (avec json généré et exemples)</h3>
+<table class="ref">
+<tr><th style="width:118px">Type</th><th>Contrôle</th><th>Paramètres (json)</th><th>Exemple</th></tr>
+<tr><td><code>REQUIRED</code></td><td>Champ obligatoire</td><td><i>aucun</i></td><td>Matricule obligatoire — message « Le matricule est obligatoire. »</td></tr>
+<tr><td><code>IN</code></td><td>Valeur dans une liste autorisée</td><td><code>{"valeurs":["CDI","CDD"]}</code></td><td>Type de contrat limité à 3 valeurs</td></tr>
+<tr><td><code>BETWEEN</code></td><td>Valeur entre deux bornes <b>incluses</b></td><td><code>{"min":0,"max":1000}</code></td><td>Kilométrage plausible (niveau W)</td></tr>
+<tr><td><code>MIN</code> / <code>MAX</code></td><td>Borne min / max</td><td><code>{"valeur":1}</code></td><td>Quantité ≥ 1</td></tr>
+<tr><td><code>MINLEN</code> / <code>MAXLEN</code></td><td>Longueur du texte</td><td><code>{"valeur":10}</code></td><td>Commentaire ≤ 300 caractères</td></tr>
+<tr><td><code>REGEX</code></td><td>Format du texte (modèle prédéfini ou libre)</td><td><code>{"pattern":"^0\\d{9}$"}</code></td><td>Téléphone FR ; modèles proposés : e-mail, code postal, chiffres, lettres…</td></tr>
+<tr><td><code>COMPARE</code></td><td>Comparaison à un <b>autre champ</b> ou à une <b>constante</b></td><td><code>{"operateur":"GE","autre":"Dat_Deb"}</code> ou <code>{"operateur":"GT","constante":0}</code></td><td>« Date de fin ≥ date de début » ; « Montant &gt; 0 ». Opérateurs : GT, GE, LT, LE, EQ, NE</td></tr>
+<tr><td><code>UNIQUE</code></td><td>Interdit les doublons sur une combinaison de colonnes d'un détail</td><td><code>{"colonnes":["Dat_Depense","Typ_Frais"]}</code></td><td>Pas deux lignes avec même date + même type de frais (portée DETAIL)</td></tr>
+<tr><td><code>NB_LIGNES</code></td><td>Nombre de lignes d'un détail</td><td><code>{"min":1}</code> et/ou <code>{"max":50}</code></td><td>« Au moins une ligne de trajet » (portée DETAIL)</td></tr>
+<tr><td><code>EXPR</code></td><td>Expression booléenne libre (même langage que les formules)</td><td><code>{"expr":{"op":"GE","args":[{"ref":"Total"},{"const":0}]}}</code></td><td>« Le total ne peut pas être négatif » (portée DOCUMENT)</td></tr>
+<tr><td><code>SOURCE</code></td><td>Contrôle par <b>source métier</b> (exécutée côté serveur uniquement)</td><td><code>{"source":"sp_cng_chevauchement","mapping":{…},"cond":{"op":"EQ","args":[{"ref":"@result"},{"const":0}]}}</code></td><td>Chevauchement de congés, période de paie clôturée… → §12.6. <i>Non pris en charge par l'assistant : json saisi dans la grille.</i></td></tr>
+</table>
+
+<h3 id="s08-cond">8.3 Conditions d'application</h3>
+<p>Une règle peut n'être contrôlée que <b>si une condition est remplie</b> (étape 4 de l'assistant). La condition est
+une ou plusieurs lignes <code>Champ / Condition / Valeur</code> combinées en <b>ET</b> (« toutes ») ou <b>OU</b>
+(« au moins une »). Dans « Valeur », tapez une constante <b>ou le nom d'un autre champ</b> pour comparer deux champs.</p>
+<table class="ref">
+<tr><th>Condition (libellé assistant)</th><th>Opérateur json</th></tr>
+<tr><td>est renseigné / est vide</td><td><code>NOTEMPTY</code> / <code>EMPTY</code></td></tr>
+<tr><td>est égal à / est différent de</td><td><code>EQ</code> / <code>NE</code></td></tr>
+<tr><td>est supérieur à / supérieur ou égal à</td><td><code>GT</code> / <code>GE</code></td></tr>
+<tr><td>est inférieur à / inférieur ou égal à</td><td><code>LT</code> / <code>LE</code></td></tr>
+<tr><td>contient</td><td><code>CONTIENT</code></td></tr>
+</table>
+<div class="astuce"><b class="t">Exemple</b>
+Règle <code>REQUIRED</code> sur « Motif » avec condition <code>Typ_Absence = "SAN"</code> → le motif n'est exigé que
+pour les absences sans solde. Json généré : <code>{"op":"EQ","args":[{"ref":"Typ_Absence"},{"const":"SAN"}]}</code>.</div>
+</section>
+
+<!-- ============================================================ S09 -->
+<section id="s09" data-title="9. Onglet Habilitations">
+<h2>9. Onglet « Habilitations »</h2>
+<p>Définit <b>qui peut faire quoi</b> sur la page, par profil utilisateur (<code>Controle_Profile</code>).
+La grille contient <b>automatiquement une ligne par profil déclaré</b> — les profils créés ultérieurement apparaissent
+d'eux-mêmes à l'ouverture de la page.</p>
+
+<div class="mock">
+  <div class="mk-title"><span><span class="mk-ico">🛠</span> Designer de pages portail — Habilitations</span></div>
+  <div class="mk-body">
+    <div class="mk-row"><span class="chk on"></span> <b>Accès personnalisé (restreindre la consultation)</b> <span class="bdg">1</span></div>
+    <div class="mk-help">Décoché : tous les profils (même créés ultérieurement) peuvent consulter la page. Coché : consultation réservée aux profils cochés ci-dessous. Clic droit sur une colonne : cocher / décocher pour tous les profils.</div>
+    <table class="mk-grid">
+      <tr><th>Profil</th><th>Libellé du profil</th><th>Consulter<span class="bdg">2</span></th><th>Créer</th><th>Modifier</th><th>Supprimer</th><th>Valider</th><th>Imprimer</th><th>GED</th></tr>
+      <tr><td class="ro">1</td><td class="ro">Super administrateur</td><td><span class="chk on"></span></td><td><span class="chk on"></span></td><td><span class="chk on"></span></td><td><span class="chk on"></span></td><td><span class="chk on"></span></td><td><span class="chk on"></span></td><td><span class="chk on"></span></td></tr>
+      <tr><td class="ro">10</td><td class="ro">Gestionnaire RH</td><td><span class="chk on"></span></td><td><span class="chk on"></span></td><td><span class="chk on"></span></td><td><span class="chk"></span></td><td><span class="chk on"></span></td><td><span class="chk on"></span></td><td><span class="chk on"></span></td></tr>
+      <tr><td class="ro">20</td><td class="ro">Salarié</td><td><span class="chk on"></span></td><td><span class="chk on"></span></td><td><span class="chk on"></span></td><td><span class="chk"></span></td><td><span class="chk"></span></td><td><span class="chk"></span></td><td><span class="chk on"></span></td></tr>
+    </table>
+  </div>
+</div>
+<p class="mk-cap">Fig. 7 — Habilitations par profil (clic droit sur l'entête d'une colonne cochable : tout cocher / tout décocher).</p>
+
+<div class="mk-legend">
+<p><span class="bdg">1</span><b>Accès personnalisé</b> : <b>décoché</b> (défaut conseillé pour une page publique) = la <b>consultation</b> est ouverte à tous les profils, y compris ceux créés après la publication — les autres actions restent à cocher par profil. <b>Coché</b> = la consultation elle-même est réservée aux profils cochés « Consulter » (la colonne Consulter devient éditable ; sinon elle est grisée). La publication est <b>refusée</b> si « Accès personnalisé » est coché sans aucun profil « Consulter » (la page serait invisible pour tous).</p>
+<p><span class="bdg">2</span>Les <b>7 droits</b> : <b>Consulter</b> (voir la page et ses documents), <b>Créer</b> (bouton Nouveau + enregistrement d'un nouveau document), <b>Modifier</b>, <b>Supprimer</b>, <b>Valider</b> (soumettre en signature), <b>Imprimer</b>, <b>GED</b> (pièces jointes). Seuls les profils avec <b>au moins une case cochée</b> sont écrits en base. Le super-admin <code>1</code> a toujours tous les droits.</p>
+</div>
+
+<h3>Effets concrets sur le portail</h3>
+<table class="ref">
+<tr><th>Droit</th><th>Effet côté portail</th></tr>
+<tr><td>Consulter</td><td>Entrée de menu visible ; ouverture de la liste et des documents.</td></tr>
+<tr><td>Créer</td><td>Bouton « Nouveau » de la liste actif ; enregistrement d'un nouveau document autorisé.</td></tr>
+<tr><td>Modifier</td><td>Document éditable (sinon tout est en lecture seule) ; bouton « Enregistrer » du menu flottant.</td></tr>
+<tr><td>Supprimer</td><td>Bouton « Supprimer » du menu flottant (document non figé).</td></tr>
+<tr><td>Valider</td><td>Bouton « Soumettre pour signature » (si workflow actif et action cochée).</td></tr>
+<tr><td>Imprimer</td><td>Bouton « Imprimer » (si action cochée).</td></tr>
+<tr><td>GED</td><td>Bouton « Pièces jointes » (si GED active).</td></tr>
+</table>
+<div class="warn"><b class="t">Périmètre</b>
+Les droits s'appliquent à <b>toute la page</b> (pas de droit par champ). Rappel : la liste est en outre cloisonnée
+automatiquement (un non-TeamLeader ne voit que ses documents si une colonne <code>Matricule</code> existe — §6.6).</div>
+</section>
+<!-- ============================================================ S10 -->
+<section id="s10" data-title="10. Assistant de formule — référence complète">
+<h2>10. L'assistant de formule (champs calculés)</h2>
+<p>L'assistant de formule (<code>Zoom_SP_Assistant_Formule</code>) permet de composer la formule d'un champ
+<code>CALCULE</code> <b>en cliquant, sans écrire de code</b>. Vous écrivez une formule en français proche d'Excel ;
+l'assistant la convertit en <b>json déclaratif</b> compris par le moteur du portail — et vous pouvez la <b>tester</b>
+avec des valeurs avant de l'enregistrer.</p>
+
+<h3>10.1 Ouverture et conditions</h3>
+<ul>
+<li>Onglet « Champs de la page », <b>double-clic</b> sur la cellule <b>« Formule (json) »</b> d'un champ.</li>
+<li>Le champ doit être de type <code>CALCULE</code>, sinon : <i>« Une formule ne concerne que les champs calculés :
+passez d'abord le type du champ à 'CALCULE' (colonne 'Type de contrôle'). »</i></li>
+<li>Une formule existante est reconvertie en texte français si possible ; sinon elle est affichée en « mode avancé »
+et conservée telle quelle.</li>
+</ul>
+
+<h3>10.2 L'écran de l'assistant</h3>
+<div class="mock">
+  <div class="mk-title"><span><span class="mk-ico">ƒx</span> Assistant de formule — champ calculé</span><span>💾 ❌</span></div>
+  <div class="mk-body">
+    <div class="mk-help">Composez la formule en cliquant : aucun code à écrire. Seuls les champs de la page, les variables GV_ et les opérateurs autorisés sont acceptés ; la syntaxe json du moteur est générée automatiquement.</div>
+    <div class="mk-group" style="margin:8px 2px"><span class="mk-gt">1. Choisissez les éléments (double-clic pour insérer à la position du curseur)</span>
+      <div class="mk-row">
+        <span class="mk-inp" style="min-width:180px">📋 Champs de la page : Km — Kilomètres [LIGNES] ; Tx…</span>
+        <span class="mk-inp" style="min-width:150px">🌐 Variables globales : GV_NOW, GV_YEAR…</span>
+        <span class="mk-inp combo" style="min-width:150px">Partir d'un exemple…</span>
+      </div>
+      <div class="mk-row">
+        <span class="mk-btn">+</span><span class="mk-btn">−</span><span class="mk-btn">×</span><span class="mk-btn">÷</span>
+        <span class="mk-btn">(</span><span class="mk-btn">)</span><span class="mk-btn">=</span><span class="mk-btn">≠</span>
+        <span class="mk-btn">&gt;</span><span class="mk-btn">≥</span><span class="mk-btn">&lt;</span><span class="mk-btn">≤</span>
+        <span class="mk-btn">ET</span><span class="mk-btn">OU</span><span class="mk-btn">NON</span>
+        <span class="mk-btn"><b>Texte ▾</b></span><span class="mk-btn"><b>Dates ▾</b></span><span class="mk-btn"><b>Nombres ▾</b></span><span class="mk-btn"><b>Condition ▾</b></span><span class="mk-btn"><b>Tableau (somme…) ▾</b></span>
+        <span class="mk-btn">? Guide pas à pas</span>
+      </div>
+    </div>
+    <div class="mk-group" style="margin:8px 2px"><span class="mk-gt">2. Votre formule</span>
+      <div class="mk-row"><span class="mk-inp" style="min-width:420px;font-family:Consolas">ARRONDI(Km * Tx; 2)</span> <span style="color:#2E7D32">✔ Formule valide</span></div>
+    </div>
+    <div class="mk-group" style="margin:8px 2px"><span class="mk-gt">3. Testez la formule avec des valeurs (facultatif)</span>
+      <div class="mk-row">
+        <span class="mk-inp ro">Km</span><span class="mk-inp">120,5</span>
+        <span class="mk-inp ro">Tx</span><span class="mk-inp">0,529</span>
+        <span class="mk-btn"><b>Calculer</b></span> → <b>Résultat : 63,74</b>
+      </div>
+    </div>
+    <div class="mk-group" style="margin:8px 2px"><span class="mk-gt">Syntaxe générée (automatique — rien à saisir)</span>
+      <div class="mk-row"><span class="mk-inp ro" style="min-width:480px;font-family:Consolas;font-size:11px">{"op":"ROUND","args":[{"op":"MUL","args":[{"ref":"Km"},{"ref":"Tx"}]},{"const":2}]}</span></div>
+    </div>
+  </div>
+</div>
+<p class="mk-cap">Fig. 8 — L'assistant de formule : composition par clics, validation instantanée, test avec valeurs, json généré.</p>
+
+<h3 id="s10-syntaxe">10.3 Syntaxe et opérateurs</h3>
+<table class="ref">
+<tr><th style="width:210px">Règle</th><th>Détail</th></tr>
+<tr><td><b>Séparateur d'arguments</b></td><td>Le <b>point-virgule <code>;</code></b> — jamais la virgule : <i>« La virgule ne sépare pas les arguments : utilisez le point-virgule ';'. »</i> Ex. <code>ARRONDI(Km * Tx; 2)</code>.</td></tr>
+<tr><td><b>Nombres</b></td><td>Séparateur décimal <code>,</code> ou <code>.</code> indifféremment : <code>0,529</code> = <code>0.529</code>.</td></tr>
+<tr><td><b>Textes</b></td><td>Entre guillemets doubles : <code>"pm"</code>, <code>"ACTIF"</code> (pas de saut de ligne).</td></tr>
+<tr><td><b>Références aux champs</b></td><td>Par <b>nom de colonne</b> ou code champ, <b>insensible à la casse</b> : <code>Km</code>, <code>Tx</code>, <code>Dat_Fin_Conge</code>. Interdit de référencer le champ calculé lui-même. Les champs d'un détail ne sont utilisables que dans les agrégats (SOMME…) ou dans une formule de ligne du même détail.</td></tr>
+<tr><td><b>Arithmétique</b></td><td><code>+ − * /</code> et parenthèses. <b>La division est sécurisée</b> : <code>a / 0</code> retourne 0 (pas d'erreur). <code>date − date</code> = durée <b>en secondes</b> (ex. <code>(Dat_Fin - Dat_Deb) / 3600</code> = heures).</td></tr>
+<tr><td><b>Comparaisons</b></td><td><code>=</code>, <code>&lt;&gt;</code>, <code>&gt;</code>, <code>&gt;=</code>, <code>&lt;</code>, <code>&lt;=</code> — non chaînables : combinez avec <code>ET</code> / <code>OU</code>.</td></tr>
+<tr><td><b>Logique</b></td><td><code>ET</code>, <code>OU</code>, <code>NON</code> (ex. <code>SI(Km &gt; 0 ET Tx &gt; 0; Km * Tx; 0)</code>).</td></tr>
+<tr><td><b>Imbrication</b></td><td>Profondeur maximale : 20 niveaux.</td></tr>
+</table>
+
+<h3 id="s10-gv">10.4 Variables globales utilisables dans les formules</h3>
+<table class="ref">
+<tr><th style="width:150px">Variable</th><th>Valeur retournée</th></tr>
+<tr><td><code>GV_NOW</code></td><td>Date et heure du moment.</td></tr>
+<tr><td><code>GV_YEAR</code></td><td>Année courante (ex. 2026).</td></tr>
+<tr><td><code>GV_MONTH</code></td><td>Mois courant (1–12).</td></tr>
+<tr><td><code>GV_DAY</code></td><td>Jour du mois courant.</td></tr>
+<tr><td><code>GV_DEBMOIS</code></td><td>1er jour du mois courant.</td></tr>
+<tr><td><code>GV_FINMOIS</code></td><td>Dernier jour du mois courant.</td></tr>
+<tr><td><code>GV_DEBYEAR</code></td><td>1er janvier de l'année courante.</td></tr>
+</table>
+
+<h3 id="s10-texte">10.5 Fonctions texte</h3>
+<p>Convention « tableur » : les positions de caractères commencent à <b>1</b>.</p>
+<table class="ref">
+<tr><th style="width:230px">Fonction</th><th>Effet</th><th>Exemple → résultat</th></tr>
+<tr><td><code>GAUCHE(texte; n)</code></td><td>n premiers caractères</td><td><code>GAUCHE("FKM-2026"; 3)</code> → "FKM"</td></tr>
+<tr><td><code>DROITE(texte; n)</code></td><td>n derniers caractères</td><td><code>DROITE("FKM-2026"; 4)</code> → "2026"</td></tr>
+<tr><td><code>STXT(texte; début; longueur?)</code></td><td>Sous-chaîne à partir de <i>début</i> (1 = 1er caractère) ; sans longueur → jusqu'à la fin</td><td><code>STXT("FKM-2026"; 5)</code> → "2026"</td></tr>
+<tr><td><code>POSITION(morceau; texte)</code></td><td>Rang (1-based) du morceau, 0 si absent</td><td><code>POSITION("-"; "FKM-2026")</code> → 4</td></tr>
+<tr><td><code>LONGUEUR(texte)</code></td><td>Nombre de caractères</td><td><code>LONGUEUR("FKM")</code> → 3</td></tr>
+<tr><td><code>MAJUSCULE(texte)</code> / <code>MINUSCULE(texte)</code></td><td>Casse</td><td><code>MAJUSCULE("frais")</code> → "FRAIS"</td></tr>
+<tr><td><code>SUPPRESPACE(texte)</code></td><td>Supprime les espaces de début/fin</td><td><code>SUPPRESPACE("  abc  ")</code> → "abc"</td></tr>
+<tr><td><code>REMPLACE(texte; ancien; nouveau)</code></td><td>Remplacement de sous-chaîne</td><td><code>REMPLACE("a-b-c"; "-"; "/")</code> → "a/b/c"</td></tr>
+<tr><td><code>CONCAT(t1; t2; …)</code></td><td>Concaténation (≥ 2 arguments)</td><td><code>CONCAT(GAUCHE(Code; 3); "-"; ANNEE(GV_NOW))</code> → "FKM-2026"</td></tr>
+<tr><td><code>CONTIENT(texte; morceau)</code></td><td>Vrai si le texte contient le morceau</td><td><code>CONTIENT(Commentaire; "urgent")</code></td></tr>
+</table>
+
+<h3 id="s10-dates">10.6 Fonctions dates</h3>
+<table class="ref">
+<tr><th style="width:250px">Fonction</th><th>Effet / unités</th><th>Exemple</th></tr>
+<tr><td><code>DUREE(date_fin; date_début; unité)</code></td><td>Écart entre deux dates. Unités : <code>"S"</code> secondes, <code>"MI"</code> minutes, <code>"H"</code> heures, <code>"J"</code> jours (mots français acceptés : SECONDE, MINUTE, HEURE, JOUR)</td><td><code>DUREE(Dat_Fin_ABS; Dat_Deb_ABS; "S")</code> ; <code>DUREE(Dat_Fin; Dat_Deb; "J") + 1</code> = nombre de jours calendaires bornes incluses</td></tr>
+<tr><td><code>AJOUTDATE(date; nombre; unité)</code></td><td>Ajoute une durée. Unités : <code>S</code>, <code>MI</code>, <code>H</code>, <code>J</code>, <code>"MO"</code> mois, <code>"A"</code> années (mots : MOIS, AN, ANS, ANNEE)</td><td><code>AJOUTDATE(Dat_Deb; 30; "J")</code> = date d'échéance à J+30</td></tr>
+<tr><td><code>ANNEE(date)</code> / <code>MOIS(date)</code> / <code>JOUR(date)</code></td><td>Extrait l'année / le mois / le jour</td><td><code>ANNEE(GV_NOW)</code> → 2026</td></tr>
+<tr><td><code>PARTDATE(date; partie)</code></td><td>Extrait une partie : <code>A</code>, <code>M</code>, <code>J</code>, <code>H</code>, <code>MI</code>, <code>S</code></td><td><code>PARTDATE(Heure_Deb; "H")</code></td></tr>
+<tr><td><code>JOURSEM(date)</code></td><td>Jour de la semaine : <b>1 = lundi … 7 = dimanche</b></td><td><code>SI(JOURSEM(Dat_Deb) &gt;= 6; "week-end"; "semaine")</code></td></tr>
+</table>
+
+<h3 id="s10-nombres">10.7 Fonctions nombres</h3>
+<table class="ref">
+<tr><th style="width:230px">Fonction</th><th>Effet</th><th>Exemple → résultat</th></tr>
+<tr><td><code>ARRONDI(valeur; décimales?)</code></td><td>Arrondi au plus proche (0,5 vers le haut, façon tableur)</td><td><code>ARRONDI(Km * Tx; 2)</code> → 63,74</td></tr>
+<tr><td><code>ABS(v)</code></td><td>Valeur absolue</td><td><code>ABS(-4,5)</code> → 4,5</td></tr>
+<tr><td><code>ENT(v)</code></td><td>Partie entière (vers −∞)</td><td><code>ENT(3,9)</code> → 3</td></tr>
+<tr><td><code>PLAFOND(v)</code> / <code>PLANCHER(v)</code></td><td>Entier supérieur / inférieur</td><td><code>PLAFOND(2,1)</code> → 3</td></tr>
+<tr><td><code>MIN(a; b; …)</code> / <code>MAX(a; b; …)</code></td><td>Plus petit / plus grand des arguments (≥ 2)</td><td><code>MAX(0; Total - Franchise)</code></td></tr>
+</table>
+
+<h3 id="s10-cond">10.8 Fonctions condition</h3>
+<table class="ref">
+<tr><th style="width:230px">Fonction</th><th>Effet</th><th>Exemple</th></tr>
+<tr><td><code>SI(condition; si_vrai; si_faux)</code></td><td>Choix conditionnel</td><td><code>SI(Montant &gt; 1000; ARRONDI(Montant * 0,9; 2); Montant)</code> — remise de 10 % au-delà de 1000</td></tr>
+<tr><td><code>VIDE(champ)</code></td><td>Vrai si le champ est vide / non renseigné</td><td><code>SI(VIDE(Tx); 0; Tx)</code></td></tr>
+<tr><td><code>REMPLI(champ)</code></td><td>Vrai si le champ est renseigné</td><td><code>SI(REMPLI(Commentaire); "Oui"; "Non")</code></td></tr>
+</table>
+
+<h3 id="s10-agreg">10.9 Fonctions tableau (agrégats sur un détail)</h3>
+<p>Ces fonctions s'appliquent à <b>une colonne d'un tableau de détail</b> (jamais de l'entête) : l'assistant ne propose
+que les colonnes de détail. Le json généré porte la table et la colonne, ex. <code>{"op":"SUM","table":"LIGNES","colonne":"Mnt"}</code>.</p>
+<table class="ref">
+<tr><th style="width:180px">Fonction</th><th>Effet</th><th>Exemple</th></tr>
+<tr><td><code>SOMME(colonne)</code></td><td>Somme des valeurs des lignes</td><td><code>SOMME(Mnt)</code> — total des trajets (champ <code>Total</code> de l'entête ou pied de grille)</td></tr>
+<tr><td><code>MOYENNE(colonne)</code></td><td>Moyenne</td><td><code>MOYENNE(Km)</code></td></tr>
+<tr><td><code>MIN(colonne)</code> / <code>MAX(colonne)</code></td><td>Min / max des lignes (à un argument = agrégat)</td><td><code>MAX(Dat_Depense)</code> = dernière dépense</td></tr>
+<tr><td><code>NB()</code> / <code>NB(colonne)</code></td><td>Nombre de lignes (sans argument : exige un seul détail dans la page)</td><td><code>NB()</code> — nombre de trajets</td></tr>
+</table>
+
+<h3 id="s10-niveaux">10.10 Où vit un calcul : document, ligne, pied de grille</h3>
+<table class="ref">
+<tr><th>Configuration du champ CALCULE</th><th>Évaluation</th></tr>
+<tr><td>Table = ENT, colonne affectée ou non</td><td>Calcul de <b>document</b> (une valeur pour tout le document). Peut utiliser les agrégats sur les détails : <code>SOMME(Mnt)</code>.</td></tr>
+<tr><td>Table = détail, <b>colonne affectée</b></td><td>Calcul de <b>ligne</b> : la formule s'applique à chaque ligne (références = colonnes de la ligne courante) : <code>ARRONDI(Km * Tx; 2)</code>.</td></tr>
+<tr><td>Table = détail, <b>colonne vide</b></td><td><b>Pied de grille</b> : agrégat affiché sous la grille, jamais stocké : <code>SOMME(Mnt)</code>.</td></tr>
+</table>
+<ul>
+<li><b>Persisté</b> ✔ (colonne affectée) : la valeur est écrite en base ; sinon elle est recalculée à chaque affichage.</li>
+<li><b>Recalcul en cascade</b> : le portail ne recalcule que les champs impactés par la saisie ; le serveur recalcule tout avant d'enregistrer (la valeur envoyée n'est jamais crue).</li>
+<li><b>Références circulaires interdites</b> : à la publication, le Designer détecte les cycles (<i>« Référence circulaire dans les calculs : A -&gt; B -&gt; A »</i>) ; le portail alerte au chargement et bloque l'enregistrement.</li>
+</ul>
+
+<h3>10.11 Formats d'affichage des valeurs calculées</h3>
+<table class="ref">
+<tr><th style="width:90px">Format</th><th>Effet (exemple)</th></tr>
+<tr><td><i>vide</i></td><td>Standard (avec « Décimales » si renseigné)</td></tr>
+<tr><td><code>NUM</code></td><td>Nombre : 1234,5</td></tr>
+<tr><td><code>MNT</code></td><td>Monétaire : 1 234,50</td></tr>
+<tr><td><code>PCT</code></td><td>Pourcentage : 0,15 → « 15 % »</td></tr>
+<tr><td><code>DAT</code></td><td>Date : 14/08/2026</td></tr>
+<tr><td><code>DTM</code></td><td>Date-heure : 14/08/2026 09:30</td></tr>
+</table>
+
+<h3 id="s10-exemples">10.12 Exemples de formules commentés</h3>
+<table class="ref">
+<tr><th style="width:320px">Formule (texte français)</th><th>Effet</th></tr>
+<tr><td><code>ARRONDI(Km * Tx; 2)</code></td><td>Montant d'une ligne de frais kilométrique, arrondi au centime.</td></tr>
+<tr><td><code>SOMME(Mnt) + SOMME(Frais)</code></td><td>Total général = somme de deux détails différents.</td></tr>
+<tr><td><code>DUREE(Dat_Fin; Dat_Deb; "J") + 1</code></td><td>Nombre de jours calendaires, bornes incluses.</td></tr>
+<tr><td><code>(Dat_Fin_ABS - Dat_Deb_ABS) / 3600</code></td><td>Durée d'absence <b>en heures</b> (la soustraction de deux dates donne des secondes).</td></tr>
+<tr><td><code>AJOUTDATE(Dat_Demande; 30; "J")</code></td><td>Date d'échéance à J+30.</td></tr>
+<tr><td><code>AJOUTDATE(GV_FINMOIS; 1; "J")</code></td><td>Premier jour du mois prochain.</td></tr>
+<tr><td><code>SI(Montant &gt; 0; Montant; 0)</code></td><td>Plafonne un montant à zéro (jamais négatif).</td></tr>
+<tr><td><code>SI(Montant &gt; 1000; ARRONDI(Montant * 0,9; 2); Montant)</code></td><td>Remise de 10 % au-delà de 1 000.</td></tr>
+<tr><td><code>MAJUSCULE(SUPPRESPACE(Nom))</code></td><td>Normalise un nom saisi.</td></tr>
+<tr><td><code>CONCAT(GAUCHE(Code; 3); "-"; ANNEE(GV_NOW))</code></td><td>Construit une référence parlante : "FKM-2026".</td></tr>
+<tr><td><code>SI(JOURSEM(Dat_Deb) &gt;= 6; "Départ en week-end"; "Départ en semaine")</code></td><td>Texte conditionnel sur le jour de la semaine.</td></tr>
+<tr><td><code>DUREE(Dat_Fin_Conge; Dat_Deb_Conge; "J") + 1 - SI(Dat_Deb_am_pm = "pm"; 0,5; 0) - SI(Dat_Fin_am_pm = "am"; 0,5; 0)</code></td><td>Durée de congé avec demi-journées (formule réelle de la page de démonstration des congés).</td></tr>
+</table>
+<div class="warn"><b class="t">Erreurs fréquentes détectées par l'assistant</b>
+« La virgule ne sépare pas les arguments » · « Guillemet fermant manquant » · « Variable globale inconnue… » ·
+« Une formule ne peut pas utiliser le champ qu'elle calcule » · « Fonction inconnue » (la liste des fonctions autorisées
+est rappelée dans le message) · « On ne peut pas enchaîner deux comparaisons : combinez-les avec ET / OU. »</div>
+</section>
+
+<!-- ============================================================ S11 -->
+<section id="s11" data-title="11. Assistant de validation — guide">
+<h2>11. L'assistant de validation</h2>
+<p>L'assistant (<code>Zoom_SP_Assistant_Validation</code>) décrit une règle <b>en français</b> et génère les json des
+colonnes « Paramètres » et « Condition » de l'onglet Comportement. Ouverture : <b>clic droit</b> sur la grille ▸
+<i>« Créer / modifier une règle avec l'assistant… »</i>, ou <b>double-clic</b> sur « Paramètres (json) » /
+« Condition (json) » d'une ligne existante. Les règles de type <code>SOURCE</code> en sont exclues (trop spécifiques :
+json saisi directement dans la grille — voir §12.6).</p>
+
+<h3>11.1 Les 5 étapes</h3>
+<div class="etape"><span class="num">1</span><h4>Que voulez-vous vérifier ?</h4>
+<p>Choix du type de règle dans une liste en langage clair : « Un champ doit être renseigné (obligatoire) »,
+« Comparer deux champs entre eux (ex : date de fin ≥ date de début) », « Comparer un champ à une valeur fixe »,
+« La valeur doit faire partie d'une liste autorisée », « Valeur minimale / maximale », « Valeur entre deux bornes »,
+« Longueur minimale / maximale du texte », « Format du texte (modèle prédéfini ou personnalisé) »,
+« Interdire les doublons dans un tableau », « Nombre de lignes d'un tableau (min/max) », « Règle personnalisée
+(combinaison de conditions) ». Une aide contextuelle s'affiche pour chaque type.</p></div>
+<div class="etape"><span class="num">2</span><h4>Champ / tableau concerné</h4>
+<p>Liste des champs de la page (ou du tableau pour « Nombre de lignes »). Cette étape fixe automatiquement la
+<b>portée</b> : CHAMP (entête), LIGNE (champ d'un détail), DETAIL (doublons / nombre de lignes), DOCUMENT (règle personnalisée).</p></div>
+<div class="etape"><span class="num">3</span><h4>Paramètres de la règle</h4>
+<p>Un panneau adapté au type : valeur unique ; bornes « Entre … et … (bornes incluses) » ; liste de valeurs séparées
+par des points-virgules (<code>CDI ; CDD ; INTERIM</code>) ; modèle de format prédéfini (<b>E-mail</b>, <b>Téléphone FR</b>,
+<b>Code postal</b>, <b>Chiffres uniquement</b>, <b>Lettres uniquement</b>, <b>Personnalisé</b>) ; opérateur de comparaison
++ autre champ ou constante ; colonnes de la combinaison anti-doublon ; bornes « au moins / au plus » pour un tableau.</p></div>
+<div class="etape"><span class="num">4</span><h4>Quand la règle doit-elle s'appliquer ? (facultatif)</h4>
+<p>« Toujours » (défaut) ou « Seulement si les conditions ci-dessous sont réunies » : grille
+Champ / Condition / Valeur (la valeur peut être une constante <b>ou le nom d'un autre champ</b>), combinées en
+« Toutes les conditions (ET) » ou « Au moins une (OU) ». → opérateurs au §8.3.</p></div>
+<div class="etape"><span class="num">5</span><h4>Message et gravité</h4>
+<p>Le <b>message</b> affiché à l'utilisateur est <b>obligatoire</b> ; il est <b>suggéré automatiquement</b> selon le type
+(ex. « Le champ 'X' est obligatoire. », « Doublon interdit sur 'X' : cette valeur existe déjà dans une autre ligne. »,
+« Le tableau 'L' doit contenir au moins n ligne(s). ») tant que vous ne l'avez pas modifié. Gravité :
+<b>Bloquant</b> (défaut) / <b>Avertissement</b> / <b>Information</b>. L'aperçu final montre les deux json générés.</p></div>
+
+<h3>11.2 Exemples de règles produites par l'assistant</h3>
+<table class="ref">
+<tr><th style="width:250px">Règle décrite</th><th>Paramètres générés</th><th>Portée</th></tr>
+<tr><td>Matricule obligatoire</td><td><i>(vide)</i> — type REQUIRED</td><td>CHAMP</td></tr>
+<tr><td>Date de fin ≥ date de début</td><td><code>{"operateur":"GE","autre":"Dat_Deb_Conge"}</code></td><td>CHAMP</td></tr>
+<tr><td>Montant &gt; 0</td><td><code>{"operateur":"GT","constante":0}</code></td><td>CHAMP</td></tr>
+<tr><td>État dans une liste fermée</td><td><code>{"valeurs":["CDI","CDD","INTERIM"]}</code></td><td>CHAMP</td></tr>
+<tr><td>Kilométrage entre 0 et 1000 (avertissement)</td><td><code>{"min":0,"max":1000}</code></td><td>LIGNE</td></tr>
+<tr><td>Téléphone au format français</td><td><code>{"pattern":"^0\\d{9}$"}</code></td><td>CHAMP</td></tr>
+<tr><td>Pas deux lignes avec même date + type de frais</td><td><code>{"colonnes":["Dat_Depense","Typ_Frais"]}</code></td><td>DETAIL</td></tr>
+<tr><td>Au moins une ligne de trajet</td><td><code>{"min":1}</code></td><td>DETAIL</td></tr>
+<tr><td>Total ≥ 0 (règle personnalisée)</td><td><code>{"expr":{"op":"GE","args":[{"ref":"Total"},{"const":0}]}}</code></td><td>DOCUMENT</td></tr>
+</table>
+<div class="astuce"><b class="t">À la création</b>
+L'assistant fixe automatiquement : code <code>V01</code>, <code>V02</code>… (premier disponible), moment
+<code>SAVE</code>, règle active. Vous pouvez ensuite ajuster moment et niveau dans la grille.</div>
+</section>
+<!-- ============================================================ S12 -->
+<section id="s12" data-title="12. Sources métier — guide complet">
+<h2>12. Sources métier — guide complet</h2>
+<p>Une <b>source métier</b> est une requête SQL (ou un appel de procédure autorisée) <b>paramétrée, sécurisée et
+réutilisable</b>, déclarée une fois dans le catalogue (onglet « Sources externes ») et consommable par n'importe
+quelle page. Trois usages : <b>champ SOURCE</b> (valeur affichée), <b>grille virtuelle</b> (tableau calculé),
+<b>validation SOURCE</b> (contrôle serveur).</p>
+
+<h3>12.1 Créer une source pas à pas</h3>
+<div class="etape"><span class="num">1</span><h4>Ajouter une ligne dans le catalogue</h4>
+<p>Onglet « Sources externes » → nouvelle ligne : <b>Code source</b> (ex. <code>sp_solde_conge_date</code>),
+<b>Libellé</b> métier, <b>Type</b> = <code>SQL</code>, <b>Retour</b> = <code>SCALAIRE</code> ou <code>TABLE</code>,
+<b>Profil requis</b> éventuel, <b>Active</b> ✔.</p></div>
+<div class="etape"><span class="num">2</span><h4>Écrire la requête (double-clic sur « Requête SQL »)</h4>
+<p>L'éditeur (<code>Zoom_SP_SqlSource</code>) contrôle la requête <b>en temps réel</b> (bandeau vert
+« Requête conforme au contrôle d'injection. » ou rouge avec le motif du refus). Règles — miroir exact du garde-fou serveur :</p>
+<ul>
+<li><b>Lecture seule uniquement</b> : la requête doit commencer par <code>SELECT</code>, <code>WITH</code> ou
+<code>EXEC dbo.Sys_*</code> ; <b>une seule instruction</b> ;</li>
+<li>mots-clés interdits : <code>insert, update, delete, merge, drop, alter, create, truncate, grant, revoke, backup,
+restore, shutdown, kill, waitfor, openrowset, opendatasource, xp_*</code> ;</li>
+<li>procédures système <code>sp_*</code> (minuscules) interdites — les tables métier <code>SP_</code> (majuscules) restent lisibles ;</li>
+<li>paramètres écrits <code>@xxx</code> dans le texte ; <code>@id_Societe</code> est <b>toujours injecté par le serveur</b> :
+ne l'utilisez qu'en lecture, sans jamais le déclarer.</li>
+</ul></div>
+<div class="etape"><span class="num">3</span><h4>Déclarer les paramètres (double-clic sur « Paramètres »)</h4>
+<p>L'assistant (<code>Zoom_SP_Assistant_ParamSource</code>) <b>détecte les <code>@xxx</code> de la requête</b> et les propose
+dans la liste des noms. Pour chacun : <b>Nom</b> (sans le @), <b>Type</b> (Texte nvarchar, Nombre entier int, Nombre décimal,
+Date, Date et heure, Oui/Non bit), <b>Obligatoire</b>. Il contrôle la cohérence dans les deux sens : paramètre déclaré mais
+absent de la requête → erreur ; <code>@xxx</code> utilisé mais non déclaré → erreur (sauf auto-injectés).</p></div>
+<div class="etape"><span class="num">4</span><h4>Enregistrer la page</h4>
+<p>Le catalogue est enregistré avec la page (ajouts/mises à jour par code source ; une source n'est jamais supprimée
+automatiquement). La source devient immédiatement disponible dans les listes « Source métier » des onglets Tables et Champs.</p></div>
+
+<h3>12.2 Injection automatique d'identité (très important)</h3>
+<table class="ref">
+<tr><th style="width:140px">Paramètre</th><th>Comportement du serveur</th></tr>
+<tr><td><code>@id_Societe</code></td><td><b>Toujours injecté</b> avec la société de l'utilisateur connecté (jeton de session). <b>Ne jamais le déclarer</b> : sa déclaration est une erreur bloquante. Utilisez-le librement dans le WHERE.</td></tr>
+<tr><td><code>@Login</code>, <code>@Matricule</code>, <code>@Cod_Profile</code></td><td>S'ils ne sont <b>pas déclarés</b>, ils sont injectés avec l'identité de l'utilisateur connecté (avertissement de l'assistant). <b>Les déclarer</b> permet au contraire de les alimenter <b>depuis un champ de la page</b> (mapping) — ex. calculer le solde d'un <i>autre</i> salarié que l'utilisateur connecté.</td></tr>
+</table>
+
+<h3>12.3 Exemples réels de sources (extraits du référentiel produit)</h3>
+<h4>Exemple A — scalaire simple : solde de congé à une date</h4>
+<pre class="sql">-- Code : sp_solde_conge_date · Type : SQL · Retour : SCALAIRE
+-- Paramètres : [{"Nom":"Matricule","Typ":"nvarchar","Obligatoire":true},
+--               {"Nom":"DatRef","Typ":"nvarchar","Obligatoire":true}]
+select isnull(min(c.Solde_Conge), 0) as Solde_Conge
+from (select convert(date, dateadd(hour, 12, convert(datetimeoffset, @DatRef))) as DatRef) d
+cross apply dbo.Sys_Rh_Conge(@id_Societe, d.DatRef) c
+where c.Matricule = @Matricule</pre>
+<div class="note"><b class="t">Convention dates</b>
+Les paramètres date arrivent du portail en chaîne ISO ; la canonisation <code>dateadd(hour, 12, convert(datetimeoffset, @…))</code>
+rétablit la lecture d'horloge locale quel que soit le fuseau — reprenez ce motif dans vos propres sources datées.</div>
+
+<h4>Exemple B — scalaire avec règle de gestion : avances en cours d'un agent</h4>
+<pre class="sql">-- Code : sp_avances_encours · Retour : SCALAIRE · Paramètres : Matricule (obligatoire)
+select isnull(sum(isnull(Montant_Avance, 0) - isnull(Reglement, 0)), 0) as mnt
+from dbo.RH_Paie_Avance
+where id_Societe = @id_Societe and Matricule = @Matricule</pre>
+
+<h4>Exemple C — retour TABLE : découpe d'un congé par période de paie</h4>
+<pre class="sql">-- Code : sp_cng_detail · Retour : TABLE · Paramètres : Matricule, Deb, Fin (obligatoires), DebPm, FinPm (facultatifs)
+-- Alimente une GRILLE VIRTUELLE : colonnes restituées Dat_Deb, Dat_Fin, Duree_Globale, Repos_Hebdomadaire, Jours_Feries, Duree_Conge
+with d as (
+  select convert(date, dateadd(hour, 12, convert(datetimeoffset, @Deb))) as Deb,
+         convert(date, dateadd(hour, 12, convert(datetimeoffset, @Fin))) as Fin
+), …
+select PDeb as Dat_Deb, PFin as Dat_Fin, Duree_Globale,
+       sum(EstRepos) as Repos_Hebdomadaire,
+       sum(case when EstRepos = 1 then 0 else EstFerie end) as Jours_Feries,
+       case when Duree_Globale - sum(EstRepos) - … &lt; 0 then 0 else … end as Duree_Conge
+from j2
+group by PDeb, PFin, Duree_Globale
+order by PDeb
+option (maxrecursion 0)</pre>
+<p>Les <b>noms de colonnes du SELECT final</b> deviennent les colonnes à déclarer dans « Colonnes physiques » de la
+grille virtuelle (§13). La requête complète (CTE récursive sur les jours, jours ouvrables de la société, jours fériés)
+est livrée dans <code>006_Duplicatas_Pages_Standards\001_deploy.sql</code>.</p>
+
+<h4>Exemple D — appel de procédure autorisée (type PROC)</h4>
+<pre class="sql">-- Type : PROC · seuls les appels EXEC dbo.Sys_* sont admis
+EXEC dbo.Sys_MaProcedureMetier @id_Societe, @Matricule, @Deb, @Fin</pre>
+
+<h3 id="s12-champ">12.4 Usage 1 — le champ SOURCE</h3>
+<p>Un champ de type <code>SOURCE</code> affiche une valeur <b>calculée par la base</b> (solde, encours, durée réglementaire…)
+et la ré-évalue dès qu'un paramètre change :</p>
+<ul>
+<li><b>Type contrôle</b> = <code>SOURCE</code> ; <b>Source métier</b> = le code de la source ; état <code>A</code> (affiché) ;</li>
+<li><b>Formule (json)</b> = le mapping des paramètres (même format que les grilles virtuelles) :
+<pre class="json">{"source":"sp_cng_duree","mapping":{
+  "Deb":  {"ref":"Dat_Deb_Conge"},
+  "Fin":  {"ref":"Dat_Fin_Conge"},
+  "DebPm":{"ref":"Dat_Deb_am_pm"},
+  "FinPm":{"ref":"Dat_Fin_am_pm"},
+  "Typ":  {"ref":"Typ_Conge"}}}</pre>
+Chaque paramètre est alimenté par <code>{"ref":"ChampEntete"}</code> (un champ de l'entête) ou <code>{"const":"valeur"}</code>.</li>
+<li><b>Persisté</b> ✔ + colonne physique affectée : la valeur est stockée (le serveur <b>ré-exécute la source à
+l'enregistrement</b> — la valeur du navigateur n'est jamais crue). Colonne vide : valeur d'affichage seule, recalculée à chaque ouverture.</li>
+</ul>
+<p>Exemple réel (page congés) : les champs <code>Repos_Hebdomadaire</code>, <code>Jours_Feries</code>, <code>Duree_Conge</code>
+et <code>Solde_Conge</code> sont quatre champs SOURCE persistés/affichés, alimentés par les sources
+<code>sp_cng_repos</code>, <code>sp_cng_feries</code>, <code>sp_cng_duree</code>, <code>sp_solde_conge_date</code>,
+avec <b>Format</b> <code>NUM</code> et décimales 0 ou 1.</p>
+
+<h3>12.5 Usage 2 — la grille virtuelle</h3>
+<p>Une table de détail dont la colonne « Source métier » est renseignée (source de retour <code>TABLE</code>) devient une
+grille <b>recalculée par la source</b> à chaque changement d'un champ mappé, en lecture seule, jamais stockée.
+Guide complet au chapitre 13.</p>
+
+<h3 id="s12-valid">12.6 Usage 3 — la validation SOURCE (contrôle serveur)</h3>
+<p>Une règle de type <code>SOURCE</code> exécute une source <b>au moment de l'enregistrement, côté serveur</b>, injecte son
+résultat scalaire sous le nom <code>@result</code> dans une condition, et bloque si la condition échoue. Non prise en charge
+par l'assistant : saisissez le json directement dans la colonne « Paramètres (json) » de la grille des validations :</p>
+<pre class="json">{"source":"sp_cng_chevauchement",
+ "mapping":{"Matricule":{"ref":"Matricule"},
+            "Deb":{"ref":"Dat_Deb_Conge"},
+            "Fin":{"ref":"Dat_Fin_Conge"},
+            "Num_Doc":{"ref":"Num_Doc"}},   -- le document courant est exclu du contrôle
+ "cond":{"op":"EQ","args":[{"ref":"@result"},{"const":0}]}}</pre>
+<p>Message associé : <i>« Il existe au moins un congé en chevauchement avec cette demande. »</i> — portée DOCUMENT, niveau B.
+Autres exemples réels : <code>sp_cng_periode_cloturee</code> (période de paie clôturée), <code>sp_cng_controle_paie</code>
+(début postérieur à la dernière paie), <code>sp_check_proprietaire</code> (le document appartient à l'agent connecté).</p>
+<div class="astuce"><b class="t">Colonnes techniques disponibles</b>
+Les validations et calculs voient aussi les colonnes techniques <code>Num_Doc</code>, <code>Statut</code>,
+<code>Created_By</code> — pratique pour exclure le document courant d'un contrôle d'unicité/chevauchement.</div>
+
+<h3>12.7 Sécurité et gouvernance</h3>
+<ul>
+<li>Le texte SQL <b>ne quitte jamais le serveur</b> : le portail n'envoie que le code source et les valeurs des paramètres.</li>
+<li>Chaque nom de paramètre est validé (identifiant SQL sain) ; les valeurs sont passées en <b>paramètres typés</b> — aucune injection.</li>
+<li><b>Profil requis</b> : restreint l'exécution à un profil (le super-admin <code>1</code> passe toujours).</li>
+<li><b>Active</b> décochée : la source devient inexécutable ; la publication d'une page qui l'utilise est refusée
+(<i>« source inexistante ou inactive »</i>).</li>
+<li>Une source défaillante à l'enregistrement (timeout, erreur SQL) <b>bloque l'enregistrement</b> si elle alimente une
+validation de niveau B.</li>
+</ul>
+</section>
+
+<!-- ============================================================ S13 -->
+<section id="s13" data-title="13. Grilles virtuelles — guide complet">
+<h2>13. Grilles virtuelles — guide complet</h2>
+<p>Une <b>grille virtuelle</b> est un tableau de détail <b>sans table physique</b> : ses lignes sont calculées en direct
+par une source métier de retour <code>TABLE</code>, à partir des valeurs de l'entête. Cas d'usage : découpe d'un congé par
+période de paie, échéancier calculé, simulation, consultation d'un référentiel…</p>
+
+<h3>13.1 Mise en place pas à pas (exemple réel : « Détail par période de paie »)</h3>
+<div class="etape"><span class="num">1</span><h4>Créer la source de retour TABLE</h4>
+<p>Catalogue des sources : <code>sp_cng_detail</code>, retour <b>TABLE</b>, paramètres
+<code>Matricule</code>, <code>Deb</code>, <code>Fin</code> (obligatoires), <code>DebPm</code>, <code>FinPm</code> (facultatifs).
+Le SELECT final retourne les colonnes <code>Dat_Deb, Dat_Fin, Duree_Globale, Repos_Hebdomadaire, Jours_Feries, Duree_Conge</code> (§12.3 exemple C).</p></div>
+<div class="etape"><span class="num">2</span><h4>Déclarer la table de détail et lui affecter la source</h4>
+<p>Onglet « Structure des tables » : nouvelle table <code>PERIODES</code>, libellé « Détail par période de paie » ;
+colonne <b>Source métier</b> = <code>sp_cng_detail</code>. Le Designer affiche :
+<i>« La table 'PERIODES' est maintenant une GRILLE VIRTUELLE alimentée par la source 'sp_cng_detail' :
+- aucune table physique ne sera créée (la grille est recalculée par la source) ;
+- la grille est en lecture seule (Ajout/Modif./Suppr. décochés) ;
+- déclarez dans 'Colonnes physiques' les colonnes RESTITUÉES par la source ;
+- double-cliquez sur 'Mapping paramètres' pour alimenter les paramètres de la source. »</i>
+Le nom physique devient <code>SP_&lt;TypeDoc&gt;_Virt_PERIODES</code> (jamais créé en base).</p></div>
+<div class="etape"><span class="num">3</span><h4>Déclarer les colonnes restituées</h4>
+<p>Sous-onglet « Colonnes physiques », table <code>PERIODES</code> : déclarez chaque colonne du SELECT de la source avec
+son libellé et un type SQL cohérent (<code>Dat_Deb</code> date « Du », <code>Dat_Fin</code> date « Au »,
+<code>Duree_Globale</code> float « Durée globale », <code>Repos_Hebdomadaire</code> float « Repos »,
+<code>Jours_Feries</code> float « Jours fériés », <code>Duree_Conge</code> float « Congé »). Ces déclarations ne créent
+rien en base : elles décrivent la sortie pour le rendu et les validations.</p></div>
+<div class="etape"><span class="num">4</span><h4>Alimenter les paramètres (assistant Mapping)</h4>
+<p><b>Double-clic</b> sur la cellule « Mapping paramètres » de la table : pour chaque paramètre déclaré de la source,
+choisissez <b>« Champ de l'entête »</b> (liste des colonnes ENT + techniques, hors RV) ou <b>« Constante »</b>.
+L'assistant pré-remplit par homonymie (un champ nommé comme le paramètre est proposé) et exige que tout paramètre
+<b>obligatoire</b> soit alimenté. Json généré automatiquement :</p>
+<pre class="json">{"Matricule":{"ref":"Matricule"},
+ "Deb":{"ref":"Dat_Deb_Conge"},
+ "Fin":{"ref":"Dat_Fin_Conge"},
+ "DebPm":{"ref":"Dat_Deb_am_pm"},
+ "FinPm":{"ref":"Dat_Fin_am_pm"}}</pre></div>
+<div class="etape"><span class="num">5</span><h4>Déclarer les champs de la grille</h4>
+<p>Onglet « Champs de la page », table <code>PERIODES</code> : un champ par colonne (<code>P_Dat_Deb</code> → DATE état R,
+<code>P_Duree_Globale</code> → DEC état R, etc.), « Visible grille » ✔, rangs et largeurs de colonnes.
+État conseillé : <b>R</b> (lecture seule) partout.</p></div>
+<div class="etape"><span class="num">6</span><h4>Enregistrer et publier</h4>
+<p>À l'enregistrement, l'aperçu DDL confirme : <i>« Grille virtuelle SP_XCG_Virt_PERIODES : alimentée par la source
+'sp_cng_detail' (aucune table physique créée). »</i> Sur le portail, dès que l'utilisateur modifie « Du », « Au » ou
+« AM/PM », la grille se recalcule automatiquement ; le serveur la ré-exécute aussi à la lecture et à l'enregistrement
+(les validations, ex. <code>NB_LIGNES {"min":1}</code>, voient ses lignes).</p></div>
+
+<h3>13.2 L'assistant de mapping (Zoom_SP_MappingSource)</h3>
+<div class="mock">
+  <div class="mk-title"><span><span class="mk-ico">⇄</span> Alimentation de la grille 'PERIODES' — source 'sp_cng_detail'</span><span>💾 ❌</span></div>
+  <div class="mk-body">
+    <div class="mk-help">Pour chaque paramètre déclaré de la source, choisissez comment il est alimenté : un champ de l'entête du document ou une constante. La grille est recalculée par la source à chaque changement d'un champ alimentant un paramètre (jamais stockée, lecture seule). @id_Societe (et @Login / @Matricule / @Cod_Profile non déclarés) sont injectés automatiquement par le serveur.</div>
+    <table class="mk-grid">
+      <tr><th>Paramètre de la source</th><th>Obligatoire</th><th>Alimenté par</th><th>Champ de l'entête</th><th>Constante</th></tr>
+      <tr><td class="ro">Matricule</td><td><span class="chk on"></span></td><td>Champ de l'entête</td><td>Matricule</td><td class="ro"></td></tr>
+      <tr><td class="ro">Deb</td><td><span class="chk on"></span></td><td>Champ de l'entête</td><td>Dat_Deb_Conge</td><td class="ro"></td></tr>
+      <tr><td class="ro">Fin</td><td><span class="chk on"></span></td><td>Champ de l'entête</td><td>Dat_Fin_Conge</td><td class="ro"></td></tr>
+      <tr><td class="ro">DebPm</td><td><span class="chk"></span></td><td>Champ de l'entête</td><td>Dat_Deb_am_pm</td><td class="ro"></td></tr>
+      <tr><td class="ro">FinPm</td><td><span class="chk"></span></td><td>(non alimenté)</td><td class="ro"></td><td class="ro"></td></tr>
+    </table>
+  </div>
+</div>
+<p class="mk-cap">Fig. 9 — L'assistant de mapping : une ligne par paramètre déclaré ; champ d'entête ou constante ; aperçu du json généré.</p>
+
+<h3>13.3 Règles et contrôles automatiques</h3>
+<ul>
+<li>L'<b>entête ENT</b> ne peut pas être virtuelle (<i>« l'entête ENT est toujours une table physique »</i>).</li>
+<li>La source doit <b>exister, être active et de retour TABLE</b> — sinon enregistrement/publication refusés
+(<i>« une grille virtuelle exige une source de retour TABLE »</i>).</li>
+<li>Une table devenue virtuelle alors qu'elle existait physiquement est refusée.</li>
+<li>Mapping : chaque paramètre alimenté doit être <b>déclaré</b> dans la source ; chaque <code>ref</code> doit exister
+parmi les <b>colonnes de l'entête</b> (déclarées + techniques hors <code>RV</code>) ; tout paramètre <b>obligatoire</b>
+doit être alimenté — messages d'erreur précis à l'enregistrement.</li>
+<li>Les cases Ajout/Modif./Suppr./Dupliq. sont <b>forcées à décoché</b> (lecture seule).</li>
+<li>Les lignes virtuelles <b>ne sont jamais postées</b> par le navigateur ni écrites : le serveur ré-exécute la source —
+les validations de portée DETAIL (ex. <code>NB_LIGNES</code>) s'appliquent sur ces lignes.</li>
+</ul>
+</section>
+<!-- ============================================================ S14 -->
+<section id="s14" data-title="14. Cycle de vie : enregistrer, publier, dupliquer, supprimer">
+<h2>14. Cycle de vie : enregistrer, publier, dupliquer, supprimer</h2>
+
+<h3 id="s14-save">14.1 Enregistrer — contrôles puis écriture transactionnelle</h3>
+<p>Le bouton <b>Enregistrer</b> (ou <span class="kbd">Entrée</span>) exécute d'abord une batterie de contrôles,
+dans l'ordre — chaque échec affiche un message précis et rien n'est écrit :</p>
+<table class="ref">
+<tr><th style="width:170px">Zone contrôlée</th><th>Règles vérifiées (extraits de messages réels)</th></tr>
+<tr><td>Bandeau</td><td>« Code page invalide (lettres/chiffres/_, 3 à 30 caractères, ne commence pas par 'Page'). » · « Type document invalide (2 à 10 caractères alphanumériques, commence par une lettre). » · « Le type document 'X' est déjà utilisé par la page 'Y' : choisissez un autre code. » · nom de page et section portail obligatoires.</td></tr>
+<tr><td>Tables</td><td>Identifiants SQL valides et hors mots réservés ; codes uniques ; <b>exactement une ENT</b> ; noms physiques préfixés <code>SP_</code>, uniques dans la page <b>et dans la base</b> ; pas de table « orpheline » ; grille virtuelle cohérente (§13.3).</td></tr>
+<tr><td>Colonnes</td><td>Table existante ; identifiant valide ; <b>pas de colonne technique</b> ; pas de doublon table.colonne ; type SQL autorisé ; <b>chaque table a au moins une colonne</b>.</td></tr>
+<tr><td>Champs</td><td>Champ sans colonne autorisé seulement si CALCULE non persisté ou affiché (état A) ; colonne physiquement existante ; <b>une colonne = un seul champ</b> ; ZOOM ⇒ N° Zoom obligatoire ; RUBRIQUE ⇒ rubrique obligatoire ; CALCULE ⇒ état A/I ; état ∈ S/R/A/I.</td></tr>
+<tr><td>Validations</td><td>Portée et type valides ; code unique ; table configurée ; <b>message obligatoire</b>.</td></tr>
+<tr><td>Habilitations</td><td>Pas de profil en doublon.</td></tr>
+</table>
+<p>Puis tout est écrit dans <b>une seule transaction</b> : métadonnées (mise à jour de <code>SP_Page</code>, purge et
+réinsertion des lignes filles, mise à jour du catalogue de sources) <b>puis création/migration des tables métier</b>
+(<code>CREATE TABLE</code> / <code>ALTER TABLE … ADD</code>, index <code>IX_/UX_</code>, clé étrangère détail→entête
+<code>ON DELETE CASCADE</code> si demandé). Toute erreur SQL annule <b>tout</b> (rollback). Le journal
+<code>SP_Page_DDL_Log</code> conserve chaque exécution (script, résultat, login, date). Message de succès :
+<i>« Enregistré avec succès. »</i> suivi du récapitulatif DDL (tables créées, colonnes ajoutées, avertissements).</p>
+<div class="note"><b class="t">Migration non destructive</b>
+Une colonne retirée de la configuration n'est <b>jamais supprimée en base</b> (avertissement « ATTENTION … Elle n'est
+PAS supprimée »). Le DDL étant non destructif, <b>ré-enregistrer une page publiée ne l'invalide pas</b> : elle reste publiée.</div>
+
+<h3 id="s14-ddl">14.2 Aperçu DDL — voir avant d'exécuter</h3>
+<p>Le bouton <b>Aperçu DDL</b> génère le script <b>depuis les grilles en mémoire, sans l'exécuter</b>, et l'affiche dans
+une fenêtre en lecture seule (<i>« Aperçu DDL - &lt;page&gt; (non exécuté) »</i>), précédé de lignes <code>--</code> résumant
+créations, migrations et avertissements. Si la structure est à jour : <i>« (Structure à jour : aucun changement DDL nécessaire.) »</i></p>
+<pre class="sql">/* --- Création SP_FKM_Ent --- */
+IF OBJECT_ID('dbo.SP_FKM_Ent','U') IS NULL
+BEGIN
+    CREATE TABLE dbo.[SP_FKM_Ent] (
+        [Num_Doc] nvarchar(30) NOT NULL,
+        [id_Societe] int NOT NULL,
+        [Statut] nvarchar(3) NULL CONSTRAINT [DF_SP_FKM_Ent_Statut] DEFAULT (''),
+        [Dat_Crea] datetime NULL, [Created_By] nvarchar(50) NULL,
+        [Dat_Modif] datetime NULL, [Modified_By] nvarchar(50) NULL,
+        [RV] rowversion NOT NULL,
+        [Matricule] nvarchar(20) NOT NULL CONSTRAINT [DF_SP_FKM_Ent_Matricule] DEFAULT (''),
+        [Dat_Demande] date NULL,
+        [Commentaire] nvarchar(300) NULL,
+        [Total] decimal(18,2) NULL,
+        CONSTRAINT [PK_SP_FKM_Ent] PRIMARY KEY ([Num_Doc], [id_Societe])
+    );
+END
+GO
+/* --- Relation détail → entête --- */
+IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = 'FK_SP_FKM_Det_LIGNES_Ent')
+    ALTER TABLE dbo.[SP_FKM_Det_LIGNES] WITH NOCHECK ADD CONSTRAINT [FK_SP_FKM_Det_LIGNES_Ent]
+        FOREIGN KEY ([Num_Doc],[id_Societe]) REFERENCES dbo.[SP_FKM_Ent] ([Num_Doc],[id_Societe])
+        ON DELETE CASCADE;
+GO</pre>
+<p class="mk-cap">Extrait réel du DDL généré pour l'exemple FKM (entête + FK en cascade).</p>
+
+<h3 id="s14-publier">14.3 Publier / Désactiver</h3>
+<p>Le bouton <b>Publier</b> exige une page enregistrée, puis vérifie (relecture en base) : tables physiques existantes,
+colonnes existantes, grilles virtuelles cohérentes, zooms et rubriques des champs existants, sources existantes et actives,
+<b>absence de référence circulaire</b> entre champs calculés, habilitations cohérentes (accès personnalisé ⇒ au moins un
+« Consulter »), section de menu renseignée, workflow actif ⇒ type document renseigné. En cas d'échec :
+<i>« Publication impossible : - … »</i> liste chaque problème.</p>
+<p>La publication : passe le statut à <code>PUBLIE</code>, horodate <code>Dat_Publication</code>, incrémente
+<code>Version_Page</code>, enregistre l'écran portail <code>SPP_&lt;CodPage&gt;</code> (liaison GED), et déclare le type
+document au moteur de workflow si actif. Message final : <i>« Page publiée avec succès. Elle apparaît dans le portail à
+la section 'Demandes et documents' (rang 90). »</i></p>
+<p>Sur une page déjà publiée, le même bouton propose la <b>désactivation</b> : la page disparaît du portail,
+les documents sont conservés (statut <code>DESACTIVE</code>).</p>
+
+<h3 id="s14-dupliquer">14.4 Dupliquer une page</h3>
+<p><b>Dupliquer</b> (page enregistrée requise) copie tout le paramétrage affiché — tables, colonnes, champs, validations,
+habilitations — sous une <b>nouvelle identité</b> : nouveau code page généré, nom préfixé « Copie de », statut Brouillon,
+et <b>type document vidé, à ressaisir</b> (unique : il pilotera les nouvelles tables <code>SP_&lt;NouveauType&gt;_…</code>).
+<b>Rien n'est écrit en base avant « Enregistrer »</b> ; la page d'origine n'est jamais modifiée.</p>
+<div class="warn"><b class="t">Non repris par la copie</b>
+Le catalogue des sources (global, partagé) · les règles du workflow de signature (propres au type document — le message
+de confirmation vous y invite : <i>« redéfinissez-les pour le nouveau type document »</i>) · les artefacts de publication
+(écran SPP_, version, dates).</div>
+
+<h3 id="s14-supprimer">14.5 Supprimer une page</h3>
+<p>Conditions — toutes obligatoires : page <b>enregistrée</b>, statut <b>BROUILLON</b> (sinon : passez-la en
+« Désactivé »), <b>aucun document</b> dans la table d'entête (le message indique le nombre le cas échéant).
+La suppression purge les métadonnées de la page (dans l'ordre des clés étrangères, y compris le journal DDL) et les
+règles de workflow orphelines du type document (signalées dans la confirmation). <b>Les tables métier SP_ et leurs
+données ne sont JAMAIS supprimées</b> ; le catalogue des sources n'est pas touché.</p>
+
+<h3 id="s14-docs">14.6 Vie des documents (rappels utiles au concepteur)</h3>
+<ul>
+<li><b>Numérotation</b> : <code>&lt;TypeDocument&gt;&lt;idSociete&gt;-&lt;année&gt;&lt;séquence 6 chiffres&gt;</code> (ex. <code>FKM1-2026000001</code>), attribuée à l'enregistrement.</li>
+<li><b>Concurrence optimiste</b> : la colonne <code>RV</code> détecte les conflits — « Document modifié par un autre utilisateur. Rechargez la page. » ; un verrou d'accès signale aussi « Document utilisé par : X ».</li>
+<li><b>Statuts figeants</b> : au-delà de certains statuts de signature (défaut <code>SG,RJ,SP,VA</code> — Signé, Rejeté, Suspendu, Validé), le document n'est plus modifiable ni supprimable.</li>
+<li><b>Audit</b> systématique : <code>Dat_Crea / Created_By / Dat_Modif / Modified_By</code>.</li>
+<li><b>Garde paie</b> : l'enregistrement est refusé si une préparation de paie est en cours.</li>
+</ul>
+</section>
+
+<!-- ============================================================ S15 -->
+<section id="s15" data-title="15. Le rendu côté portail">
+<h2>15. Le rendu côté portail — ce que voit l'utilisateur final</h2>
+
+<h3>15.1 La page Liste (entrée de menu)</h3>
+<div class="mock">
+  <div class="mk-title"><span><span class="mk-ico">🌐</span> Portail RHP — Frais kilométriques (liste)</span></div>
+  <div class="mk-body">
+    <div class="mk-row">
+      <span class="mk-field"><span class="mk-lbl">Date de demande (du)</span><span class="mk-inp">01/08/2026</span></span>
+      <span class="mk-field"><span class="mk-lbl">Date de demande (au)</span><span class="mk-inp">31/08/2026</span></span>
+      <span class="mk-btn" style="background:#3899B9;color:#fff"><b>Interroger</b></span>
+      <span class="mk-btn"><b>➕ Nouveau</b></span>
+    </div>
+    <table class="mk-grid">
+      <tr><th>N°</th><th>Statut</th><th>Matricule</th><th>Agent</th><th>Date de demande</th><th>Total frais</th><th>Créé le</th><th>Créé par</th></tr>
+      <tr><td style="color:#2A7A94"><u>FKM1-2026000007</u></td><td>Non soumis</td><td>A1024</td><td>DUPONT Alice</td><td>12/08/2026</td><td>152,30</td><td>12/08/2026</td><td>adupont</td></tr>
+      <tr><td style="color:#2A7A94"><u>FKM1-2026000006</u></td><td>Signé</td><td>A1024</td><td>DUPONT Alice</td><td>05/08/2026</td><td>98,40</td><td>05/08/2026</td><td>adupont</td></tr>
+    </table>
+  </div>
+</div>
+<p class="mk-cap">Fig. 10 — Page Liste : critères (champs « Critère »), colonnes (« Visible grille »), N° cliquable, bouton Nouveau selon le droit Créer.</p>
+
+<h3>15.2 Le document</h3>
+<div class="mock">
+  <div class="mk-title"><span><span class="mk-ico">🌐</span> Portail RHP — Frais kilométriques · FKM1-2026000007</span></div>
+  <div class="mk-body">
+    <div class="mk-row">
+      <span class="mk-field"><span class="mk-lbl">Matricule *</span><span class="mk-inp ro">A1024 — DUPONT Alice 🔍</span></span>
+      <span class="mk-field"><span class="mk-lbl">Date de demande</span><span class="mk-inp">12/08/2026 📅</span></span>
+      <span class="mk-field"><span class="mk-lbl">Total frais</span><span class="mk-inp ro" style="text-align:right">152,30</span></span>
+    </div>
+    <div class="mk-row"><span class="mk-field"><span class="mk-lbl">Commentaire</span><span class="mk-inp" style="min-width:420px">Déplacements clients — région Est</span></span></div>
+    <div class="mk-group" style="margin:10px 2px"><span class="mk-gt">Trajets parcourus</span>
+      <table class="mk-grid">
+        <tr><th>Trajet</th><th>Km</th><th>Taux / km</th><th>Montant</th><th></th></tr>
+        <tr><td>Strasbourg → Colmar (A/R)</td><td>146,0</td><td>0,529</td><td style="text-align:right">77,23</td><td>⧉ 🗑</td></tr>
+        <tr><td>Strasbourg → Mulhouse (A/R)</td><td>142,3</td><td>0,529</td><td style="text-align:right">75,28</td><td>⧉ 🗑</td></tr>
+      </table>
+      <div class="mk-row" style="justify-content:space-between"><span class="mk-btn">➕ Ajouter</span><b>Total des trajets : 152,51</b></div>
+    </div>
+    <div class="mk-row"><span class="mk-btn" style="border-radius:50%;width:52px;height:52px;background:#3899B9;color:#fff;text-align:center;line-height:44px;font-size:22px">＋</span><span style="color:#777">← menu flottant (FAB) : Enregistrer · Nouveau · Supprimer · Imprimer · Soumettre pour signature · Pièces jointes</span></div>
+  </div>
+</div>
+<p class="mk-cap">Fig. 11 — Document : entête responsive (grille 12 colonnes), grille de détail avec montants calculés en direct, pied de grille, actions flottantes.</p>
+
+<h3>15.3 Table de correspondance configuration → rendu</h3>
+<table class="ref">
+<tr><th style="width:300px">Configuration (Designer)</th><th>Résultat sur le portail</th></tr>
+<tr><td>Page PUBLIE + Nom, Section, Rang, Icône</td><td>Entrée du menu latéral à la position voulue, avec l'icône ; ouvre la Liste.</td></tr>
+<tr><td>Champs « Critère »</td><td>Zone Critères de la liste (dates déclinées en « (du) » / « (au) »).</td></tr>
+<tr><td>Champs « Visible grille » + Rang/Largeur col.</td><td>Colonnes du tableau des documents (entête = Libellé).</td></tr>
+<tr><td>Tables de détail + Ajout/Modif./Suppr./Dupliq.</td><td>Blocs grilles du document avec leurs boutons d'action.</td></tr>
+<tr><td>Type contrôle + Rubrique / N° Zoom</td><td>Contrôle adapté : texte, mémo, date, case à cocher, radio, combo rubrique, combo/zoom métier (condition de zoom pouvant référencer les valeurs de l'entête via <code>{Champ}</code>).</td></tr>
+<tr><td>État S / R / A / I</td><td>Champ saisissable, grisé en lecture seule, affiché (calculs), ou non rendu.</td></tr>
+<tr><td>Obligatoire + validations</td><td><code>*</code> sur le libellé ; contrôles au changement / à l'ajout de ligne / à l'enregistrement (bloquants, avertissements avec confirmation) — et re-contrôle serveur systématique.</td></tr>
+<tr><td>Formule (CALCULE)</td><td>Recalcul temps réel à la saisie ; pieds de grille ; recalcul serveur faisant foi.</td></tr>
+<tr><td>Champ SOURCE / grille virtuelle</td><td>Valeur ou tableau en lecture seule alimentés par la requête du catalogue (ex. solde de congé, découpe par période de paie).</td></tr>
+<tr><td>Actions + Workflow actif + GED active</td><td>Boutons du menu flottant : Enregistrer, Nouveau, Supprimer, Imprimer, Soumettre pour signature (puis panneau des signataires), Pièces jointes.</td></tr>
+<tr><td>Habilitations par profil + Accès personnalisé</td><td>Visibilité du menu et boutons actifs par profil ; cloisonnement « mes documents seulement » (colonne Matricule, non-TeamLeaders).</td></tr>
+<tr><td>Modèle d'édition renseigné</td><td>Impression via l'état Crystal Reports (paramètre NumDoc) ; sinon fiche d'impression générique construite depuis les métadonnées.</td></tr>
+</table>
+<div class="portail"><b class="t">Vérification permanente</b>
+Quelle que soit la configuration, les actions de la page passent par le <b>menu flottant (FAB)</b> en bas à droite du
+portail. Si un bouton attendu n'apparaît pas : vérifiez l'action cochée (onglet Conception) <b>et</b> le droit du profil
+(onglet Habilitations) <b>et</b> l'état du document (figé, verrouillé par un autre utilisateur…).</div>
+</section>
+<!-- ============================================================ S16 -->
+<section id="s16" data-title="16. Exemples complets pas à pas">
+<h2>16. Exemples complets pas à pas</h2>
+<p>Ces exemples sont des <b>configurations réelles</b> du référentiel produit (scripts
+<code>RHP_Portail\rhpBE\sql\SP_Designer</code>) : vous pouvez les reproduire à l'identique dans le Designer.</p>
+
+<h3 id="s16-fkm">16.1 Exemple A — Note de frais kilométriques (FRAIS_KM / FKM)</h3>
+<p>Le « Hello World » du Designer : entête + grille calculée + total + validations + workflow + GED.</p>
+
+<h4>A1. Entête de page</h4>
+<table class="ref">
+<tr><th>Propriété</th><th>Valeur</th></tr>
+<tr><td>Nom de la page</td><td>Frais kilométriques</td></tr>
+<tr><td>Type document</td><td><code>FKM</code> → tables <code>SP_FKM_Ent</code> et <code>SP_FKM_Det_LIGNES</code></td></tr>
+<tr><td>Section / Rang / Icône</td><td>Demandes et documents (<code>MesDemandes</code>) / 90 / <code>Commute</code></td></tr>
+<tr><td>Workflow / GED</td><td>actifs ; Actions : Enregistrer + Soumettre</td></tr>
+</table>
+
+<h4>A2. Tables et colonnes (extrait)</h4>
+<table class="ref">
+<tr><th>Table</th><th>Colonne</th><th>Type SQL</th><th>Nullable</th><th>Remarque</th></tr>
+<tr><td>ENT</td><td>Matricule</td><td>nvarchar(20)</td><td class="c">NOT NULL</td><td>agent du document</td></tr>
+<tr><td>ENT</td><td>Dat_Demande</td><td>date</td><td class="c">✔</td><td></td></tr>
+<tr><td>ENT</td><td>Commentaire</td><td>nvarchar(300)</td><td class="c">✔</td><td></td></tr>
+<tr><td>ENT</td><td>Total</td><td>decimal(18,2)</td><td class="c">✔</td><td>colonne du champ calculé persisté</td></tr>
+<tr><td>LIGNES</td><td>Trajet / Km / Tx / Mnt</td><td>nvarchar(100) / float / float / decimal(18,2)</td><td class="c">✔</td><td>grille des trajets</td></tr>
+</table>
+
+<h4>A3. Champs (configuration exacte)</h4>
+<table class="ref">
+<tr><th>Champ</th><th>Table</th><th>Colonne</th><th>Type</th><th>État</th><th>Configuration clé</th></tr>
+<tr><td>Matricule</td><td>ENT</td><td>Matricule</td><td>ZOOM</td><td>S</td><td>Zoom <code>MS067</code> ; défaut <code>GV_MATRICULE</code> ; obligatoire ; Aide : « Choisir l'agent via le zoom MS067 »</td></tr>
+<tr><td>Dat_Demande</td><td>ENT</td><td>Dat_Demande</td><td>DATE</td><td>S</td><td>défaut <code>GV_NOW</code></td></tr>
+<tr><td>Commentaire</td><td>ENT</td><td>Commentaire</td><td>MEMO</td><td>S</td><td>largeur 6</td></tr>
+<tr><td>Total</td><td>ENT</td><td>Total</td><td>CALCULE</td><td>A</td><td>formule <code>SOMME(Mnt)</code> ; <b>persisté</b> ; format MNT, 2 déc. ; Aide : « Somme des montants des trajets »</td></tr>
+<tr><td>L_Trajet</td><td>LIGNES</td><td>Trajet</td><td>TEXT</td><td>S</td><td>largeur col. 20 em</td></tr>
+<tr><td>L_Km</td><td>LIGNES</td><td>Km</td><td>DEC</td><td>S</td><td>2 décimales</td></tr>
+<tr><td>L_Tx</td><td>LIGNES</td><td>Tx</td><td>DEC</td><td>S</td><td>2 décimales</td></tr>
+<tr><td>L_Mnt</td><td>LIGNES</td><td>Mnt</td><td>CALCULE</td><td>A</td><td>formule <code>ARRONDI(Km * Tx; 2)</code> ; persisté ; Aide : « Montant = Km x Taux »</td></tr>
+<tr><td>Pied_Mnt</td><td>LIGNES</td><td><i>(vide)</i></td><td>CALCULE</td><td>A</td><td>formule <code>SOMME(Mnt)</code> ; <b>non persisté</b> ; format MNT → <b>pied de grille</b> « Total des trajets »</td></tr>
+</table>
+
+<h4>A4. Validations</h4>
+<table class="ref">
+<tr><th>Code</th><th>Portée</th><th>Type</th><th>Paramètres</th><th>Niveau</th><th>Message</th></tr>
+<tr><td>V01</td><td>CHAMP (Matricule)</td><td>REQUIRED</td><td>—</td><td class="c">B</td><td>Le matricule est obligatoire.</td></tr>
+<tr><td>V02</td><td>DETAIL (LIGNES)</td><td>NB_LIGNES</td><td><code>{"min":1}</code></td><td class="c">B</td><td>Au moins une ligne de trajet est requise.</td></tr>
+<tr><td>V03</td><td>LIGNE (L_Km)</td><td>BETWEEN</td><td><code>{"min":0,"max":1000}</code></td><td class="c">W</td><td>Kilométrage inhabituel (attendu entre 0 et 1000 km).</td></tr>
+<tr><td>V04</td><td>DOCUMENT</td><td>EXPR</td><td><code>{"expr":{"op":"GE","args":[{"ref":"Total"},{"const":0}]}}</code></td><td class="c">B</td><td>Le total ne peut pas être négatif.</td></tr>
+</table>
+
+<h4>A5. Habilitations et publication</h4>
+<p>Profil <code>1</code> : tous les droits. Puis <b>Enregistrer</b> (création des tables + FK cascade), <b>Aperçu DDL</b>
+pour vérifier, <b>Publier</b>. La publication déclare aussi le type document <code>FKM</code> au workflow
+(table <code>Param_Workflow_Typ_Document</code>, écran <code>SPP_FRAIS_KM</code>, propriétaire <code>Created_By</code>) ;
+le circuit de signataires se règle ensuite par le bouton « Règles du workflow de signature ».</p>
+
+<h3 id="s16-conge">16.2 Exemple B — Demande de congé avancée (sources métier + grille virtuelle)</h3>
+<p>Cet exemple (duplicata <code>DUP_CONGE</code> / type document <code>XCG</code>) illustre l'usage combiné des
+<b>champs SOURCE</b>, d'une <b>grille virtuelle</b> et de <b>validations SOURCE</b> — le niveau le plus abouti du Designer.</p>
+
+<h4>B1. Entête : zoom, combo, rubriques, calculs et sources</h4>
+<table class="ref">
+<tr><th>Champ</th><th>Type</th><th>Configuration clé</th></tr>
+<tr><td>Num_Doc</td><td>TEXT</td><td>sans colonne (colonne technique), état R, largeur 6 — « N° demande »</td></tr>
+<tr><td>Matricule</td><td>ZOOM</td><td>zoom MS067, défaut <code>GV_MATRICULE</code>, état R, obligatoire, critère n° 1</td></tr>
+<tr><td>Typ_Conge</td><td>COMBO</td><td>zoom MS165 (types de congé), valeur par défaut <code>CAD</code>, obligatoire</td></tr>
+<tr><td>Dat_Deb_Conge / Dat_Fin_Conge</td><td>DATE</td><td>défaut <code>GV_NOW</code>, obligatoires, critères 2 et 3 → bornes « (du) »/« (au) » dans la liste</td></tr>
+<tr><td>Dat_Deb_am_pm / Dat_Fin_am_pm</td><td>RUBRIQUE</td><td>rubrique <code>am_pm</code>, défaut <code>am</code></td></tr>
+<tr><td>Duree_Globale</td><td>CALCULE</td><td><code>DUREE(Dat_Fin_Conge; Dat_Deb_Conge; "J") + 1 − SI(Dat_Deb_am_pm = "pm"; 0,5; 0) − SI(Dat_Fin_am_pm = "am"; 0,5; 0)</code> ; persisté, format NUM, 1 déc.</td></tr>
+<tr><td>Repos_Hebdomadaire</td><td>SOURCE</td><td>source <code>sp_cng_repos</code> ; mapping <code>Deb→Dat_Deb_Conge, Fin→Dat_Fin_Conge, Typ→Typ_Conge</code> ; persisté, NUM, 0 déc.</td></tr>
+<tr><td>Jours_Feries</td><td>SOURCE</td><td>source <code>sp_cng_feries</code> ; même mapping ; persisté</td></tr>
+<tr><td>Duree_Conge</td><td>SOURCE</td><td>source <code>sp_cng_duree</code> (mapping + DebPm/FinPm) ; persisté, 1 déc. — « A déduire du congé »</td></tr>
+<tr><td>Solde_Conge</td><td>SOURCE</td><td>source <code>sp_solde_conge_date</code> ; <b>non persisté</b> (colonne vide) : simple affichage recalculé à l'ouverture</td></tr>
+</table>
+
+<h4>B2. Grille virtuelle « Détail par période de paie »</h4>
+<p>Table <code>PERIODES</code> + source <code>sp_cng_detail</code> (TABLE) + mapping des 5 paramètres
+(§13.1) ; champs <code>P_Dat_Deb</code> (DATE, R), <code>P_Dat_Fin</code> (DATE, R), <code>P_Duree_Globale</code>,
+<code>P_Repos</code>, <code>P_Jours_Feries</code>, <code>P_Duree_Conge</code> (DEC, R, largeurs 6–8 em).
+Résultat portail : la grille se remplit toute seule dès que dates et demi-journées changent.</p>
+
+<h4>B3. Validations (mix assistant + json SOURCE)</h4>
+<table class="ref">
+<tr><th>Code</th><th>Type</th><th>Paramètres / remarque</th></tr>
+<tr><td>V00_PROPRIETAIRE</td><td>SOURCE</td><td><code>sp_check_proprietaire</code>, mapping <code>Doc_Matricule→Matricule</code>, cond <code>@result = 1</code> — « Vous ne pouvez pas saisir une demande pour un autre matricule. »</td></tr>
+<tr><td>V01…V03</td><td>REQUIRED</td><td>Matricule, date début, date fin (assistant, bloquant)</td></tr>
+<tr><td>V04_ORDRE</td><td>EXPR</td><td><code>{"expr":{"op":"LT","args":[{"ref":"Dat_Deb_Conge"},{"ref":"Dat_Fin_Conge"}]}}</code> — « Incohérence dates début et fin de congé. »</td></tr>
+<tr><td>V05_DUREE</td><td>COMPARE</td><td><code>{"operateur":"GT","constante":0}</code> sur <code>Duree_Conge</code> — « Aucune durée de congé n'est renseignée. »</td></tr>
+<tr><td>V06_PERIODE</td><td>SOURCE</td><td><code>sp_cng_periode_cloturee</code>, cond <code>@result = 0</code> — « Dates de congé correspondant à une période clôturée. »</td></tr>
+<tr><td>V07_PAIE</td><td>SOURCE</td><td><code>sp_cng_controle_paie</code>, cond <code>@result = 1</code> — « La date de début du congé doit être postérieure à la date de la dernière paie. »</td></tr>
+<tr><td>V08_CHEVAUCHEMENT</td><td>SOURCE</td><td><code>sp_cng_chevauchement</code> (mapping incl. <code>Num_Doc→Num_Doc</code> pour exclure le document courant), cond <code>@result = 0</code> — « Il existe au moins un congé en chevauchement avec cette demande. »</td></tr>
+<tr><td>V09_CALCUL</td><td>NB_LIGNES</td><td><code>{"min":1}</code> sur le détail virtuel PERIODES — « Erreur calcul de congé. »</td></tr>
+</table>
+<p>Statuts figeants de la page : <code>SS,SG,RJ,SP,VA</code> (le document est verrouillé dès la soumission).
+Droits : tous les profils actifs, toutes actions (script <code>SELECT … FROM Controle_Profile</code>).</p>
+
+<h3 id="s16-divers">16.3 Recettes supplémentaires</h3>
+<table class="ref">
+<tr><th style="width:260px">Besoin</th><th>Recette</th></tr>
+<tr><td>Numéro affiché en haut du document</td><td>Champ <code>Num_Doc</code> TEXT <b>sans colonne</b> (colonne technique), état R, ligne 1, largeur 6 — aide « Numéro attribué à l'enregistrement ».</td></tr>
+<tr><td>Liste de valeurs simple (am/pm, Oui/Non…)</td><td>Créer la rubrique dans <code>Param_Rubriques</code> (écran Rubriques du Desktop), champ type RUBRIQUE + double-clic « Rubrique » pour la choisir ; ou type RADIO pour des boutons visibles.</td></tr>
+<tr><td>Combo métier filtrée par l'entête</td><td>Type COMBO avec un zoom dont la condition référence <code>{ChampEntete}</code> : remplacé à l'exécution par la valeur courante (ex. liste des missions du salarié choisi).</td></tr>
+<tr><td>Total général multi-grilles</td><td>Champ d'entête CALCULE : <code>SOMME(Mnt) + SOMME(Frais)</code> (un agrégat par détail).</td></tr>
+<tr><td>Compteur de lignes affiché</td><td>Pied de grille CALCULE : <code>NB()</code> (un seul détail) ou <code>NB(Mnt)</code>.</td></tr>
+<tr><td>Plafonner une saisie</td><td>Validation MAX bloquante <code>{"valeur":5000}</code> ; ou calcul <code>MIN(Montant; 5000)</code> pour plafonner silencieusement.</td></tr>
+<tr><td>Date d'échéance automatique</td><td>Champ CALCULE DATE : <code>AJOUTDATE(Dat_Demande; 30; "J")</code>, format DAT.</td></tr>
+<tr><td>Référence texte composée</td><td>Champ CALCULE : <code>CONCAT(GAUCHE(Typ_Conge; 3); "-"; ANNEE(GV_NOW); "-"; Matricule)</code>.</td></tr>
+<tr><td>Champ obligatoire seulement dans un cas</td><td>REQUIRED + condition (assistant étape 4) : ex. Motif exigé « Seulement si » <code>Typ_Absence = "SAN"</code>.</td></tr>
+<tr><td>Interdire les doublons dans une grille</td><td>Assistant « Interdire les doublons dans un tableau » → <code>{"colonnes":["Dat_Depense","Typ_Frais"]}</code>, portée DETAIL.</td></tr>
+<tr><td>Vérifier une règle en base (métier)</td><td>Source SCALAIRE retournant 1/0 + validation SOURCE avec condition sur <code>@result</code> (§12.6).</td></tr>
+<tr><td>Grille de consultation en lecture seule</td><td>Grille virtuelle (§13) : aucune table créée, données toujours à jour.</td></tr>
+<tr><td>Imprimer avec un état Crystal existant</td><td>Conception ▸ Modèle d'édition = code de l'état (<code>Param_Mod_Edition.Cod_Report</code>) + Action Imprimer + droit Imprimer.</td></tr>
+<tr><td>Dupliquer une page standard pour la personnaliser</td><td>Bouton Dupliquer → nouveau type document → ajuster → Enregistrer → Publier dans une section de test.</td></tr>
+</table>
+</section>
+<!-- ============================================================ S17 -->
+<section id="s17" data-title="17. Bonnes pratiques et dépannage">
+<h2>17. Bonnes pratiques et dépannage</h2>
+
+<h3>17.1 Check-list avant de publier</h3>
+<ul>
+<li>☐ Le <b>type document</b> est définitif (immuable après enregistrement) et parlant : <code>FKM</code>, <code>CGE</code>, <code>ATD</code>…</li>
+<li>☐ Chaque table a au moins une colonne ; chaque colonne utile est reliée à <b>un seul</b> champ.</li>
+<li>☐ Les champs ZOOM ont un N° Zoom, les RUBRIQUE une rubrique, les CALCULE une formule valide et un format.</li>
+<li>☐ Les validations ont toutes un <b>message clair</b> et le bon niveau (B/W/I).</li>
+<li>☐ Les sources utilisées sont <b>actives</b> ; les paramètres obligatoires des grilles virtuelles sont tous alimentés.</li>
+<li>☐ Pas de <b>référence circulaire</b> entre champs calculés (le bouton Publier le signale).</li>
+<li>☐ Habilitations : au moins un profil « Consulter » si accès personnalisé ; sinon accès décoché.</li>
+<li>☐ Section, rang et icône renseignés ; <b>Aperçu DDL</b> relu ; test complet sur un document réel après publication.</li>
+</ul>
+
+<h3>17.2 Messages d'erreur fréquents — causes et solutions</h3>
+<table class="ref">
+<tr><th style="width:330px">Message</th><th>Cause → solution</th></tr>
+<tr><td>« Avant de saisir les colonnes, corrigez l'onglet 'Tables' : … »</td><td>Tables incohérentes (type document vide, ENT manquante, doublon). → Corrigez l'onglet Tables d'abord ; le message liste chaque problème.</td></tr>
+<tr><td>« Le type document 'X' est déjà utilisé par la page 'Y' »</td><td>Unicité du type document. → Choisissez un autre code (ou rechargez la page existante via le lien « Code page »).</td></tr>
+<tr><td>« Une formule ne concerne que les champs calculés »</td><td>Double-clic « Formule » sur un champ non CALCULE. → Passez d'abord le type contrôle à <code>CALCULE</code>.</td></tr>
+<tr><td>« Un champ calculé n'est jamais saisissable »</td><td>État S/R sur un CALCULE. → L'état est forcé à A ou I : c'est normal.</td></tr>
+<tr><td>« La table 'X' est référencée par n colonne(s), n champ(s), n validation(s) »</td><td>Suppression protégée. → Supprimez d'abord les éléments listés.</td></tr>
+<tr><td>« … une grille virtuelle exige une source de retour TABLE »</td><td>La source choisie est SCALAIRE. → Changez son retour (catalogue) ou choisissez une autre source.</td></tr>
+<tr><td>« … le paramètre obligatoire 'X' de la source 'Y' n'est pas alimenté »</td><td>Mapping incomplet. → Double-clic « Mapping paramètres » et alimentez le paramètre (champ d'entête ou constante).</td></tr>
+<tr><td>« 'id_Societe' est injecté automatiquement par le serveur : ne le déclarez pas »</td><td>Paramètre réservé déclaré dans l'assistant de source. → Retirez-le ; utilisez-le directement dans le SQL.</td></tr>
+<tr><td>« '@X' est utilisé dans la requête mais n'est pas déclaré »</td><td>Paramètre manquant. → Déclarez-le (assistant Paramètres) ou utilisez un auto-injecté (@Login, @Matricule, @Cod_Profile).</td></tr>
+<tr><td>« La requête ne passe pas le contrôle d'injection : … »</td><td>SQL non conforme (écriture, mot-clé interdit, plusieurs instructions, procédure non autorisée). → SELECT/WITH unique, ou EXEC dbo.Sys_* uniquement.</td></tr>
+<tr><td>« Publication impossible : - … »</td><td>Liste de contrôles en échec (tables/colonnes absentes, zoom/rubrique/source introuvable, cycle de calculs, droits…). → Traitez chaque puce puis republiez.</td></tr>
+<tr><td>« Référence circulaire dans les calculs : A -&gt; B -&gt; A »</td><td>Deux champs calculés se référencent mutuellement. → Cassez la boucle (recalculez depuis des champs saisis).</td></tr>
+<tr><td>« Supprimer (brouillon sans document uniquement) »</td><td>Suppression refusée : page publiée ou documents existants. → Désactivez la page ; les documents sont conservés.</td></tr>
+<tr><td>« Document modifié par un autre utilisateur. Rechargez la page. » (portail)</td><td>Concurrence optimiste (RV). → Rechargez et ressaisissez.</td></tr>
+<tr><td>La page n'apparaît pas dans le menu du portail</td><td>Statut non PUBLIE, droit Consulter manquant, ou cache de 60 s. → Publiez, vérifiez les habilitations, patientez 1 minute.</td></tr>
+<tr><td>Un bouton du menu flottant est absent (portail)</td><td>Action décochée (Conception), droit manquant (Habilitations), document figé (statut) ou verrouillé par un autre utilisateur.</td></tr>
+</table>
+
+<h3>17.3 Bonnes pratiques de conception</h3>
+<ul>
+<li><b>Nommez clairement</b> : codes de tables courts et stables (<code>LIGNES</code>, <code>PERIODES</code>), colonnes en PascalCase métier (<code>Dat_Deb_Conge</code>), libellés utilisateurs soignés.</li>
+<li><b>Préférez les assistants</b> à toute saisie manuelle de json ; n'éditez le json qu'en « mode avancé » documenté.</li>
+<li><b>Un champ = une colonne</b>, une colonne = un champ ; utilisez les champs sans colonne pour l'affichage et les pieds de grille.</li>
+<li><b>Testez les formules</b> avec le testeur intégré (étape 3) avant d'enregistrer.</li>
+<li><b>Avertissement (W) plutôt que blocage (B)</b> pour les contrôles de plausibilité (kilométrage inhabituel…) ; blocage pour l'intégrité.</li>
+<li><b>Centralisez le SQL métier dans les sources</b> (catalogue réutilisable, contrôle d'injection, restriction par profil) plutôt que de multiplier les variantes.</li>
+<li><b>Dupliquez</b> une page éprouvée plutôt que de repartir de zéro.</li>
+<li><b>Aperçu DDL systématique</b> avant publication sur une base de production ; le journal <code>SP_Page_DDL_Log</code> garde la trace de chaque exécution.</li>
+<li>Documentez chaque champ délicat dans sa colonne <b>Aide</b> (affichée sur le portail).</li>
+</ul>
+</section>
+
+<!-- ============================================================ S18 -->
+<section id="s18" data-title="18. FAQ">
+<h2>18. Foire aux questions</h2>
+<h4>Le code page peut-il être changé ?</h4>
+<p>Non. Il est généré (<code>PG_&lt;date&gt;_&lt;séquence&gt;</code>) et immuable. Seuls le nom, la structure et les paramètres évoluent.</p>
+<h4>Le type document peut-il être changé après enregistrement ?</h4>
+<p>Non plus : il pilote les noms physiques des tables et le code workflow. Pour « renommer », dupliquez la page sous un nouveau type document.</p>
+<h4>Que risque-t-on en ré-enregistrant une page déjà publiée ?</h4>
+<p>Rien : le DDL est <b>non destructif</b> (ALTER ADD uniquement), la publication est conservée, et le portail voit les changements sous ~60 secondes.</p>
+<h4>Comment supprimer une colonne devenue inutile ?</h4>
+<p>Retirez d'abord les champs qui l'utilisent, puis la colonne, et enregistrez : la colonne reste physiquement en base (migration non destructive, avertissement dans l'aperçu DDL) mais n'est plus utilisée ni affichée.</p>
+<h4>Quelle différence entre états R et A ?</h4>
+<p><code>R</code> (lecture seule) : valeur stockée, affichée grisée, saisie impossible. <code>A</code> (affiché) : valeur non saisissable, typiquement calculée ou issue d'une source. <code>I</code> : non rendu.</p>
+<h4>« Obligatoire » (case) ou validation REQUIRED ?</h4>
+<p>La case ajoute <code>*</code> au libellé (indication visuelle) ; la règle <code>REQUIRED</code> (niveau B) réalise le blocage effectif à l'enregistrement. Utilisez les deux ensemble.</p>
+<h4>Qui peut exécuter une source métier ?</h4>
+<p>Tout profil si « Profil requis » est vide ; sinon uniquement ce profil (et le super-admin). Le SQL n'est jamais visible côté navigateur.</p>
+<h4>Comment déboguer une formule ?</h4>
+<p>Étape 3 de l'assistant : saisissez des valeurs de test (dates jj/mm/aaaa ; colonnes de tableau séparées par des points-virgules, ex. <code>10 ; 20,5 ; 3</code>) et cliquez « Calculer ».</p>
+<h4>Pourquoi ma grille virtuelle est-elle vide ?</h4>
+<p>Vérifiez : source active et de retour TABLE ; paramètres obligatoires tous mappés ; les champs d'entête mappés sont renseignés ; la requête retourne des lignes pour ces valeurs (testez-la dans SSMS avec les mêmes paramètres et le bon <code>@id_Societe</code>).</p>
+<h4>Comment ouvrir directement un document du portail ?</h4>
+<p>URL : <code>/myspace/SPP_&lt;CodPage&gt;/&lt;titre&gt;/&lt;Num_Doc&gt;</code> ; la liste est <code>/myspace/SPPL_&lt;CodPage&gt;/&lt;titre&gt;</code>.</p>
+</section>
+
+<!-- ============================================================ S19 -->
+<section id="s19" data-title="19. Glossaire">
+<h2>19. Glossaire</h2>
+<table class="ref">
+<tr><th style="width:180px">Terme</th><th>Définition</th></tr>
+<tr><td><b>Page (SP_Page)</b></td><td>Configuration complète d'un écran métier du portail : tables, champs, validations, droits, publication.</td></tr>
+<tr><td><b>Type document (Cod_Document)</b></td><td>Code unique de 2 à 10 caractères pilotant les noms physiques des tables et le code workflow. Immuable.</td></tr>
+<tr><td><b>ENT / DET</b></td><td>Table d'entête (une seule, obligatoire) / table de détail (grille de lignes).</td></tr>
+<tr><td><b>Champ</b></td><td>Élément d'interface du portail (zone de saisie, case, combo, calcul…) rattaché ou non à une colonne physique.</td></tr>
+<tr><td><b>Source métier</b></td><td>Requête SQL/PROC paramétrée et sécurisée du catalogue global, exécutée côté serveur (champ SOURCE, grille virtuelle, validation).</td></tr>
+<tr><td><b>Grille virtuelle</b></td><td>Détail sans table physique, alimenté en direct par une source de retour TABLE ; lecture seule.</td></tr>
+<tr><td><b>Mapping</b></td><td>json décrivant l'alimentation des paramètres d'une source par des champs de l'entête (<code>{"ref":…}</code>) ou des constantes (<code>{"const":…}</code>).</td></tr>
+<tr><td><b>Formule (json)</b></td><td>Expression déclarative d'un champ CALCULE, générée par l'assistant (jamais du code libre).</td></tr>
+<tr><td><b>Pied de grille</b></td><td>Champ CALCULE de détail sans colonne : agrégat affiché sous la grille, jamais stocké.</td></tr>
+<tr><td><b>Rubrique</b></td><td>Liste de valeurs de référence (<code>Param_Rubriques</code>) alimentant RUBRIQUE/RADIO et les libellés de codes.</td></tr>
+<tr><td><b>Zoom</b></td><td>Recherche assistée déclarée dans <code>Controle_Def_Zoom</code> (ex. MS067 = agents).</td></tr>
+<tr><td><b>DDL</b></td><td>Script SQL de création/migration des tables métier, généré à l'enregistrement (aperçu disponible).</td></tr>
+<tr><td><b>SPP_ / SPPL_</b></td><td>Préfixes d'URL portail : <code>SPP_&lt;CodPage&gt;</code> = document, <code>SPPL_&lt;CodPage&gt;</code> = liste.</td></tr>
+<tr><td><b>FAB</b></td><td>Menu flottant d'actions du portail (Enregistrer, Soumettre, Imprimer, Pièces jointes…).</td></tr>
+<tr><td><b>Workflow de signature</b></td><td>Circuit de validation du document (signataires, décisions) piloté par le type document ; statuts SG/RJ/SP/VA… figeant le document.</td></tr>
+<tr><td><b>RV (rowversion)</b></td><td>Colonne technique de concurrence optimiste : détecte les modifications simultanées.</td></tr>
+<tr><td><b>GV_*</b></td><td>Variables globales évaluées à l'exécution (GV_NOW, GV_MATRICULE, GV_LOGIN, GV_YEAR…).</td></tr>
+</table>
+</section>
+
+<!-- ============================================================ S20 -->
+<section id="s20" data-title="20. Index alphabétique">
+<h2>20. Index alphabétique</h2>
+<div id="idxAlpha">
+<p><span class="lt">A</span><br>
+<a href="#s09">Accès personnalisé</a> · <a href="#s07">Actions portail (FAB)</a> · <a href="#s10-agreg">Agrégats</a> · <a href="#s06">Aide (champ)</a> · <a href="#s10-dates">AJOUTDATE</a> · <a href="#s14-ddl">Aperçu DDL</a> · <a href="#s10-nombres">ARRONDI</a> · <a href="#s10">Assistant formule</a> · <a href="#s11">Assistant validation</a> · <a href="#s13">Assistant mapping</a> · <a href="#s14-docs">Audit</a></p>
+<p><span class="lt">B</span><br>
+<a href="#s08-types">BETWEEN</a> · <a href="#s01-cycle">BROUILLON</a></p>
+<p><span class="lt">C</span><br>
+<a href="#s06-controles">CALCULE</a> · <a href="#s04-tables">CASCADE / RESTRICT</a> · <a href="#s05">Catalogue des sources</a> · <a href="#s06-controles">CHECK</a> · <a href="#s06-liste">Cloisonnement</a> · <a href="#s03-barre">Code page</a> · <a href="#s04-colonnes">Colonnes techniques</a> · <a href="#s06-controles">COMBO</a> · <a href="#s08-types">COMPARE</a> · <a href="#s08-cond">Condition d'application</a> · <a href="#s10-texte">CONCAT</a> · <a href="#s12">Contrôle d'injection</a> · <a href="#s06-liste">Critère (liste)</a> · <a href="#s10-niveaux">Cycle (référence circulaire)</a></p>
+<p><span class="lt">D</span><br>
+<a href="#s06-controles">DATE / DATETIME</a> · <a href="#s06">Décimales</a> · <a href="#s01-cycle">DESACTIVE</a> · <a href="#s08">DETAIL (portée)</a> · <a href="#s08">DOCUMENT (portée)</a> · <a href="#s14-dupliquer">Dupliquer une page</a> · <a href="#s10-dates">DUREE</a></p>
+<p><span class="lt">E</span><br>
+<a href="#s04-tables">ENT (entête)</a> · <a href="#s06">État S/R/A/I</a> · <a href="#s08-types">EXPR</a></p>
+<p><span class="lt">F</span><br>
+<a href="#s15">FAB (menu flottant)</a> · <a href="#s14-docs">Figer_Statuts</a> · <a href="#s10-niveaux">Format d'affichage</a> · <a href="#s10">Formule</a></p>
+<p><span class="lt">G</span><br>
+<a href="#s07">GED</a> · <a href="#s10-gv">GV_NOW / GV_YEAR…</a> · <a href="#s06-defaut">GV_MATRICULE / GV_LOGIN</a> · <a href="#s06-placement">Grille 12 colonnes</a> · <a href="#s13">Grille virtuelle</a></p>
+<p><span class="lt">H</span><br>
+<a href="#s09">Habilitations</a></p>
+<p><span class="lt">I</span><br>
+<a href="#s07">Icône MUI</a> · <a href="#s08-types">IN</a> · <a href="#s04-colonnes">Index (IX_/UX_)</a> · <a href="#s12">Injection automatique (@id_Societe…)</a></p>
+<p><span class="lt">J</span><br>
+<a href="#s10-dates">JOURSEM</a></p>
+<p><span class="lt">L</span><br>
+<a href="#s06-liste">Liste (page SPPL_)</a></p>
+<p><span class="lt">M</span><br>
+<a href="#s13">Mapping paramètres</a> · <a href="#s10-niveaux">MNT / NUM / PCT / DAT / DTM</a> · <a href="#s07">Modèle d'édition</a> · <a href="#s08">Moment (SAVE…)</a></p>
+<p><span class="lt">N</span><br>
+<a href="#s08-types">NB_LIGNES</a> · <a href="#s08">Niveau I/W/B</a> · <a href="#s04-tables">Nom physique</a> · <a href="#s14-docs">Num_Doc (numérotation)</a></p>
+<p><span class="lt">P</span><br>
+<a href="#s06">Persisté</a> · <a href="#s06-controles">Pied de grille</a> · <a href="#s08">Portée</a> · <a href="#s01-cycle">PUBLIE</a> · <a href="#s14-publier">Publier / Désactiver</a></p>
+<p><span class="lt">R</span><br>
+<a href="#s06-controles">RADIO</a> · <a href="#s07">Rang (menu)</a> · <a href="#s08-types">REGEX</a> · <a href="#s08-types">REQUIRED</a> · <a href="#s06-controles">RUBRIQUE</a> · <a href="#s14-docs">RV (rowversion)</a></p>
+<p><span class="lt">S</span><br>
+<a href="#s08">SAVE (moment)</a> · <a href="#s07">Section portail</a> · <a href="#s10-cond">SI / VIDE / REMPLI</a> · <a href="#s10-agreg">SOMME / MOYENNE / NB</a> · <a href="#s12-champ">SOURCE (champ)</a> · <a href="#s12-valid">SOURCE (validation)</a> · <a href="#s12">Source métier</a> · <a href="#s15">SPP_ / SPPL_</a> · <a href="#s01-cycle">Statut de page</a> · <a href="#s14-supprimer">Supprimer une page</a></p>
+<p><span class="lt">T</span><br>
+<a href="#s07">Type document</a> · <a href="#s04-colonnes">Types SQL</a> · <a href="#s06-controles">Types de contrôles (15)</a></p>
+<p><span class="lt">U</span><br>
+<a href="#s08-types">UNIQUE</a></p>
+<p><span class="lt">V</span><br>
+<a href="#s06-defaut">Valeur par défaut</a> · <a href="#s08">Validations</a> · <a href="#s06-liste">Visible grille</a></p>
+<p><span class="lt">W</span><br>
+<a href="#s07">Workflow de signature</a></p>
+<p><span class="lt">Z</span><br>
+<a href="#s06-controles">ZOOM (type) / N° Zoom</a></p>
+</div>
+<hr>
+<p style="font-size:12.5px;color:#777">Aide générée pour le module SP_ de RHP — sources : <code>RHP_DeskTop\RHP\Portail\SP_Page_Designer.*</code>,
+assistants <code>Zoom_SP_*</code>, <code>Module_SP_DDL</code>, scripts <code>RHP_Portail\rhpBE\sql\SP_Designer\*.sql</code>,
+moteur portail <code>module_sp_engine.ts</code> / <code>DynamicPage*</code>. Les figures sont des <b>maquettes représentatives</b>
+des écrans (reconstitution fidèle des libellés et comportements ; l'aspect exact peut varier selon le thème).</p>
+</section>
+</main>
+</div>
+<button class="btn-top" id="btnTop" title="Haut de page" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<script>
+(function(){
+  "use strict";
+  var box=document.getElementById('searchBox'),
+      res=document.getElementById('searchResults'),
+      meta=document.getElementById('searchMeta'),
+      sections=Array.prototype.slice.call(document.querySelectorAll('section[data-title]')),
+      btnTop=document.getElementById('btnTop');
+
+  /* Normalisation : minuscules + suppression des diacritiques (longueur ~conservée) */
+  function norm(s){
+    return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036F]/g,'');
+  }
+
+  /* ------- Index de recherche ------- */
+  var index=sections.map(function(sec){
+    var txt=sec.innerText||sec.textContent||'';
+    return {id:sec.id, title:sec.getAttribute('data-title'), text:txt, ntext:norm(txt)};
+  });
+
+  function clearHl(){
+    Array.prototype.forEach.call(document.querySelectorAll('mark.hl'),function(m){
+      var t=document.createTextNode(m.textContent);
+      m.parentNode.replaceChild(t,m);
+      m.parentNode.normalize&&m.parentNode.normalize();
+    });
+  }
+
+  function highlightIn(sec,terms){
+    var walker=document.createTreeWalker(sec,NodeFilter.SHOW_TEXT,{
+      acceptNode:function(n){
+        if(!n.nodeValue||!norm(n.nodeValue).length)return NodeFilter.FILTER_REJECT;
+        var p=n.parentNode;
+        if(p&&(p.nodeName==='SCRIPT'||p.nodeName==='STYLE'||p.nodeName==='MARK'))return NodeFilter.FILTER_REJECT;
+        return NodeFilter.FILTER_ACCEPT;
+      }});
+    var nodes=[],n;
+    while((n=walker.nextNode()))nodes.push(n);
+    nodes.forEach(function(node){
+      var nv=norm(node.nodeValue),hit=-1,i;
+      for(i=0;i<terms.length;i++){var p=nv.indexOf(terms[i]);if(p>=0&&(hit<0||p<hit))hit=p;}
+      if(hit<0)return;
+      /* surligne toutes les occurrences du terme trouvé à cette position */
+      var term=null;
+      for(i=0;i<terms.length;i++){if(nv.indexOf(terms[i])===hit){term=terms[i];break;}}
+      if(!term){for(i=0;i<terms.length;i++){var q=nv.indexOf(terms[i]);if(q===hit){term=terms[i];break;}}}
+      if(!term)return;
+      var orig=node.nodeValue;
+      var pos=orig.toLowerCase().normalize('NFD').replace(/[\u0300-\u036F]/g,'').indexOf(term);
+      if(pos<0)return;
+      var before=orig.substring(0,pos),
+          mid=orig.substr(pos,term.length),
+          after=orig.substring(pos+term.length);
+      var mark=document.createElement('mark');mark.className='hl';mark.textContent=mid;
+      var frag=document.createDocumentFragment();
+      frag.appendChild(document.createTextNode(before));
+      frag.appendChild(mark);
+      frag.appendChild(document.createTextNode(after));
+      node.parentNode.replaceChild(frag,node);
+    });
+  }
+
+  function snippet(item,term){
+    var p=item.ntext.indexOf(term);
+    if(p<0)p=0;
+    var start=Math.max(0,p-60),end=Math.min(item.text.length,p+90);
+    var sn=item.text.substring(start,end).replace(/\s+/g,' ').trim();
+    var esc=sn.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+    /* surlignage approximatif dans l'extrait */
+    var re=new RegExp('('+term.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','ig');
+    return (start>0?'…':'')+esc.replace(re,'<mark>$1</mark>')+(end<item.text.length?'…':'');
+  }
+
+  function doSearch(){
+    clearHl();
+    var q=norm(box.value.trim());
+    res.innerHTML='';res.style.display='none';
+    if(q.length<2){meta.textContent='';return;}
+    var terms=q.split(/\s+/).filter(function(t){return t.length>1;});
+    if(!terms.length)terms=[q];
+    var found=index.filter(function(it){
+      return terms.every(function(t){return it.ntext.indexOf(t)>=0||norm(it.title).indexOf(t)>=0;});
+    });
+    meta.textContent=found.length?found.length+' section(s) trouvée(s) — Entrée : 1er résultat, Échap : effacer':'Aucun résultat';
+    if(!found.length)return;
+    res.style.display='block';
+    found.slice(0,15).forEach(function(it){
+      var d=document.createElement('div');d.className='sr';
+      d.innerHTML='<b>'+it.title+'</b><div class="snip">'+snippet(it,terms[0])+'</div>';
+      d.onclick=function(){
+        document.getElementById(it.id).scrollIntoView({behavior:'smooth',block:'start'});
+        clearHl();highlightIn(document.getElementById(it.id),terms);
+        res.style.display='none';
+      };
+      res.appendChild(d);
+    });
+  }
+
+  box.addEventListener('input',doSearch);
+  box.addEventListener('keydown',function(e){
+    if(e.key==='Enter'){
+      var first=res.querySelector('.sr');if(first)first.click();
+    }else if(e.key==='Escape'){
+      box.value='';clearHl();res.style.display='none';meta.textContent='';
+    }
+  });
+  document.addEventListener('click',function(e){
+    if(!res.contains(e.target)&&e.target!==box)res.style.display='none';
+  });
+
+  /* ------- Scrollspy du sommaire ------- */
+  var tocLinks=Array.prototype.slice.call(document.querySelectorAll('#toc a'));
+  function spy(){
+    var cur=null,y=window.scrollY+120;
+    sections.forEach(function(s){if(s.offsetTop<=y)cur=s.id;});
+    tocLinks.forEach(function(a){
+      a.classList.toggle('act',cur&&a.getAttribute('href')==='#'+cur);
+    });
+    btnTop.style.display=window.scrollY>600?'block':'none';
+  }
+  window.addEventListener('scroll',spy);spy();
+})();
+</script>
+</body>
+</html>

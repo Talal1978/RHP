@@ -3,7 +3,18 @@
 Distilled, verbatim-faithful reference for generating deployment SQL.
 Primary sources: `RHP_Portail\rhpBE\sql\SP_Designer\001_SP_Designer_Metadata.sql`,
 `002_SP_Designer_Exemple_FKM.sql`, `003_SP_Designer_Criteres.sql`,
-`RHP_DeskTop\RHP\Portail\Module_SP_DDL.vb`, `SP_Page_Designer.vb`.
+`005_SP_Designer_Migration_Total_Grille.sql`, `006_SP_Designer_Evolutions.sql`
+(SP4), `RHP_DeskTop\RHP\Portail\Module_SP_DDL.vb`, `SP_Page_Designer.vb`.
+
+> Deep-dive companions (read before generating the corresponding parts):
+> - `references/formules-calculees.md` — `Formule` AST, operators, GV_*,
+>   dependency graph/cycles, recalc & persistence rules;
+> - `references/comportement-page.md` — `Etat`, dynamic rules, the 13
+>   validation types with exact `Parametres` json, moments/levels, document
+>   lifecycle (`Figer_Statuts`, RV concurrency), detail flags, rights, list;
+> - `references/sources-metier.md` — `SP_Page_Source` guard, parameters &
+>   auto-injection, the 3 usages (SOURCE field, virtual detail, SOURCE
+>   validation), zoom condition.
 
 ---
 
@@ -32,7 +43,7 @@ Primary sources: `RHP_Portail\rhpBE\sql\SP_Designer\001_SP_Designer_Metadata.sql
 | `Act_Imprimer` | nvarchar(5) | NO | `'false'` | Requires `Cod_Modele_Edition` |
 | `Act_Exporter` | nvarchar(5) | NO | `'false'` | Not wired in current frontend (metadata only) |
 | `Acces_Personnalise` | nvarchar(5) | NO | `'true'` | `'false'` = consultation open to every profile |
-| `Figer_Statuts` | nvarchar(50) | NO | `'SG,RJ,SP,VA'` | **SP4** — CSV of statuses freezing the document (e.g. `'SS,SG,RJ,SP,VA'` freezes on submit, like the standard pages) |
+| `Figer_Statuts` | nvarchar(50) | NO | `'SG,RJ,SP,VA'` | **SP4** (006) — CSV of statuses freezing the document (e.g. `'SS,SG,RJ,SP,VA'` freezes on submit). **Not editable in the Desktop Designer**; its targeted `UPDATE` preserves it on re-save |
 | `Version_Page` | int | NO | 1 | +1 at each publication |
 | `DDL_Genere` | nvarchar(5) | NO | `'false'` | |
 | `Dat_Publication` | datetime | YES | — | |
@@ -53,10 +64,13 @@ PK `(Cod_Page, Cod_Table)`; `UQ` on `Nom_Physique`; FK → `SP_Page`.
 - `Role_Table` ∈ `ENT|DET`; `Regle_Suppression` ∈ `CASCADE|RESTRICT`.
 - Detail editing flags: `Allow_Add/Allow_Edit/Allow_Delete/Allow_Duplicate`
   (defaults `'true','true','true','false'`); `Tri_Defaut` e.g. `'Rang asc'`.
-- **SP4** — `Source_Metier` + `Source_Mapping` : a DET table may be *virtual* —
-  fed read-only by a `SP_Page_Source` with `Typ_Retour='TABLE'` (params mapped
-  from header fields). No physical table is created/read/written for it; the
-  server re-executes the source at save time before validations.
+- **SP4** (006) — `Source_Metier` + `Source_Mapping` : a DET table may be
+  *virtual* — fed read-only by a `SP_Page_Source` with `Typ_Retour='TABLE'`
+  (params mapped from header fields). No physical table is created/read/written
+  for it (virtual name `SP_<doc>_Virt_<Cod_Table>`); the server re-executes the
+  source at save time before validations. Full contract:
+  `references/sources-metier.md` §6. The Designer includes both columns in its
+  DELETE+INSERT — virtual details survive Designer re-saves.
 
 ## 4. `dbo.SP_Page_Colonne` — physical columns
 
@@ -75,13 +89,20 @@ PK `(Cod_Page, Cod_Champ)`; FK → `SP_Page`.
 - `Valeur_Defaut`: constant or variable `GV_MATRICULE`, `GV_NOW`, `GV_LOGIN`.
 - `Rubrique` → `Param_Rubriques.Nom_Controle` (RUBRIQUE + RADIO).
 - `Num_Zoom` + `Zoom_Retour` json `{"ChampCible":"ColonneZoom",…}` (ZOOM, COMBO).
-- **SP4** — `Zoom_Condition` : condition du zoom avec placeholders `{Champ}`
-  évalués dans le contexte (ex. `Matricule='{Matricule}'`) — COMBO et ZOOM.
+- **SP4** (006) — `Zoom_Condition` : condition du zoom avec placeholders
+  `{Champ}` évalués dans le contexte entête (ex. `Matricule='{Matricule}'`) —
+  COMBO et ZOOM. **Not editable in the Desktop Designer** — a Designer re-save
+  (DELETE+INSERT of `SP_Page_Champ` without this column) resets it to NULL;
+  re-apply the deployment script afterwards.
 - `Source_Metier` → `SP_Page_Source.Cod_Source` (SOURCE).
 - `Formule` json déclaratif (CALCULE, and SOURCE mapping
-  `{"source":"…","mapping":{"Param":{"ref":"Colonne"}}}`).
+  `{"source":"…","mapping":{"Param":{"ref":"Colonne"}}}`) — full AST and
+  semantics: `references/formules-calculees.md`.
 - `Persiste` (default `'false'`) — persisted calculated fields get a physical
-  column; non-persisted ones do not. `Recalc_Save` default `'true'`.
+  column; non-persisted ones do not. `Recalc_Save` default `'true'` — only
+  meaningful for persisted ENT SOURCE fields (server re-execution at save);
+  **not editable in the Desktop Designer** (same DELETE+INSERT reset caveat
+  as `Zoom_Condition`).
 - `Format_Affichage`, `Decimales`; dynamic rules `Regle_Visibilite`,
   `Regle_Activation` (json AST).
 - Grid: `Visible_Grille`, `Rang_Grille`, `Largeur_Colonne` (em),

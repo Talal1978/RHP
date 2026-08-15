@@ -2148,6 +2148,12 @@
     <EmbeddedResource Include="Portail\SP_Page_Designer.resx">
       <DependentUpon>SP_Page_Designer.vb</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Portail\Zoom_SP_Assistant_ParamSource.resx">
+      <DependentUpon>Zoom_SP_Assistant_ParamSource.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Portail\Zoom_SP_Assistant_Validation.resx">
+      <DependentUpon>Zoom_SP_Assistant_Validation.vb</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Portail\Zoom_SP_Nouvelle_Section.resx">
       <DependentUpon>Zoom_SP_Nouvelle_Section.vb</DependentUpon>
     </EmbeddedResource>

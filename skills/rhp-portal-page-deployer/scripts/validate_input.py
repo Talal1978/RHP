@@ -7,7 +7,15 @@ the blocking rules of the skill, mirroring the verified RHP constraints:
   - CK_SP_Page_Ident, UQ_SP_Page_Document, CK_SPChamp_Typ, CK_SPChamp_Etat,
     CK_SPValid_* , CK_SPSource_*  (001_SP_Designer_Metadata.sql)
   - identifier rules + reserved words (Module_SP_DDL.vb / module_sp_engine.ts)
-  - read-only source guard (module_sp_engine.ts:569-588)
+  - read-only source guard, EXACT mirror (literals neutralized before the
+    multi-statement check; sp_* blacklist case-sensitive)
+    (module_sp_engine.ts:760-787)
+  - full formula AST whitelist (43 ops), GV_* variables, DATEDIFF/DATEADD
+    units, DATEPART parts, cycle detection (@result / GV_* excluded)
+    (module_sp_engine.ts:307-312, 316-328, 581-677)
+  - per-type validation Parametres shapes (Zoom_SP_Assistant_Validation.vb)
+  - SP4 features: freeze_statuses, zoom_condition, virtual detail grids
+    (006_SP_Designer_Evolutions.sql ; VerifierTableVirtuelle mirror)
   - publication preconditions (SP_Page_Designer.vb : Publier)
 
 Usage:
@@ -42,11 +50,26 @@ VALID_TYPES = {"REQUIRED", "IN", "BETWEEN", "MIN", "MAX", "MINLEN", "MAXLEN",
 VALID_SCOPES = {"CHAMP", "ENTETE", "LIGNE", "DETAIL", "DOCUMENT"}
 VALID_LEVELS = {"I", "W", "B"}
 VALID_MOMENTS = {"SAISIE", "CHANGE", "AJOUT_LIGNE", "SAVE"}
+# Full operator whitelists, mirror of OPS_LOGIQUES / OPS_CALCUL
+# (module_sp_engine.ts:307-312 and dynamicEngine.ts:12-17)
 LOGIC_OPS = {"AND", "OR", "NOT", "EQ", "NE", "GT", "GE", "LT", "LE",
              "IN", "EMPTY", "NOTEMPTY", "CONTIENT"}
 CALC_OPS = {"ADD", "SUB", "MUL", "DIVSAFE", "COND", "SUM", "AVG", "MIN",
-            "MAX", "COUNT", "ROUND", "ABS", "REF", "CONST"}
+            "MAX", "COUNT", "ROUND", "ABS", "REF", "CONST", "DATEDIFF",
+            "LEFT", "RIGHT", "SUBSTRING", "INDEXOF", "LEN", "UPPER", "LOWER",
+            "TRIM", "REPLACE", "CONCAT", "INT", "CEIL", "FLOOR", "DATEADD",
+            "DATEPART", "DAYOFWEEK"}
 AGG_OPS = {"SUM", "AVG", "MIN", "MAX", "COUNT"}
+# GV_* resolved by variableGlobale() (module_sp_engine.ts:316-328) - usable in
+# formulas; never a recalculation dependency
+GV_VARS = {"GV_NOW", "GV_YEAR", "GV_MONTH", "GV_DAY",
+           "GV_DEBMOIS", "GV_FINMOIS", "GV_DEBYEAR"}
+DATE_UNITS = {"S", "MI", "H", "J"}            # DATEDIFF (+DATEADD below)
+DATEADD_UNITS = DATE_UNITS | {"MO", "A"}
+DATE_PARTS = {"A", "M", "J", "H", "MI", "S"}  # DATEPART
+# Technical ENT columns exposed to contexts (module_sp_engine.ts:1091-1093)
+TECH_ENT_COLS = {"Num_Doc", "id_Societe", "Statut", "Dat_Crea", "Created_By",
+                 "Dat_Modif", "Modified_By"}
 NO_CRITERIA_TYPES = {"calculated", "source", "attachments", "checkbox", "radio"}
 
 errors, warnings = [], []
@@ -75,17 +98,41 @@ def req_str(obj, key, path, maxlen=None):
 
 
 # ---------------------------------------------------------------- formulas
-def check_formula(node, path, block_cols, det_blocks, det_cols, depth=0):
-    """Declarative AST only; whitelisted ops; refs/aggregates must resolve."""
+def check_formula(node, path, block_cols, det_blocks, det_cols, depth=0,
+                  allow_result=False):
+    """Declarative AST only; whitelisted ops; refs/aggregates must resolve.
+
+    block_cols: columns of the field's own block UNION header columns (engine
+    resolution: current row first, then header). det_cols: block -> columns.
+    allow_result: accept {"ref":"@result"} (SOURCE validation cond only).
+    """
     if depth > 20:
         err(path, "formule trop profonde (> 20)")
         return
+    if isinstance(node, list):  # literal array (e.g. IN second argument)
+        for i, a in enumerate(node):
+            if isinstance(a, (dict, list)):
+                err(f"{path}[{i}]", "tableau litteral : constantes uniquement")
+            elif not isinstance(a, (int, float, str, bool)):
+                err(f"{path}[{i}]", "constante invalide dans le tableau")
+        return
     if not isinstance(node, dict):
-        err(path, "noeud de formule invalide (objet attendu)")
+        if not isinstance(node, (int, float, str, bool)):
+            err(path, "noeud de formule invalide (objet, tableau ou constante attendu)")
         return
     if "ref" in node:
-        if not isinstance(node["ref"], str) or node["ref"] not in block_cols:
-            err(f"{path}.ref", f"colonne inconnue dans ce bloc : {node.get('ref')!r}")
+        ref = node["ref"]
+        if not isinstance(ref, str):
+            err(f"{path}.ref", "ref invalide (chaine attendue)")
+        elif ref == "@result":
+            if not allow_result:
+                err(f"{path}.ref", "@result reserve a la condition d'une validation SOURCE")
+        elif ref.upper().startswith("GV_"):
+            if ref.upper() not in GV_VARS:
+                err(f"{path}.ref", f"variable globale inconnue : {ref!r} "
+                                   f"(disponibles : {', '.join(sorted(GV_VARS))})")
+        elif ref not in block_cols:
+            err(f"{path}.ref", f"colonne inconnue dans ce bloc ou l'entete : {ref!r}")
         return
     if "const" in node:
         if not isinstance(node["const"], (int, float, str, bool)):
@@ -96,6 +143,15 @@ def check_formula(node, path, block_cols, det_blocks, det_cols, depth=0):
         err(f"{path}.op", f"operateur non autorise : {op!r}")
         return
     op = op.upper()
+    if op == "REF":  # alternate form {"op":"REF","colonne":"X"}
+        col = node.get("colonne")
+        if not isinstance(col, str) or col not in block_cols:
+            err(f"{path}.colonne", f"REF : colonne inconnue : {col!r}")
+        return
+    if op == "CONST":  # alternate form {"op":"CONST","valeur":x}
+        if "valeur" not in node:
+            err(f"{path}.valeur", "CONST : cle 'valeur' requise")
+        return
     if op in AGG_OPS and "table" in node:  # aggregate over a detail block
         tbl = node.get("table")
         if tbl not in det_blocks:
@@ -103,18 +159,32 @@ def check_formula(node, path, block_cols, det_blocks, det_cols, depth=0):
         elif node.get("colonne") and node["colonne"] not in det_cols.get(tbl, set()):
             err(f"{path}.colonne", f"colonne inconnue du bloc {tbl}: {node.get('colonne')!r}")
         return
+    if op in ("DATEDIFF", "DATEADD"):
+        unite = str(node.get("unite", "J")).upper()
+        allowed = DATEADD_UNITS if op == "DATEADD" else DATE_UNITS
+        if unite not in allowed:
+            err(f"{path}.unite", f"{op} : unite {unite!r} hors de {sorted(allowed)}")
+    if op == "DATEPART":
+        partie = str(node.get("partie", "J")).upper()
+        if partie not in DATE_PARTS:
+            err(f"{path}.partie", f"DATEPART : partie {partie!r} hors de {sorted(DATE_PARTS)}")
     args = node.get("args")
     if not isinstance(args, list) or not args:
         err(f"{path}.args", f"operateur {op} : liste args requise")
         return
     for i, a in enumerate(args):
-        check_formula(a, f"{path}.args[{i}]", block_cols, det_blocks, det_cols, depth + 1)
+        check_formula(a, f"{path}.args[{i}]", block_cols, det_blocks, det_cols,
+                      depth + 1, allow_result)
 
 
 def formula_refs(node, acc):
+    """Collect field refs (mirror of extraireDependances: @result and GV_*
+    excluded - never recalculation dependencies)."""
     if isinstance(node, dict):
         if "ref" in node and isinstance(node["ref"], str):
-            acc.append(node["ref"])
+            r = node["ref"]
+            if r != "@result" and not r.upper().startswith("GV_"):
+                acc.append(r)
         for v in node.values():
             formula_refs(v, acc)
     elif isinstance(node, list):
@@ -124,25 +194,67 @@ def formula_refs(node, acc):
 
 # ---------------------------------------------------------------- sources
 def check_source_sql(code, path):
-    """Mirror of estRequeteLectureSeule (module_sp_engine.ts:569-588)."""
+    """Exact mirror of estRequeteLectureSeule (module_sp_engine.ts:760-787):
+    comments removed, string literals neutralized BEFORE the multi-statement
+    check, start gate select|with|exec dbo.Sys_*, case-insensitive keyword
+    blacklist, and sp_* blacklist tested CASE-SENSITIVELY (uppercase SP_
+    business tables stay readable)."""
     cleaned = re.sub(r"/\*.*?\*/", "", code, flags=re.S)
     cleaned = re.sub(r"--.*?(\n|$)", " ", cleaned)
     cleaned = re.sub(r"\s+", " ", cleaned).strip()
-    if re.search(r";.*\S", re.sub(r";\s*$", "", cleaned)):
+    # string literals neutralized: a ';' inside a literal is not a separator
+    sans_lit = re.sub(r"'(?:[^']|'')*'", "''", cleaned)
+    if re.search(r";.*\S", re.sub(r";\s*$", "", sans_lit)):
         err(path, "instruction multiple interdite dans la source")
         return
-    low = cleaned.lower()
+    low = sans_lit.lower()
     if not re.match(r"^(select|with)\b", low) and not re.match(r"^exec(ute)?\s+dbo\.sys_\w+", low):
         err(path, "seuls SELECT / WITH / EXEC dbo.Sys_* sont autorises")
         return
     if re.search(r"\b(insert|update|delete|merge|drop|alter|create|truncate|grant|revoke|"
                  r"backup|restore|shutdown|kill|waitfor|openrowset|opendatasource|"
-                 r"xp_\w+|sp_\w+)\b", cleaned, flags=re.I):
+                 r"xp_\w+)\b", sans_lit, flags=re.I):
         err(path, "mots-cles SQL interdits dans la source")
+        return
+    if re.search(r"\bsp_\w+\b", sans_lit):  # case-sensitive on purpose (mirror)
+        err(path, "procedures systeme sp_* interdites dans la source "
+                  "(sensible a la casse : les tables SP_ majuscules restent lisibles)")
+
+
+def check_source_mapping(mapping, path, header_cols, declared_params=None):
+    """Mapping json of a SOURCE field / virtual detail / SOURCE validation:
+    {"Param": {"ref":"HeaderCol"} | {"const":"…"}}. header_cols = header
+    business columns + technical ENT columns (engine allows both).
+    declared_params: optional list of the source's declared parameters (from
+    the input catalog) to verify mandatory feeding."""
+    if not isinstance(mapping, dict):
+        err(path, "mapping attendu : objet {\"Param\":{\"ref\"|\"const\":…}}")
+        return
+    fed = set()
+    for nom, defin in mapping.items():
+        p = f"{path}.{nom}"
+        if not is_ident(str(nom)):
+            err(p, "nom de parametre invalide")
+        if declared_params is not None and nom not in {d.get("name") for d in declared_params}:
+            err(p, f"parametre {nom!r} non declare dans la source")
+        if not isinstance(defin, dict) or ("ref" not in defin and "const" not in defin):
+            err(p, 'alimentation attendue : {"ref":"ColonneEntete"} ou {"const":"…"}')
+            continue
+        if "ref" in defin:
+            if defin["ref"] not in header_cols:
+                err(f"{p}.ref", f"colonne d'entete inconnue : {defin['ref']!r}")
+        fed.add(nom)
+    if declared_params is not None:
+        for d in declared_params:
+            if d.get("required") and d["name"] not in fed:
+                err(path, f"parametre obligatoire {d['name']!r} non alimente par le mapping")
 
 
 # ---------------------------------------------------------------- validations
-def check_validation(v, path, blocks, fields_by_block):
+def check_validation(v, path, blocks, fields_by_block, block_cols, grids,
+                     src_index, header_cols):
+    """Mirror of the engine rules (module_sp_engine.ts:823-952) and of the
+    desktop assistant shapes (Zoom_SP_Assistant_Validation.vb:409-489)."""
     code = req_str(v, "code", path, 50)
     scope = v.get("scope")
     if scope not in VALID_SCOPES:
@@ -167,12 +279,76 @@ def check_validation(v, path, blocks, fields_by_block):
             err(f"{path}.target_field", f"requis pour la portee {scope}")
         elif tf not in fields_by_block.get(tb, set()):
             err(f"{path}.target_field", f"champ {tf!r} absent du bloc {tb!r}")
-    if vtype == "EXPR":
-        p = v.get("parameters") or {}
-        if not isinstance(p, dict) or "expr" not in p:
-            err(f"{path}.parameters", 'EXPR attend {"expr": {...}}')
-    if vtype == "NB_LIGNES" and scope != "DETAIL":
-        warn(f"{path}.scope", "NB_LIGNES s'applique normalement a la portee DETAIL")
+    # refs resolvable from the rule context: its block + header
+    ctx_cols = block_cols.get(tb, set()) | block_cols.get("ENT", set())
+
+    p = v.get("parameters") or {}
+    if not isinstance(p, dict):
+        err(f"{path}.parameters", "objet json attendu")
+        p = {}
+    pp = f"{path}.parameters"
+    if vtype == "IN":
+        if not isinstance(p.get("valeurs"), list) or not p["valeurs"]:
+            err(f"{pp}.valeurs", "IN attend {\"valeurs\":[…]} non vide "
+                                "(doubler les nombres en nombre ET texte : comparaison stricte)")
+    elif vtype in ("MIN", "MAX", "MINLEN", "MAXLEN"):
+        if not isinstance(p.get("valeur"), (int, float)):
+            err(f"{pp}.valeur", f"{vtype} attend {{\"valeur\":N}}")
+    elif vtype == "BETWEEN":
+        if not isinstance(p.get("min"), (int, float)) or not isinstance(p.get("max"), (int, float)):
+            err(pp, 'BETWEEN attend {"min":A,"max":B}')
+        elif p["min"] > p["max"]:
+            err(pp, "BETWEEN : min > max")
+    elif vtype == "REGEX":
+        pat = p.get("pattern")
+        if not isinstance(pat, str) or not pat:
+            err(f"{pp}.pattern", 'REGEX attend {"pattern":"^…$"}')
+        else:
+            try:
+                re.compile(pat)
+            except re.error as ex:
+                err(f"{pp}.pattern", f"regex non compilable : {ex}")
+    elif vtype == "COMPARE":
+        if str(p.get("operateur", "")).upper() not in ("GT", "GE", "LT", "LE", "EQ", "NE"):
+            err(f"{pp}.operateur", "COMPARE : operateur GT|GE|LT|LE|EQ|NE requis")
+        has_autre = "autre" in p
+        has_const = "constante" in p
+        if has_autre == has_const:
+            err(pp, 'COMPARE : exactement une des cles "autre" (Nom_Colonne) ou "constante"')
+        elif has_autre and p["autre"] not in ctx_cols:
+            err(f"{pp}.autre", f"colonne inconnue : {p['autre']!r}")
+    elif vtype == "UNIQUE":
+        if not isinstance(p.get("colonnes"), list) or not p["colonnes"]:
+            err(f"{pp}.colonnes", 'UNIQUE attend {"colonnes":["C1",…]}')
+        if scope != "DETAIL":
+            warn(f"{path}.scope", "UNIQUE s'applique normalement a la portee DETAIL")
+    elif vtype == "NB_LIGNES":
+        if "min" not in p and "max" not in p:
+            err(pp, 'NB_LIGNES attend au moins une borne {"min":n} / {"max":n}')
+        if scope != "DETAIL":
+            warn(f"{path}.scope", "NB_LIGNES s'applique normalement a la portee DETAIL")
+    elif vtype == "EXPR":
+        if "expr" not in p:
+            err(pp, 'EXPR attend {"expr": {...AST...}}')
+        else:
+            check_formula(p["expr"], f"{pp}.expr", ctx_cols, grids, block_cols)
+    elif vtype == "SOURCE":
+        if not isinstance(p.get("source"), str) or not p["source"].strip():
+            err(f"{pp}.source", 'SOURCE attend {"source":"CodSource",…}')
+        elif p["source"] not in src_index:
+            warn(f"{pp}.source",
+                 f"'{p['source']}' absent du input : doit exister dans SP_Page_Source "
+                 f"(verifie par le preflight)")
+        if "mapping" in p:
+            check_source_mapping(p["mapping"], f"{pp}.mapping", header_cols,
+                                 src_index.get(p.get("source")))
+        if "cond" in p:
+            check_formula(p["cond"], f"{pp}.cond", ctx_cols, grids, block_cols,
+                          allow_result=True)
+    # Condition_Regle : declarative condition AST (engine evaluates it first)
+    cond = v.get("condition")
+    if cond is not None:
+        check_formula(cond, f"{path}.condition", ctx_cols, grids, block_cols)
     return code
 
 
@@ -194,8 +370,9 @@ def validate(spec):
     dp = spec.get("deployment") or {}
     if not isinstance(dp.get("update_if_exists"), bool):
         err("deployment.update_if_exists", "booleen requis (autorisation explicite)")
-    if dp.get("expected_schema_version") not in ("SP1", "SP2", "SP3"):
-        err("deployment.expected_schema_version", "SP1 | SP2 | SP3 attendu")
+    if dp.get("expected_schema_version") not in ("SP1", "SP2", "SP3", "SP4"):
+        err("deployment.expected_schema_version", "SP1 | SP2 | SP3 | SP4 attendu "
+            "(SP4 = 005/006 : Figer_Statuts, Zoom_Condition, Total_Grille, details virtuels)")
     if dp.get("use_feature_flag") not in (False, None):
         err("deployment.use_feature_flag",
             "mecanisme de feature flag INEXISTANT dans RHP (verifie) : utiliser page.enabled")
@@ -241,6 +418,19 @@ def validate(spec):
         err("page.display_order", "entier attendu")
     if not isinstance(pg.get("enabled", True), bool):
         err("page.enabled", "booleen attendu")
+    fs = pg.get("freeze_statuses")
+    if fs is not None:
+        if not isinstance(fs, str) or not fs.strip():
+            err("page.freeze_statuses", "CSV de codes statut attendu (ex. 'SS,SG,RJ,SP,VA')")
+        else:
+            for tok in fs.split(","):
+                tok = tok.strip()
+                if not re.match(r"^[A-Za-z0-9]{1,3}$", tok):
+                    err("page.freeze_statuses",
+                        f"code statut invalide : {tok!r} (1..3 alphanum., colonne Statut nvarchar(3))")
+            if dp.get("expected_schema_version") in ("SP1", "SP2", "SP3"):
+                err("page.freeze_statuses",
+                    "exige le niveau de schema SP4 (SP_Page.Figer_Statuts - migration 006)")
 
     act = pg.get("actions") or {}
     wf = pg.get("workflow") or {}
@@ -251,6 +441,15 @@ def validate(spec):
         err("page.actions.print", "exige page.print_model (Param_Mod_Edition.Cod_Report)")
     if att.get("categories") and not all(isinstance(c, str) for c in att.get("categories", [])):
         err("page.attachments.categories", "liste de chaines attendue")
+
+    # ----- data sources pre-scan (full checks further below): index for
+    # mapping / return-type cross-checks in components and validations
+    src_index = {}   # data_source_code -> declared parameters (list)
+    src_return = {}  # data_source_code -> return_type
+    for s in spec.get("data_sources") or []:
+        if isinstance(s, dict) and s.get("data_source_code"):
+            src_index[s["data_source_code"]] = s.get("parameters") or []
+            src_return[s["data_source_code"]] = s.get("return_type", "scalar")
 
     # ----- components
     comps = spec.get("components") or []
@@ -282,6 +481,7 @@ def validate(spec):
         warn("components", "aucun champ d'entete : page liste sans entete exploitable")
 
     col_pairs = set()
+    header_cols = block_cols.get("ENT", set()) | TECH_ENT_COLS
     for i, c in enumerate(comps):
         p = f"components[{i}]"
         ct = c.get("component_type")
@@ -292,6 +492,34 @@ def validate(spec):
         if ct == "detail_grid":
             if props.get("delete_rule", "CASCADE") not in ("CASCADE", "RESTRICT"):
                 err(f"{p}.properties.delete_rule", "CASCADE | RESTRICT attendu")
+            vsrc = props.get("data_source_code")
+            if vsrc:  # virtual detail grid (SP4: Source_Metier + Source_Mapping)
+                if dp.get("expected_schema_version") in ("SP1", "SP2", "SP3"):
+                    err(f"{p}.properties.data_source_code",
+                        "detail virtuel : exige le niveau de schema SP4 "
+                        "(SP_Page_Table.Source_Metier/_Mapping - migration 006)")
+                if vsrc in src_return and src_return[vsrc] != "table":
+                    err(f"{p}.properties.data_source_code",
+                        f"la source {vsrc!r} est return_type={src_return[vsrc]} : "
+                        f"une grille virtuelle exige une source de retour TABLE "
+                        f"(miroir VerifierTableVirtuelle)")
+                elif vsrc not in src_index:
+                    warn(f"{p}.properties.data_source_code",
+                         f"'{vsrc}' absent du input : doit exister dans SP_Page_Source "
+                         f"avec Typ_Retour='TABLE' (verifie par le preflight)")
+                if not props.get("source_mapping"):
+                    err(f"{p}.properties.source_mapping",
+                        "detail virtuel : mapping des parametres de la source requis "
+                        '{"Param":{"ref":"ColonneEntete"}}')
+                else:
+                    check_source_mapping(props["source_mapping"],
+                                         f"{p}.properties.source_mapping",
+                                         header_cols, src_index.get(vsrc))
+                for flg in ("allow_add", "allow_edit", "allow_delete", "allow_duplicate"):
+                    if props.get(flg):
+                        warn(f"{p}.properties.{flg}",
+                             "grille virtuelle : le Designer force ce flag a false "
+                             "(lecture seule, aucune table physique)")
             continue
         if tb != "ENT" and tb not in grids:
             err(f"{p}.target_block", f"detail_grid inconnu : {tb!r}")
@@ -327,22 +555,56 @@ def validate(spec):
 
         if ct in ("radio", "reference_list") and not props.get("rubrique"):
             err(f"{p}.properties.rubrique", f"requis pour {ct}")
-        if ct in ("zoom", "combo") and not props.get("zoom"):
-            err(f"{p}.properties.zoom", f"Num_Zoom requis pour {ct}")
+        if ct in ("zoom", "combo"):
+            if not props.get("zoom"):
+                err(f"{p}.properties.zoom", f"Num_Zoom requis pour {ct}")
+            zcond = props.get("zoom_condition")
+            if zcond:
+                if dp.get("expected_schema_version") in ("SP1", "SP2", "SP3"):
+                    err(f"{p}.properties.zoom_condition",
+                        "exige le niveau de schema SP4 (SP_Page_Champ.Zoom_Condition - migration 006)")
+                if not isinstance(zcond, str) or len(zcond) > 500:
+                    err(f"{p}.properties.zoom_condition", "chaine <= 500 attendue")
+                else:
+                    for ph in re.findall(r"\{([A-Za-z_][A-Za-z0-9_]*)\}", zcond):
+                        if ph not in header_cols:
+                            err(f"{p}.properties.zoom_condition",
+                                f"placeholder {{{ph}}} : colonne d'entete inconnue")
         if ct == "attachments" and not att.get("enabled"):
             err(f"{p}.component_type", "champ GED sans page.attachments.enabled=true")
         if ct == "calculated":
             if not props.get("formula"):
                 err(f"{p}.properties.formula", "formule requise pour calculated")
             else:
+                # engine resolution: row columns first, then header columns
                 check_formula(props["formula"], f"{p}.properties.formula",
-                              block_cols.get(tb, set()), grids, block_cols)
+                              block_cols.get(tb, set()) | block_cols.get("ENT", set()),
+                              grids, block_cols)
         if ct == "source":
             if not c.get("data_source_code"):
                 err(f"{p}.data_source_code", "requis pour source")
+            if tb != "ENT":
+                warn(f"{p}.target_block",
+                     "champ SOURCE hors entete : non re-execute par les moteurs "
+                     "(client et save serveur ne traitent que Cod_Table='ENT')")
             f = props.get("formula")
-            if f is not None and (not isinstance(f, dict) or "source" not in f):
-                err(f"{p}.properties.formula", 'mapping source attendu : {"source":...,"mapping":{...}}')
+            if f is not None:
+                if not isinstance(f, dict) or "source" not in f:
+                    err(f"{p}.properties.formula",
+                        'mapping source attendu : {"source":...,"mapping":{...}}')
+                else:
+                    if c.get("data_source_code") and f["source"] != c["data_source_code"]:
+                        warn(f"{p}.properties.formula.source",
+                             f"'{f['source']}' != data_source_code "
+                             f"'{c['data_source_code']}' : le moteur execute formula.source ; "
+                             f"les deux doivent coincider")
+                    if f["source"] not in src_index:
+                        warn(f"{p}.properties.formula.source",
+                             f"'{f['source']}' absent du input : doit exister dans "
+                             f"SP_Page_Source (verifie par le preflight)")
+                    if "mapping" in f:
+                        check_source_mapping(f["mapping"], f"{p}.properties.formula.mapping",
+                                             header_cols, src_index.get(f["source"]))
         if props.get("is_criteria"):
             if tb != "ENT":
                 err(f"{p}.properties.is_criteria", "critere reserve aux champs ENT")
@@ -383,7 +645,9 @@ def validate(spec):
     # ----- validations
     vcodes = []
     for i, v in enumerate(spec.get("page_validations") or []):
-        vcodes.append(check_validation(v, f"page_validations[{i}]", {"ENT", *grids}, block_fields))
+        vcodes.append(check_validation(v, f"page_validations[{i}]", {"ENT", *grids},
+                                       block_fields, block_cols, grids, src_index,
+                                       header_cols))
     for i, c in enumerate(comps):
         if c.get("component_type") == "detail_grid":
             continue
@@ -394,7 +658,8 @@ def validate(spec):
             vv.setdefault("target_block", tb)
             vv.setdefault("target_field", c.get("component_code"))
             vcodes.append(check_validation(vv, f"components[{i}].validations[{j}]",
-                                           {"ENT", *grids}, block_fields))
+                                           {"ENT", *grids}, block_fields, block_cols,
+                                           grids, src_index, header_cols))
     if len(set(vcodes)) != len([c for c in vcodes if c]):
         err("validations", "code de validation duplique")
 

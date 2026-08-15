@@ -38,10 +38,16 @@ BEGIN TRY
     -- 1.a Niveau de schema SP_ attendu : {{EXPECTED_SCHEMA_VERSION}}
     IF OBJECT_ID('dbo.SP_Page', 'U') IS NULL
         RAISERROR('SP_ metadata absentes : executer 001_SP_Designer_Metadata.sql d''abord.', 16, 1);
-    IF '{{EXPECTED_SCHEMA_VERSION}}' IN ('SP2','SP3') AND COL_LENGTH('dbo.SP_Page', 'Acces_Personnalise') IS NULL
+    IF '{{EXPECTED_SCHEMA_VERSION}}' IN ('SP2','SP3','SP4') AND COL_LENGTH('dbo.SP_Page', 'Acces_Personnalise') IS NULL
         RAISERROR('Niveau SP2 requis : colonne SP_Page.Acces_Personnalise absente.', 16, 1);
-    IF '{{EXPECTED_SCHEMA_VERSION}}' = 'SP3' AND COL_LENGTH('dbo.SP_Page_Champ', 'estCritere') IS NULL
+    IF '{{EXPECTED_SCHEMA_VERSION}}' IN ('SP3','SP4') AND COL_LENGTH('dbo.SP_Page_Champ', 'estCritere') IS NULL
         RAISERROR('Niveau SP3 requis : colonne SP_Page_Champ.estCritere absente.', 16, 1);
+    IF '{{EXPECTED_SCHEMA_VERSION}}' = 'SP4' AND
+       (COL_LENGTH('dbo.SP_Page', 'Figer_Statuts') IS NULL
+        OR COL_LENGTH('dbo.SP_Page_Champ', 'Zoom_Condition') IS NULL
+        OR COL_LENGTH('dbo.SP_Page_Table', 'Source_Metier') IS NULL
+        OR COL_LENGTH('dbo.SP_Page_Table', 'Source_Mapping') IS NULL)
+        RAISERROR('Niveau SP4 requis : executer 005_SP_Designer_Migration_Total_Grille.sql et 006_SP_Designer_Evolutions.sql d''abord.', 16, 1);
 
     -- 1.b Regles de l'operation
     IF '{{OPERATION}}' = 'create' AND EXISTS (SELECT 1 FROM dbo.SP_Page WHERE Cod_Page = @CP)
@@ -75,12 +81,16 @@ BEGIN
             Menu_Parent, Rang, Icone, Statut_Page, Table_Ent, Typ_Document,
             Workflow_Actif, Cod_Modele_Edition, GED_Actif, GED_Categories, GED_Obligatoire,
             Act_Enregistrer, Act_Soumettre, Act_Imprimer, Act_Exporter,
-            Acces_Personnalise, Dat_Crea, Created_By)
+            Acces_Personnalise{{FIGER_STATUTS_COL}}, Dat_Crea, Created_By)
         VALUES (@CP, @CDoc, N'{{LIBELLE}}', N'{{LIBELLE_COURT}}', N'{{NOM_PAGE}}',
             '{{MENU_PARENT}}', {{RANG}}, {{ICONE_SQL}}, 'BROUILLON', @TableEnt, @CDoc,
             '{{WORKFLOW_ACTIF}}', {{MODELE_EDITION_SQL}}, '{{GED_ACTIF}}', {{GED_CATEGORIES_SQL}}, '{{GED_OBLIGATOIRE}}',
             '{{ACT_ENREGISTRER}}', '{{ACT_SOUMETTRE}}', '{{ACT_IMPRIMER}}', '{{ACT_EXPORTER}}',
-            '{{ACCES_PERSONNALISE}}', GETDATE(), @Login);
+            '{{ACCES_PERSONNALISE}}'{{FIGER_STATUTS_VAL}}, GETDATE(), @Login);
+        -- {{FIGER_STATUTS_COL}} / {{FIGER_STATUTS_VAL}} : ", Figer_Statuts" / ", 'SS,SG,...'"
+        -- si page.freeze_statuses est renseigne (SP4) ; vides sinon (defaut SQL 'SG,RJ,SP,VA').
+        -- Figer_Statuts n'est PAS editable dans le Designer desktop ; son UPDATE cible
+        -- le preserve - cette colonne peut etre posee sans precaution particuliere.
     END
     ELSE IF {{UPDATE_IF_EXISTS}} = 1
     BEGIN
@@ -93,9 +103,10 @@ BEGIN
             GED_Actif = '{{GED_ACTIF}}', GED_Categories = {{GED_CATEGORIES_SQL}}, GED_Obligatoire = '{{GED_OBLIGATOIRE}}',
             Act_Enregistrer = '{{ACT_ENREGISTRER}}', Act_Soumettre = '{{ACT_SOUMETTRE}}',
             Act_Imprimer = '{{ACT_IMPRIMER}}', Act_Exporter = '{{ACT_EXPORTER}}',
-            Acces_Personnalise = '{{ACCES_PERSONNALISE}}',
+            Acces_Personnalise = '{{ACCES_PERSONNALISE}}'{{FIGER_STATUTS_SET}},
             Dat_Modif = GETDATE(), Modified_By = @Login
         WHERE Cod_Page = @CP;
+        -- {{FIGER_STATUTS_SET}} : ", Figer_Statuts = 'SS,SG,...'" si renseigne, vide sinon.
     END
 
 /* --------------------------------------------------------------------------
@@ -110,12 +121,19 @@ BEGIN
     DELETE FROM dbo.SP_Page_Table      WHERE Cod_Page = @CP;
 
     -- 4.a Tables (ENT d'abord, Rang 0)
+    -- Les INSERTs incluent Source_Metier/Source_Mapping pour un detail VIRTUEL
+    -- (SP4 ; nom physique SP_<doc>_Virt_<table>, Allow_* a 'false') : le Designer
+    -- desktop gere ces colonnes, elles survivent a ses DELETE+INSERT.
 {{TABLE_INSERTS}}
 
     -- 4.b Colonnes physiques
 {{COLONNE_INSERTS}}
 
     -- 4.c Champs UI
+    -- Les INSERTs incluent Zoom_Condition (SP4) et Recalc_Save quand renseignes.
+    -- ATTENTION : non editables dans le Designer desktop, dont le DELETE+INSERT de
+    -- SP_Page_Champ ne porte pas ces colonnes - une re-edition desktop les
+    -- reinitialise (rejouer ce script pour les reappliquer).
 {{CHAMP_INSERTS}}
 
     -- 4.d Validations
@@ -132,7 +150,8 @@ BEGIN
 
 /* --------------------------------------------------------------------------
    6. Tables metier - format exact Module_SP_DDL
-      (creation gardee / migration non destructive : ALTER ADD uniquement)
+      (creation gardee / migration non destructive : ALTER ADD uniquement ;
+       AUCUN DDL pour les details virtuels Source_Metier - pas de table physique)
    -------------------------------------------------------------------------- */
 {{BUSINESS_DDL}}
 

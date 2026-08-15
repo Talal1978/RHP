@@ -58,6 +58,11 @@ page:
   display_order: null          # (o) => SP_Page.Rang (int, default 99)
   enabled: true                # (o) true  => full publication on first deployment
                                #     false => metadata deployed as BROUILLON (not visible)
+  freeze_statuses: ""          # (o)(x) => SP_Page.Figer_Statuts (SP4): CSV of statuses
+                               #     freezing the document (default 'SG,RJ,SP,VA').
+                               #     'SS,SG,RJ,SP,VA' freezes on submit (standard pages).
+                               #     NOT editable in the Desktop Designer (UPDATE-safe).
+                               #     See references/comportement-page.md section 5.3.
 
   actions:                     # (o)(x) page action flags
     save: true                 #   => Act_Enregistrer
@@ -108,19 +113,36 @@ components:
       rubrique: ""             #   (r for radio, reference_list) Param_Rubriques.Nom_Controle
       zoom: ""                 #   (r for zoom, combo) Controle_Def_Zoom.Num_Zoom
       zoom_return: {}          #   => Zoom_Retour json {"ChampCible":"ColonneZoom"}
+      zoom_condition: ""       #   (o)(x) => Zoom_Condition (SP4, zoom/combo): condition
+                               #     text with {Champ} placeholders replaced by current
+                               #     HEADER values (ex. "Matricule='{Matricule}'").
+                               #     NOT editable in the Desktop Designer (re-save resets
+                               #     it - re-apply the deploy script). sources-metier.md §8.
       formula: {}              #   (r for calculated; required mapping for source)
-                               #     declarative AST, whitelisted ops only:
-                               #     logical: AND OR NOT EQ NE GT GE LT LE IN EMPTY NOTEMPTY CONTIENT
-                               #     calc:    ADD SUB MUL DIVSAFE COND SUM AVG MIN MAX COUNT ROUND ABS REF CONST
-                               #     operands: {"ref":"Colonne"} {"const":123} {"op":...,"args":[...]}
-                               #     aggregate: {"op":"SUM","table":"LIGNES","colonne":"Mnt"}
+                               #     Declarative AST - FULL spec: references/formules-calculees.md
+                               #     operands : {"ref":"Colonne"} (row first, then header),
+                               #       {"ref":"GV_*"} (GV_NOW GV_YEAR GV_MONTH GV_DAY
+                               #       GV_DEBMOIS GV_FINMOIS GV_DEBYEAR), {"const":x}, literal
+                               #     logical  : AND OR NOT EQ NE GT GE LT LE IN EMPTY NOTEMPTY CONTIENT
+                               #     calc     : ADD SUB MUL DIVSAFE COND ROUND ABS INT CEIL FLOOR
+                               #       text   : LEFT RIGHT SUBSTRING INDEXOF LEN UPPER LOWER TRIM REPLACE CONCAT
+                               #       dates  : DATEDIFF(unite S/MI/H/J) DATEADD(unite +MO/A)
+                               #              DATEPART(partie A/M/J/H/MI/S) DAYOFWEEK
+                               #       misc   : REF CONST ; MIN/MAX scalar (args) or aggregate
+                               #     aggregate: {"op":"SUM|AVG|MIN|MAX|COUNT","table":"LIGNES","colonne":"Mnt"}
                                #     source mapping: {"source":"<code>","mapping":{"Param":{"ref":"Colonne"}}}
+                               #     Semantics: num() coercion (NaN->0), smart compare, safe
+                               #     division (DIVSAFE), naive-clock dates - see the reference.
       persist: false           #   (calculated/source) physical column created when true
-      recalc_save: true        #   => Recalc_Save
-      format: ""               #   => Format_Affichage (e.g. 'MNT')
+                               #     (requires column_name; a footer grid total = detail block
+                               #      + empty column_name + persist false - formules-calculees.md §10)
+      recalc_save: true        #   => Recalc_Save (persisted ENT source fields: server
+                               #     re-executes the source at save when true)
+      format: ""               #   => Format_Affichage: ''|MNT|NUM|PCT|DAT|DTM
       decimals: null           #   => Decimales
-      visibility_rule: {}      #   => Regle_Visibilite (declarative AST)
-      activation_rule: {}      #   => Regle_Activation (declarative AST)
+      visibility_rule: {}      #   => Regle_Visibilite (declarative condition AST -
+                               #     re-evaluated on every input; eval exception => visible)
+      activation_rule: {}      #   => Regle_Activation (same; exception => enabled)
       visible_in_grid: true    #   => Visible_Grille
       grid_order: null         #   => Rang_Grille (default = display_order)
       grid_width_em: null      #   => Largeur_Colonne (em)
@@ -137,7 +159,15 @@ components:
       allow_duplicate: false   #   => Allow_Duplicate
       delete_rule: CASCADE     #   => Regle_Suppression: CASCADE|RESTRICT
       default_sort: ""         #   => Tri_Defaut (e.g. 'Dat_Jour asc') - validated names only
-    required: false            # (o) => Obligatoire (consider adding a REQUIRED validation too)
+      # detail_grid VIRTUAL (SP4) - read-only grid fed by a TABLE source, no
+      # physical table (SP_<doc>_Virt_<code>); allow_* forced false.
+      # Full contract: references/sources-metier.md section 6.
+      data_source_code: ""     #   => SP_Page_Table.Source_Metier (source return_type MUST be table)
+      source_mapping: {}       #   => SP_Page_Table.Source_Mapping json
+                               #     {"Param":{"ref":"HeaderCol"} | {"const":"…"}}
+                               #     (every required source parameter must be fed)
+    required: false            # (o) => Obligatoire (display-only marker: ALWAYS pair with
+                               #     a REQUIRED validation - comportement-page.md §1.3)
     visible: true              # (o) Etat mapping:
     editable: true             # (o)   visible+editable        => 'S'
                                #       visible+not editable    => 'R' ('A' for calculated/source)
@@ -148,6 +178,8 @@ components:
     validations: []            # (o) field-level validation specs, see page_validations
 
 # (o)(x) page-level validations (Portee ENTETE/DETAIL/DOCUMENT, or extra CHAMP/LIGNE rules)
+# Full semantics (per-type Parametres shapes, Niveau/Moment engine behavior):
+# references/comportement-page.md section 3.
 page_validations: []
 #  - code: V02_NB_LIGNES      # (r) => Cod_Validation (unique per page)
 #    scope: DETAIL            # (r) CHAMP|ENTETE|LIGNE|DETAIL|DOCUMENT
@@ -155,29 +187,52 @@ page_validations: []
 #    target_field: null       # (o) => Cod_Champ (for CHAMP/LIGNE scope)
 #    type: NB_LIGNES          # (r) REQUIRED|IN|BETWEEN|MIN|MAX|MINLEN|MAXLEN|REGEX|
 #                            #     COMPARE|UNIQUE|SOURCE|EXPR|NB_LIGNES
-#    parameters: {min: 1}     # (o) json => Parametres (verified shapes:
-#                            #     NB_LIGNES {"min":n}, BETWEEN {"min":a,"max":b},
-#                            #     EXPR {"expr":{...AST...}})
-#    condition: null          # (o) json AST => Condition_Regle
+#    parameters: {min: 1}     # (o) json => Parametres. Verified shapes per type:
+#                            #     REQUIRED null · IN {"valeurs":[…]} (numbers doubled
+#                            #     as number AND string) · MIN/MAX/MINLEN/MAXLEN {"valeur":N}
+#                            #     BETWEEN {"min":a,"max":b} · REGEX {"pattern":"^…$"}
+#                            #     COMPARE {"operateur":"GT|GE|LT|LE|EQ|NE","autre":"Col"}
+#                            #       or {"operateur":…,"constante":x}
+#                            #     UNIQUE {"colonnes":["C1","C2"]} · NB_LIGNES {"min":n,"max":m}
+#                            #     EXPR {"expr":{...AST...}}
+#                            #     SOURCE {"source":"…","mapping":{…},"cond":{"op":…,
+#                            #       "args":[{"ref":"@result"},…]}} (server-only)
+#    condition: null          # (o) json condition AST => Condition_Regle
+#                            #     (evaluated BEFORE the rule; absent = always applied)
 #    message: ""              # (r) => Message (<=300)
-#    level: B                 # (o) => Niveau: I|W|B (default B = blocking)
-#    moment: SAVE             # (o) => Moment: SAISIE|CHANGE|AJOUT_LIGNE|SAVE
+#    level: B                 # (o) => Niveau: I|W|B (default B = blocking; a technical
+#                            #     failure blocks too when B)
+#    moment: SAVE             # (o) => Moment: SAISIE|CHANGE|AJOUT_LIGNE|SAVE - CLIENT-side
+#                            #     comfort filter only: the server re-runs EVERY active rule
+#                            #     at save (SAVE replays all but SAISIE; CHANGE replays only
+#                            #     the rules of the changed field)
 #    active: true             # (o) => Actif
 # (component-level validations[] accept the same shape; scope is implied:
 #  CHAMP for ENT fields, LIGNE for detail_grid children.)
 
 # -----------------------------------------------------------------------------
+# Full source model (guard rules, parameter auto-injection, the 3 usages):
+# references/sources-metier.md.
 data_sources: []               # (o) => SP_Page_Source rows (read-only catalog)
 #  - data_source_code: ""      # (r) => Cod_Source
 #    label: ""                 # (r)(x) => Libelle
 #    source_type: sql          # (r) sql|proc => Typ_Source SQL|PROC
 #    reference: ""             # (r) SQL text (single SELECT/WITH) or 'dbo.Sys_*' proc.
-#                            #     MUST pass the server read-only guard
-#                            #     (references/sp-metadata-model.md section 7).
-#    parameters: []            # (o) [{name, type, required}] => Parametres json.
-#                            #     NEVER declare id_Societe (auto-injected).
+#                            #     MUST pass the server read-only guard exactly as the
+#                            #     engine re-runs it (sources-metier.md section 2):
+#                            #     literals neutralized before the multi-statement check;
+#                            #     sp_* blocked case-sensitively - uppercase SP_ business
+#                            #     tables stay readable; EXEC dbo.Sys_* only.
+#    parameters: []            # (o) [{name, type, required}] => Parametres json
+#                            #     [{"Nom":"Matricule","Typ":"nvarchar","Obligatoire":true}]
+#                            #     type: nvarchar|int|decimal|date|datetime|bit.
+#                            #     NEVER declare id_Societe (always injected, Int).
+#                            #     @Login/@Matricule/@Cod_Profile are auto-injected with the
+#                            #     connected identity UNLESS declared (declare them to feed
+#                            #     them from a page field via the mapping).
 #    return_type: scalar       # (o)(x) scalar|table => Typ_Retour SCALAIRE|TABLE
-#    profile: ""               # (o)(x) => Cod_Profile ('' = all profiles)
+#                            #     (table REQUIRED for a virtual detail grid)
+#    profile: ""               # (o)(x) => Cod_Profile ('' = all profiles; '1' bypasses)
 #    allowed_operations:       # (r) MUST keep read:true and all others false:
 #      read: true              #     RHP sources are read-only by design (server-enforced);
 #      create: false           #     any write flag => blocking error.
@@ -204,7 +259,10 @@ access_control:
 deployment:
   update_if_exists: false      # (r) explicit authorization to modify an existing page.
                                #     false + page exists => blocking error.
-  expected_schema_version: SP3 # (r) SP1|SP2|SP3 (references/environment-discovery.md)
+  expected_schema_version: SP4 # (r) SP1|SP2|SP3|SP4 (references/environment-discovery.md)
+                               #     SP4 (current repo state) = 005/006: Figer_Statuts,
+                               #     Zoom_Condition, Total_Grille, Source_Metier/_Mapping
+                               #     (virtual details). Required when the input uses them.
   use_feature_flag: false      # [UNSUPPORTED] must stay false: RHP has no feature-flag
                                #     mechanism (verified absence). The native equivalent is
                                #     the Statut_Page lifecycle (page.enabled).

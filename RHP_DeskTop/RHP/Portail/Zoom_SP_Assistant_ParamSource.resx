@@ -117,4 +117,11 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="lblAideIntro.Text" xml:space="preserve">
+    <value>Déclarez ici les paramètres de la requête SQL (ceux écrits @xxx dans la requête) :
+la syntaxe json de la colonne 'Paramètres' est générée automatiquement, aucun code à écrire.
+Le paramètre @id_Societe est injecté automatiquement par le serveur : ne le déclarez pas.
+La liste des noms propose les @xxx détectés dans la requête ; @Login / @Matricule / @Cod_Profile non déclarés
+sont injectés avec l'identité de l'utilisateur connecté (déclarez-les pour les alimenter depuis la page).</value>
+  </data>
 </root>
