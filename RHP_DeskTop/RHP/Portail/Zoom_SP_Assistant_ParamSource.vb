@@ -6,7 +6,7 @@ Imports Newtonsoft.Json.Linq
 ''' Assistant de déclaration des paramètres d'une source métier (grille Grd_Sources
 ''' du SP_Page_Designer) : l'utilisateur saisit les paramètres de la requête SQL dans
 ''' une grille simple (nom, type, obligatoire) et la syntaxe json attendue par le
-''' moteur (colonne Parametres de SP_Page_Source : [{"Nom":"X","Typ":"nvarchar",
+''' moteur (colonne Parametres de Controle_Designer_Source : [{"Nom":"X","Typ":"nvarchar",
 ''' "Obligatoire":true}]) est générée automatiquement - aucune saisie de code.
 ''' Interface : Zoom_SP_Assistant_ParamSource.Designer.vb (convention permanente :
 ''' tout le code de design est dans le .Designer.vb ; ce fichier ne contient que la

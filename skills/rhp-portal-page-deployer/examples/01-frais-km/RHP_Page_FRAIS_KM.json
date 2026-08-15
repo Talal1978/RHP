@@ -1,0 +1,295 @@
+{
+  "format": "RHP_PAGE_DESIGNER",
+  "version": "1.0",
+  "exportedAt": "2026-08-15T17:00:00",
+  "exportedBy": "SCRIPT",
+  "page": {
+    "Cod_Page": "FRAIS_KM",
+    "Cod_Document": "FKM",
+    "Nom_Page": "Frais kilométriques",
+    "Menu_Parent": "MesDemandes",
+    "Rang": 90,
+    "Icone": "Commute",
+    "Acces_Personnalise": true,
+    "Workflow_Actif": true,
+    "Cod_Modele_Edition": "",
+    "GED_Actif": true,
+    "GED_Obligatoire": false,
+    "Act_Enregistrer": true,
+    "Act_Soumettre": true,
+    "Act_Imprimer": false,
+    "Act_Exporter": false
+  },
+  "sqlStructure": [
+    {
+      "Cod_Table": "ENT",
+      "Role_Table": "ENT",
+      "Libelle": "Entête",
+      "Rang": 0,
+      "Allow_Add": false,
+      "Allow_Edit": false,
+      "Allow_Delete": false,
+      "Allow_Duplicate": false,
+      "Regle_Suppression": "CASCADE",
+      "colonnes": [
+        {
+          "Nom_Colonne": "Matricule",
+          "Libelle": "Matricule",
+          "Typ_Sql": "nvarchar",
+          "Longueur": 20,
+          "Nullable": false,
+          "Valeur_Defaut": "GV_MATRICULE",
+          "Rang": 1
+        },
+        {
+          "Nom_Colonne": "Dat_Demande",
+          "Libelle": "Date de demande",
+          "Typ_Sql": "date",
+          "Nullable": true,
+          "Valeur_Defaut": "GV_NOW",
+          "Rang": 2
+        },
+        {
+          "Nom_Colonne": "Commentaire",
+          "Libelle": "Commentaire",
+          "Typ_Sql": "nvarchar",
+          "Longueur": 300,
+          "Nullable": true,
+          "Rang": 3
+        },
+        {
+          "Nom_Colonne": "Total",
+          "Libelle": "Total frais",
+          "Typ_Sql": "decimal",
+          "Precision_Sql": 18,
+          "Echelle_Sql": 2,
+          "Nullable": true,
+          "Rang": 4
+        }
+      ]
+    },
+    {
+      "Cod_Table": "LIGNES",
+      "Role_Table": "DET",
+      "Libelle": "Trajets parcourus",
+      "Rang": 1,
+      "Allow_Add": true,
+      "Allow_Edit": true,
+      "Allow_Delete": true,
+      "Allow_Duplicate": true,
+      "Regle_Suppression": "CASCADE",
+      "colonnes": [
+        {
+          "Nom_Colonne": "Trajet",
+          "Libelle": "Trajet",
+          "Typ_Sql": "nvarchar",
+          "Longueur": 100,
+          "Nullable": true,
+          "Rang": 1
+        },
+        {
+          "Nom_Colonne": "Km",
+          "Libelle": "Km",
+          "Typ_Sql": "float",
+          "Nullable": true,
+          "Rang": 2
+        },
+        {
+          "Nom_Colonne": "Tx",
+          "Libelle": "Taux / km",
+          "Typ_Sql": "float",
+          "Nullable": true,
+          "Rang": 3
+        },
+        {
+          "Nom_Colonne": "Mnt",
+          "Libelle": "Montant",
+          "Typ_Sql": "decimal",
+          "Precision_Sql": 18,
+          "Echelle_Sql": 2,
+          "Nullable": true,
+          "Rang": 4
+        }
+      ]
+    }
+  ],
+  "components": [
+    {
+      "Cod_Champ": "Matricule",
+      "Cod_Table": "ENT",
+      "Nom_Colonne": "Matricule",
+      "Libelle": "Matricule",
+      "Typ_Controle": "ZOOM",
+      "Rang": 1,
+      "Largeur": 3,
+      "Valeur_Defaut": "GV_MATRICULE",
+      "Obligatoire": true,
+      "Num_Zoom": "MS067",
+      "Rang_Grille": 1,
+      "estCritere": true,
+      "Rang_Critere": 1,
+      "Aide": "Choisir l'agent via le zoom MS067"
+    },
+    {
+      "Cod_Champ": "Dat_Demande",
+      "Cod_Table": "ENT",
+      "Nom_Colonne": "Dat_Demande",
+      "Libelle": "Date de demande",
+      "Typ_Controle": "DATE",
+      "Rang": 2,
+      "Largeur": 3,
+      "Valeur_Defaut": "GV_NOW",
+      "Rang_Grille": 2,
+      "estCritere": true,
+      "Rang_Critere": 2
+    },
+    {
+      "Cod_Champ": "Commentaire",
+      "Cod_Table": "ENT",
+      "Nom_Colonne": "Commentaire",
+      "Libelle": "Commentaire",
+      "Typ_Controle": "MEMO",
+      "Rang": 3,
+      "Largeur": 6,
+      "Rang_Grille": 3
+    },
+    {
+      "Cod_Champ": "Total",
+      "Cod_Table": "ENT",
+      "Nom_Colonne": "Total",
+      "Libelle": "Total frais",
+      "Typ_Controle": "CALCULE",
+      "Rang": 4,
+      "Largeur": 3,
+      "Etat": "A",
+      "Formule": "{\"op\":\"SUM\",\"table\":\"LIGNES\",\"colonne\":\"Mnt\"}",
+      "Persiste": true,
+      "Format_Affichage": "MNT",
+      "Decimales": 2,
+      "Rang_Grille": 4,
+      "Aide": "Somme des montants des trajets"
+    },
+    {
+      "Cod_Champ": "L_Trajet",
+      "Cod_Table": "LIGNES",
+      "Nom_Colonne": "Trajet",
+      "Libelle": "Trajet",
+      "Typ_Controle": "TEXT",
+      "Rang": 1,
+      "Rang_Grille": 1,
+      "Largeur_Colonne": 20
+    },
+    {
+      "Cod_Champ": "L_Km",
+      "Cod_Table": "LIGNES",
+      "Nom_Colonne": "Km",
+      "Libelle": "Km",
+      "Typ_Controle": "DEC",
+      "Rang": 2,
+      "Decimales": 2,
+      "Rang_Grille": 2,
+      "Largeur_Colonne": 5
+    },
+    {
+      "Cod_Champ": "L_Tx",
+      "Cod_Table": "LIGNES",
+      "Nom_Colonne": "Tx",
+      "Libelle": "Taux / km",
+      "Typ_Controle": "DEC",
+      "Rang": 3,
+      "Decimales": 2,
+      "Rang_Grille": 3,
+      "Largeur_Colonne": 5
+    },
+    {
+      "Cod_Champ": "L_Mnt",
+      "Cod_Table": "LIGNES",
+      "Nom_Colonne": "Mnt",
+      "Libelle": "Montant",
+      "Typ_Controle": "CALCULE",
+      "Rang": 4,
+      "Etat": "A",
+      "Formule": "{\"op\":\"ROUND\",\"args\":[{\"op\":\"MUL\",\"args\":[{\"ref\":\"Km\"},{\"ref\":\"Tx\"}]},{\"const\":2}]}",
+      "Persiste": true,
+      "Decimales": 2,
+      "Rang_Grille": 4,
+      "Largeur_Colonne": 8,
+      "Aide": "Montant = Km x Taux"
+    },
+    {
+      "Cod_Champ": "Pied_Mnt",
+      "Cod_Table": "LIGNES",
+      "Nom_Colonne": "",
+      "Libelle": "Total des trajets",
+      "Typ_Controle": "CALCULE",
+      "Rang": 5,
+      "Etat": "A",
+      "Formule": "{\"op\":\"SUM\",\"table\":\"LIGNES\",\"colonne\":\"Mnt\"}",
+      "Persiste": false,
+      "Format_Affichage": "MNT",
+      "Decimales": 2,
+      "Visible_Grille": false,
+      "Rang_Grille": 5,
+      "Aide": "Pied de grille : somme des montants des trajets"
+    }
+  ],
+  "validations": [
+    {
+      "Cod_Validation": "V01_MATRICULE",
+      "Portee": "CHAMP",
+      "Cod_Table": "ENT",
+      "Typ_Regle": "REQUIRED",
+      "Message": "Le matricule est obligatoire.",
+      "Niveau": "B",
+      "Moment": "SAVE",
+      "Actif": true,
+      "Cod_Champ": "Matricule",
+      "Rang": 1
+    },
+    {
+      "Cod_Validation": "V02_NB_LIGNES",
+      "Portee": "DETAIL",
+      "Cod_Table": "LIGNES",
+      "Typ_Regle": "NB_LIGNES",
+      "Message": "Au moins une ligne de trajet est requise.",
+      "Niveau": "B",
+      "Moment": "SAVE",
+      "Actif": true,
+      "Parametres": "{\"min\":1}",
+      "Rang": 2
+    },
+    {
+      "Cod_Validation": "V03_KM_MAX",
+      "Portee": "LIGNE",
+      "Cod_Table": "LIGNES",
+      "Typ_Regle": "BETWEEN",
+      "Message": "Kilométrage inhabituel (attendu entre 0 et 1000 km).",
+      "Niveau": "W",
+      "Moment": "SAVE",
+      "Actif": true,
+      "Cod_Champ": "L_Km",
+      "Parametres": "{\"min\":0,\"max\":1000}",
+      "Rang": 3
+    },
+    {
+      "Cod_Validation": "V04_TOTAL",
+      "Portee": "DOCUMENT",
+      "Cod_Table": "ENT",
+      "Typ_Regle": "EXPR",
+      "Message": "Le total ne peut pas être négatif.",
+      "Niveau": "B",
+      "Moment": "SAVE",
+      "Actif": true,
+      "Parametres": "{\"expr\":{\"op\":\"GE\",\"args\":[{\"ref\":\"Total\"},{\"const\":0}]}}",
+      "Rang": 4
+    }
+  ],
+  "metadata": {
+    "habilitations": "EXCLUES",
+    "nbTables": 2,
+    "nbColonnes": 8,
+    "nbChamps": 9,
+    "nbSources": 0,
+    "nbValidations": 4
+  }
+}

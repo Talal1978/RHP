@@ -53,7 +53,7 @@ export type TSpTable = {
   Allow_Duplicate: string;
   Tri_Defaut: string;
   Regle_Suppression: string;
-  /** Détail VIRTUEL : code d'une source SP_Page_Source (Typ_Retour='TABLE')
+  /** Détail VIRTUEL : code d'une source Controle_Designer_Source (Typ_Retour='TABLE')
    *  alimentant la grille en lecture seule - aucune table physique n'est lue
    *  ni écrite pour ce détail. */
   Source_Metier: string | null;
@@ -243,11 +243,11 @@ export async function chargerMetaPage(codPage: string): Promise<TSpMeta | null> 
   if (!vid.ok) return null;
   const p = [{ param: "p_cp", sqlType: sql.NVarChar, valeur: codPage }];
   const [rPage, rTables, rCols, rChamps, rValids] = await Promise.all([
-    lireSql(`select * from SP_Page where Cod_Page=@p_cp`, p),
-    lireSql(`select * from SP_Page_Table where Cod_Page=@p_cp order by Rang`, p),
-    lireSql(`select * from SP_Page_Colonne where Cod_Page=@p_cp order by Cod_Table, Rang`, p),
-    lireSql(`select * from SP_Page_Champ where Cod_Page=@p_cp order by Cod_Table, Rang`, p),
-    lireSql(`select * from SP_Page_Validation where Cod_Page=@p_cp and isnull(Actif,'true')='true' order by Rang`, p),
+    lireSql(`select * from Controle_Designer where Cod_Page=@p_cp`, p),
+    lireSql(`select * from Controle_Designer_Table where Cod_Page=@p_cp order by Rang`, p),
+    lireSql(`select * from Controle_Designer_Colonne where Cod_Page=@p_cp order by Cod_Table, Rang`, p),
+    lireSql(`select * from Controle_Designer_Champ where Cod_Page=@p_cp order by Cod_Table, Rang`, p),
+    lireSql(`select * from Controle_Designer_Validation where Cod_Page=@p_cp and isnull(Actif,'true')='true' order by Rang`, p),
   ]);
   if (!rPage.result || rPage.data.length === 0) return null;
   const meta: TSpMeta = {
@@ -284,8 +284,8 @@ export async function verifierDroit(
       : `isnull(d.${qn(action)},'false')='true'`;
   const rsl = await lireSql(
     `select count(*) as nb
-     from SP_Page p
-     left join SP_Page_Droit d
+     from Controle_Designer p
+     left join Controle_Designer_Droit d
        on d.Cod_Page = p.Cod_Page and d.Cod_Profile = @p_pr
      where p.Cod_Page = @p_cp and ${cond}`,
     [
@@ -711,7 +711,7 @@ export async function executerSource(
   const vid = validerIdentifiant(codSource);
   if (!vid.ok) return { ok: false, message: vid.message };
   const rsl = await lireSql(
-    `select * from SP_Page_Source where Cod_Source=@p_cs and isnull(Actif,'true')='true'`,
+    `select * from Controle_Designer_Source where Cod_Source=@p_cs and isnull(Actif,'true')='true'`,
     [{ param: "p_cs", sqlType: sql.NVarChar, valeur: codSource }]
   );
   if (!rsl.result || rsl.data.length === 0) return { ok: false, message: `Source '${codSource}' introuvable` };

@@ -1,0 +1,140 @@
+{
+  "_comment": [
+    "RHP_PAGE_DESIGNER 1.0 - skeleton of the generated import file.",
+    "Contract: references/json-import-format.md (mirror of Module_SP_Page_Json.vb).",
+    "Serialization: indented json, NULL properties OMITTED, true json booleans,",
+    "UTF-8 without BOM. This template is illustrative: the generator assembles",
+    "the sections in the fixed order below and never emits this _comment key.",
+    "Placeholders: {{...}}. Empty optional collections may be emitted as []",
+    "or omitted (both deserialize to empty lists)."
+  ],
+  "format": "RHP_PAGE_DESIGNER",
+  "version": "1.0",
+  "exportedAt": "{{YYYY-MM-DDTHH:MM:SS}}",
+  "exportedBy": "{{request.requested_by}}",
+  "page": {
+    "Cod_Page": "{{page.page_code}}",
+    "Cod_Document": "{{page.document_code}}",
+    "Nom_Page": "{{page.title}}",
+    "Menu_Parent": "{{page.target_section_code}}",
+    "Rang": "{{page.display_order | 99}}",
+    "Icone": "{{page.icon}}",
+    "Acces_Personnalise": "{{access_control.default_policy == 'deny'}}",
+    "Workflow_Actif": "{{page.workflow.enabled}}",
+    "Cod_Modele_Edition": "{{page.print_model}}",
+    "GED_Actif": "{{page.attachments.enabled}}",
+    "GED_Obligatoire": "{{page.attachments.required}}",
+    "Act_Enregistrer": "{{page.actions.save | true}}",
+    "Act_Soumettre": "{{page.actions.submit | true}}",
+    "Act_Imprimer": "{{page.actions.print | false}}",
+    "Act_Exporter": "{{page.actions.export | false}}"
+  },
+  "sqlStructure": [
+    {
+      "Cod_Table": "ENT",
+      "Role_Table": "ENT",
+      "Libelle": "Entête",
+      "Rang": 0,
+      "Allow_Add": false,
+      "Allow_Edit": false,
+      "Allow_Delete": false,
+      "Allow_Duplicate": false,
+      "Regle_Suppression": "CASCADE",
+      "colonnes": [
+        {
+          "Nom_Colonne": "{{column_name | component_code}}",
+          "Libelle": "{{label}}",
+          "Typ_Sql": "{{properties.sql_type | type default}}",
+          "Longueur": "{{properties.length (nvarchar only; -1 = max; omit otherwise)}}",
+          "Precision_Sql": "{{properties.precision (decimal only; omit otherwise)}}",
+          "Echelle_Sql": "{{properties.scale (decimal only; omit otherwise)}}",
+          "Nullable": "{{properties.nullable | true}}",
+          "Valeur_Defaut": "{{properties.default}}",
+          "estUnique": "{{properties.unique | false}}",
+          "estIndexe": "{{properties.indexed | false}}",
+          "Rang": "{{order of the component within its block}}"
+        }
+      ]
+    },
+    {
+      "Cod_Table": "{{detail_grid.component_code}}",
+      "Role_Table": "DET",
+      "Libelle": "{{detail_grid.label}}",
+      "Rang": "{{detail_grid.layout.display_order}}",
+      "Allow_Add": "{{properties.allow_add | true}}",
+      "Allow_Edit": "{{properties.allow_edit | true}}",
+      "Allow_Delete": "{{properties.allow_delete | true}}",
+      "Allow_Duplicate": "{{properties.allow_duplicate | false}}",
+      "Tri_Defaut": "{{properties.default_sort}}",
+      "Regle_Suppression": "{{properties.delete_rule | CASCADE}}",
+      "Source_Metier": "{{properties.data_source_code (virtual grid only; omit otherwise)}}",
+      "Source_Mapping": "{{properties.source_mapping serialized (virtual grid only)}}",
+      "colonnes": []
+    }
+  ],
+  "businessSources": [
+    {
+      "Cod_Source": "{{data_source_code}}",
+      "Libelle": "{{label}}",
+      "Typ_Source": "{{source_type | sql -> SQL}}",
+      "Code_Sql": "{{reference}}",
+      "Parametres": "{{parameters serialized: [{\"Nom\":..,\"Typ\":..,\"Obligatoire\":..}]}}",
+      "Typ_Retour": "{{return_type | scalar -> SCALAIRE}}",
+      "Cod_Profile": "{{profile}}",
+      "Actif": true
+    }
+  ],
+  "components": [
+    {
+      "Cod_Champ": "{{component_code}}",
+      "Cod_Table": "{{target_block | ENT}}",
+      "Nom_Colonne": "{{column_name | component_code; '' when unstored}}",
+      "Libelle": "{{label}}",
+      "Typ_Controle": "{{component_type -> whitelist mapping}}",
+      "Rang": "{{layout.display_order | list position}}",
+      "Ligne": "{{layout.row (omit when null)}}",
+      "Colonne": "{{layout.column (omit when null)}}",
+      "Largeur": "{{layout.width | layout_type default (3/6/2)}}",
+      "Valeur_Defaut": "{{properties.default}}",
+      "Obligatoire": "{{required | false}}",
+      "Etat": "{{visible+editable -> S/R/A/I; CALCULE+SOURCE never editable -> A when visible}}",
+      "Rubrique": "{{properties.rubrique (RADIO/RUBRIQUE)}}",
+      "Num_Zoom": "{{properties.zoom (ZOOM/COMBO)}}",
+      "Source_Metier": "{{data_source_code (SOURCE field only)}}",
+      "Formule": "{{calculated: AST serialized | source: {\"source\":..,\"mapping\":{..}}}}",
+      "Persiste": "{{properties.persist | false}}",
+      "Format_Affichage": "{{properties.format}}",
+      "Decimales": "{{properties.decimals (omit when null)}}",
+      "Visible_Grille": "{{properties.visible_in_grid | true}}",
+      "Rang_Grille": "{{properties.grid_order | display_order}}",
+      "Largeur_Colonne": "{{properties.grid_width_em (omit when null)}}",
+      "estCritere": "{{properties.is_criteria | false}}",
+      "Rang_Critere": "{{properties.criteria_order (omit when null)}}",
+      "Aide": "{{properties.help}}"
+    }
+  ],
+  "validations": [
+    {
+      "Cod_Validation": "{{code}}",
+      "Portee": "{{scope}}",
+      "Cod_Table": "{{target_block | ENT}}",
+      "Cod_Champ": "{{target_field}}",
+      "Typ_Regle": "{{type}}",
+      "Parametres": "{{parameters serialized json}}",
+      "Condition_Regle": "{{condition serialized AST (omit when null)}}",
+      "Message": "{{message}}",
+      "Niveau": "{{level | B}}",
+      "Rang": "{{global emission order}}",
+      "Moment": "{{moment | SAVE}}",
+      "Actif": "{{active | true}}"
+    }
+  ],
+  "metadata": {
+    "habilitations": "EXCLUES",
+    "nbTables": "{{sqlStructure.length}}",
+    "nbColonnes": "{{sum of colonnes.length}}",
+    "nbChamps": "{{components.length}}",
+    "nbSources": "{{businessSources.length}}",
+    "nbValidations": "{{validations.length}}"
+  }
+}

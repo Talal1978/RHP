@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 """
-validate_input.py - RHP Portal Page Deployer input validator (stdlib only).
+validate_input.py - RHP Portal Page Deployer (JSON import) input validator
+(stdlib only).
 
 Validates a CANONICAL JSON input (converted from the YAML contract) against
 the blocking rules of the skill, mirroring the verified RHP constraints:
+  - the product JSON importer itself (Module_SP_Page_Json.vb : Analyser /
+    Valider / VerifierSourceVirtuelle - format RHP_PAGE_DESIGNER 1.0)
   - CK_SP_Page_Ident, UQ_SP_Page_Document, CK_SPChamp_Typ, CK_SPChamp_Etat,
     CK_SPValid_* , CK_SPSource_*  (001_SP_Designer_Metadata.sql)
   - identifier rules + reserved words (Module_SP_DDL.vb / module_sp_engine.ts)
@@ -14,8 +17,11 @@ the blocking rules of the skill, mirroring the verified RHP constraints:
     units, DATEPART parts, cycle detection (@result / GV_* excluded)
     (module_sp_engine.ts:307-312, 316-328, 581-677)
   - per-type validation Parametres shapes (Zoom_SP_Assistant_Validation.vb)
-  - SP4 features: freeze_statuses, zoom_condition, virtual detail grids
-    (006_SP_Designer_Evolutions.sql ; VerifierTableVirtuelle mirror)
+  - SP4 virtual detail grids (VerifierTableVirtuelle mirror)
+  - NO-JSON-TARGET keys (freeze_statuses, zoom_condition, zoom_return,
+    visibility/activation rules, grid_total, recalc_save:false,
+    attachments.categories, operation:disable) => blocking, never silently
+    dropped (references/json-import-format.md section 8)
   - publication preconditions (SP_Page_Designer.vb : Publier)
 
 Usage:
@@ -44,7 +50,9 @@ COMPONENT_TYPES = {  # input type -> RHP Typ_Controle (verified CK_SPChamp_Typ)
 }
 SQL_TYPES = {"nvarchar", "int", "bigint", "float", "decimal", "bit",
              "date", "datetime", "smalldatetime"}
-GRID_TOTALS = {"", "SUM", "AVG", "MIN", "MAX", "COUNT"}
+# Physical column types must come from SQL_TYPES; source PARAMETER types use
+# the engine's narrower list (input-template: nvarchar|int|decimal|date|datetime|bit)
+PARAM_TYPES = {"nvarchar", "int", "decimal", "date", "datetime", "bit"}
 VALID_TYPES = {"REQUIRED", "IN", "BETWEEN", "MIN", "MAX", "MINLEN", "MAXLEN",
                "REGEX", "COMPARE", "UNIQUE", "SOURCE", "EXPR", "NB_LIGNES"}
 VALID_SCOPES = {"CHAMP", "ENTETE", "LIGNE", "DETAIL", "DOCUMENT"}
@@ -69,8 +77,22 @@ DATEADD_UNITS = DATE_UNITS | {"MO", "A"}
 DATE_PARTS = {"A", "M", "J", "H", "MI", "S"}  # DATEPART
 # Technical ENT columns exposed to contexts (module_sp_engine.ts:1091-1093)
 TECH_ENT_COLS = {"Num_Doc", "id_Societe", "Statut", "Dat_Crea", "Created_By",
-                 "Dat_Modif", "Modified_By"}
+                  "Dat_Modif", "Modified_By"}
+# Technical columns NEVER declared in an import file - auto-added by the DDL
+# (mirror of Module_SP_Page_Json.Valider : blocking if present in the file)
+TECH_COLS_ALL = TECH_ENT_COLS | {"RowId", "RV"}
 NO_CRITERIA_TYPES = {"calculated", "source", "attachments", "checkbox", "radio"}
+# Types allowed to have NO physical column (explicitly empty column_name):
+# unstored calculated/source fields (e.g. grid footers) and GED attachments
+NO_COLUMN_TYPES = {"calculated", "source", "attachments"}
+# Keys with no target in the JSON import format (json-import-format.md §8) -
+# any non-neutral value is blocking, never silently dropped
+NO_JSON_TARGET = {
+    "zoom_return": "Zoom_Retour absent du format d'import",
+    "zoom_condition": "Zoom_Condition absent du format d'import",
+    "visibility_rule": "Regle_Visibilite absente du format d'import",
+    "activation_rule": "Regle_Activation absente du format d'import",
+}
 
 errors, warnings = [], []
 
@@ -337,7 +359,7 @@ def check_validation(v, path, blocks, fields_by_block, block_cols, grids,
             err(f"{pp}.source", 'SOURCE attend {"source":"CodSource",…}')
         elif p["source"] not in src_index:
             warn(f"{pp}.source",
-                 f"'{p['source']}' absent du input : doit exister dans SP_Page_Source "
+                 f"'{p['source']}' absent du input : doit exister dans Controle_Designer_Source "
                  f"(verifie par le preflight)")
         if "mapping" in p:
             check_source_mapping(p["mapping"], f"{pp}.mapping", header_cols,
@@ -357,12 +379,17 @@ def validate(spec):
     # ----- request
     rq = spec.get("request") or {}
     op = rq.get("operation")
-    if op not in ("create", "update", "disable"):
-        err("request.operation", "create | update | disable attendu")
+    if op == "disable":
+        err("request.operation",
+            "disable n'est pas exprimable via l'import JSON : utiliser le bouton "
+            "'Desactiver' du Designer (Statut_Page n'est jamais reimporte)")
+    elif op not in ("create", "update"):
+        err("request.operation", "create | update attendu")
     if rq.get("environment") not in ("development", "test", "production"):
         err("request.environment", "development | test | production attendu")
-    if not isinstance(rq.get("dry_run"), bool):
-        err("request.dry_run", "booleen requis (true recommande)")
+    if rq.get("dry_run") is not None and not isinstance(rq.get("dry_run"), bool):
+        err("request.dry_run", "booleen attendu (accepte mais ignore : un import "
+                               "n'ecrit jamais avant 'Enregistrer')")
     req_str(rq, "requested_by", "request", 50)
     req_str(rq, "change_reference", "request", 50)
 
@@ -372,7 +399,8 @@ def validate(spec):
         err("deployment.update_if_exists", "booleen requis (autorisation explicite)")
     if dp.get("expected_schema_version") not in ("SP1", "SP2", "SP3", "SP4"):
         err("deployment.expected_schema_version", "SP1 | SP2 | SP3 | SP4 attendu "
-            "(SP4 = 005/006 : Figer_Statuts, Zoom_Condition, Total_Grille, details virtuels)")
+            "(SP4 = etat actuel du depot, exige pour les details virtuels : "
+            "Controle_Designer_Table.Source_Metier/_Mapping - migration 006)")
     if dp.get("use_feature_flag") not in (False, None):
         err("deployment.use_feature_flag",
             "mecanisme de feature flag INEXISTANT dans RHP (verifie) : utiliser page.enabled")
@@ -386,26 +414,37 @@ def validate(spec):
     pg = spec.get("page") or {}
     code = req_str(pg, "page_code", "page", 30)
     if code:
-        if not is_ident(code) or len(code) > 30:
-            err("page.page_code", "identifiant SQL invalide ou reserve")
+        if not re.match(r"^[A-Za-z_][A-Za-z0-9_]{2,29}$", code):
+            err("page.page_code", "regex import : ^[A-Za-z_][A-Za-z0-9_]{2,29}$ "
+                                  "(3 a 30 caracteres)")
         if code.lower().startswith("page"):
             err("page.page_code", "ne doit pas commencer par 'Page' (CK_SP_Page_Ident)")
+        if code.lower() in RESERVED:
+            err("page.page_code", "identifiant reserve")
     dcode = req_str(pg, "document_code", "page", 10)
-    if dcode and not re.match(r"^[A-Za-z0-9_]{1,10}$", dcode):
-        err("page.document_code", "1..10 caracteres alphanumeriques/underscore")
+    if dcode and not re.match(r"^[A-Za-z][A-Za-z0-9]{1,9}$", dcode):
+        err("page.document_code", "regex import : ^[A-Za-z][A-Za-z0-9]{1,9}$ "
+                                  "(lettre puis alphanumerique, PAS de underscore)")
     if dcode and code and dcode.lower().startswith("page"):
         err("page.document_code", "ne doit pas commencer par 'Page' (noms physiques SP_<doc>_...)")
     req_str(pg, "page_name", "page", 150)
     req_str(pg, "title", "page", 60)
-    if pg.get("short_title") and len(pg["short_title"]) > 50:
-        err("page.short_title", "longueur > 50")
+    if pg.get("short_title"):
+        if len(pg["short_title"]) > 50:
+            err("page.short_title", "longueur > 50")
+        warn("page.short_title", "non persiste en mode JSON (pas de Libelle_Court "
+                                 "dans le format ; Libelle = Nom_Page au Saving) - manifest seulement")
     if pg.get("target_section_id") is not None:
         err("page.target_section_id", "[UNSUPPORTED] les sections n'ont pas d'id : target_section_code")
     section = req_str(pg, "target_section_code", "page", 60)
     if section and not re.match(r"^[A-Za-z0-9_]+$", section):
         err("page.target_section_code", "caracteres alphanumeriques/underscore uniquement")
-    if pg.get("create_section_if_missing") and not pg.get("new_section_label"):
-        err("page.new_section_label", "requis quand create_section_if_missing=true")
+    if pg.get("create_section_if_missing"):
+        if not pg.get("new_section_label"):
+            err("page.new_section_label", "requis quand create_section_if_missing=true")
+        warn("page.create_section_if_missing",
+             "jamais automatise (l'import ne cree pas de rubrique) : creer la section "
+             "via Zoom_SP_Nouvelle_Section AVANT l'enregistrement - etape du manifest")
     route = pg.get("route") or ""
     if route:
         ok = route.startswith(f"/myspace/SPPL_{code}") or route.startswith(f"/myspace/SPP_{code}")
@@ -419,18 +458,10 @@ def validate(spec):
     if not isinstance(pg.get("enabled", True), bool):
         err("page.enabled", "booleen attendu")
     fs = pg.get("freeze_statuses")
-    if fs is not None:
-        if not isinstance(fs, str) or not fs.strip():
-            err("page.freeze_statuses", "CSV de codes statut attendu (ex. 'SS,SG,RJ,SP,VA')")
-        else:
-            for tok in fs.split(","):
-                tok = tok.strip()
-                if not re.match(r"^[A-Za-z0-9]{1,3}$", tok):
-                    err("page.freeze_statuses",
-                        f"code statut invalide : {tok!r} (1..3 alphanum., colonne Statut nvarchar(3))")
-            if dp.get("expected_schema_version") in ("SP1", "SP2", "SP3"):
-                err("page.freeze_statuses",
-                    "exige le niveau de schema SP4 (SP_Page.Figer_Statuts - migration 006)")
+    if fs is not None and str(fs).strip():
+        err("page.freeze_statuses",
+            "[NO-JSON-TARGET] Figer_Statuts ne figure pas dans le format d'import "
+            "(json-import-format.md section 8) : laisser vide")
 
     act = pg.get("actions") or {}
     wf = pg.get("workflow") or {}
@@ -439,8 +470,10 @@ def validate(spec):
         err("page.actions.submit", "exige workflow.enabled=true (bouton Soumettre lie au workflow)")
     if act.get("print") and not pg.get("print_model"):
         err("page.actions.print", "exige page.print_model (Param_Mod_Edition.Cod_Report)")
-    if att.get("categories") and not all(isinstance(c, str) for c in att.get("categories", [])):
-        err("page.attachments.categories", "liste de chaines attendue")
+    if att.get("categories"):
+        err("page.attachments.categories",
+            "[NO-JSON-TARGET] GED_Categories ne figure pas dans le format d'import "
+            ": laisser [] (categories a poser par UPDATE SQL cible si indispensables)")
 
     # ----- data sources pre-scan (full checks further below): index for
     # mapping / return-type cross-checks in components and validations
@@ -452,6 +485,22 @@ def validate(spec):
             src_return[s["data_source_code"]] = s.get("return_type", "scalar")
 
     # ----- components
+    def phys_col(c):
+        """Colonne physique du composant ('' = non stocke).
+        calculated/source : stocke ssi persist=true (pattern officiel Pied_Mnt :
+        non persiste => Nom_Colonne=''). attachments (GED) : jamais stocke.
+        Autres types : column_name explicitement '' => non stocke (interdit,
+        signale plus loin) ; absent => defaut component_code."""
+        ct = c.get("component_type")
+        props = c.get("properties") or {}
+        if ct in ("calculated", "source", "attachments"):
+            if ct == "attachments" or not props.get("persist"):
+                return ""
+        raw = c.get("column_name")
+        if raw is not None and str(raw).strip() == "":
+            return ""
+        return str(raw).strip() if raw is not None else c.get("component_code", "")
+
     comps = spec.get("components") or []
     if op in ("create", "update") and not comps:
         err("components", "au moins un composant requis")
@@ -471,7 +520,9 @@ def validate(spec):
             grids[cc] = c
         else:
             block_fields.setdefault(tb, set()).add(cc)
-            block_cols.setdefault(tb, set()).add(c.get("column_name") or cc)
+            col0 = phys_col(c)
+            if col0:  # champs non stockes : aucune colonne physique
+                block_cols.setdefault(tb, set()).add(col0)
 
     if len(set(codes)) != len(codes):
         err("components", "component_code duplique")
@@ -497,7 +548,7 @@ def validate(spec):
                 if dp.get("expected_schema_version") in ("SP1", "SP2", "SP3"):
                     err(f"{p}.properties.data_source_code",
                         "detail virtuel : exige le niveau de schema SP4 "
-                        "(SP_Page_Table.Source_Metier/_Mapping - migration 006)")
+                        "(Controle_Designer_Table.Source_Metier/_Mapping - migration 006)")
                 if vsrc in src_return and src_return[vsrc] != "table":
                     err(f"{p}.properties.data_source_code",
                         f"la source {vsrc!r} est return_type={src_return[vsrc]} : "
@@ -505,16 +556,23 @@ def validate(spec):
                         f"(miroir VerifierTableVirtuelle)")
                 elif vsrc not in src_index:
                     warn(f"{p}.properties.data_source_code",
-                         f"'{vsrc}' absent du input : doit exister dans SP_Page_Source "
+                         f"'{vsrc}' absent du input : doit exister dans Controle_Designer_Source "
                          f"avec Typ_Retour='TABLE' (verifie par le preflight)")
+                decl_params = src_index.get(vsrc)
                 if not props.get("source_mapping"):
-                    err(f"{p}.properties.source_mapping",
-                        "detail virtuel : mapping des parametres de la source requis "
-                        '{"Param":{"ref":"ColonneEntete"}}')
+                    if decl_params:
+                        err(f"{p}.properties.source_mapping",
+                            "detail virtuel : mapping des parametres de la source requis "
+                            '{"Param":{"ref":"ColonneEntete"}}')
+                    elif decl_params is None:
+                        warn(f"{p}.properties.source_mapping",
+                             "source hors input : le mapping doit alimenter tous ses "
+                             "parametres obligatoires (re-verifie par l'import - "
+                             "miroir VerifierSourceVirtuelle)")
                 else:
                     check_source_mapping(props["source_mapping"],
                                          f"{p}.properties.source_mapping",
-                                         header_cols, src_index.get(vsrc))
+                                         header_cols, decl_params)
                 for flg in ("allow_add", "allow_edit", "allow_delete", "allow_duplicate"):
                     if props.get(flg):
                         warn(f"{p}.properties.{flg}",
@@ -524,13 +582,34 @@ def validate(spec):
         if tb != "ENT" and tb not in grids:
             err(f"{p}.target_block", f"detail_grid inconnu : {tb!r}")
 
-        col = c.get("column_name") or cc
-        if col and not is_ident(col):
-            err(f"{p}.column_name", "identifiant SQL invalide ou reserve")
-        pair = (tb, col)
-        if pair in col_pairs:
-            err(f"{p}.column_name", f"colonne dupliquee dans le bloc {tb}: {col!r}")
-        col_pairs.add(pair)
+        # ----- colonne physique (stocke / non stocke) -----
+        col = phys_col(c)
+        if col:
+            if not is_ident(col):
+                err(f"{p}.column_name", "identifiant SQL invalide ou reserve")
+            if col in TECH_COLS_ALL:
+                err(f"{p}.column_name",
+                    f"'{col}' est une colonne technique (ajoutee automatiquement au "
+                    f"DDL) : interdite dans la structure (miroir de l'import)")
+            pair = (tb, col)
+            if pair in col_pairs:
+                err(f"{p}.column_name", f"colonne dupliquee dans le bloc {tb}: {col!r}")
+            col_pairs.add(pair)
+        else:
+            if ct not in NO_COLUMN_TYPES:
+                err(f"{p}.column_name",
+                    f"column_name explicitement vide interdit pour {ct} : seuls "
+                    f"calculated/source non persistes et attachments peuvent ne pas "
+                    f"avoir de colonne physique")
+            if props.get("persist"):
+                err(f"{p}.properties.persist", "persist=true exige une colonne physique "
+                                               "(column_name non vide)")
+            if ct in ("calculated", "source") and not props.get("persist") \
+                    and c.get("column_name"):
+                warn(f"{p}.column_name",
+                     "persist=false : aucune colonne physique ; column_name ignore")
+        if ct == "attachments" and c.get("column_name"):
+            warn(f"{p}.column_name", "un champ GED n'est jamais stocke : colonne ignoree")
 
         lay = c.get("layout") or {}
         if lay.get("height") is not None:
@@ -548,28 +627,30 @@ def validate(spec):
         if (props.get("scale") is not None and props.get("precision") is not None
                 and props["scale"] > props["precision"]):
             err(f"{p}.properties.scale", "scale > precision")
-        if props.get("grid_total", "") not in GRID_TOTALS:
-            err(f"{p}.properties.grid_total", "''|SUM|AVG|MIN|MAX|COUNT")
+        if props.get("grid_total"):
+            err(f"{p}.properties.grid_total",
+                "[SUPPRIME] la colonne Total_Grille a ete supprimee par la migration 005 : "
+                "utiliser un champ calcule de pied de grille (calculated + column_name:'' "
+                "+ persist:false + formule {\"op\":\"SUM\",\"table\":...,\"colonne\":...})")
         if props.get("unique") and props.get("indexed"):
             warn(f"{p}.properties", "unique + indexed : l'index unique (UX_) prime")
+
+        # ----- cles sans cible dans le format d'import (bloquant) -----
+        for key, why in NO_JSON_TARGET.items():
+            if props.get(key):
+                err(f"{p}.properties.{key}",
+                    f"[NO-JSON-TARGET] {why} (json-import-format.md section 8) : "
+                    f"laisser la valeur neutre")
+        if props.get("recalc_save") is False:
+            err(f"{p}.properties.recalc_save",
+                "[NO-JSON-TARGET] Recalc_Save absent du format d'import (defaut base "
+                "'true') : laisser true")
 
         if ct in ("radio", "reference_list") and not props.get("rubrique"):
             err(f"{p}.properties.rubrique", f"requis pour {ct}")
         if ct in ("zoom", "combo"):
             if not props.get("zoom"):
                 err(f"{p}.properties.zoom", f"Num_Zoom requis pour {ct}")
-            zcond = props.get("zoom_condition")
-            if zcond:
-                if dp.get("expected_schema_version") in ("SP1", "SP2", "SP3"):
-                    err(f"{p}.properties.zoom_condition",
-                        "exige le niveau de schema SP4 (SP_Page_Champ.Zoom_Condition - migration 006)")
-                if not isinstance(zcond, str) or len(zcond) > 500:
-                    err(f"{p}.properties.zoom_condition", "chaine <= 500 attendue")
-                else:
-                    for ph in re.findall(r"\{([A-Za-z_][A-Za-z0-9_]*)\}", zcond):
-                        if ph not in header_cols:
-                            err(f"{p}.properties.zoom_condition",
-                                f"placeholder {{{ph}}} : colonne d'entete inconnue")
         if ct == "attachments" and not att.get("enabled"):
             err(f"{p}.component_type", "champ GED sans page.attachments.enabled=true")
         if ct == "calculated":
@@ -601,7 +682,7 @@ def validate(spec):
                     if f["source"] not in src_index:
                         warn(f"{p}.properties.formula.source",
                              f"'{f['source']}' absent du input : doit exister dans "
-                             f"SP_Page_Source (verifie par le preflight)")
+                             f"Controle_Designer_Source (verifie par le preflight)")
                     if "mapping" in f:
                         check_source_mapping(f["mapping"], f"{p}.properties.formula.mapping",
                                              header_cols, src_index.get(f["source"]))
@@ -693,6 +774,10 @@ def validate(spec):
                 err(f"{pp}.name", "id_Societe est injecte par le serveur : ne pas le declarer")
             if not is_ident(nm):
                 err(f"{pp}.name", "nom de parametre invalide")
+            ptyp = str(prm.get("type", "nvarchar")).lower()
+            if ptyp not in PARAM_TYPES:
+                err(f"{pp}.type", f"type de parametre invalide : {ptyp!r} "
+                                  f"(nvarchar|int|decimal|date|datetime|bit)")
             names.append(nm)
         if len(set(names)) != len(names):
             err(f"{p}.parameters", "parametre duplique")
@@ -706,7 +791,7 @@ def validate(spec):
             if c["data_source_code"] not in declared_src:
                 warn(f"components[{i}].data_source_code",
                      f"'{c['data_source_code']}' absent du input : doit exister dans "
-                     f"SP_Page_Source (verifie par le preflight)")
+                     f"Controle_Designer_Source (verifie par le preflight)")
 
     # ----- access control
     ac = spec.get("access_control") or {}

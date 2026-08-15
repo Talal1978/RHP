@@ -1,7 +1,7 @@
 /* ============================================================================
    RHP - Module SP_ : MIGRATION Total_Grille -> champ calculé de pied de grille
    ----------------------------------------------------------------------------
-   La colonne SP_Page_Champ.Total_Grille (combo SUM/AVG/MIN/MAX/COUNT affiché
+   La colonne Controle_Designer_Champ.Total_Grille (combo SUM/AVG/MIN/MAX/COUNT affiché
    sous la grille) est remplacée par une convention plus générale :
      champ CALCULE rattaché au détail mais SANS colonne physique (Nom_Colonne
      vide) -> évalué au niveau document (agrégat) et affiché en pied de grille.
@@ -16,10 +16,10 @@
 SET XACT_ABORT ON;
 BEGIN TRANSACTION;
 
-IF COL_LENGTH('SP_Page_Champ', 'Total_Grille') IS NOT NULL
+IF COL_LENGTH('Controle_Designer_Champ', 'Total_Grille') IS NOT NULL
 BEGIN
     /* 1. Conversion des totaux configurés en champs calculés de pied de grille */
-    INSERT INTO SP_Page_Champ (Cod_Page, Cod_Champ, Cod_Table, Nom_Colonne, Libelle, Typ_Controle, Rang,
+    INSERT INTO Controle_Designer_Champ (Cod_Page, Cod_Champ, Cod_Table, Nom_Colonne, Libelle, Typ_Controle, Rang,
         Valeur_Defaut, Obligatoire, Etat, Formule, Persiste, Recalc_Save, Format_Affichage, Decimales,
         Visible_Grille, Rang_Grille, Aide, Dat_Crea, Created_By)
     SELECT
@@ -42,16 +42,16 @@ BEGIN
         900 + ROW_NUMBER() OVER (PARTITION BY c.Cod_Page ORDER BY c.Cod_Champ),
         'Pied de grille (migré de Total_Grille=' + c.Total_Grille + ')',
         GETDATE(), 'MIGRATION'
-    FROM SP_Page_Champ c
+    FROM Controle_Designer_Champ c
     WHERE c.Total_Grille <> ''
       AND c.Cod_Table <> 'ENT'                                  -- un total de grille porte sur un détail
-      AND NOT EXISTS (SELECT 1 FROM SP_Page_Champ x
+      AND NOT EXISTS (SELECT 1 FROM Controle_Designer_Champ x
                       WHERE x.Cod_Page = c.Cod_Page
                         AND x.Cod_Champ = LEFT('TOT_' + c.Cod_Champ, 50));
 
     /* 2. Suppression de la colonne */
-    ALTER TABLE SP_Page_Champ DROP CONSTRAINT DF_SPChamp_TotGrd;
-    ALTER TABLE SP_Page_Champ DROP COLUMN Total_Grille;
+    ALTER TABLE Controle_Designer_Champ DROP CONSTRAINT DF_SPChamp_TotGrd;
+    ALTER TABLE Controle_Designer_Champ DROP COLUMN Total_Grille;
 END
 
 COMMIT TRANSACTION;

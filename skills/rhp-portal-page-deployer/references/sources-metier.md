@@ -1,4 +1,4 @@
-# Sources métiers (`SP_Page_Source`) & paramètres — Référence exhaustive
+# Sources métiers (`Controle_Designer_Source`) & paramètres — Référence exhaustive
 
 Une **source métier** est une requête en lecture seule du catalogue sécurisé,
 exécutée **uniquement côté serveur**, et consommée de trois façons : champ
@@ -13,7 +13,7 @@ validation `SOURCE`. Tout est vérifié dans le dépôt. Sources principales :
 
 ---
 
-## 1. Le catalogue `SP_Page_Source`
+## 1. Le catalogue `Controle_Designer_Source`
 
 | Colonne | Rôle |
 |---|---|
@@ -137,12 +137,12 @@ Un champ `Typ_Controle='SOURCE'` ramène une valeur calculée par la source :
 - Rendu readonly + `Format_Affichage`/`Decimales` comme un CALCULE.
 - Le Designer desktop n'a **pas d'assistant** pour le mapping d'un champ
   SOURCE (le json est saisi dans la grille ; l'assistant de mapping est
-  réservé aux tables) — le script de déploiement doit donc produire un json
+  réservé aux tables) — le générateur doit donc produire un json
   rigoureusement conforme.
 
 ## 6. Usage 2 — détail VIRTUEL (SP4)
 
-`SP_Page_Table.Source_Metier` + `Source_Mapping` : une grille de détail
+`Controle_Designer_Table.Source_Metier` + `Source_Mapping` : une grille de détail
 **sans table physique**, alimentée en lecture seule par une source TABLE.
 
 - **Exigences** (`VerifierTableVirtuelle`, designer L.1176-1247 — rejouées à
@@ -197,27 +197,33 @@ Contrôle par source (`module_sp_engine.ts` L.937-949) :
 | `RUBRIQUE` / `RADIO` | `Rubrique` | `Param_Rubriques.Nom_Controle` ; options `(Valeur, Membre)` triées par `Rang` ; existence vérifiée à la publication. |
 | `ZOOM` / `COMBO` | `Num_Zoom` | `Controle_Def_Zoom` (socle) ; existence vérifiée à la publication. |
 | Retour de zoom | `Zoom_Retour` | json `{"ChampCible":"ColonneZoom"}` : au choix, alimente d'autres champs. |
-| **Condition de zoom (SP4)** | `Zoom_Condition` | Condition texte avec **placeholders `{Champ}`** remplacés par les valeurs courantes de l'**entête** (`DynamicField.tsx` L.76-78 : `{X}` → `ctx.entete[X]`, vide si absent). Ex. vérifié : `Matricule='{Matricule}'`. COMBO et ZOOM. ⚠️ Non éditable dans le Designer desktop — écrit par le script. |
+| **Condition de zoom (SP4)** | `Zoom_Condition` | Condition texte avec **placeholders `{Champ}`** remplacés par les valeurs courantes de l'**entête** (`DynamicField.tsx` L.76-78 : `{X}` → `ctx.entete[X]`, vide si absent). Ex. vérifié : `Matricule='{Matricule}'`. COMBO et ZOOM. ⚠️ Non éditable dans le Designer desktop et **absente du format d'import JSON** (`references/json-import-format.md` §8) — clé `zoom_condition` bloquée à la validation. |
 
 ## 9. Règles de génération pour le skill (checklist sources)
 
-1. Toute source de l'`input` ⇒ `INSERT`-si-absente uniquement (catalogue
-   partagé, **jamais d'écrasement**) ; préflight = existence + `Actif` +
-   cohérence `Typ_Retour` avec l'usage (TABLE pour un détail virtuel).
+1. Toute source de l'`input` **référencée par la page** ⇒ `businessSources[]`
+   du fichier (catalogue partagé : le `Saving` fusionne par `Cod_Source`,
+   upsert, **jamais de suppression**) ; l'import re-vérifie existence +
+   `Actif` + cohérence `Typ_Retour` avec l'usage (TABLE pour un détail
+   virtuel) et signale les dépendances non résolues en avertissements.
 2. `Code_Sql` doit passer le garde §2 **tel que le moteur le rejoue** :
    littéraux neutralisés avant le test multi-instructions ; `sp_*` interdit en
    minuscules mais `SP_` (tables métier) autorisé ; `EXEC dbo.Sys_*` seul
    appel de procédure.
 3. `Parametres` : jamais `id_Societe` ; `Nom` sans `@`, identifiant valide ;
-   documenter au manifeste les auto-injections (§3.2) et l'effet d'une
-   déclaration `Login`/`Matricule`/`Cod_Profile` (alimentation par champ).
+   sérialisation exacte `[{"Nom":…,"Typ":…,"Obligatoire":…}]` (toute autre
+   forme = bloquant à l'import) ; documenter au manifeste les auto-injections
+   (§3.2) et l'effet d'une déclaration `Login`/`Matricule`/`Cod_Profile`
+   (alimentation par champ).
 4. Champ SOURCE : `Formule` = `{"source", "mapping"}` avec `source` =
    `Source_Metier`/`data_source_code` ; `ref` = colonnes d'**entête** ;
    rappeler la ré-exécution serveur au save si persisté + `Recalc_Save='true'`.
 5. Détail virtuel : vérifier §6 (TABLE, mapping complet des obligatoires,
-   refs d'entête) ; `Allow_*` à `'false'` ; **aucun DDL** pour ce bloc ;
-   nom physique `SP_<doc>_Virt_<table>`.
+   refs d'entête) ; `Allow_*` à `false` ; colonnes **logiques** déclarées
+   (l'import exige ≥ 1 colonne par table) ; **aucune table physique** (le DDL
+   du `Saving` l'ignore) ; nom physique `SP_<doc>_Virt_<table>`.
 6. Validation SOURCE : forme §7 ; rappeler qu'elle est serveur-only et qu'un
    échec technique bloque si `B`.
-7. `Zoom_Condition` : placeholders `{X}` = champs d'entête existants ;
-   chaîne ≤ 500 ; penser à l'échappement SQL (doubler les `'`).
+7. `Zoom_Condition` : **[NO-JSON-TARGET]** absente du format d'import —
+   `zoom_condition` est une erreur bloquante à la validation
+   (`references/json-import-format.md` §8).

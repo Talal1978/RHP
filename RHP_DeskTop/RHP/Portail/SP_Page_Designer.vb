@@ -12,10 +12,15 @@ Imports Newtonsoft.Json.Linq
 ''' Onglet 4 : comportement (validations déclaratives).
 ''' Onglet 5 : habilitations par profil (périmètre : toute la page).
 ''' L'enregistrement crée/migre les tables métier SP_ dans la même transaction
-''' (aperçu DDL disponible via le bouton "Aperçu DDL", journal SP_Page_DDL_Log).
+''' (aperçu DDL disponible via le bouton "Aperçu DDL", journal Controle_Designer_DDL_Log).
 ''' Actions de la barre : Nouveau / Enregistrer / Supprimer (brouillon sans
 ''' document uniquement) / Dupliquer (copie du paramétrage sous une nouvelle
-''' identité, écrite à l'enregistrement) / Aperçu DDL / Publier-Désactiver.
+''' identité, écrite à l'enregistrement) / Aperçu DDL / Publier-Désactiver /
+''' Aide (F1 : guide HTML intégré, déployé dans rsc\aide) /
+''' Exporter JSON / Importer JSON (transfert de la configuration d'une page
+''' entre environnements, HORS habilitations : l'import recharge les contrôles
+''' et grilles de l'écran — la sauvegarde reste assurée par 'Enregistrer' ;
+''' services : Module_SP_Page_Json).
 ''' </summary>
 Public Class SP_Page_Designer
     Dim New_D As ud_btn
@@ -24,6 +29,9 @@ Public Class SP_Page_Designer
     Dim Dupliquer_D As ud_btn
     Dim Exec_D As ud_btn
     Dim Publi_D As ud_btn
+    Dim Help_D As ud_btn
+    Dim ExportJson_D As ud_btn
+    Dim ImportJson_D As ud_btn
 
     Dim Tbl_Tables As DataTable
     Dim Tbl_Colonnes As DataTable
@@ -32,28 +40,29 @@ Public Class SP_Page_Designer
     Dim Tbl_Droits As DataTable
     Dim Tbl_Sources As DataTable
 
-    Private Const SQL_TABLES = "select Cod_Table, Nom_Physique, Role_Table, Libelle, Rang, Allow_Add, Allow_Edit, Allow_Delete, Allow_Duplicate, Tri_Defaut, Regle_Suppression, Source_Metier, Source_Mapping from SP_Page_Table"
-    Private Const SQL_COLONNES = "select Cod_Table, Nom_Colonne, Libelle, Typ_Sql, Longueur, Precision_Sql, Echelle_Sql, Nullable, Valeur_Defaut, estUnique, estIndexe, Rang from SP_Page_Colonne where isnull(Technique,'false')='false'"
-    Private Const SQL_CHAMPS = "select Cod_Champ, Cod_Table, Nom_Colonne, Libelle, Typ_Controle, Rang, Ligne, Colonne, Largeur, Valeur_Defaut, Obligatoire, Etat, Rubrique, Num_Zoom, Source_Metier, Formule, Persiste, Format_Affichage, Decimales, Visible_Grille, Rang_Grille, Largeur_Colonne, estCritere, Rang_Critere, Aide from SP_Page_Champ"
-    Private Const SQL_VALIDATIONS = "select Cod_Validation, Portee, Cod_Table, Cod_Champ, Typ_Regle, Parametres, Condition_Regle, Message, Niveau, Rang, Moment, Actif from SP_Page_Validation"
-    Private Const SQL_SOURCES = "select Cod_Source, Libelle, Typ_Source, Code_Sql, Parametres, Typ_Retour, Cod_Profile, Actif from SP_Page_Source"
+    Private Const SQL_TABLES = "select Cod_Table, Nom_Physique, Role_Table, Libelle, Rang, Allow_Add, Allow_Edit, Allow_Delete, Allow_Duplicate, Tri_Defaut, Regle_Suppression, Source_Metier, Source_Mapping from Controle_Designer_Table"
+    Private Const SQL_COLONNES = "select Cod_Table, Nom_Colonne, Libelle, Typ_Sql, Longueur, Precision_Sql, Echelle_Sql, Nullable, Valeur_Defaut, estUnique, estIndexe, Rang from Controle_Designer_Colonne where isnull(Technique,'false')='false'"
+    Private Const SQL_CHAMPS = "select Cod_Champ, Cod_Table, Nom_Colonne, Libelle, Typ_Controle, Rang, Ligne, Colonne, Largeur, Valeur_Defaut, Obligatoire, Etat, Rubrique, Num_Zoom, Source_Metier, Formule, Persiste, Format_Affichage, Decimales, Visible_Grille, Rang_Grille, Largeur_Colonne, estCritere, Rang_Critere, Aide from Controle_Designer_Champ"
+    Private Const SQL_VALIDATIONS = "select Cod_Validation, Portee, Cod_Table, Cod_Champ, Typ_Regle, Parametres, Condition_Regle, Message, Niveau, Rang, Moment, Actif from Controle_Designer_Validation"
+    Private Const SQL_SOURCES = "select Cod_Source, Libelle, Typ_Source, Code_Sql, Parametres, Typ_Retour, Cod_Profile, Actif from Controle_Designer_Source"
 
     '---------------- Domaines prédéterminés (listes déroulantes des grilles) ----------------
     ' Source unique des valeurs autorisées : alimente les DataGridViewComboBoxColumn
     ' et les validations de Saving() (cohérence saisie/contrôle garantie).
-    Private Shared ReadOnly TYPES_SQL As String() = {"nvarchar", "int", "bigint", "float", "decimal", "bit", "date", "datetime", "smalldatetime"}
-    Private Shared ReadOnly TYPES_CONTROLE As String() = {"TEXT", "MEMO", "INT", "DEC", "MNT", "DATE", "DATETIME", "CHECK", "RADIO", "COMBO", "RUBRIQUE", "ZOOM", "CALCULE", "SOURCE", "GED"}
-    Private Shared ReadOnly TYPES_REGLE As String() = {"REQUIRED", "IN", "BETWEEN", "MIN", "MAX", "MINLEN", "MAXLEN", "REGEX", "COMPARE", "UNIQUE", "SOURCE", "EXPR", "NB_LIGNES"}
-    Private Shared ReadOnly PORTEES As String() = {"CHAMP", "ENTETE", "LIGNE", "DETAIL", "DOCUMENT"}
-    Private Shared ReadOnly ETATS As String() = {"S", "R", "A", "I"}
-    Private Shared ReadOnly NIVEAUX As String() = {"I", "W", "B"}
-    Private Shared ReadOnly MOMENTS As String() = {"SAISIE", "CHANGE", "AJOUT_LIGNE", "SAVE"}
+    ' Public : partagés avec la validation d'import JSON (Module_SP_Page_Json).
+    Public Shared ReadOnly TYPES_SQL As String() = {"nvarchar", "int", "bigint", "float", "decimal", "bit", "date", "datetime", "smalldatetime"}
+    Public Shared ReadOnly TYPES_CONTROLE As String() = {"TEXT", "MEMO", "INT", "DEC", "MNT", "DATE", "DATETIME", "CHECK", "RADIO", "COMBO", "RUBRIQUE", "ZOOM", "CALCULE", "SOURCE", "GED"}
+    Public Shared ReadOnly TYPES_REGLE As String() = {"REQUIRED", "IN", "BETWEEN", "MIN", "MAX", "MINLEN", "MAXLEN", "REGEX", "COMPARE", "UNIQUE", "SOURCE", "EXPR", "NB_LIGNES"}
+    Public Shared ReadOnly PORTEES As String() = {"CHAMP", "ENTETE", "LIGNE", "DETAIL", "DOCUMENT"}
+    Public Shared ReadOnly ETATS As String() = {"S", "R", "A", "I"}
+    Public Shared ReadOnly NIVEAUX As String() = {"I", "W", "B"}
+    Public Shared ReadOnly MOMENTS As String() = {"SAISIE", "CHANGE", "AJOUT_LIGNE", "SAVE"}
     ' Formats d'affichage des champs calculés / en lecture seule, inspirés des formats
     ' usuels d'Excel : "" = Standard, NUM = Nombre, MNT = Monétaire, PCT = Pourcentage
     ' (0,15 -> 15 %), DAT = Date (jj/mm/aaaa), DTM = Date et heure (jj/mm/aaaa hh:mm).
     Private Shared ReadOnly FORMATS_AFFICHAGE As String() = {"", "NUM", "MNT", "PCT", "DAT", "DTM"}
-    Private Shared ReadOnly TYPES_SOURCE As String() = {"SQL", "PROC"}
-    Private Shared ReadOnly TYPES_RETOUR As String() = {"SCALAIRE", "TABLE"}
+    Public Shared ReadOnly TYPES_SOURCE As String() = {"SQL", "PROC"}
+    Public Shared ReadOnly TYPES_RETOUR As String() = {"SCALAIRE", "TABLE"}
 
     ''' <summary>Habilitations : une ligne par profil déclaré (Controle_Profile),
     ''' complétée par les droits enregistrés de la page (LEFT JOIN ; tout à 'false'
@@ -65,7 +74,7 @@ Public Class SP_Page_Designer
                "isnull(d.Modifier,'false') as Modifier, isnull(d.Supprimer,'false') as Supprimer, " &
                "isnull(d.Valider,'false') as Valider, isnull(d.Imprimer,'false') as Imprimer, " &
                "isnull(d.GED,'false') as GED " &
-               "from Controle_Profile p left join SP_Page_Droit d on d.Cod_Profile=p.Cod_Profile" &
+               "from Controle_Profile p left join Controle_Designer_Droit d on d.Cod_Profile=p.Cod_Profile" &
                " and d.Cod_Page='" & codPage.Replace("'", "''") & "' order by p.Cod_Profile"
     End Function
 
@@ -224,14 +233,20 @@ Public Class SP_Page_Designer
             Dupliquer_D = If(dictButtons.ContainsKey("Dupliquer_D"), dictButtons("Dupliquer_D"), Nothing)
             Exec_D = dictButtons("Exec_D")
             Publi_D = dictButtons("Publi_D")
+            ' Idem : le bouton Aide n'existe qu'après rejeu du script SQL
+            Help_D = If(dictButtons.ContainsKey("Help_D"), dictButtons("Help_D"), Nothing)
+            ' Idem : les boutons d'import/export JSON n'existent qu'après rejeu du
+            ' script SQL (boutons simplement non proposés sur les anciennes bases)
+            ExportJson_D = If(dictButtons.ContainsKey("ExportJson_D"), dictButtons("ExportJson_D"), Nothing)
+            ImportJson_D = If(dictButtons.ContainsKey("ImportJson_D"), dictButtons("ImportJson_D"), Nothing)
         End If
         If Menu_Parent_cmb.Items.Count = 0 Then Menu_Parent_cmb.fromRubrique("SP_Menu_Portail")
         If Statut_Page_cmb.Items.Count = 0 Then Statut_Page_cmb.fromRubrique("SP_Statut_Page")
         ' Les grilles virtuelles (détail alimenté par une source TABLE) reposent sur
-        ' SP_Page_Table.Source_Metier / Source_Mapping (migration 006_SP_Designer_Evolutions.sql)
-        If ScalarInt("select isnull(col_length('dbo.SP_Page_Table','Source_Metier'),-1)") < 0 Then
+        ' Controle_Designer_Table.Source_Metier / Source_Mapping (migration 006_SP_Designer_Evolutions.sql)
+        If ScalarInt("select isnull(col_length('dbo.Controle_Designer_Table','Source_Metier'),-1)") < 0 Then
             ShowMessageBox("La base n'est pas à jour pour le Designer de pages :" & vbCrLf &
-                           "les colonnes SP_Page_Table.Source_Metier / Source_Mapping sont absentes." & vbCrLf &
+                           "les colonnes Controle_Designer_Table.Source_Metier / Source_Mapping sont absentes." & vbCrLf &
                            "Appliquez la migration 006_SP_Designer_Evolutions.sql (grilles virtuelles).",
                            "Chargement", MessageBoxButtons.OK, msgIcon.Stop)
             Return
@@ -284,10 +299,33 @@ Public Class SP_Page_Designer
         Nouveau()
     End Sub
     Private Sub SP_Page_Designer_KeyDown(sender As Object, e As KeyEventArgs) Handles MyBase.KeyDown
+        If e.KeyCode = Keys.F1 Then
+            e.SuppressKeyPress = True
+            Aide()
+            Return
+        End If
         If e.KeyCode = Keys.Enter AndAlso Not (TypeOf Me.ActiveControl Is DataGridView) Then
             e.SuppressKeyPress = True
             If Save_D IsNot Nothing AndAlso Save_D.Enabled Then Enregistrer()
         End If
+    End Sub
+
+    ''' <summary>Bouton "Aide" / touche F1 : ouvre l'aide du Designer de pages
+    ''' (fichier HTML autonome, indexé, avec recherche intégrée) dans le navigateur
+    ''' par défaut. Le fichier est déployé avec l'application (rsc\aide).</summary>
+    Sub Aide()
+        Try
+            Dim chemin As String = IO.Path.Combine(My.Application.Info.DirectoryPath, "rsc", "aide", "Aide_SP_Page_Designer.html")
+            If Not IO.File.Exists(chemin) Then
+                ShowMessageBox("Le fichier d'aide est introuvable :" & vbCrLf & chemin & vbCrLf &
+                               "Vérifiez le déploiement (dossier rsc\aide de l'application).",
+                               "Aide", MessageBoxButtons.OK, msgIcon.Stop)
+                Return
+            End If
+            Process.Start(New ProcessStartInfo(chemin) With {.UseShellExecute = True})
+        Catch ex As Exception
+            ShowMessageBox("Impossible d'ouvrir l'aide :" & vbCrLf & ex.Message, "Aide", MessageBoxButtons.OK, msgIcon.Stop)
+        End Try
     End Sub
 
     ''' <summary>Zoom de sélection d'une page existante (logique standard Desktop :
@@ -295,7 +333,7 @@ Public Class SP_Page_Designer
     Private Sub LabelCodPage_LinkClicked(sender As Object, e As LinkLabelLinkClickedEventArgs) Handles LabelCodPage.LinkClicked
         Try
             Dim avant As String = Cod_Page_txt.Text
-            Appel_Zoom("Cod_Page", "Nom_Page", "SP_Page", "1=1", Cod_Page_txt, Me)
+            Appel_Zoom("Cod_Page", "Nom_Page", "Controle_Designer", "1=1", Cod_Page_txt, Me)
             If Cod_Page_txt.Text.Trim <> "" AndAlso Cod_Page_txt.Text <> avant Then
                 Cod_Page_txt.ReadOnly = True
                 Cod_Document_txt.ReadOnly = True
@@ -333,7 +371,7 @@ Public Class SP_Page_Designer
     Sub Request(Optional codPage As String = "")
         If codPage.Trim = "" Then Return
         Try
-            Dim Tbl As DataTable = DATA_READER_GRD("select * from SP_Page where Cod_Page='" & codPage.Replace("'", "''") & "'")
+            Dim Tbl As DataTable = DATA_READER_GRD("select * from Controle_Designer where Cod_Page='" & codPage.Replace("'", "''") & "'")
             If Tbl.Rows.Count = 0 Then Return
             Dim r = Tbl.Rows(0)
             Cod_Page_txt.Text = IsNull(r("Cod_Page"), "")
@@ -386,7 +424,7 @@ Public Class SP_Page_Designer
     Private Function GenererCodPage() As String
         Dim prefixe As String = "PG_" & DateTime.Now.ToString("yyyyMMdd") & "_"
         Dim likeEsc As String = prefixe.Replace("_", "[_]") & "[0-9][0-9][0-9][0-9][0-9][0-9]"
-        Dim rsl = CnExecuting("select isnull(max(try_convert(int, right(Cod_Page,6))),0)+1 from SP_Page where Cod_Page like '" & likeEsc & "'")
+        Dim rsl = CnExecuting("select isnull(max(try_convert(int, right(Cod_Page,6))),0)+1 from Controle_Designer where Cod_Page like '" & likeEsc & "'")
         Return prefixe & CInt(rsl.Fields(0).Value).ToString("D6")
     End Function
 
@@ -459,7 +497,7 @@ Public Class SP_Page_Designer
     Private Function PageEnregistree() As Boolean
         Dim codPage As String = Cod_Page_txt.Text.Trim
         If codPage = "" Then Return False
-        Return CnExecuting("select count(*) from SP_Page where Cod_Page=" & SqlV(codPage)).Fields(0).Value > 0
+        Return CnExecuting("select count(*) from Controle_Designer where Cod_Page=" & SqlV(codPage)).Fields(0).Value > 0
     End Function
 
     ''' <summary>Le bouton 'Règles du workflow de signature' n'est actif que si la page
@@ -567,6 +605,299 @@ Public Class SP_Page_Designer
         If Nom_Page_txt.Text.Length > 60 Then Nom_Page_txt.Text = Nom_Page_txt.Text.Substring(0, 60)
         Statut_Page_cmb.SelectedValue = "BROUILLON"
         MajEtatWorkflowSignature()
+        Cod_Document_txt.Select()
+    End Sub
+
+    '---------------- Import / Export JSON (transfert entre environnements) ----------------
+    ' L'export représente l'état COMPLET de la configuration de la page, HORS
+    ' habilitations (Controle_Designer_Droit et l'option 'Accès personnalisé' ne sont
+    ' jamais exportées). L'import recharge les contrôles et les grilles de
+    ' l'écran (jamais la base) : la sauvegarde reste assurée par 'Enregistrer'
+    ' (Saving), avec tous ses contrôles et la génération/migration DDL.
+    ' Services et DTO : Module_SP_Page_Json (format RHP_PAGE_DESIGNER 1.0).
+
+    ''' <summary>Entête de la page lu depuis les contrôles de l'écran (export).</summary>
+    Private Function ConstruireEnteteEcran() As SP_Page_EnteteDto
+        Dim codDoc As String = Cod_Document_txt.Text.Trim
+        Return New SP_Page_EnteteDto With {
+            .Cod_Page = Cod_Page_txt.Text.Trim,
+            .Cod_Document = codDoc,
+            .Nom_Page = Nom_Page_txt.Text.Trim,
+            .Menu_Parent = IsNull(Menu_Parent_cmb.SelectedValue, "").Trim,
+            .Rang = CInt(Rang_txt.Value),
+            .Icone = IconeChoisie(),
+            .Statut_Page = IsNull(Statut_Page_cmb.SelectedValue, "").Trim,
+            .Table_Ent = If(codDoc = "", "", NomTableEnt(codDoc)),
+            .Acces_Personnalise = Acces_Personnalise_chk.Checked,
+            .Workflow_Actif = Workflow_Actif_chk.Checked,
+            .Cod_Modele_Edition = Cod_Modele_Edition_txt.Text.Trim,
+            .GED_Actif = GED_Actif_chk.Checked,
+            .GED_Obligatoire = GED_Obligatoire_chk.Checked,
+            .Act_Enregistrer = Act_Enregistrer_chk.Checked,
+            .Act_Soumettre = Act_Soumettre_chk.Checked,
+            .Act_Imprimer = Act_Imprimer_chk.Checked,
+            .Act_Exporter = Act_Exporter_chk.Checked
+        }
+    End Function
+
+    ''' <summary>
+    ''' Bouton 'Exporter JSON' : sérialise la configuration AFFICHÉE de la page
+    ''' (miroir de 'Dupliquer' : l'état de l'écran, saisies validées incluses)
+    ''' au format RHP_PAGE_DESIGNER. Les habilitations ne sont jamais exportées.
+    ''' </summary>
+    Sub ExporterJson()
+        Dim codPage As String = Cod_Page_txt.Text.Trim
+        If codPage = "" Then
+            ShowMessageBox("Aucune page n'est chargée : rien à exporter.", "Exporter JSON", MessageBoxButtons.OK, msgIcon.Warning)
+            Return
+        End If
+        Try
+            ' L'export embarque le contenu affiché des grilles : termine toute saisie en cours
+            For Each g As DataGridView In {Grd_Tables, Grd_Colonnes, Grd_Champs, Grd_Validations, Grd_Sources}
+                TerminerEditionGrille(g)
+            Next
+            MajNomsPhysiques()
+            Dim pkg As SP_Page_Package = SP_Page_Json_Export.ConstruirePackage(ConstruireEnteteEcran(),
+                                                                               Tbl_Tables, Tbl_Colonnes, Tbl_Champs,
+                                                                               Tbl_Validations, Tbl_Sources)
+            Dim json As String = SP_Page_Json_Export.Serialiser(pkg)
+            Dim dlg As New SaveFileDialog
+            dlg.InitialDirectory = importPath
+            dlg.Filter = "Fichiers JSON (*.json)|*.json"
+            dlg.FileName = "RHP_Page_" & codPage & "_" & DateTime.Now.ToString("yyyyMMdd_HHmmss") & ".json"
+            If dlg.ShowDialog(Me) <> DialogResult.OK Then Return
+            System.IO.File.WriteAllText(dlg.FileName, json, New System.Text.UTF8Encoding(False))
+            importPath = System.IO.Path.GetDirectoryName(dlg.FileName)
+            ShowMessageBox("Configuration exportée :" & vbCrLf & dlg.FileName & vbCrLf & vbCrLf &
+                           pkg.Metadata.NbTables & " table(s), " & pkg.Metadata.NbColonnes & " colonne(s), " &
+                           pkg.Metadata.NbChamps & " champ(s), " & pkg.Metadata.NbSources & " source(s) métier, " &
+                           pkg.Metadata.NbValidations & " validation(s)." & vbCrLf &
+                           "Les habilitations ne figurent jamais dans le fichier.",
+                           "Exporter JSON", MessageBoxButtons.OK, msgIcon.Information)
+        Catch ex As Exception
+            ShowMessageBox("Erreur lors de l'export : " & ex.Message, "Exporter JSON", MessageBoxButtons.OK, msgIcon.Stop)
+        End Try
+    End Sub
+
+    ''' <summary>
+    ''' Bouton 'Importer JSON' : charge un export RHP_PAGE_DESIGNER dans le
+    ''' Designer. Enchaînement strictement sans écriture en base :
+    '''   1. lecture du fichier ; 2. analyse + validation complète (format,
+    '''      version, structure, références, domaines, doublons, dépendances) —
+    '''      en cas d'erreur bloquante, l'écran reste STRICTEMENT inchangé ;
+    '''   3. détection du mode (création / mise à jour) et prévisualisation
+    '''      (compteurs, diff, avertissements) ; 4. au 'Valider' de l'aperçu
+    '''      seulement, remplacement de l'état affiché par celui du fichier ;
+    '''   5. l'écriture en base reste déclenchée par l'utilisateur via
+    '''      'Enregistrer' (Saving : contrôles + transaction + DDL).
+    ''' Mise à jour : l'état du fichier devient la nouvelle référence (les
+    ''' collections sont synchronisées : ajouts, modifications, suppressions) —
+    ''' les HABILITATIONS existantes sont préservées (grille jamais touchée).
+    ''' </summary>
+    Sub ImporterJson()
+        Dim dlg As New OpenFileDialog
+        dlg.InitialDirectory = importPath
+        dlg.Filter = "Fichiers JSON (*.json)|*.json"
+        dlg.Title = "Importer une configuration de page (JSON)"
+        If dlg.ShowDialog(Me) <> DialogResult.OK Then Return
+        importPath = System.IO.Path.GetDirectoryName(dlg.FileName)
+        Dim json As String = ""
+        Try
+            json = System.IO.File.ReadAllText(dlg.FileName)
+        Catch ex As Exception
+            ShowMessageBox("Lecture du fichier impossible : " & ex.Message, "Importer JSON", MessageBoxButtons.OK, msgIcon.Stop)
+            Return
+        End Try
+        '---------------- 1-2. Analyse + validation (écran inchangé) ----------------
+        Dim res As SP_Page_ImportResultat = Nothing
+        Try
+            res = SP_Page_Json_Import.Analyser(json)
+        Catch ex As Exception
+            ' Défense en profondeur : une erreur d'analyse ne doit jamais laisser
+            ' l'écran partiellement modifié (elle ne l'est de toute façon jamais)
+            ShowMessageBox("Analyse du fichier impossible :" & vbCrLf & ex.Message, "Importer JSON", MessageBoxButtons.OK, msgIcon.Stop)
+            Return
+        End Try
+        If res.Bloquant Then
+            ShowMessageBox("Import impossible — anomalies bloquantes :" & vbCrLf & " - " &
+                           String.Join(vbCrLf & " - ", res.Erreurs),
+                           "Importer JSON", MessageBoxButtons.OK, msgIcon.Stop)
+            Return
+        End If
+        Dim pkg As SP_Page_Package = res.Package
+        '---------------- 3. Mode : création / mise à jour ----------------
+        Dim codPage As String = pkg.Page.Cod_Page.Trim
+        Dim pageExiste As Boolean = False
+        Dim codDocBase As String = ""
+        If codPage <> "" Then
+            Dim tc As DataTable = DATA_READER_GRD("select Cod_Document from Controle_Designer where Cod_Page=" & SqlV(codPage))
+            If tc.Rows.Count > 0 Then
+                pageExiste = True
+                codDocBase = IsNull(tc.Rows(0)("Cod_Document"), "")
+            End If
+        End If
+        If pageExiste Then
+            Dim errsCible As List(Of String) = SP_Page_Json_Import.ControlerCibleExistante(pkg, codDocBase)
+            If errsCible.Count > 0 Then
+                ShowMessageBox("Import impossible — anomalies bloquantes :" & vbCrLf & " - " &
+                               String.Join(vbCrLf & " - ", errsCible),
+                               "Importer JSON", MessageBoxButtons.OK, msgIcon.Stop)
+                Return
+            End If
+        End If
+        '---------------- 4. Prévisualisation (diff vs configuration EN BASE) ----------------
+        Dim actuel As SP_Page_Package = If(pageExiste, SP_Page_Json_Export.ConstruireDepuisBase(codPage), Nothing)
+        Dim diff As SP_Page_DiffResultat = SP_Page_Json_Diff.Comparer(pkg, actuel)
+        Dim rapport As String = ConstruireRapportImport(pkg, res, diff, pageExiste, codPage, dlg.FileName)
+        Using f As New Zoom_SP_ImportApercu(If(pageExiste, "Import JSON — mise à jour de '" & codPage & "'", "Import JSON — nouvelle page"), rapport)
+            If f.ShowDialog(Me) <> DialogResult.OK Then Return
+        End Using
+        '---------------- 5. Application à l'écran (aucune écriture en base) ----------------
+        Try
+            AppliquerImport(pkg, pageExiste, codPage)
+        Catch ex As Exception
+            ShowMessageBox("Erreur lors du chargement de la configuration dans le Designer :" & vbCrLf & ex.Message,
+                           "Importer JSON", MessageBoxButtons.OK, msgIcon.Stop)
+            Return
+        End Try
+        '---------------- Traçabilité + confirmation ----------------
+        Dim trace As String = "Import JSON (" & If(pageExiste, "mise à jour", "création") & ") appliqué au Designer par " & theUser.Login &
+                              " le " & DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss") & " : " & diff.NbAjouts & " ajout(s), " &
+                              diff.NbModifications & " modification(s), " & diff.NbSuppressions & " suppression(s), " &
+                              diff.NbInchanges & " inchangé(s) ; fichier du " & pkg.ExportedAt & " (exporté par " & pkg.ExportedBy & ")."
+        If pageExiste Then
+            ' Journal existant (FK -> Controle_Designer : la page existe ; une création sera
+            ' journalisée par l'enregistrement, qui trace déjà le DDL généré)
+            JournaliserDDL(codPage, "IMPORT", "", "true", trace)
+        End If
+        Dim msg As String = If(pageExiste, "Mise à jour de la page '" & codPage & "' préparée.", "Nouvelle page préparée.") & vbCrLf &
+                            "La configuration du fichier est chargée dans le Designer (aucune écriture en base)." & vbCrLf & vbCrLf &
+                            diff.NbAjouts & " élément(s) ajouté(s), " & diff.NbModifications & " modifié(s), " &
+                            diff.NbSuppressions & " supprimé(s) par rapport à " & If(pageExiste, "la configuration enregistrée.", "une page vierge.") & vbCrLf & vbCrLf &
+                            "Vérifiez le résultat puis cliquez 'Enregistrer' pour écrire la configuration en base" & vbCrLf &
+                            "(les contrôles standards et la génération/migration des tables SQL s'appliqueront)."
+        If res.Avertissements.Count > 0 Then
+            msg &= vbCrLf & vbCrLf & "Avertissements à corriger avant l'enregistrement :" & vbCrLf & " - " & String.Join(vbCrLf & " - ", res.Avertissements)
+        End If
+        ShowMessageBox(msg, "Importer JSON", MessageBoxButtons.OK, msgIcon.Information)
+    End Sub
+
+    ''' <summary>Construit le texte de prévisualisation de l'import (mode, éléments
+    ''' détectés, diff pour une mise à jour, avertissements, rappels).</summary>
+    Private Function ConstruireRapportImport(pkg As SP_Page_Package, res As SP_Page_ImportResultat,
+                                             diff As SP_Page_DiffResultat, pageExiste As Boolean,
+                                             codPage As String, fichier As String) As String
+        Dim sb As New System.Text.StringBuilder
+        sb.AppendLine("FICHIER : " & fichier)
+        sb.AppendLine("Exporté le " & pkg.ExportedAt & If(pkg.ExportedBy <> "", " par " & pkg.ExportedBy, "") &
+                      If(pkg.RhpVersion <> "", " (RHP " & pkg.RhpVersion & ")", "") & " — format " & pkg.Format & " " & pkg.Version)
+        sb.AppendLine()
+        sb.AppendLine("PAGE : " & If(codPage <> "", codPage, "(code automatique à la création)") &
+                      " — " & pkg.Page.Nom_Page & " (type document '" & pkg.Page.Cod_Document & "')")
+        sb.AppendLine("MODE : " & If(pageExiste, "MISE À JOUR de la page existante '" & codPage & "'",
+                                        "NOUVELLE PAGE (création à l'enregistrement)"))
+        sb.AppendLine("Habilitations : non concernées par l'import" &
+                      If(pageExiste, " (les droits existants sont préservés)", " (à configurer après enregistrement)") & ".")
+        sb.AppendLine()
+        Dim nbDetails As Integer = 0, nbCol As Integer = 0
+        For Each t As SP_Page_TableDto In pkg.SqlStructure
+            If Not t.Cod_Table.Trim.Equals("ENT", StringComparison.OrdinalIgnoreCase) Then nbDetails += 1
+            nbCol += t.Colonnes.Count
+        Next
+        sb.AppendLine("ÉLÉMENTS DÉTECTÉS")
+        sb.AppendLine(" - Tables : " & pkg.SqlStructure.Count & " (dont " & nbDetails & " grille(s) de détail)")
+        sb.AppendLine(" - Colonnes physiques : " & nbCol)
+        sb.AppendLine(" - Champs : " & pkg.Components.Count)
+        sb.AppendLine(" - Sources métier : " & pkg.BusinessSources.Count)
+        sb.AppendLine(" - Validations : " & pkg.Validations.Count)
+        sb.AppendLine()
+        If pageExiste Then
+            sb.AppendLine("COMPARAISON AVEC LA CONFIGURATION EN BASE")
+            For Each l As String In diff.Synthese : sb.AppendLine(" " & l) : Next
+            sb.AppendLine(" TOTAL : " & diff.NbAjouts & " ajouté(s), " & diff.NbModifications & " modifié(s), " &
+                          diff.NbSuppressions & " supprimé(s), " & diff.NbInchanges & " inchangé(s).")
+            If diff.Details.Count > 0 Then
+                sb.AppendLine()
+                sb.AppendLine("DÉTAIL DES CHANGEMENTS")
+                For Each l As String In diff.Details : sb.AppendLine(" " & l) : Next
+            End If
+            ' Opérations SQL destructives : la migration du Designer est NON
+            ' destructive (ALTER ADD uniquement) — identifier clairement l'écart.
+            Dim toucheColonnes As Boolean = False
+            For Each l As String In diff.Details
+                If l.StartsWith("- Colonne") OrElse l.StartsWith("~ Colonne") OrElse l.StartsWith("- Table") Then toucheColonnes = True : Exit For
+            Next
+            If toucheColonnes Then
+                sb.AppendLine()
+                sb.AppendLine("NOTE : les suppressions/modifications de colonnes ou de tables sont appliquées à la")
+                sb.AppendLine("configuration ; la migration SQL reste NON destructive (aucune colonne ni table")
+                sb.AppendLine("existante n'est supprimée ou modifiée physiquement — les écarts sont signalés à")
+                sb.AppendLine("l'enregistrement, visibles via 'Aperçu DDL').")
+            End If
+            sb.AppendLine()
+        End If
+        If res.Avertissements.Count > 0 Then
+            sb.AppendLine("AVERTISSEMENTS (à corriger dans le Designer avant l'enregistrement)")
+            For Each w As String In res.Avertissements : sb.AppendLine(" - " & w) : Next
+            sb.AppendLine()
+        End If
+        sb.AppendLine("RAPPEL : aucune écriture en base à ce stade. Après validation, le contenu du Designer")
+        sb.AppendLine("est remplacé par celui du fichier ; 'Enregistrer' applique ensuite les contrôles")
+        sb.AppendLine("standards et génère/migre les tables SQL.")
+        Return sb.ToString()
+    End Function
+
+    ''' <summary>Applique le package aux contrôles et grilles de l'écran.
+    ''' Mise à jour : Request() recharge d'abord l'état enregistré (dont les
+    ''' habilitations, préservées) ; création : Nouveau() repart d'un état vierge.
+    ''' Les collections de la page sont ensuite synchronisées avec le fichier
+    ''' (RemplirTables) ; les noms physiques sont recalculés depuis le type
+    ''' document (jamais repris du fichier).</summary>
+    Private Sub AppliquerImport(pkg As SP_Page_Package, pageExiste As Boolean, codPage As String)
+        If pageExiste Then
+            Request(codPage)
+        Else
+            Nouveau()
+            ' Code fourni par le fichier : conservé (création sous cette identité) ;
+            ' absent : le code automatique de Nouveau() est conservé (fonctionnement standard).
+            If codPage <> "" Then Cod_Page_txt.Text = codPage
+        End If
+        Cod_Page_txt.ReadOnly = True   ' identifiant immuable (règle de l'écran)
+        '---------------- Entête ----------------
+        Cod_Document_txt.Text = pkg.Page.Cod_Document.Trim
+        Nom_Page_txt.Text = pkg.Page.Nom_Page
+        Menu_Parent_cmb.SelectedValue = pkg.Page.Menu_Parent.Trim
+        Rang_txt.Value = Math.Max(Rang_txt.Minimum, Math.Min(Rang_txt.Maximum, CDec(pkg.Page.Rang)))
+        ChoisirIcone(pkg.Page.Icone.Trim)
+        Workflow_Actif_chk.Checked = pkg.Page.Workflow_Actif
+        Cod_Modele_Edition_txt.Text = pkg.Page.Cod_Modele_Edition.Trim
+        GED_Actif_chk.Checked = pkg.Page.GED_Actif
+        GED_Obligatoire_chk.Checked = pkg.Page.GED_Obligatoire
+        Act_Enregistrer_chk.Checked = pkg.Page.Act_Enregistrer
+        Act_Soumettre_chk.Checked = pkg.Page.Act_Soumettre
+        Act_Imprimer_chk.Checked = pkg.Page.Act_Imprimer
+        Act_Exporter_chk.Checked = pkg.Page.Act_Exporter
+        If pageExiste Then
+            ' Mise à jour : statut et habilitations STRICTEMENT préservés — l'option
+            ' 'Accès personnalisé' (onglet Habilitations) n'est pas réimportée.
+            Statut_Page_cmb.SelectedValue = IsNull(FindLibelle("Statut_Page", "Cod_Page", codPage, "Controle_Designer"), "BROUILLON")
+        Else
+            ' Création : brouillon ; l'option du fichier s'applique (aucune habilitation
+            ' n'existe encore — elle se configurera dans l'onglet dédié).
+            Statut_Page_cmb.SelectedValue = "BROUILLON"
+            Acces_Personnalise_chk.Checked = pkg.Page.Acces_Personnalise
+        End If
+        '---------------- Grilles : synchronisation avec le fichier ----------------
+        ' (Tbl_Droits n'est JAMAIS passé : habilitations préservées / à créer à la main)
+        SP_Page_Json_Import.RemplirTables(pkg, Tbl_Tables, Tbl_Colonnes, Tbl_Champs, Tbl_Validations, Tbl_Sources)
+        ' Noms physiques dérivés du type document + listes déroulantes dépendantes
+        MajNomsPhysiques()
+        MajCombosDependantes()
+        MajComboSources()
+        MajComboSourcesVirtuelles()
+        MajEtatColonneConsulter()
+        MajEtatWorkflowSignature()
+        StyliserGrilles()
         Cod_Document_txt.Select()
     End Sub
 
@@ -686,7 +1017,7 @@ Public Class SP_Page_Designer
     ''' automatiquement au DDL, jamais déclarées dans l'onglet 'Colonnes physiques') :
     ''' ENT : Num_Doc, Statut, RV... ; DET : RowId en plus, sans Statut ni RV
     ''' (miroir de ColonnesTechniques de Module_SP_DDL).</summary>
-    Private Shared Function ColonnesTechniquesTable(codTable As String) As String()
+    Public Shared Function ColonnesTechniquesTable(codTable As String) As String()
         If codTable.Equals("ENT", StringComparison.OrdinalIgnoreCase) Then
             Return {"Num_Doc", "id_Societe", "Statut", "Dat_Crea", "Created_By", "Dat_Modif", "Modified_By", "RV"}
         End If
@@ -931,7 +1262,7 @@ Public Class SP_Page_Designer
     ''' base (sources actives) union les lignes en cours d'édition de la grille Sources.</summary>
     Private Sub MajComboSources()
         Dim dispo As New List(Of String) From {""}
-        Dim tbl As DataTable = DATA_READER_GRD("select Cod_Source from SP_Page_Source where isnull(Actif,'true')='true' order by Cod_Source")
+        Dim tbl As DataTable = DATA_READER_GRD("select Cod_Source from Controle_Designer_Source where isnull(Actif,'true')='true' order by Cod_Source")
         For Each r As DataRow In tbl.Rows
             Dim cs As String = IsNull(r("Cod_Source"), "").Trim
             If cs <> "" AndAlso Not dispo.Contains(cs) Then dispo.Add(cs)
@@ -952,7 +1283,7 @@ Public Class SP_Page_Designer
     ''' table physique classique.</summary>
     Private Sub MajComboSourcesVirtuelles()
         Dim dispo As New List(Of String) From {""}
-        Dim tbl As DataTable = DATA_READER_GRD("select Cod_Source from SP_Page_Source where isnull(Actif,'true')='true' and isnull(Typ_Retour,'SCALAIRE')='TABLE' order by Cod_Source")
+        Dim tbl As DataTable = DATA_READER_GRD("select Cod_Source from Controle_Designer_Source where isnull(Actif,'true')='true' and isnull(Typ_Retour,'SCALAIRE')='TABLE' order by Cod_Source")
         For Each r As DataRow In tbl.Rows
             Dim cs As String = IsNull(r("Cod_Source"), "").Trim
             If cs <> "" AndAlso Not dispo.Contains(cs) Then dispo.Add(cs)
@@ -1061,7 +1392,7 @@ Public Class SP_Page_Designer
     ' Une table de détail dont la colonne 'Source métier' est renseignée est une
     ' GRILLE VIRTUELLE : alimentée par la source (retour TABLE), recalculée à chaque
     ' changement d'un champ mappé, jamais persistée. Le mapping json
-    ' (SP_Page_Table.Source_Mapping) est généré par l'assistant Zoom_SP_MappingSource,
+    ' (Controle_Designer_Table.Source_Mapping) est généré par l'assistant Zoom_SP_MappingSource,
     ' jamais saisi au clavier (miroir des assistants de validation / formule).
 
     ''' <summary>Double-clic sur 'Mapping paramètres' : ouvre l'assistant d'alimentation
@@ -1124,7 +1455,7 @@ Public Class SP_Page_Designer
                 If IsNull(r("Cod_Source"), "").Trim.Equals(codSource, StringComparison.OrdinalIgnoreCase) Then Return r
             Next
         End If
-        Dim tbl As DataTable = DATA_READER_GRD("select * from SP_Page_Source where Cod_Source='" & codSource.Replace("'", "''") & "'")
+        Dim tbl As DataTable = DATA_READER_GRD("select * from Controle_Designer_Source where Cod_Source='" & codSource.Replace("'", "''") & "'")
         If tbl.Rows.Count = 0 Then Return Nothing
         Return tbl.Rows(0)
     End Function
@@ -1148,7 +1479,7 @@ Public Class SP_Page_Designer
     ''' <summary>Colonnes de l'entête relues en base (contrôles de publication).</summary>
     Private Function ColonnesEntBase(codPage As String) As List(Of String)
         Dim lst As New List(Of String)
-        Dim tbl As DataTable = DATA_READER_GRD("select Nom_Colonne from SP_Page_Colonne where Cod_Page=" & SqlV(codPage) &
+        Dim tbl As DataTable = DATA_READER_GRD("select Nom_Colonne from Controle_Designer_Colonne where Cod_Page=" & SqlV(codPage) &
                                                " and Cod_Table='ENT' and isnull(Technique,'false')='false'")
         For Each r As DataRow In tbl.Rows
             Dim nc As String = IsNull(r("Nom_Colonne"), "").Trim
@@ -1742,7 +2073,7 @@ Public Class SP_Page_Designer
         End If
         ' Le type document est un index unique : il identifie le type de document,
         ' pilote les noms physiques des tables et sert de code workflow.
-        Dim autrePage As String = IsNull(FindLibelle("Cod_Page", "Cod_Document", codDoc & "' and Cod_Page<>'" & codPage, "SP_Page"), "").ToString()
+        Dim autrePage As String = IsNull(FindLibelle("Cod_Page", "Cod_Document", codDoc & "' and Cod_Page<>'" & codPage, "Controle_Designer"), "").ToString()
         If autrePage <> "" Then
             Return New savingResult With {.result = False, .message = "Le type document '" & codDoc & "' est déjà utilisé par la page '" & autrePage & "' : choisissez un autre code."}
         End If
@@ -1783,11 +2114,11 @@ Public Class SP_Page_Designer
                 Return New savingResult With {.result = False, .message = "Nom physique en doublon : '" & np & "'."}
             End If
             ' Le nom physique est globalement unique (UQ_SP_Page_Table_Nom)
-            If ScalarInt("select count(*) from SP_Page_Table where Nom_Physique=" & SqlV(np) & " and Cod_Page<>" & SqlV(codPage)) > 0 Then
+            If ScalarInt("select count(*) from Controle_Designer_Table where Nom_Physique=" & SqlV(np) & " and Cod_Page<>" & SqlV(codPage)) > 0 Then
                 Return New savingResult With {.result = False, .message = "Le nom physique '" & np & "' est déjà utilisé par une autre page."}
             End If
             ' Table physique orpheline : sa création échouerait et son rattachement serait risqué
-            If TableExiste(np) AndAlso ScalarInt("select count(*) from SP_Page_Table where Nom_Physique=" & SqlV(np)) = 0 Then
+            If TableExiste(np) AndAlso ScalarInt("select count(*) from Controle_Designer_Table where Nom_Physique=" & SqlV(np)) = 0 Then
                 Return New savingResult With {.result = False, .message = "La table '" & np & "' existe déjà dans la base sans être rattachée à une page : choisissez un autre code document."}
             End If
             '---------------- Grille virtuelle (détail alimenté par une source TABLE) ----------------
@@ -1962,16 +2293,16 @@ Public Class SP_Page_Designer
             cnTx.BeginTrans()
             enTransaction = True
             ' 1. Entête de page : UPDATE si existant, INSERT sinon.
-            '    (Jamais de DELETE : SP_Page_DDL_Log référence Cod_Page - audit préservé.)
+            '    (Jamais de DELETE : Controle_Designer_DDL_Log référence Cod_Page - audit préservé.)
             '    Cod_Document (= type document, index unique) et Table_Ent (dérivée) sont
             '    immuables ; le statut publié est préservé (le DDL généré étant non
             '    destructif, la publication n'est pas invalidée).
             '    Typ_Document reprend Cod_Document : un seul code sert de type workflow.
-            Dim rsExist As ADODB.Recordset = cnTx.Execute("select count(*) from SP_Page where Cod_Page=" & SqlV(codPage))
+            Dim rsExist As ADODB.Recordset = cnTx.Execute("select count(*) from Controle_Designer where Cod_Page=" & SqlV(codPage))
             Dim existeDeja As Boolean = (CInt(rsExist.Fields(0).Value) > 0)
             rsExist.Close()
             If existeDeja Then
-                cnTx.Execute("update SP_Page set Libelle=" & SqlV(Nom_Page_txt.Text.Trim) & "," &
+                cnTx.Execute("update Controle_Designer set Libelle=" & SqlV(Nom_Page_txt.Text.Trim) & "," &
                             " Nom_Page=" & SqlV(Nom_Page_txt.Text.Trim) & ", Menu_Parent=" & SqlV(Menu_Parent_cmb.SelectedValue) & ", Rang=" & CInt(Rang_txt.Value) & "," &
                             " Icone=" & SqlV(IconeChoisie()) & ", Typ_Document=" & SqlV(codDoc) & ", Workflow_Actif=" & SqlV(B(Workflow_Actif_chk.Checked)) & "," &
                             " Cod_Modele_Edition=" & SqlV(Cod_Modele_Edition_txt.Text.Trim) & ", GED_Actif=" & SqlV(B(GED_Actif_chk.Checked)) & ", GED_Obligatoire=" & SqlV(B(GED_Obligatoire_chk.Checked)) & "," &
@@ -1980,7 +2311,7 @@ Public Class SP_Page_Designer
                             " Acces_Personnalise=" & SqlV(B(Acces_Personnalise_chk.Checked)) & "," &
                             " DDL_Genere='true', Dat_Modif=getdate(), Modified_By=" & SqlV(theUser.Login) & " where Cod_Page=" & SqlV(codPage))
             Else
-                cnTx.Execute("insert into SP_Page (Cod_Page, Cod_Document, Libelle, Nom_Page, Menu_Parent, Rang, Icone, Statut_Page, Table_Ent, " &
+                cnTx.Execute("insert into Controle_Designer (Cod_Page, Cod_Document, Libelle, Nom_Page, Menu_Parent, Rang, Icone, Statut_Page, Table_Ent, " &
                             "Typ_Document, Workflow_Actif, Cod_Modele_Edition, GED_Actif, GED_Obligatoire, " &
                             "Act_Enregistrer, Act_Soumettre, Act_Imprimer, Act_Exporter, Acces_Personnalise, DDL_Genere, Dat_Crea, Created_By, Dat_Modif, Modified_By) values (" &
                             SqlV(codPage) & "," & SqlV(codDoc) & "," & SqlV(Nom_Page_txt.Text.Trim) & "," &
@@ -1991,17 +2322,17 @@ Public Class SP_Page_Designer
                             SqlV(B(Act_Enregistrer_chk.Checked)) & "," & SqlV(B(Act_Soumettre_chk.Checked)) & "," &
                             SqlV(B(Act_Imprimer_chk.Checked)) & "," & SqlV(B(Act_Exporter_chk.Checked)) & "," & SqlV(B(Acces_Personnalise_chk.Checked)) & ",'true', getdate(), " & SqlV(theUser.Login) & ", getdate(), " & SqlV(theUser.Login) & ")")
             End If
-            ' 2. Purge des lignes filles (ordre imposé par les FK : SP_Page_Colonne
-            '    référence SP_Page_Table, donc colonnes AVANT tables)
-            cnTx.Execute("delete from SP_Page_Colonne where Cod_Page=" & SqlV(codPage))
-            cnTx.Execute("delete from SP_Page_Champ where Cod_Page=" & SqlV(codPage))
-            cnTx.Execute("delete from SP_Page_Validation where Cod_Page=" & SqlV(codPage))
-            cnTx.Execute("delete from SP_Page_Droit where Cod_Page=" & SqlV(codPage))
-            cnTx.Execute("delete from SP_Page_Table where Cod_Page=" & SqlV(codPage))
+            ' 2. Purge des lignes filles (ordre imposé par les FK : Controle_Designer_Colonne
+            '    référence Controle_Designer_Table, donc colonnes AVANT tables)
+            cnTx.Execute("delete from Controle_Designer_Colonne where Cod_Page=" & SqlV(codPage))
+            cnTx.Execute("delete from Controle_Designer_Champ where Cod_Page=" & SqlV(codPage))
+            cnTx.Execute("delete from Controle_Designer_Validation where Cod_Page=" & SqlV(codPage))
+            cnTx.Execute("delete from Controle_Designer_Droit where Cod_Page=" & SqlV(codPage))
+            cnTx.Execute("delete from Controle_Designer_Table where Cod_Page=" & SqlV(codPage))
             ' 3. Tables
             For Each r As DataRow In Tbl_Tables.Rows
                 If r.RowState = DataRowState.Deleted Then Continue For
-                cnTx.Execute("insert into SP_Page_Table (Cod_Page, Cod_Table, Nom_Physique, Role_Table, Libelle, Rang, Allow_Add, Allow_Edit, Allow_Delete, Allow_Duplicate, Tri_Defaut, Regle_Suppression, Source_Metier, Source_Mapping, Dat_Crea, Created_By) values (" &
+                cnTx.Execute("insert into Controle_Designer_Table (Cod_Page, Cod_Table, Nom_Physique, Role_Table, Libelle, Rang, Allow_Add, Allow_Edit, Allow_Delete, Allow_Duplicate, Tri_Defaut, Regle_Suppression, Source_Metier, Source_Mapping, Dat_Crea, Created_By) values (" &
                             SqlV(codPage) & "," & SqlV(r("Cod_Table")) & "," & SqlV(r("Nom_Physique")) & "," & SqlV(IsNull(r("Role_Table"), "DET")) & "," &
                             SqlV(r("Libelle")) & "," & Val(IsNull(r("Rang"), "1") & "") & "," & SqlV(IsNull(r("Allow_Add"), "true")) & "," & SqlV(IsNull(r("Allow_Edit"), "true")) & "," &
                             SqlV(IsNull(r("Allow_Delete"), "true")) & "," & SqlV(IsNull(r("Allow_Duplicate"), "false")) & "," & SqlV(r("Tri_Defaut")) & "," &
@@ -2010,7 +2341,7 @@ Public Class SP_Page_Designer
             ' 4. Colonnes
             For Each r As DataRow In Tbl_Colonnes.Rows
                 If r.RowState = DataRowState.Deleted Then Continue For
-                cnTx.Execute("insert into SP_Page_Colonne (Cod_Page, Cod_Table, Nom_Colonne, Libelle, Typ_Sql, Longueur, Precision_Sql, Echelle_Sql, Nullable, Valeur_Defaut, estUnique, estIndexe, Technique, Rang, Dat_Crea, Created_By) values (" &
+                cnTx.Execute("insert into Controle_Designer_Colonne (Cod_Page, Cod_Table, Nom_Colonne, Libelle, Typ_Sql, Longueur, Precision_Sql, Echelle_Sql, Nullable, Valeur_Defaut, estUnique, estIndexe, Technique, Rang, Dat_Crea, Created_By) values (" &
                             SqlV(codPage) & "," & SqlV(r("Cod_Table")) & "," & SqlV(r("Nom_Colonne")) & "," & SqlV(r("Libelle")) & "," & SqlV(LCase(IsNull(r("Typ_Sql"), "nvarchar"))) & "," &
                             SqlN(r("Longueur")) & "," & SqlN(r("Precision_Sql")) & "," & SqlN(r("Echelle_Sql")) & "," & SqlV(IsNull(r("Nullable"), "true")) & "," &
                             SqlV(r("Valeur_Defaut")) & "," & SqlV(IsNull(r("estUnique"), "false")) & "," & SqlV(IsNull(r("estIndexe"), "false")) & ", 'false'," &
@@ -2019,7 +2350,7 @@ Public Class SP_Page_Designer
             ' 5. Champs
             For Each r As DataRow In Tbl_Champs.Rows
                 If r.RowState = DataRowState.Deleted Then Continue For
-                cnTx.Execute("insert into SP_Page_Champ (Cod_Page, Cod_Champ, Cod_Table, Nom_Colonne, Libelle, Typ_Controle, Rang, Ligne, Colonne, Largeur, Valeur_Defaut, Obligatoire, Etat, " &
+                cnTx.Execute("insert into Controle_Designer_Champ (Cod_Page, Cod_Champ, Cod_Table, Nom_Colonne, Libelle, Typ_Controle, Rang, Ligne, Colonne, Largeur, Valeur_Defaut, Obligatoire, Etat, " &
                             "Rubrique, Num_Zoom, Source_Metier, Formule, Persiste, Format_Affichage, Decimales, Visible_Grille, Rang_Grille, Largeur_Colonne, estCritere, Rang_Critere, Aide, Dat_Crea, Created_By) values (" &
                             SqlV(codPage) & "," & SqlV(r("Cod_Champ")) & "," & SqlV(IsNull(r("Cod_Table"), "")) & "," & SqlV(r("Nom_Colonne")) & "," & SqlV(r("Libelle")) & "," &
                             SqlV(r("Typ_Controle")) & "," & Val(IsNull(r("Rang"), "1") & "") & "," & SqlN(r("Ligne")) & "," & SqlN(r("Colonne")) & "," & SqlN(r("Largeur")) & "," &
@@ -2031,7 +2362,7 @@ Public Class SP_Page_Designer
             ' 6. Validations
             For Each r As DataRow In Tbl_Validations.Rows
                 If r.RowState = DataRowState.Deleted Then Continue For
-                cnTx.Execute("insert into SP_Page_Validation (Cod_Page, Cod_Validation, Portee, Cod_Table, Cod_Champ, Typ_Regle, Parametres, Condition_Regle, Message, Niveau, Rang, Moment, Actif, Dat_Crea, Created_By) values (" &
+                cnTx.Execute("insert into Controle_Designer_Validation (Cod_Page, Cod_Validation, Portee, Cod_Table, Cod_Champ, Typ_Regle, Parametres, Condition_Regle, Message, Niveau, Rang, Moment, Actif, Dat_Crea, Created_By) values (" &
                             SqlV(codPage) & "," & SqlV(r("Cod_Validation")) & "," & SqlV(r("Portee")) & "," & SqlV(r("Cod_Table")) & "," & SqlV(r("Cod_Champ")) & "," &
                             SqlV(r("Typ_Regle")) & "," & SqlV(r("Parametres")) & "," & SqlV(r("Condition_Regle")) & "," & SqlV(r("Message")) & "," &
                             SqlV(IsNull(r("Niveau"), "B")) & "," & Val(IsNull(r("Rang"), "1") & "") & "," & SqlV(IsNull(r("Moment"), "SAVE")) & "," &
@@ -2048,7 +2379,7 @@ Public Class SP_Page_Designer
                     If IsNull(r(a), "false") = "true" Then aDroit = True : Exit For
                 Next
                 If Not aDroit Then Continue For
-                cnTx.Execute("insert into SP_Page_Droit (Cod_Page, Cod_Profile, Consulter, Creer, Modifier, Supprimer, Valider, Imprimer, GED, Dat_Crea, Created_By) values (" &
+                cnTx.Execute("insert into Controle_Designer_Droit (Cod_Page, Cod_Profile, Consulter, Creer, Modifier, Supprimer, Valider, Imprimer, GED, Dat_Crea, Created_By) values (" &
                             SqlV(codPage) & "," & SqlV(r("Cod_Profile")) & "," & SqlV(IsNull(r("Consulter"), "false")) & "," & SqlV(IsNull(r("Creer"), "false")) & "," &
                             SqlV(IsNull(r("Modifier"), "false")) & "," & SqlV(IsNull(r("Supprimer"), "false")) & "," & SqlV(IsNull(r("Valider"), "false")) & "," &
                             SqlV(IsNull(r("Imprimer"), "false")) & "," & SqlV(IsNull(r("GED"), "false")) & ", getdate(), " & SqlV(theUser.Login) & ")")
@@ -2057,8 +2388,8 @@ Public Class SP_Page_Designer
             For Each r As DataRow In Tbl_Sources.Rows
                 If r.RowState = DataRowState.Deleted Then Continue For
                 If IsNull(r("Cod_Source"), "").Trim = "" Then Continue For
-                cnTx.Execute("delete from SP_Page_Source where Cod_Source=" & SqlV(r("Cod_Source")))
-                cnTx.Execute("insert into SP_Page_Source (Cod_Source, Libelle, Typ_Source, Code_Sql, Parametres, Typ_Retour, Cod_Profile, Actif, Dat_Crea, Created_By) values (" &
+                cnTx.Execute("delete from Controle_Designer_Source where Cod_Source=" & SqlV(r("Cod_Source")))
+                cnTx.Execute("insert into Controle_Designer_Source (Cod_Source, Libelle, Typ_Source, Code_Sql, Parametres, Typ_Retour, Cod_Profile, Actif, Dat_Crea, Created_By) values (" &
                             SqlV(r("Cod_Source")) & "," & SqlV(r("Libelle")) & "," & SqlV(IsNull(r("Typ_Source"), "SQL")) & "," & SqlV(r("Code_Sql")) & "," &
                             SqlV(r("Parametres")) & "," & SqlV(IsNull(r("Typ_Retour"), "SCALAIRE")) & "," & SqlV(IsNull(r("Cod_Profile"), "")) & "," &
                             SqlV(IsNull(r("Actif"), "true")) & ", getdate(), " & SqlV(theUser.Login) & ")")
@@ -2066,7 +2397,7 @@ Public Class SP_Page_Designer
             ' 9. Génération / migration des tables métier SP_ (même transaction)
             '    NB : génération depuis les grilles en mémoire (Tbl_Tables/Tbl_Colonnes) :
             '    aucune relecture en base pendant la transaction (évite le blocage sur
-            '    les verrous posés par cnTx sur SP_Page_Table/SP_Page_Colonne).
+            '    les verrous posés par cnTx sur Controle_Designer_Table/Controle_Designer_Colonne).
             Dim messages As New List(Of String)
             Dim erreurs As New List(Of String)
             Dim script As String = GenererScriptPage(codPage, messages, erreurs, Tbl_Tables, Tbl_Colonnes)
@@ -2075,7 +2406,7 @@ Public Class SP_Page_Designer
                 Return New savingResult With {.result = False, .message = "Erreurs de configuration SQL :" & vbCrLf & String.Join(vbCrLf, erreurs)}
             End If
             If script.Trim <> "" Then
-                ExecuterScriptDansTransaction(codPage, If(TableExiste("SP_Page"), "MIGRATE", "CREATE"), script, cnTx)
+                ExecuterScriptDansTransaction(codPage, If(TableExiste("Controle_Designer"), "MIGRATE", "CREATE"), script, cnTx)
             End If
             cnTx.CommitTrans() : enTransaction = False
             Dim msg As String = "Enregistré avec succès."
@@ -2096,17 +2427,29 @@ Public Class SP_Page_Designer
     End Function
 
     ''' <summary>
-    ''' Suppression d'une page — réservée aux BROUILLONS sans aucun document.
+    ''' Suppression d'une page — autorisée dès lors que TOUTES ses tables SQL
+    ''' sont VIDES, quel que soit le statut (brouillon, publié, désactivé).
+    ''' La suppression emporte la configuration ET les tables physiques vides.
     ''' Tenants :
     '''   - seule une page enregistrée en base peut être supprimée ;
-    '''   - un brouillon n'a jamais été publié : aucun artefact de publication à
-    '''     nettoyer (écran portail SPP_, déclaration Param_Workflow_Typ_Document,
-    '''     qui n'existent que pour une page passée par 'Publier').
+    '''   - aucune donnée n'est jamais détruite : chaque table physique de la page
+    '''     (entête ET détails, y compris les tables orphelines du préfixe
+    '''     SP_&lt;CodDocument&gt;_% — ex. détail retiré de la configuration après
+    '''     génération, la migration n'étant jamais destructive ; les détails
+    '''     virtuels, alimentés par une source, n'ont pas de table physique) doit
+    '''     être vide ; une page ayant produit des documents se désactive, ne se
+    '''     supprime pas ;
+    '''   - aucune clé étrangère EXTÉRIEURE ne doit référencer ces tables (le DROP
+    '''     échouerait) : les références éventuelles sont listées et bloquent.
     ''' Aboutissants :
-    '''   - blocage si des documents existent dans la table d'entête physique : une
-    '''     page ayant produit des documents se désactive, ne se supprime pas ;
-    '''   - les tables métier physiques SP_ (et leurs données) ne sont JAMAIS
-    '''     supprimées par ce module ;
+    '''   - les tables SQL vides sont supprimées physiquement (détails et orphelines
+    '''     d'abord, entête en dernier : les FK internes détail -&gt; entête partent
+    '''     avec elles), ainsi que les configurations d'audit (espions) posées sur
+    '''     ces tables ;
+    '''   - une page passée par 'Publier' laisse des artefacts (écran portail
+    '''     SPP_&lt;CodPage&gt;, déclaration Param_Workflow_Typ_Document rattachée
+    '''     à cet écran) : signalés dans la confirmation puis supprimés avec la
+    '''     page ;
     '''   - les règles du workflow de signature posées sur le type document (toutes
     '''     sociétés, configurables dès le brouillon) deviendraient orphelines :
     '''     signalées dans la confirmation puis supprimées avec la page ;
@@ -2119,37 +2462,91 @@ Public Class SP_Page_Designer
     Sub Deleting()
         Dim codPage As String = Cod_Page_txt.Text.Trim
         If codPage = "" Then Return
-        Dim Tbl As DataTable = DATA_READER_GRD("select Cod_Page, Cod_Document, Statut_Page, Table_Ent from SP_Page where Cod_Page=" & SqlV(codPage))
+        Dim Tbl As DataTable = DATA_READER_GRD("select Cod_Page, Cod_Document, Statut_Page, Table_Ent from Controle_Designer where Cod_Page=" & SqlV(codPage))
         If Tbl.Rows.Count = 0 Then
             ShowMessageBox("La page '" & codPage & "' n'est pas enregistrée en base : rien à supprimer.",
                            "Suppression", MessageBoxButtons.OK, msgIcon.Warning)
             Return
         End If
-        Dim statut As String = IsNull(Tbl.Rows(0)("Statut_Page"), "")
-        If statut <> "BROUILLON" Then
-            ShowMessageBox("Seule une page en brouillon peut être supprimée. Passez-la en 'Désactivé' pour la retirer du portail." & vbCrLf &
-                           "Les tables métier SP_ ne sont jamais supprimées par ce module.", "Suppression", MessageBoxButtons.OK, msgIcon.Stop)
+        '---------------- Tables physiques : recensement et vacuité ----------------
+        ' La suppression emporte la configuration ET les tables physiques : chacune
+        ' doit être VIDE (aucune donnée n'est jamais détruite). Périmètre : tables
+        ' déclarées (Controle_Designer_Table — les détails VIRTUELS, alimentés par une source,
+        ' n'ont pas de table physique) ET tables orphelines du préfixe
+        ' SP_<CodDocument>_% (ex. détail retiré de la configuration après génération).
+        Dim codDoc As String = IsNull(Tbl.Rows(0)("Cod_Document"), "").Trim
+        Dim tableEnt As String = ""
+        Dim tablesPhys As New List(Of String)
+        Dim tblT As DataTable = DATA_READER_GRD("select * from Controle_Designer_Table where Cod_Page=" & SqlV(codPage))
+        For Each r As DataRow In tblT.Rows
+            If tblT.Columns.Contains("Source_Metier") AndAlso IsNull(r("Source_Metier"), "").Trim <> "" Then Continue For
+            Dim np As String = IsNull(r("Nom_Physique"), "").Trim
+            If np = "" OrElse ValiderNomTableMetier(np) <> "" OrElse Not TableExiste(np) Then Continue For
+            tablesPhys.Add(np)
+            If IsNull(r("Role_Table"), "") = "ENT" Then tableEnt = np
+        Next
+        If codDoc <> "" Then
+            Dim tblOrph As DataTable = DATA_READER_GRD("select name from sys.tables where name like 'SP\_" & codDoc & "\_%' escape '\'")
+            For Each ro As DataRow In tblOrph.Rows
+                Dim nm As String = IsNull(ro("name"), "").Trim
+                If ValiderNomTableMetier(nm) = "" AndAlso
+                   Not tablesPhys.Exists(Function(x As String) String.Equals(x, nm, StringComparison.OrdinalIgnoreCase)) Then tablesPhys.Add(nm)
+            Next
+        End If
+        Dim nonVides As New List(Of String)
+        For Each np As String In tablesPhys
+            Dim nb As Integer = ScalarInt("select count(*) from dbo.[" & np & "]")
+            If nb > 0 Then nonVides.Add(np & " (" & nb & " ligne(s))")
+        Next
+        If nonVides.Count > 0 Then
+            ShowMessageBox("La page '" & codPage & "' ne peut pas être supprimée : ses tables SQL contiennent des données :" & vbCrLf &
+                           " - " & String.Join(vbCrLf & " - ", nonVides) & vbCrLf & vbCrLf &
+                           "Une page ayant produit des documents ne se supprime pas : désactivez-la pour la retirer du portail.",
+                           "Suppression", MessageBoxButtons.OK, msgIcon.Stop)
             Return
         End If
-        ' Aucun document ne doit exister : la suppression porte sur la configuration,
-        ' jamais sur des données (un détail ne peut exister sans entête : FK)
-        Dim tableEnt As String = IsNull(Tbl.Rows(0)("Table_Ent"), "").Trim
-        If tableEnt <> "" AndAlso ValiderNomTableMetier(tableEnt) = "" AndAlso TableExiste(tableEnt) Then
-            Dim nbDoc As Integer = ScalarInt("select count(*) from dbo.[" & tableEnt & "]")
-            If nbDoc > 0 Then
-                ShowMessageBox("La page '" & codPage & "' possède " & nbDoc & " document(s) dans la table " & tableEnt & "." & vbCrLf &
-                               "Une page ayant produit des documents ne peut pas être supprimée : désactivez-la.",
-                               "Suppression", MessageBoxButtons.OK, msgIcon.Stop)
-                Return
-            End If
+        ' Références entrantes : aucune table EXTÉRIEURE à la page ne doit référencer
+        ' ses tables (le DROP échouerait). Les FK internes (détail -> entête) partent
+        ' avec les tables.
+        Dim refsExt As New List(Of String)
+        For Each np As String In tablesPhys
+            Dim tblRef As DataTable = DATA_READER_GRD("select object_name(fk.parent_object_id) from sys.foreign_keys fk where fk.referenced_object_id = object_id('dbo." & np & "')")
+            For Each rr As DataRow In tblRef.Rows
+                Dim tRef As String = IsNull(rr(0), "")
+                If Not tablesPhys.Exists(Function(x As String) String.Equals(x, tRef, StringComparison.OrdinalIgnoreCase)) Then refsExt.Add(tRef & " -> " & np)
+            Next
+        Next
+        If refsExt.Count > 0 Then
+            ShowMessageBox("La page '" & codPage & "' ne peut pas être supprimée : ses tables sont référencées par des clés étrangères extérieures :" & vbCrLf &
+                           " - " & String.Join(vbCrLf & " - ", refsExt) & vbCrLf & vbCrLf &
+                           "Supprimez d'abord ces références.",
+                           "Suppression", MessageBoxButtons.OK, msgIcon.Stop)
+            Return
         End If
+        ' Artefacts de publication (n'existent que pour une page passée par 'Publier')
+        ' : la déclaration du type document n'est purgée que si elle est rattachée à
+        ' l'écran de CETTE page (Name_Ecran = SPP_<CodPage>), posé par 'Publier'.
+        Dim nameEcran As String = "SPP_" & codPage
+        Dim ecranPublie As Boolean = ScalarInt("select count(*) from Controle_Def_Ecran where Name_Ecran=" & SqlV(nameEcran)) > 0
+        Dim typDocPublie As Boolean = codDoc <> "" AndAlso
+                                      ScalarInt("select count(*) from Param_Workflow_Typ_Document where Typ_Document=" & SqlV(codDoc) &
+                                                " and Name_Ecran=" & SqlV(nameEcran)) > 0
         ' Règles du workflow de signature posées sur le type document (bouton dédié,
         ' accessible dès l'enregistrement d'un brouillon) : orphelines après suppression
-        Dim codDoc As String = IsNull(Tbl.Rows(0)("Cod_Document"), "").Trim
         Dim nbWf As Integer = 0
         If codDoc <> "" Then nbWf = ScalarInt("select count(*) from Workflow_Signatures where Typ_Document=" & SqlV(codDoc))
-        Dim msg As String = "Supprimer la configuration de la page '" & codPage & "' ?" & vbCrLf &
-                            "Les tables métier physiques SP_ (et leurs données) sont conservées."
+        Dim msg As String = "Supprimer la page '" & codPage & "' ?"
+        If tablesPhys.Count > 0 Then
+            msg &= vbCrLf & vbCrLf & "Ses tables SQL (VIDES) seront supprimées définitivement :" & vbCrLf &
+                   " - " & String.Join(vbCrLf & " - ", tablesPhys)
+        End If
+        If ecranPublie OrElse typDocPublie Then
+            Dim arts As New List(Of String)
+            If ecranPublie Then arts.Add("écran portail '" & nameEcran & "'")
+            If typDocPublie Then arts.Add("déclaration du type document '" & codDoc & "' au workflow")
+            msg &= vbCrLf & vbCrLf & "La page a été publiée : ses artefacts de publication seront supprimés avec elle (" &
+                   String.Join(", ", arts) & ")."
+        End If
         If nbWf > 0 Then
             msg &= vbCrLf & vbCrLf & nbWf & " règle(s) du workflow de signature (type document '" & codDoc &
                    "', toutes sociétés) seront supprimées avec la page."
@@ -2168,14 +2565,32 @@ Public Class SP_Page_Designer
                 cnTx.Execute("delete from Workflow_Signatures_Signataires where Typ_Document=" & SqlV(codDoc))
                 cnTx.Execute("delete from Workflow_Signatures where Typ_Document=" & SqlV(codDoc))
             End If
+            ' Artefacts de publication : écran portail + déclaration du type document
+            ' au moteur de workflow (uniquement celle rattachée à cet écran)
+            If ecranPublie Then cnTx.Execute("delete from Controle_Def_Ecran where Name_Ecran=" & SqlV(nameEcran))
+            If typDocPublie Then cnTx.Execute("delete from Param_Workflow_Typ_Document where Typ_Document=" & SqlV(codDoc) &
+                                              " and Name_Ecran=" & SqlV(nameEcran))
+            ' Suppression physique des tables VIDES et de leurs références :
+            ' configurations d'audit (espions) posées sur elles, puis DROP —
+            ' détails et orphelines d'abord, entête en dernier (FK internes
+            ' détail -> entête emportées avec les tables).
+            If tablesPhys.Count > 0 Then
+                Dim liste As String = ""
+                For Each t As String In tablesPhys : liste &= "," & SqlV(t) : Next
+                cnTx.Execute("if object_id('dbo.Param_Audit_Espion','U') is not null delete from dbo.Param_Audit_Espion where Table_Name in (" & liste.Substring(1) & ")")
+                For Each t As String In tablesPhys
+                    If Not String.Equals(t, tableEnt, StringComparison.OrdinalIgnoreCase) Then cnTx.Execute("DROP TABLE dbo.[" & t & "]")
+                Next
+                If tableEnt <> "" Then cnTx.Execute("DROP TABLE dbo.[" & tableEnt & "]")
+            End If
             ' Ordre imposé par les FK (colonnes avant tables), journal DDL inclus
-            cnTx.Execute("delete from SP_Page_Colonne where Cod_Page=" & SqlV(codPage))
-            cnTx.Execute("delete from SP_Page_Champ where Cod_Page=" & SqlV(codPage))
-            cnTx.Execute("delete from SP_Page_Validation where Cod_Page=" & SqlV(codPage))
-            cnTx.Execute("delete from SP_Page_Droit where Cod_Page=" & SqlV(codPage))
-            cnTx.Execute("delete from SP_Page_Table where Cod_Page=" & SqlV(codPage))
-            cnTx.Execute("delete from SP_Page_DDL_Log where Cod_Page=" & SqlV(codPage))
-            cnTx.Execute("delete from SP_Page where Cod_Page=" & SqlV(codPage))
+            cnTx.Execute("delete from Controle_Designer_Colonne where Cod_Page=" & SqlV(codPage))
+            cnTx.Execute("delete from Controle_Designer_Champ where Cod_Page=" & SqlV(codPage))
+            cnTx.Execute("delete from Controle_Designer_Validation where Cod_Page=" & SqlV(codPage))
+            cnTx.Execute("delete from Controle_Designer_Droit where Cod_Page=" & SqlV(codPage))
+            cnTx.Execute("delete from Controle_Designer_Table where Cod_Page=" & SqlV(codPage))
+            cnTx.Execute("delete from Controle_Designer_DDL_Log where Cod_Page=" & SqlV(codPage))
+            cnTx.Execute("delete from Controle_Designer where Cod_Page=" & SqlV(codPage))
             cnTx.CommitTrans() : enTransaction = False
         Catch ex As Exception
             If enTransaction Then
@@ -2231,7 +2646,7 @@ Public Class SP_Page_Designer
     Sub Publier()
         Dim codPage As String = Cod_Page_txt.Text.Trim
         If codPage = "" Then Return
-        Dim Tbl As DataTable = DATA_READER_GRD("select * from SP_Page where Cod_Page=" & SqlV(codPage))
+        Dim Tbl As DataTable = DATA_READER_GRD("select * from Controle_Designer where Cod_Page=" & SqlV(codPage))
         If Tbl.Rows.Count = 0 Then
             ShowMessageBox("Enregistrez la page avant de la publier.", "Publier", MessageBoxButtons.OK, msgIcon.Warning)
             Return
@@ -2241,7 +2656,7 @@ Public Class SP_Page_Designer
             If ShowMessageBox("La page est publiée. Voulez-vous la désactiver ?" & vbCrLf &
                               "Elle disparaîtra du portail (les documents saisis sont conservés).",
                               "Désactiver", MessageBoxButtons.OKCancel, msgIcon.Warning) = DialogResult.OK Then
-                CnExecuting("update SP_Page set Statut_Page='DESACTIVE', Dat_Modif=getdate(), Modified_By=" & SqlV(theUser.Login) & " where Cod_Page=" & SqlV(codPage))
+                CnExecuting("update Controle_Designer set Statut_Page='DESACTIVE', Dat_Modif=getdate(), Modified_By=" & SqlV(theUser.Login) & " where Cod_Page=" & SqlV(codPage))
                 ShowMessageBox("Page désactivée.", "Publier", MessageBoxButtons.OK, msgIcon.Information)
                 Request(codPage)
             End If
@@ -2252,7 +2667,7 @@ Public Class SP_Page_Designer
         ' 1. Existence des tables et colonnes physiques (les GRILLES VIRTUELLES -
         '    Source_Metier renseignée - n'ont aucune table physique : la source et
         '    son mapping sont contrôlés à la place, miroir des contrôles d'enregistrement)
-        Dim tblT As DataTable = DATA_READER_GRD("select * from SP_Page_Table where Cod_Page=" & SqlV(codPage))
+        Dim tblT As DataTable = DATA_READER_GRD("select * from Controle_Designer_Table where Cod_Page=" & SqlV(codPage))
         For Each r As DataRow In tblT.Rows
             Dim np As String = IsNull(r("Nom_Physique"), "")
             Dim sm As String = If(tblT.Columns.Contains("Source_Metier"), IsNull(r("Source_Metier"), "").Trim, "")
@@ -2267,7 +2682,7 @@ Public Class SP_Page_Designer
                 Continue For
             End If
             Dim existantes = ColonnesExistantes(np)
-            Dim tblC As DataTable = DATA_READER_GRD("select Nom_Colonne from SP_Page_Colonne where Cod_Page=" & SqlV(codPage) & " and Cod_Table=" & SqlV(r("Cod_Table")) & " and isnull(Technique,'false')='false'")
+            Dim tblC As DataTable = DATA_READER_GRD("select Nom_Colonne from Controle_Designer_Colonne where Cod_Page=" & SqlV(codPage) & " and Cod_Table=" & SqlV(r("Cod_Table")) & " and isnull(Technique,'false')='false'")
             For Each rc As DataRow In tblC.Rows
                 If Not existantes.Contains(IsNull(rc("Nom_Colonne"), "")) Then
                     erreurs.Add("Colonne " & np & ".[" & IsNull(rc("Nom_Colonne"), "") & "] inexistante en base")
@@ -2275,7 +2690,7 @@ Public Class SP_Page_Designer
             Next
         Next
         ' 2. Validité des champs : table/colonne existantes, zooms, rubriques, sources
-        Dim tblCh As DataTable = DATA_READER_GRD("select * from SP_Page_Champ where Cod_Page=" & SqlV(codPage))
+        Dim tblCh As DataTable = DATA_READER_GRD("select * from Controle_Designer_Champ where Cod_Page=" & SqlV(codPage))
         For Each rc As DataRow In tblCh.Rows
             ' Cod_Table vide : champ non rattaché (affiché uniquement) — pas de contrôle de table
             Dim ct As String = IsNull(rc("Cod_Table"), "")
@@ -2291,7 +2706,7 @@ Public Class SP_Page_Designer
                 erreurs.Add("Champ " & IsNull(rc("Cod_Champ"), "") & " : rubrique '" & IsNull(rc("Rubrique"), "") & "' inexistante")
             End If
             If IsNull(rc("Source_Metier"), "") <> "" AndAlso
-               CnExecuting("select count(*) from SP_Page_Source where Cod_Source=" & SqlV(rc("Source_Metier")) & " and isnull(Actif,'true')='true'").Fields(0).Value = 0 Then
+               CnExecuting("select count(*) from Controle_Designer_Source where Cod_Source=" & SqlV(rc("Source_Metier")) & " and isnull(Actif,'true')='true'").Fields(0).Value = 0 Then
                 erreurs.Add("Champ " & IsNull(rc("Cod_Champ"), "") & " : source '" & IsNull(rc("Source_Metier"), "") & "' inexistante ou inactive")
             End If
         Next
@@ -2301,7 +2716,7 @@ Public Class SP_Page_Designer
         ' 4. Habilitations présentes (sauf si la consultation est ouverte à tous :
         '    option 'Accès personnalisé' décochée)
         If IsNull(Tbl.Rows(0)("Acces_Personnalise"), "true") = "true" AndAlso
-           CnExecuting("select count(*) from SP_Page_Droit where Cod_Page=" & SqlV(codPage) & " and isnull(Consulter,'false')='true'").Fields(0).Value = 0 Then
+           CnExecuting("select count(*) from Controle_Designer_Droit where Cod_Page=" & SqlV(codPage) & " and isnull(Consulter,'false')='true'").Fields(0).Value = 0 Then
             erreurs.Add("Aucun profil n'a le droit 'Consulter' : la page serait invisible pour tous." & vbCrLf &
                         "(Onglet 'Habilitations par profil' : cochez 'Consulter' pour au moins un profil, ou décochez l'option 'Accès personnalisé'.)")
         End If
@@ -2316,7 +2731,7 @@ Public Class SP_Page_Designer
             Return
         End If
         '---------------- Publication ----------------
-        CnExecuting("update SP_Page set Statut_Page='PUBLIE', Dat_Publication=getdate(), Version_Page=isnull(Version_Page,1)+1, Dat_Modif=getdate(), Modified_By=" & SqlV(theUser.Login) & " where Cod_Page=" & SqlV(codPage))
+        CnExecuting("update Controle_Designer set Statut_Page='PUBLIE', Dat_Publication=getdate(), Version_Page=isnull(Version_Page,1)+1, Dat_Modif=getdate(), Modified_By=" & SqlV(theUser.Login) & " where Cod_Page=" & SqlV(codPage))
         ' Enregistrement de l'écran portail (liaison GED : Name_Ecran + Value_Index)
         Dim nameEcran As String = "SPP_" & codPage
         Dim pj As String = If(IsNull(Tbl.Rows(0)("GED_Actif"), "false") = "true", "true", "false")

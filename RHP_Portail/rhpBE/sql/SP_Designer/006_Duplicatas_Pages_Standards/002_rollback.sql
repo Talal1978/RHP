@@ -38,7 +38,7 @@ BEGIN TRY
 /* -- Phase 1 : retrait du portail (documents conserves) -------------------- */
     UPDATE p
     SET Statut_Page = 'DESACTIVE', Dat_Modif = GETDATE(), Modified_By = @Login
-    FROM dbo.SP_Page p
+    FROM dbo.Controle_Designer p
     JOIN @Pages m ON m.Cod_Page = p.Cod_Page
     WHERE p.Statut_Page = 'PUBLIE';
 
@@ -47,7 +47,7 @@ BEGIN TRY
     BEGIN
         -- Garde-fou donnees : phase 2 refusee pour toute page encore PUBLIE
         -- ou dont les tables metier contiennent des documents
-        IF EXISTS (SELECT 1 FROM dbo.SP_Page p JOIN @Pages m ON m.Cod_Page = p.Cod_Page
+        IF EXISTS (SELECT 1 FROM dbo.Controle_Designer p JOIN @Pages m ON m.Cod_Page = p.Cod_Page
                    WHERE p.Statut_Page = 'PUBLIE')
             RAISERROR('Une page duplicata est encore PUBLIE : phase 2 refusee.', 16, 1);
 
@@ -62,13 +62,13 @@ BEGIN TRY
             RAISERROR('Des documents existent dans les tables duplicatas : phase 2 refusee.', 16, 1);
 
         -- Ordre FK-safe (miroir SP_Page_Designer.Deleting)
-        DELETE c FROM dbo.SP_Page_Colonne c    JOIN @Pages m ON m.Cod_Page = c.Cod_Page;
-        DELETE c FROM dbo.SP_Page_Champ c      JOIN @Pages m ON m.Cod_Page = c.Cod_Page;
-        DELETE c FROM dbo.SP_Page_Validation c JOIN @Pages m ON m.Cod_Page = c.Cod_Page;
-        DELETE c FROM dbo.SP_Page_Droit c      JOIN @Pages m ON m.Cod_Page = c.Cod_Page;
-        DELETE c FROM dbo.SP_Page_Table c      JOIN @Pages m ON m.Cod_Page = c.Cod_Page;
-        DELETE c FROM dbo.SP_Page_DDL_Log c    JOIN @Pages m ON m.Cod_Page = c.Cod_Page;
-        DELETE c FROM dbo.SP_Page c            JOIN @Pages m ON m.Cod_Page = c.Cod_Page;
+        DELETE c FROM dbo.Controle_Designer_Colonne c    JOIN @Pages m ON m.Cod_Page = c.Cod_Page;
+        DELETE c FROM dbo.Controle_Designer_Champ c      JOIN @Pages m ON m.Cod_Page = c.Cod_Page;
+        DELETE c FROM dbo.Controle_Designer_Validation c JOIN @Pages m ON m.Cod_Page = c.Cod_Page;
+        DELETE c FROM dbo.Controle_Designer_Droit c      JOIN @Pages m ON m.Cod_Page = c.Cod_Page;
+        DELETE c FROM dbo.Controle_Designer_Table c      JOIN @Pages m ON m.Cod_Page = c.Cod_Page;
+        DELETE c FROM dbo.Controle_Designer_DDL_Log c    JOIN @Pages m ON m.Cod_Page = c.Cod_Page;
+        DELETE c FROM dbo.Controle_Designer c            JOIN @Pages m ON m.Cod_Page = c.Cod_Page;
 
         -- Enregistrements crees par la publication
         DELETE FROM dbo.Controle_Def_Ecran
@@ -84,22 +84,22 @@ BEGIN TRY
 
         -- Rubriques creees par le deploiement (uniquement si la section est vide
         -- d'autres pages : le retrait de la section n'est jamais force)
-        IF NOT EXISTS (SELECT 1 FROM dbo.SP_Page WHERE Menu_Parent = 'PagesSpecifiques')
+        IF NOT EXISTS (SELECT 1 FROM dbo.Controle_Designer WHERE Menu_Parent = 'PagesSpecifiques')
             DELETE FROM dbo.Param_Rubriques
             WHERE Nom_Controle = 'SP_Menu_Portail' AND Valeur = 'PagesSpecifiques';
         DELETE FROM dbo.Param_Rubriques WHERE Nom_Controle = 'SP_Lien_Malade';
 
         -- Sources metier du package (optionnel, seulement si non referencees par d'autres pages)
         IF @RemoveSources = 1
-            DELETE s FROM dbo.SP_Page_Source s
+            DELETE s FROM dbo.Controle_Designer_Source s
             WHERE s.Cod_Source IN ('sp_solde_conge_date','sp_cng_periode_cloturee','sp_cng_controle_paie',
                                    'sp_cng_repos','sp_cng_feries','sp_cng_duree',
                                    'sp_avances_encours','sp_prets_encours',
                                    'sp_dernier_salaire_av','sp_dernier_salaire_pr')
-              AND NOT EXISTS (SELECT 1 FROM dbo.SP_Page_Champ ch
+              AND NOT EXISTS (SELECT 1 FROM dbo.Controle_Designer_Champ ch
                               WHERE ch.Source_Metier = s.Cod_Source
                                  OR ISNULL(ch.Formule, '') LIKE '%"source":"' + s.Cod_Source + '"%')
-              AND NOT EXISTS (SELECT 1 FROM dbo.SP_Page_Validation v
+              AND NOT EXISTS (SELECT 1 FROM dbo.Controle_Designer_Validation v
                               WHERE ISNULL(v.Parametres, '') LIKE '%"source":"' + s.Cod_Source + '"%');
 
         PRINT 'Metadonnees des duplicatas supprimees. Tables metier SP_X** conservees.';
@@ -107,7 +107,7 @@ BEGIN TRY
     ELSE
         PRINT 'Phase 2 non demandee : les pages duplicatas restent configurees (Statut DESACTIVE).';
 
-    SELECT Cod_Page, Statut_Page FROM dbo.SP_Page
+    SELECT Cod_Page, Statut_Page FROM dbo.Controle_Designer
     WHERE Cod_Page IN (SELECT Cod_Page FROM @Pages);
 
     IF @DryRun = 1

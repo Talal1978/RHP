@@ -63,7 +63,7 @@ document** (entête + lignes), ré-évalué à chaque saisie :
 | `CALCULE` / `SOURCE` | TextBox readonly, valeur formatée | Jamais saisissables ; rendu via `Format_Affichage`/`Decimales` (`formules-calculees.md` §12.5) |
 | `GED` | Bouton « Pièces jointes » | Ouvre la GED du document (exige document existant + droit GED) |
 
-## 3. Validations déclaratives (`SP_Page_Validation`)
+## 3. Validations déclaratives (`Controle_Designer_Validation`)
 
 Moteur : serveur `executerValidations` (`module_sp_engine.ts` L.789-959) ;
 client `validerClient` (`dynamicEngine.ts` L.407-540). **Le serveur rejoue
@@ -136,7 +136,7 @@ Dérivation pratiquée par l'assistant : `NB_LIGNES`/`UNIQUE` ⇒ `DETAIL` ;
 - Le serveur ignore `Moment` : tout est rejoué à l'enregistrement. Les règles
   inactives (`Actif<>'true'`) ne sont jamais chargées (L.250).
 
-## 4. Grilles de détail (`SP_Page_Table`)
+## 4. Grilles de détail (`Controle_Designer_Table`)
 
 ### 4.1 Flags d'édition
 
@@ -201,8 +201,9 @@ CSV de statuts figeant le document, défaut `'SG,RJ,SP,VA'` (signé, rejeté,
 suspendu, validé). Un document dont le statut ∈ liste : **modification et
 suppression refusées** (serveur L.1191-1194, 1336-1339 ; client `canSave`
 L.421-424). Ex. `'SS,SG,RJ,SP,VA'` fige **dès la soumission** (comme les pages
-standards). ⚠️ Non éditable dans le Designer desktop — écrit par le script de
-déploiement.
+standards). ⚠️ Non éditable dans le Designer desktop et **absent du format
+d'import JSON** (`references/json-import-format.md` §8) — clé `freeze_statuses`
+bloquée à la validation ; ne peut être posé que par UPDATE SQL ciblé.
 
 ### 5.4 Lecture seule globale (client)
 
@@ -224,7 +225,7 @@ nouveau, `Modifier` sinon). `canSave` faux ⇒ tout le document en lecture seule
 
 ## 6. Droits et actions de page
 
-### 6.1 Droits par profil (`SP_Page_Droit`)
+### 6.1 Droits par profil (`Controle_Designer_Droit`)
 
 - Flags `'true'/'false'` : `Consulter, Creer, Modifier, Supprimer, Valider,
   Imprimer, GED`. Vérifiés à chaque endpoint (`metaPubliee`).

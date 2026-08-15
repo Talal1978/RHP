@@ -1,5 +1,5 @@
 /* ============================================================================
-   Module SP_ - Types des métadonnées (miroir de SP_Page* côté serveur)
+   Module SP_ - Types des métadonnées (miroir de Controle_Designer* côté serveur)
    ============================================================================ */
 export type TSpPage = {
   Cod_Page: string;

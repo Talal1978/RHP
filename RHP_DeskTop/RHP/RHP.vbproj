@@ -700,6 +700,13 @@
     <Compile Include="Portail\SP_Page_Designer.vb">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="Portail\Module_SP_Page_Json.vb" />
+    <Compile Include="Portail\Zoom_SP_ImportApercu.Designer.vb">
+      <DependentUpon>Zoom_SP_ImportApercu.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Portail\Zoom_SP_ImportApercu.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Outillage\RH_Outillage_Mouvement.Designer.vb">
       <DependentUpon>RH_Outillage_Mouvement.vb</DependentUpon>
     </Compile>
@@ -3087,6 +3094,9 @@
     <Content Include="Outillage\Script_SQL_Outillage.sql" />
     <Content Include="Portail\Script_SQL_SP_Page_Designer.sql" />
     <Content Include="rsc\fonts\MaterialIcons-Regular.ttf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="rsc\aide\Aide_SP_Page_Designer.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <None Include="Resources\btn_copy.png" />

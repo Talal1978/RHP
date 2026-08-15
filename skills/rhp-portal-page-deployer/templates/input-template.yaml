@@ -1,93 +1,95 @@
 # =============================================================================
-# RHP Portal Page Deployer - Input template
+# RHP Portal Page Deployer (JSON import) - Input template
 # -----------------------------------------------------------------------------
 # YAML or JSON accepted. Natural language is NOT accepted directly: convert it
 # to this structure first, then validate (scripts/validate_input.py).
+#
+# OUTPUT: a JSON file importable in the Desktop Designer (SP_Page_Designer >
+# 'Importer JSON', format RHP_PAGE_DESIGNER 1.0) - exact contract:
+# references/json-import-format.md. The skill writes NO SQL.
 #
 # Conventions:
 #   (r)  required - blocking error if missing/empty
 #   (o)  optional - defaults shown
 #   (x)  extension to the base contract (RHP-specific, optional)
-# Keys marked [UNSUPPORTED] exist for contract compatibility only; keep their
-# neutral value. See references/schema-mapping.md for the why.
+# Keys marked [NO-JSON-TARGET] have no target in the import format: keep their
+# neutral value - any non-neutral value is a BLOCKING error, never silently
+# dropped (full rationale: references/json-import-format.md section 8).
 # =============================================================================
 
 request:
-  operation: create            # (r) create | update | disable
-                               #     create  : new page; fails if Cod_Page exists
-                               #               unless deployment.update_if_exists=true
-                               #     update  : requires the page to exist; rewrites
-                               #               metadata collections, migrates DDL (ADD only)
-                               #     disable : only sets Statut_Page='DESACTIVE'
+  operation: create            # (r) create | update
+                               #     create : new page (import auto-detects creation)
+                               #     update : requires the page to exist AND
+                               #              deployment.update_if_exists=true;
+                               #              the import synchronizes the collections
+                               #              (habilitations preserved)
+                               #     disable : [NO-JSON-TARGET] not expressible -
+                               #              use the Designer 'Desactiver' button
   environment: development     # (r) development | test | production
                                #     production => extra confirmations in the manifest
-  dry_run: true                # (r) true  => deploy script ends with ROLLBACK
-                               #     false => deploy script ends with COMMIT
-  requested_by: ""             # (r) login written to Created_By/Modified_By
-                               #     (RHP scripts use 'SCRIPT')
-  change_reference: ""         # (r) ticket/change id, echoed in headers + DDL log
+  dry_run: true                # (o) ACCEPTED, IGNORED: an import never writes by
+                               #     itself (nothing persists before 'Enregistrer')
+  requested_by: ""             # (r) login echoed in the file (exportedBy) and the
+                               #     import audit trail
+  change_reference: ""         # (r) ticket/change id, echoed in the manifest
 
 page:
-  page_code: ""                # (r) => SP_Page.Cod_Page. [A-Za-z_][A-Za-z0-9_]{0,29},
-                               #     must NOT start with 'Page' (CK_SP_Page_Ident). Immutable.
-  document_code: ""            # (r)(x) => SP_Page.Cod_Document (1..10 chars, unique).
+  page_code: ""                # (r) => page.Cod_Page. ^[A-Za-z_][A-Za-z0-9_]{2,29},
+                               #     must NOT start with 'Page' (CK_SP_Page_Ident).
+                               #     Existing page => the import switches to update.
+  document_code: ""            # (r)(x) => page.Cod_Document. ^[A-Za-z][A-Za-z0-9]{1,9}
+                               #     (letter first, NO underscore - import regex).
                                #     Drives physical names: SP_<document_code>_Ent ...
-  page_name: ""                # (r) => SP_Page.Libelle (full functional label, <=150)
-  short_title: ""              # (o)(x) => SP_Page.Libelle_Court (<=50; default = page_name truncated)
-  title: ""                    # (r) => SP_Page.Nom_Page (portal menu title, <=60)
-  description: ""              # (o) NOT persisted (no such column - verified).
-                               #     Emitted in script header + DDL log message only.
-  route: ""                    # [UNSUPPORTED] RHP routes are conventional:
-                               #   list  = /myspace/SPPL_<page_code>/<titre>
-                               #   document = /myspace/SPP_<page_code>/<titre>/<num?>
-                               #     Any non-empty value is validated against this rule.
-  target_section_id: null      # [UNSUPPORTED] keep null - sections have no surrogate id.
-  target_section_code: ""      # (r) => SP_Page.Menu_Parent. Must be a Valeur of the
-                               #     SP_Menu_Portail rubrique (verified list:
-                               #     orga, MesDemandes, mesConsultations, mesEvaluations,
-                               #     Recrutement_fdr, MesDeclarationsAT, DiverseEditions,
-                               #     Discipline_fdr, Outillage, Communication, Sante)
-                               #     OR created when create_section_if_missing=true.
-  create_section_if_missing: false  # (o)(x) insert a new SP_Menu_Portail rubrique row
+                               #     Immutable once the page exists.
+  page_name: ""                # (r) full functional label (<=150). MANIFEST ONLY:
+                               #     the Designer persists Libelle = Nom_Page.
+  short_title: ""              # (o) manifest only (no Libelle_Court in the format).
+  title: ""                    # (r) => page.Nom_Page (portal menu title, <=60)
+  description: ""              # (o) manifest only.
+  target_section_code: ""      # (r) => page.Menu_Parent. Must be a Valeur of the
+                               #     SP_Menu_Portail rubrique - absence is an import
+                               #     WARNING (choose/create it before saving).
+  create_section_if_missing: false  # (o)(x) NEVER automated (the import creates no
+                               #     rubrique): true => manual manifest step
+                               #     (create via Zoom_SP_Nouvelle_Section first)
   new_section_label: ""        # (r if create_section_if_missing) rubrique Membre
-  icon: ""                     # (o)(x) => SP_Page.Icone (MUI icon name, e.g. 'Commute')
+  icon: ""                     # (o)(x) => page.Icone (SP_Menu_Icones rubrique value)
   layout_type: standard        # (o) hint only, NOT persisted: standard | wide | compact
                                #     standard : fields default Largeur 3
                                #     wide     : fields default Largeur 6
                                #     compact  : fields default Largeur 2
-  display_order: null          # (o) => SP_Page.Rang (int, default 99)
-  enabled: true                # (o) true  => full publication on first deployment
-                               #     false => metadata deployed as BROUILLON (not visible)
-  freeze_statuses: ""          # (o)(x) => SP_Page.Figer_Statuts (SP4): CSV of statuses
-                               #     freezing the document (default 'SG,RJ,SP,VA').
-                               #     'SS,SG,RJ,SP,VA' freezes on submit (standard pages).
-                               #     NOT editable in the Desktop Designer (UPDATE-safe).
-                               #     See references/comportement-page.md section 5.3.
+  display_order: null          # (o) => page.Rang (int, default 99)
+  enabled: true                # (o) true  => the manifest includes the manual
+                               #     'Publier' step (publication is never automated)
+                               #     false => the page stays BROUILLON
+  freeze_statuses: ""          # [NO-JSON-TARGET] keep "" (Figer_Statuts is not in
+                               #     the import format - json-import-format.md §8)
 
   actions:                     # (o)(x) page action flags
-    save: true                 #   => Act_Enregistrer
-    submit: false              #   => Act_Soumettre (requires workflow.enabled=true)
-    print: false               #   => Act_Imprimer (requires print_model)
-    export: false              #   => Act_Exporter (metadata only in current frontend)
-  print_model: ""              # (o)(x) => Cod_Modele_Edition = Param_Mod_Edition.Cod_Report
+    save: true                 #   => page.Act_Enregistrer
+    submit: false              #   => page.Act_Soumettre (requires workflow.enabled=true)
+    print: false               #   => page.Act_Imprimer (requires print_model)
+    export: false              #   => page.Act_Exporter (metadata only in current frontend)
+  print_model: ""              # (o)(x) => page.Cod_Modele_Edition = Param_Mod_Edition.Cod_Report
   attachments:                 # (o)(x) GED (pieces jointes)
-    enabled: false             #   => GED_Actif (sets Controle_Def_Ecran.PJ at publication)
-    categories: []             #   => GED_Categories (json array of strings)
-    required: false            #   => GED_Obligatoire
+    enabled: false             #   => page.GED_Actif (PJ at publication)
+    categories: []             #   [NO-JSON-TARGET] keep [] (GED_Categories not in format)
+    required: false            #   => page.GED_Obligatoire
   workflow:                    # (o)(x)
-    enabled: false             #   => Workflow_Actif; registers Param_Workflow_Typ_Document
-                               #   NOTE: the signature circuit (Workflow_Signatures*) is
-                               #   NOT generated; configure it post-deploy via the
-                               #   Workflow_Signatures screen (see 004_FKM_Workflow_Signature.sql).
+    enabled: false             #   => page.Workflow_Actif; 'Publier' registers
+                               #   Param_Workflow_Typ_Document. NOTE: the signature
+                               #   circuit (Workflow_Signatures*) is NEVER generated;
+                               #   configure it post-publication.
 
 # -----------------------------------------------------------------------------
 # components: UI fields + structural blocks.
-# component_type whitelist (=> SP_Page_Champ.Typ_Controle):
+# component_type whitelist (=> components[].Typ_Controle):
 #   text->TEXT  memo->MEMO  integer->INT  decimal->DEC  money->MNT
 #   date->DATE  datetime->DATETIME  checkbox->CHECK  radio->RADIO
 #   combo->COMBO  reference_list->RUBRIQUE  zoom->ZOOM
 #   calculated->CALCULE  source->SOURCE  attachments->GED
-#   detail_grid->(structural: creates an SP_Page_Table DET block; children
+#   detail_grid->(structural: creates a sqlStructure[] DET block; children
 #                reference it via target_block)
 # -----------------------------------------------------------------------------
 components:
@@ -95,7 +97,11 @@ components:
     component_type: ""         # (r) whitelist above
     label: ""                  # (r) => Libelle
     target_block: ENT          # (o)(x) ENT or the component_code of a detail_grid
-    column_name: ""            # (o)(x) => Nom_Colonne (default = component_code)
+    column_name: ""            # (o)(x) => Nom_Colonne (default = component_code).
+                               #     EXPLICITLY EMPTY ('') only for calculated/source
+                               #     with persist:false (unstored field, e.g. a grid
+                               #     footer) - and GED (never stored). Technical
+                               #     column names are forbidden.
     layout:
       row: null                # (o) => Ligne   (sort only - flow layout, no absolute position)
       column: null             # (o) => Colonne (sort only)
@@ -104,20 +110,22 @@ components:
       display_order: null      # (o) => Rang (default = position in this list)
     properties:                # (o) type-specific keys (all optional unless noted):
       sql_type: ""             #   nvarchar|int|bigint|float|decimal|bit|date|datetime|smalldatetime
+                               #   default by type: text nvarchar(50) - memo nvarchar(max)
+                               #   integer int - decimal/money decimal(18,2) - date date
+                               #   datetime datetime - checkbox bit - radio/reference_list/
+                               #   zoom/combo nvarchar(50) - persisted calculated decimal(18,2)
+                               #   persisted source nvarchar(100)
       length: null             #   nvarchar length (-1 = max, clamped 1..4000)
       precision: null          #   decimal precision (default 18)
       scale: null              #   decimal scale (default 2)
-      nullable: true           #   physical column nullability (false => DF default added)
+      nullable: true           #   physical column nullability (false => DF default added
+                               #     by the Saving-generated DDL)
       default: ""              #   => Valeur_Defaut; constants or GV_MATRICULE/GV_NOW/GV_LOGIN
       help: ""                 #   => Aide (<=300)
       rubrique: ""             #   (r for radio, reference_list) Param_Rubriques.Nom_Controle
       zoom: ""                 #   (r for zoom, combo) Controle_Def_Zoom.Num_Zoom
-      zoom_return: {}          #   => Zoom_Retour json {"ChampCible":"ColonneZoom"}
-      zoom_condition: ""       #   (o)(x) => Zoom_Condition (SP4, zoom/combo): condition
-                               #     text with {Champ} placeholders replaced by current
-                               #     HEADER values (ex. "Matricule='{Matricule}'").
-                               #     NOT editable in the Desktop Designer (re-save resets
-                               #     it - re-apply the deploy script). sources-metier.md §8.
+      zoom_return: {}          #   [NO-JSON-TARGET] keep {} (Zoom_Retour not in format)
+      zoom_condition: ""       #   [NO-JSON-TARGET] keep "" (Zoom_Condition not in format)
       formula: {}              #   (r for calculated; required mapping for source)
                                #     Declarative AST - FULL spec: references/formules-calculees.md
                                #     operands : {"ref":"Colonne"} (row first, then header),
@@ -131,27 +139,27 @@ components:
                                #       misc   : REF CONST ; MIN/MAX scalar (args) or aggregate
                                #     aggregate: {"op":"SUM|AVG|MIN|MAX|COUNT","table":"LIGNES","colonne":"Mnt"}
                                #     source mapping: {"source":"<code>","mapping":{"Param":{"ref":"Colonne"}}}
-                               #     Semantics: num() coercion (NaN->0), smart compare, safe
-                               #     division (DIVSAFE), naive-clock dates - see the reference.
       persist: false           #   (calculated/source) physical column created when true
-                               #     (requires column_name; a footer grid total = detail block
-                               #      + empty column_name + persist false - formules-calculees.md §10)
-      recalc_save: true        #   => Recalc_Save (persisted ENT source fields: server
-                               #     re-executes the source at save when true)
+                               #     (requires a column name; a footer grid total = detail
+                               #      block + empty column_name + persist false - the official
+                               #      Pied_* pattern, formules-calculees.md §10)
+      recalc_save: true        #   [NO-JSON-TARGET] keep true (Recalc_Save not in format)
       format: ""               #   => Format_Affichage: ''|MNT|NUM|PCT|DAT|DTM
       decimals: null           #   => Decimales
-      visibility_rule: {}      #   => Regle_Visibilite (declarative condition AST -
-                               #     re-evaluated on every input; eval exception => visible)
-      activation_rule: {}      #   => Regle_Activation (same; exception => enabled)
+      visibility_rule: {}      #   [NO-JSON-TARGET] keep {} (Regle_Visibilite not in format)
+      activation_rule: {}      #   [NO-JSON-TARGET] keep {} (Regle_Activation not in format)
       visible_in_grid: true    #   => Visible_Grille
       grid_order: null         #   => Rang_Grille (default = display_order)
       grid_width_em: null      #   => Largeur_Colonne (em)
-      grid_total: ""           #   => Total_Grille: ''|SUM|AVG|MIN|MAX|COUNT
+      grid_total: ""           #   [REMOVED] the Total_Grille column was DROPPED by
+                               #     migration 005. Use a footer calculated field:
+                               #     calculated + target_block=<grid> + column_name:''
+                               #     + persist:false + formula {"op":"SUM","table":...}.
       is_criteria: false       #   => estCritere (ENT fields only; not for
                                #     calculated/source/attachments/checkbox/radio)
       criteria_order: null     #   => Rang_Critere (r if is_criteria)
-      indexed: false           #   => estIndexe (creates IX_<table>_<col>)
-      unique: false            #   => estUnique (creates UX_<table>_<col>)
+      indexed: false           #   => estIndexe (Saving DDL creates IX_<table>_<col>)
+      unique: false            #   => estUnique (Saving DDL creates UX_<table>_<col>)
       # detail_grid only:
       allow_add: true          #   => Allow_Add
       allow_edit: true         #   => Allow_Edit
@@ -160,10 +168,10 @@ components:
       delete_rule: CASCADE     #   => Regle_Suppression: CASCADE|RESTRICT
       default_sort: ""         #   => Tri_Defaut (e.g. 'Dat_Jour asc') - validated names only
       # detail_grid VIRTUAL (SP4) - read-only grid fed by a TABLE source, no
-      # physical table (SP_<doc>_Virt_<code>); allow_* forced false.
+      # physical table; allow_* forced false; logical columns still declared.
       # Full contract: references/sources-metier.md section 6.
-      data_source_code: ""     #   => SP_Page_Table.Source_Metier (source return_type MUST be table)
-      source_mapping: {}       #   => SP_Page_Table.Source_Mapping json
+      data_source_code: ""     #   => table.Source_Metier (source return_type MUST be table)
+      source_mapping: {}       #   => table.Source_Mapping json
                                #     {"Param":{"ref":"HeaderCol"} | {"const":"…"}}
                                #     (every required source parameter must be fed)
     required: false            # (o) => Obligatoire (display-only marker: ALWAYS pair with
@@ -172,7 +180,7 @@ components:
     editable: true             # (o)   visible+editable        => 'S'
                                #       visible+not editable    => 'R' ('A' for calculated/source)
                                #       not visible             => 'I'
-    data_source_code: ""       # (r for source) => Source_Metier = SP_Page_Source.Cod_Source
+    data_source_code: ""       # (r for source) => Source_Metier = Controle_Designer_Source.Cod_Source
                                #   (may reference a data_sources[] entry of this input
                                #    or a pre-existing catalog source)
     validations: []            # (o) field-level validation specs, see page_validations
@@ -204,8 +212,7 @@ page_validations: []
 #                            #     failure blocks too when B)
 #    moment: SAVE             # (o) => Moment: SAISIE|CHANGE|AJOUT_LIGNE|SAVE - CLIENT-side
 #                            #     comfort filter only: the server re-runs EVERY active rule
-#                            #     at save (SAVE replays all but SAISIE; CHANGE replays only
-#                            #     the rules of the changed field)
+#                            #     at save
 #    active: true             # (o) => Actif
 # (component-level validations[] accept the same shape; scope is implied:
 #  CHAMP for ENT fields, LIGNE for detail_grid children.)
@@ -213,7 +220,9 @@ page_validations: []
 # -----------------------------------------------------------------------------
 # Full source model (guard rules, parameter auto-injection, the 3 usages):
 # references/sources-metier.md.
-data_sources: []               # (o) => SP_Page_Source rows (read-only catalog)
+data_sources: []               # (o) => businessSources[] (read-only catalog,
+                               #     upserted by Saving; include only sources the
+                               #     page references - mirror of the export)
 #  - data_source_code: ""      # (r) => Cod_Source
 #    label: ""                 # (r)(x) => Libelle
 #    source_type: sql          # (r) sql|proc => Typ_Source SQL|PROC
@@ -242,10 +251,13 @@ data_sources: []               # (o) => SP_Page_Source rows (read-only catalog)
 # -----------------------------------------------------------------------------
 access_control:
   default_policy: deny         # (r) deny | open_read
-                               #     deny      => Acces_Personnalise='true' (rights from roles only)
-                               #     open_read => Acces_Personnalise='false' (consult open to all)
+                               #     deny      => page.Acces_Personnalise=true (creation only)
+                               #     open_read => page.Acces_Personnalise=false
   roles: []                    # (r when default_policy=deny: >=1 role with view:true)
-#  - role_code: ""             # (r) => SP_Page_Droit.Cod_Profile (must exist in Controle_Profile)
+                               #     NEVER in the file (metadata.habilitations="EXCLUES"):
+                               #     they become a MANUAL manifest step (Habilitations tab;
+                               #     preserved on update).
+#  - role_code: ""             # (r) => Controle_Designer_Droit.Cod_Profile (must exist in Controle_Profile)
 #    permissions:
 #      view: true              # (r) => Consulter
 #      create: false           # (o) => Creer
@@ -258,11 +270,12 @@ access_control:
 # -----------------------------------------------------------------------------
 deployment:
   update_if_exists: false      # (r) explicit authorization to modify an existing page.
-                               #     false + page exists => blocking error.
+                               #     operation=update without true => blocking error.
+                               #     (The import auto-detects create/update from Cod_Page;
+                               #      this flag is the upstream authorization.)
   expected_schema_version: SP4 # (r) SP1|SP2|SP3|SP4 (references/environment-discovery.md)
-                               #     SP4 (current repo state) = 005/006: Figer_Statuts,
-                               #     Zoom_Condition, Total_Grille, Source_Metier/_Mapping
-                               #     (virtual details). Required when the input uses them.
+                               #     SP4 (current repo state) required for virtual detail
+                               #     grids (Controle_Designer_Table.Source_Metier/_Mapping).
   use_feature_flag: false      # [UNSUPPORTED] must stay false: RHP has no feature-flag
                                #     mechanism (verified absence). The native equivalent is
                                #     the Statut_Page lifecycle (page.enabled).

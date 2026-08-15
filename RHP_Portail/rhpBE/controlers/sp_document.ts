@@ -2,7 +2,7 @@
    Module SP_ - Endpoints d'exécution des pages dynamiques du portail
    ----------------------------------------------------------------------------
    Le client n'envoie JAMAIS de nom de table/colonne : seulement Cod_Page et
-   des données. Tout est résolu depuis les métadonnées publiées (SP_Page*).
+   des données. Tout est résolu depuis les métadonnées publiées (Controle_Designer*).
    ============================================================================ */
 import { Request, Response } from "express";
 import sql from "mssql";
@@ -47,11 +47,11 @@ export async function sp_menu_portail(req: Request, res: Response) {
   const { codProfile } = req.params;
   const rsl = await lireSql(
     `select p.Cod_Page, p.Nom_Page, p.Menu_Parent, p.Rang, p.Icone
-     from SP_Page p
+     from Controle_Designer p
      where p.Statut_Page='PUBLIE'
        and ( @p_pr = '1'
               or isnull(p.Acces_Personnalise,'true')='false'   -- consultation ouverte à tous
-              or exists (select 1 from SP_Page_Droit d
+              or exists (select 1 from Controle_Designer_Droit d
                          where d.Cod_Page=p.Cod_Page and d.Cod_Profile=@p_pr
                            and isnull(d.Consulter,'false')='true') )
      order by p.Menu_Parent, p.Rang`,
@@ -75,11 +75,11 @@ export async function sp_menu_portail(req: Request, res: Response) {
     `select r.Valeur, r.Membre, r.Rang, isnull(r.Champs02,'') as Icone
      from Param_Rubriques r
      where r.Nom_Controle='SP_Menu_Portail'
-       and exists (select 1 from SP_Page p
+       and exists (select 1 from Controle_Designer p
                    where p.Menu_Parent = r.Valeur and p.Statut_Page='PUBLIE'
                      and ( @p_pr = '1'
                            or isnull(p.Acces_Personnalise,'true')='false'
-                           or exists (select 1 from SP_Page_Droit d
+                           or exists (select 1 from Controle_Designer_Droit d
                                       where d.Cod_Page=p.Cod_Page and d.Cod_Profile=@p_pr
                                         and isnull(d.Consulter,'false')='true') ))
      order by r.Rang, r.Membre`,

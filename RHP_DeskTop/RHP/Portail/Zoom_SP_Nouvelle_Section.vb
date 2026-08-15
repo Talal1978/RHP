@@ -359,7 +359,7 @@ Public Class Zoom_SP_Nouvelle_Section
                            "Suppression", MessageBoxButtons.OK, msgIcon.Stop)
             Return
         End If
-        Dim nbPages As Integer = CInt(Val(IsNull(DATA_READER_GRD("select count(*) from SP_Page where Menu_Parent=" & SqlV(cod)).Rows(0)(0), "0").ToString()))
+        Dim nbPages As Integer = CInt(Val(IsNull(DATA_READER_GRD("select count(*) from Controle_Designer where Menu_Parent=" & SqlV(cod)).Rows(0)(0), "0").ToString()))
         If nbPages > 0 Then
             ShowMessageBox("La section '" & nom & "' est utilisée par " & nbPages & " page(s) : déplacez-les d'abord vers une autre section.",
                            "Suppression", MessageBoxButtons.OK, msgIcon.Stop)

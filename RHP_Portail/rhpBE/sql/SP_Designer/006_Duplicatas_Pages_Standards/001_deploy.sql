@@ -44,19 +44,19 @@ BEGIN TRY
    1. Preconditions bloquantes
    -------------------------------------------------------------------------- */
     -- 1.a Niveau de schema SP_ attendu : SP3
-    IF OBJECT_ID('dbo.SP_Page', 'U') IS NULL
+    IF OBJECT_ID('dbo.Controle_Designer', 'U') IS NULL
         RAISERROR('SP_ metadata absentes : executer 001_SP_Designer_Metadata.sql d''abord.', 16, 1);
-    IF COL_LENGTH('dbo.SP_Page', 'Acces_Personnalise') IS NULL
-        RAISERROR('Niveau SP2 requis : colonne SP_Page.Acces_Personnalise absente.', 16, 1);
-    IF COL_LENGTH('dbo.SP_Page_Champ', 'estCritere') IS NULL
-        RAISERROR('Niveau SP3 requis : colonne SP_Page_Champ.estCritere absente.', 16, 1);
-    IF COL_LENGTH('dbo.SP_Page', 'Figer_Statuts') IS NULL
-       OR COL_LENGTH('dbo.SP_Page_Table', 'Source_Metier') IS NULL
-       OR COL_LENGTH('dbo.SP_Page_Champ', 'Zoom_Condition') IS NULL
+    IF COL_LENGTH('dbo.Controle_Designer', 'Acces_Personnalise') IS NULL
+        RAISERROR('Niveau SP2 requis : colonne Controle_Designer.Acces_Personnalise absente.', 16, 1);
+    IF COL_LENGTH('dbo.Controle_Designer_Champ', 'estCritere') IS NULL
+        RAISERROR('Niveau SP3 requis : colonne Controle_Designer_Champ.estCritere absente.', 16, 1);
+    IF COL_LENGTH('dbo.Controle_Designer', 'Figer_Statuts') IS NULL
+       OR COL_LENGTH('dbo.Controle_Designer_Table', 'Source_Metier') IS NULL
+       OR COL_LENGTH('dbo.Controle_Designer_Champ', 'Zoom_Condition') IS NULL
         RAISERROR('Niveau SP4 requis : executer 006_SP_Designer_Evolutions.sql d''abord.', 16, 1);
 
     -- 1.b Cod_Document non utilise par une AUTRE page
-    IF EXISTS (SELECT 1 FROM dbo.SP_Page
+    IF EXISTS (SELECT 1 FROM dbo.Controle_Designer
                WHERE Cod_Document IN ('XCG','XNF','XAT','XDM','XAV','XDP')
                  AND Cod_Page NOT IN ('DUP_CONGE','DUP_NOTE_FRAIS','DUP_DECLARATION_AT',
                                       'DUP_DOSSIER_MALADIE','DUP_AVANCE','DUP_PRET'))
@@ -116,14 +116,14 @@ BEGIN TRY
     END
 
 /* --------------------------------------------------------------------------
-   3. Sources metier (catalogue partage SP_Page_Source : insertion si absente,
+   3. Sources metier (catalogue partage Controle_Designer_Source : insertion si absente,
       jamais d'ecrasement). Lectures seules parametrees ; @id_Societe est
       injecte par le serveur (jamais declare).
       Convention dates : les parametres date arrivent en chaine ISO ; le canon
       "+ 12 h" retablit la lecture d'horloge locale quel que soit le fuseau.
    -------------------------------------------------------------------------- */
-    IF NOT EXISTS (SELECT 1 FROM dbo.SP_Page_Source WHERE Cod_Source = 'sp_solde_conge_date')
-        INSERT INTO dbo.SP_Page_Source (Cod_Source, Libelle, Typ_Source, Code_Sql, Parametres, Typ_Retour, Cod_Profile, Actif, Dat_Crea, Created_By)
+    IF NOT EXISTS (SELECT 1 FROM dbo.Controle_Designer_Source WHERE Cod_Source = 'sp_solde_conge_date')
+        INSERT INTO dbo.Controle_Designer_Source (Cod_Source, Libelle, Typ_Source, Code_Sql, Parametres, Typ_Retour, Cod_Profile, Actif, Dat_Crea, Created_By)
         VALUES ('sp_solde_conge_date', N'Solde de congé de l''agent à une date (miroir get_conge_droits)', 'SQL',
                 N'select isnull(min(c.Solde_Conge), 0) as Solde_Conge
 from (select convert(date, dateadd(hour, 12, convert(datetimeoffset, @DatRef))) as DatRef) d
@@ -132,16 +132,16 @@ where c.Matricule = @Matricule',
                 '[{"Nom":"Matricule","Typ":"nvarchar","Obligatoire":true},{"Nom":"DatRef","Typ":"nvarchar","Obligatoire":true}]',
                 'SCALAIRE', '', 'true', GETDATE(), @Login);
 
-    IF NOT EXISTS (SELECT 1 FROM dbo.SP_Page_Source WHERE Cod_Source = 'sp_cng_periode_cloturee')
-        INSERT INTO dbo.SP_Page_Source (Cod_Source, Libelle, Typ_Source, Code_Sql, Parametres, Typ_Retour, Cod_Profile, Actif, Dat_Crea, Created_By)
+    IF NOT EXISTS (SELECT 1 FROM dbo.Controle_Designer_Source WHERE Cod_Source = 'sp_cng_periode_cloturee')
+        INSERT INTO dbo.Controle_Designer_Source (Cod_Source, Libelle, Typ_Source, Code_Sql, Parametres, Typ_Retour, Cod_Profile, Actif, Dat_Crea, Created_By)
         VALUES ('sp_cng_periode_cloturee', N'Contrôle période de paie clôturée (miroir save_demande_conge)', 'SQL',
                 N'select isnull(dbo.Sys_Conge_CheckPeriode(@id_Societe, d.Deb, d.Deb), 0) as nb
 from (select convert(smalldatetime, dateadd(hour, 12, convert(datetimeoffset, @Deb))) as Deb) d',
                 '[{"Nom":"Deb","Typ":"nvarchar","Obligatoire":true}]',
                 'SCALAIRE', '', 'true', GETDATE(), @Login);
 
-    IF NOT EXISTS (SELECT 1 FROM dbo.SP_Page_Source WHERE Cod_Source = 'sp_cng_controle_paie')
-        INSERT INTO dbo.SP_Page_Source (Cod_Source, Libelle, Typ_Source, Code_Sql, Parametres, Typ_Retour, Cod_Profile, Actif, Dat_Crea, Created_By)
+    IF NOT EXISTS (SELECT 1 FROM dbo.Controle_Designer_Source WHERE Cod_Source = 'sp_cng_controle_paie')
+        INSERT INTO dbo.Controle_Designer_Source (Cod_Source, Libelle, Typ_Source, Code_Sql, Parametres, Typ_Retour, Cod_Profile, Actif, Dat_Crea, Created_By)
         VALUES ('sp_cng_controle_paie', N'Contrôle "congé postérieur à la dernière paie" (miroir save_demande_conge)', 'SQL',
                 N'select case
   when (select top 1 Valeur from dbo.Param_General where Cod_Param = ''Autoriser_SaisieCongeApresPaie'') = ''O'' then 1
@@ -158,8 +158,8 @@ outer apply (select top 1 pp.DatDernierePaie
                 '[{"Nom":"Matricule","Typ":"nvarchar","Obligatoire":true},{"Nom":"Deb","Typ":"nvarchar","Obligatoire":true}]',
                 'SCALAIRE', '', 'true', GETDATE(), @Login);
 
-    IF NOT EXISTS (SELECT 1 FROM dbo.SP_Page_Source WHERE Cod_Source = 'sp_cng_repos')
-        INSERT INTO dbo.SP_Page_Source (Cod_Source, Libelle, Typ_Source, Code_Sql, Parametres, Typ_Retour, Cod_Profile, Actif, Dat_Crea, Created_By)
+    IF NOT EXISTS (SELECT 1 FROM dbo.Controle_Designer_Source WHERE Cod_Source = 'sp_cng_repos')
+        INSERT INTO dbo.Controle_Designer_Source (Cod_Source, Libelle, Typ_Source, Code_Sql, Parametres, Typ_Retour, Cod_Profile, Actif, Dat_Crea, Created_By)
         VALUES ('sp_cng_repos', N'Nombre de jours de repos hebdomadaire sur la période (miroir calcul_conge)', 'SQL',
                 N'with d as (
   select convert(date, dateadd(hour, 12, convert(datetimeoffset, @Deb))) as Deb,
@@ -184,8 +184,8 @@ option (maxrecursion 0)',
                 '[{"Nom":"Deb","Typ":"nvarchar","Obligatoire":true},{"Nom":"Fin","Typ":"nvarchar","Obligatoire":true},{"Nom":"Typ","Typ":"nvarchar","Obligatoire":false}]',
                 'SCALAIRE', '', 'true', GETDATE(), @Login);
 
-    IF NOT EXISTS (SELECT 1 FROM dbo.SP_Page_Source WHERE Cod_Source = 'sp_cng_feries')
-        INSERT INTO dbo.SP_Page_Source (Cod_Source, Libelle, Typ_Source, Code_Sql, Parametres, Typ_Retour, Cod_Profile, Actif, Dat_Crea, Created_By)
+    IF NOT EXISTS (SELECT 1 FROM dbo.Controle_Designer_Source WHERE Cod_Source = 'sp_cng_feries')
+        INSERT INTO dbo.Controle_Designer_Source (Cod_Source, Libelle, Typ_Source, Code_Sql, Parametres, Typ_Retour, Cod_Profile, Actif, Dat_Crea, Created_By)
         VALUES ('sp_cng_feries', N'Nombre de jours fériés (hors repos) sur la période (miroir calcul_conge)', 'SQL',
                 N'with d as (
   select convert(date, dateadd(hour, 12, convert(datetimeoffset, @Deb))) as Deb,
@@ -223,8 +223,8 @@ option (maxrecursion 0)',
                 '[{"Nom":"Deb","Typ":"nvarchar","Obligatoire":true},{"Nom":"Fin","Typ":"nvarchar","Obligatoire":true},{"Nom":"Typ","Typ":"nvarchar","Obligatoire":false}]',
                 'SCALAIRE', '', 'true', GETDATE(), @Login);
 
-    IF NOT EXISTS (SELECT 1 FROM dbo.SP_Page_Source WHERE Cod_Source = 'sp_cng_duree')
-        INSERT INTO dbo.SP_Page_Source (Cod_Source, Libelle, Typ_Source, Code_Sql, Parametres, Typ_Retour, Cod_Profile, Actif, Dat_Crea, Created_By)
+    IF NOT EXISTS (SELECT 1 FROM dbo.Controle_Designer_Source WHERE Cod_Source = 'sp_cng_duree')
+        INSERT INTO dbo.Controle_Designer_Source (Cod_Source, Libelle, Typ_Source, Code_Sql, Parametres, Typ_Retour, Cod_Profile, Actif, Dat_Crea, Created_By)
         VALUES ('sp_cng_duree', N'Durée de congé à déduire (miroir calcul_conge : globale - repos - fériés)', 'SQL',
                 N'with d as (
   select convert(date, dateadd(hour, 12, convert(datetimeoffset, @Deb))) as Deb,
@@ -269,8 +269,8 @@ option (maxrecursion 0)',
                 '[{"Nom":"Deb","Typ":"nvarchar","Obligatoire":true},{"Nom":"Fin","Typ":"nvarchar","Obligatoire":true},{"Nom":"DebPm","Typ":"nvarchar","Obligatoire":false},{"Nom":"FinPm","Typ":"nvarchar","Obligatoire":false},{"Nom":"Typ","Typ":"nvarchar","Obligatoire":false}]',
                 'SCALAIRE', '', 'true', GETDATE(), @Login);
 
-    IF NOT EXISTS (SELECT 1 FROM dbo.SP_Page_Source WHERE Cod_Source = 'sp_avances_encours')
-        INSERT INTO dbo.SP_Page_Source (Cod_Source, Libelle, Typ_Source, Code_Sql, Parametres, Typ_Retour, Cod_Profile, Actif, Dat_Crea, Created_By)
+    IF NOT EXISTS (SELECT 1 FROM dbo.Controle_Designer_Source WHERE Cod_Source = 'sp_avances_encours')
+        INSERT INTO dbo.Controle_Designer_Source (Cod_Source, Libelle, Typ_Source, Code_Sql, Parametres, Typ_Retour, Cod_Profile, Actif, Dat_Crea, Created_By)
         VALUES ('sp_avances_encours', N'Montant des avances en cours de l''agent (miroir get_mnt_avances_encours)', 'SQL',
                 N'select isnull(sum(isnull(Montant_Avance, 0) - isnull(Reglement, 0)), 0) as mnt
 from dbo.RH_Paie_Avance
@@ -278,8 +278,8 @@ where id_Societe = @id_Societe and Matricule = @Matricule',
                 '[{"Nom":"Matricule","Typ":"nvarchar","Obligatoire":true}]',
                 'SCALAIRE', '', 'true', GETDATE(), @Login);
 
-    IF NOT EXISTS (SELECT 1 FROM dbo.SP_Page_Source WHERE Cod_Source = 'sp_prets_encours')
-        INSERT INTO dbo.SP_Page_Source (Cod_Source, Libelle, Typ_Source, Code_Sql, Parametres, Typ_Retour, Cod_Profile, Actif, Dat_Crea, Created_By)
+    IF NOT EXISTS (SELECT 1 FROM dbo.Controle_Designer_Source WHERE Cod_Source = 'sp_prets_encours')
+        INSERT INTO dbo.Controle_Designer_Source (Cod_Source, Libelle, Typ_Source, Code_Sql, Parametres, Typ_Retour, Cod_Profile, Actif, Dat_Crea, Created_By)
         VALUES ('sp_prets_encours', N'Montant des prêts en cours de l''agent (miroir get_mnt_prets_encours)', 'SQL',
                 N'select isnull(sum(isnull(Montant_Pret, 0) - isnull(Reglement, 0)), 0) as mnt
 from dbo.RH_Pret_Demande
@@ -287,8 +287,8 @@ where id_Societe = @id_Societe and Matricule = @Matricule',
                 '[{"Nom":"Matricule","Typ":"nvarchar","Obligatoire":true}]',
                 'SCALAIRE', '', 'true', GETDATE(), @Login);
 
-    IF NOT EXISTS (SELECT 1 FROM dbo.SP_Page_Source WHERE Cod_Source = 'sp_dernier_salaire_av')
-        INSERT INTO dbo.SP_Page_Source (Cod_Source, Libelle, Typ_Source, Code_Sql, Parametres, Typ_Retour, Cod_Profile, Actif, Dat_Crea, Created_By)
+    IF NOT EXISTS (SELECT 1 FROM dbo.Controle_Designer_Source WHERE Cod_Source = 'sp_dernier_salaire_av')
+        INSERT INTO dbo.Controle_Designer_Source (Cod_Source, Libelle, Typ_Source, Code_Sql, Parametres, Typ_Retour, Cod_Profile, Actif, Dat_Crea, Created_By)
         VALUES ('sp_dernier_salaire_av', N'Dernier salaire net (rubriques SalNet+Avance du plan de paie)', 'SQL',
                 N'select isnull(sn.DernierSalaire, 0) as dernier_salaire
 from dbo.RH_Agent a
@@ -307,8 +307,8 @@ where a.id_Societe = @id_Societe and a.Matricule = @Matricule',
                 '[{"Nom":"Matricule","Typ":"nvarchar","Obligatoire":true}]',
                 'SCALAIRE', '', 'true', GETDATE(), @Login);
 
-    IF NOT EXISTS (SELECT 1 FROM dbo.SP_Page_Source WHERE Cod_Source = 'sp_dernier_salaire_pr')
-        INSERT INTO dbo.SP_Page_Source (Cod_Source, Libelle, Typ_Source, Code_Sql, Parametres, Typ_Retour, Cod_Profile, Actif, Dat_Crea, Created_By)
+    IF NOT EXISTS (SELECT 1 FROM dbo.Controle_Designer_Source WHERE Cod_Source = 'sp_dernier_salaire_pr')
+        INSERT INTO dbo.Controle_Designer_Source (Cod_Source, Libelle, Typ_Source, Code_Sql, Parametres, Typ_Retour, Cod_Profile, Actif, Dat_Crea, Created_By)
         VALUES ('sp_dernier_salaire_pr', N'Dernier salaire net (rubriques SalNet+Pret du plan de paie)', 'SQL',
                 N'select isnull(sn.DernierSalaire, 0) as dernier_salaire
 from dbo.RH_Agent a
@@ -329,8 +329,8 @@ where a.id_Societe = @id_Societe and a.Matricule = @Matricule',
 
     -- Controle d'appartenance : @Matricule (utilisateur connecte) est injecte par
     -- le moteur ; @Doc_Matricule est mappe depuis le champ Matricule du document.
-    IF NOT EXISTS (SELECT 1 FROM dbo.SP_Page_Source WHERE Cod_Source = 'sp_check_proprietaire')
-        INSERT INTO dbo.SP_Page_Source (Cod_Source, Libelle, Typ_Source, Code_Sql, Parametres, Typ_Retour, Cod_Profile, Actif, Dat_Crea, Created_By)
+    IF NOT EXISTS (SELECT 1 FROM dbo.Controle_Designer_Source WHERE Cod_Source = 'sp_check_proprietaire')
+        INSERT INTO dbo.Controle_Designer_Source (Cod_Source, Libelle, Typ_Source, Code_Sql, Parametres, Typ_Retour, Cod_Profile, Actif, Dat_Crea, Created_By)
         VALUES ('sp_check_proprietaire', N'Contrôle "document de l''agent connecté" (miroir contrôle client des pages standards)', 'SQL',
                 N'select case when @Doc_Matricule = @Matricule then 1 else 0 end as ok',
                 '[{"Nom":"Doc_Matricule","Typ":"nvarchar","Obligatoire":true}]',
@@ -339,8 +339,8 @@ where a.id_Societe = @id_Societe and a.Matricule = @Matricule',
     -- Chevauchement de conges : miroir exact de dbo.Sys_Conge_Check, sur la table
     -- du duplicata, AVEC exclusion du document courant (@Num_Doc expose aux
     -- validations depuis le niveau SP4). Statut 'RJ' (rejete) ignore.
-    IF NOT EXISTS (SELECT 1 FROM dbo.SP_Page_Source WHERE Cod_Source = 'sp_cng_chevauchement')
-        INSERT INTO dbo.SP_Page_Source (Cod_Source, Libelle, Typ_Source, Code_Sql, Parametres, Typ_Retour, Cod_Profile, Actif, Dat_Crea, Created_By)
+    IF NOT EXISTS (SELECT 1 FROM dbo.Controle_Designer_Source WHERE Cod_Source = 'sp_cng_chevauchement')
+        INSERT INTO dbo.Controle_Designer_Source (Cod_Source, Libelle, Typ_Source, Code_Sql, Parametres, Typ_Retour, Cod_Profile, Actif, Dat_Crea, Created_By)
         VALUES ('sp_cng_chevauchement', N'Contrôle de chevauchement des congés (miroir Sys_Conge_Check, document courant exclu)', 'SQL',
                 N'with d as (
   select convert(date, dateadd(hour, 12, convert(datetimeoffset, @Deb))) as Deb,
@@ -363,8 +363,8 @@ where c.id_Societe = @id_Societe
     -- du backend standard (demande_conge.ts) : bornes de periodes calées sur le
     -- JourPaie du plan de paie de l''agent, demi-journees AM/PM, repos hebdo de la
     -- societe et jours feries. Retour TABLE (detail virtuel, lecture seule).
-    IF NOT EXISTS (SELECT 1 FROM dbo.SP_Page_Source WHERE Cod_Source = 'sp_cng_detail')
-        INSERT INTO dbo.SP_Page_Source (Cod_Source, Libelle, Typ_Source, Code_Sql, Parametres, Typ_Retour, Cod_Profile, Actif, Dat_Crea, Created_By)
+    IF NOT EXISTS (SELECT 1 FROM dbo.Controle_Designer_Source WHERE Cod_Source = 'sp_cng_detail')
+        INSERT INTO dbo.Controle_Designer_Source (Cod_Source, Libelle, Typ_Source, Code_Sql, Parametres, Typ_Retour, Cod_Profile, Actif, Dat_Crea, Created_By)
         VALUES ('sp_cng_detail', N'Découpe du congé par période de paie (miroir calcul_conge, grille de détail)', 'SQL',
                 N'with d as (
   select convert(date, dateadd(hour, 12, convert(datetimeoffset, @Deb))) as Deb,
@@ -453,30 +453,30 @@ option (maxrecursion 0)',
                 'TABLE', '', 'true', GETDATE(), @Login);
 
     -- Rafraichissement des libelles des nouvelles sources
-    UPDATE dbo.SP_Page_Source SET Libelle = N'Contrôle "document de l''agent connecté" (miroir contrôle client des pages standards)', Dat_Modif = GETDATE(), Modified_By = @Login WHERE Cod_Source = 'sp_check_proprietaire';
-    UPDATE dbo.SP_Page_Source SET Libelle = N'Contrôle de chevauchement des congés (miroir Sys_Conge_Check, document courant exclu)', Dat_Modif = GETDATE(), Modified_By = @Login WHERE Cod_Source = 'sp_cng_chevauchement';
-    UPDATE dbo.SP_Page_Source SET Libelle = N'Découpe du congé par période de paie (miroir calcul_conge, grille de détail)', Dat_Modif = GETDATE(), Modified_By = @Login WHERE Cod_Source = 'sp_cng_detail';
+    UPDATE dbo.Controle_Designer_Source SET Libelle = N'Contrôle "document de l''agent connecté" (miroir contrôle client des pages standards)', Dat_Modif = GETDATE(), Modified_By = @Login WHERE Cod_Source = 'sp_check_proprietaire';
+    UPDATE dbo.Controle_Designer_Source SET Libelle = N'Contrôle de chevauchement des congés (miroir Sys_Conge_Check, document courant exclu)', Dat_Modif = GETDATE(), Modified_By = @Login WHERE Cod_Source = 'sp_cng_chevauchement';
+    UPDATE dbo.Controle_Designer_Source SET Libelle = N'Découpe du congé par période de paie (miroir calcul_conge, grille de détail)', Dat_Modif = GETDATE(), Modified_By = @Login WHERE Cod_Source = 'sp_cng_detail';
 
     -- Rafraichissement des libelles des sources du package (le SQL metier
     -- (Code_Sql/Parametres) n'est JAMAIS ecrase : seul le libelle est realigne)
-    UPDATE dbo.SP_Page_Source SET Libelle = N'Solde de congé de l''agent à une date (miroir get_conge_droits)', Dat_Modif = GETDATE(), Modified_By = @Login WHERE Cod_Source = 'sp_solde_conge_date';
-    UPDATE dbo.SP_Page_Source SET Libelle = N'Contrôle période de paie clôturée (miroir save_demande_conge)', Dat_Modif = GETDATE(), Modified_By = @Login WHERE Cod_Source = 'sp_cng_periode_cloturee';
-    UPDATE dbo.SP_Page_Source SET Libelle = N'Contrôle "congé postérieur à la dernière paie" (miroir save_demande_conge)', Dat_Modif = GETDATE(), Modified_By = @Login WHERE Cod_Source = 'sp_cng_controle_paie';
-    UPDATE dbo.SP_Page_Source SET Libelle = N'Nombre de jours de repos hebdomadaire sur la période (miroir calcul_conge)', Dat_Modif = GETDATE(), Modified_By = @Login WHERE Cod_Source = 'sp_cng_repos';
-    UPDATE dbo.SP_Page_Source SET Libelle = N'Nombre de jours fériés (hors repos) sur la période (miroir calcul_conge)', Dat_Modif = GETDATE(), Modified_By = @Login WHERE Cod_Source = 'sp_cng_feries';
-    UPDATE dbo.SP_Page_Source SET Libelle = N'Durée de congé à déduire (miroir calcul_conge : globale - repos - fériés)', Dat_Modif = GETDATE(), Modified_By = @Login WHERE Cod_Source = 'sp_cng_duree';
-    UPDATE dbo.SP_Page_Source SET Libelle = N'Montant des avances en cours de l''agent (miroir get_mnt_avances_encours)', Dat_Modif = GETDATE(), Modified_By = @Login WHERE Cod_Source = 'sp_avances_encours';
-    UPDATE dbo.SP_Page_Source SET Libelle = N'Montant des prêts en cours de l''agent (miroir get_mnt_prets_encours)', Dat_Modif = GETDATE(), Modified_By = @Login WHERE Cod_Source = 'sp_prets_encours';
-    UPDATE dbo.SP_Page_Source SET Libelle = N'Dernier salaire net (rubriques SalNet+Avance du plan de paie)', Dat_Modif = GETDATE(), Modified_By = @Login WHERE Cod_Source = 'sp_dernier_salaire_av';
-    UPDATE dbo.SP_Page_Source SET Libelle = N'Dernier salaire net (rubriques SalNet+Pret du plan de paie)', Dat_Modif = GETDATE(), Modified_By = @Login WHERE Cod_Source = 'sp_dernier_salaire_pr';
+    UPDATE dbo.Controle_Designer_Source SET Libelle = N'Solde de congé de l''agent à une date (miroir get_conge_droits)', Dat_Modif = GETDATE(), Modified_By = @Login WHERE Cod_Source = 'sp_solde_conge_date';
+    UPDATE dbo.Controle_Designer_Source SET Libelle = N'Contrôle période de paie clôturée (miroir save_demande_conge)', Dat_Modif = GETDATE(), Modified_By = @Login WHERE Cod_Source = 'sp_cng_periode_cloturee';
+    UPDATE dbo.Controle_Designer_Source SET Libelle = N'Contrôle "congé postérieur à la dernière paie" (miroir save_demande_conge)', Dat_Modif = GETDATE(), Modified_By = @Login WHERE Cod_Source = 'sp_cng_controle_paie';
+    UPDATE dbo.Controle_Designer_Source SET Libelle = N'Nombre de jours de repos hebdomadaire sur la période (miroir calcul_conge)', Dat_Modif = GETDATE(), Modified_By = @Login WHERE Cod_Source = 'sp_cng_repos';
+    UPDATE dbo.Controle_Designer_Source SET Libelle = N'Nombre de jours fériés (hors repos) sur la période (miroir calcul_conge)', Dat_Modif = GETDATE(), Modified_By = @Login WHERE Cod_Source = 'sp_cng_feries';
+    UPDATE dbo.Controle_Designer_Source SET Libelle = N'Durée de congé à déduire (miroir calcul_conge : globale - repos - fériés)', Dat_Modif = GETDATE(), Modified_By = @Login WHERE Cod_Source = 'sp_cng_duree';
+    UPDATE dbo.Controle_Designer_Source SET Libelle = N'Montant des avances en cours de l''agent (miroir get_mnt_avances_encours)', Dat_Modif = GETDATE(), Modified_By = @Login WHERE Cod_Source = 'sp_avances_encours';
+    UPDATE dbo.Controle_Designer_Source SET Libelle = N'Montant des prêts en cours de l''agent (miroir get_mnt_prets_encours)', Dat_Modif = GETDATE(), Modified_By = @Login WHERE Cod_Source = 'sp_prets_encours';
+    UPDATE dbo.Controle_Designer_Source SET Libelle = N'Dernier salaire net (rubriques SalNet+Avance du plan de paie)', Dat_Modif = GETDATE(), Modified_By = @Login WHERE Cod_Source = 'sp_dernier_salaire_av';
+    UPDATE dbo.Controle_Designer_Source SET Libelle = N'Dernier salaire net (rubriques SalNet+Pret du plan de paie)', Dat_Modif = GETDATE(), Modified_By = @Login WHERE Cod_Source = 'sp_dernier_salaire_pr';
 
 /* ##########################################################################
    PAGE 1/6 : DUP_CONGE (XCG) - duplicata de "Demande de conge"
    ########################################################################## */
     DECLARE @CP1 nvarchar(30) = 'DUP_CONGE';
 
-    IF NOT EXISTS (SELECT 1 FROM dbo.SP_Page WHERE Cod_Page = @CP1)
-        INSERT INTO dbo.SP_Page (Cod_Page, Cod_Document, Libelle, Libelle_Court, Nom_Page,
+    IF NOT EXISTS (SELECT 1 FROM dbo.Controle_Designer WHERE Cod_Page = @CP1)
+        INSERT INTO dbo.Controle_Designer (Cod_Page, Cod_Document, Libelle, Libelle_Court, Nom_Page,
             Menu_Parent, Rang, Icone, Statut_Page, Table_Ent, Typ_Document,
             Workflow_Actif, Cod_Modele_Edition, GED_Actif, GED_Categories, GED_Obligatoire,
             Act_Enregistrer, Act_Soumettre, Act_Imprimer, Act_Exporter, Acces_Personnalise, Figer_Statuts, Dat_Crea, Created_By)
@@ -485,7 +485,7 @@ option (maxrecursion 0)',
             'true', NULL, 'true', NULL, 'false',
             'true', 'true', 'true', 'false', 'true', 'SS,SG,RJ,SP,VA', GETDATE(), @Login);
     ELSE
-        UPDATE dbo.SP_Page
+        UPDATE dbo.Controle_Designer
         SET Libelle = N'Duplicata - Demande de congé (test Designer)', Libelle_Court = N'Congé (SP)',
             Nom_Page = N'Demande de congé (SP)', Menu_Parent = 'PagesSpecifiques', Rang = 1, Icone = 'BeachAccess',
             Workflow_Actif = 'true', GED_Actif = 'true',
@@ -493,13 +493,13 @@ option (maxrecursion 0)',
             Acces_Personnalise = 'true', Figer_Statuts = 'SS,SG,RJ,SP,VA', Dat_Modif = GETDATE(), Modified_By = @Login
         WHERE Cod_Page = @CP1;
 
-    DELETE FROM dbo.SP_Page_Colonne    WHERE Cod_Page = @CP1;
-    DELETE FROM dbo.SP_Page_Table      WHERE Cod_Page = @CP1;
-    DELETE FROM dbo.SP_Page_Champ      WHERE Cod_Page = @CP1;
-    DELETE FROM dbo.SP_Page_Validation WHERE Cod_Page = @CP1;
-    DELETE FROM dbo.SP_Page_Droit      WHERE Cod_Page = @CP1;
+    DELETE FROM dbo.Controle_Designer_Colonne    WHERE Cod_Page = @CP1;
+    DELETE FROM dbo.Controle_Designer_Table      WHERE Cod_Page = @CP1;
+    DELETE FROM dbo.Controle_Designer_Champ      WHERE Cod_Page = @CP1;
+    DELETE FROM dbo.Controle_Designer_Validation WHERE Cod_Page = @CP1;
+    DELETE FROM dbo.Controle_Designer_Droit      WHERE Cod_Page = @CP1;
 
-    INSERT INTO dbo.SP_Page_Table (Cod_Page, Cod_Table, Nom_Physique, Role_Table, Libelle, Rang,
+    INSERT INTO dbo.Controle_Designer_Table (Cod_Page, Cod_Table, Nom_Physique, Role_Table, Libelle, Rang,
         Allow_Add, Allow_Edit, Allow_Delete, Allow_Duplicate, Tri_Defaut, Regle_Suppression, Source_Metier, Source_Mapping, Dat_Crea, Created_By)
     VALUES (@CP1, 'ENT', 'SP_XCG_Ent', 'ENT', N'Entête', 0, 'false', 'false', 'false', 'false', NULL, 'CASCADE', NULL, NULL, GETDATE(), @Login),
            -- PERIODES : détail VIRTUEL alimenté par la source sp_cng_detail
@@ -509,7 +509,7 @@ option (maxrecursion 0)',
             '{"Matricule":{"ref":"Matricule"},"Deb":{"ref":"Dat_Deb_Conge"},"Fin":{"ref":"Dat_Fin_Conge"},"DebPm":{"ref":"Dat_Deb_am_pm"},"FinPm":{"ref":"Dat_Fin_am_pm"}}',
             GETDATE(), @Login);
 
-    INSERT INTO dbo.SP_Page_Colonne (Cod_Page, Cod_Table, Nom_Colonne, Libelle, Typ_Sql, Longueur,
+    INSERT INTO dbo.Controle_Designer_Colonne (Cod_Page, Cod_Table, Nom_Colonne, Libelle, Typ_Sql, Longueur,
         Precision_Sql, Echelle_Sql, Nullable, Valeur_Defaut, estUnique, estIndexe, Technique, Rang, Dat_Crea, Created_By)
     VALUES
         (@CP1, 'ENT', 'Matricule',          N'Matricule',           'nvarchar', 20,   NULL, NULL, 'false', NULL, 'false', 'false', 'false', 1,  GETDATE(), @Login),
@@ -532,7 +532,7 @@ option (maxrecursion 0)',
         (@CP1, 'PERIODES', 'Jours_Feries',      N'Jours fériés',   'float', NULL, NULL, NULL, 'true', NULL, 'false', 'false', 'false', 5, GETDATE(), @Login),
         (@CP1, 'PERIODES', 'Duree_Conge',       N'Congé',          'float', NULL, NULL, NULL, 'true', NULL, 'false', 'false', 'false', 6, GETDATE(), @Login);
 
-    INSERT INTO dbo.SP_Page_Champ (Cod_Page, Cod_Champ, Cod_Table, Nom_Colonne, Libelle, Typ_Controle,
+    INSERT INTO dbo.Controle_Designer_Champ (Cod_Page, Cod_Champ, Cod_Table, Nom_Colonne, Libelle, Typ_Controle,
         Rang, Ligne, Colonne, Largeur, Valeur_Defaut, Obligatoire, Etat, Rubrique, Num_Zoom, Source_Metier, Formule,
         Persiste, Format_Affichage, Decimales, Regle_Visibilite, Regle_Activation,
         Visible_Grille, Rang_Grille, Largeur_Colonne, estCritere, Rang_Critere, Aide, Dat_Crea, Created_By)
@@ -568,7 +568,7 @@ option (maxrecursion 0)',
         (@CP1, 'P_Jours_Feries', 'PERIODES', 'Jours_Feries',   N'Jrs fériés',    'DEC',  5, NULL, NULL, NULL, NULL, 'false', 'R', NULL, NULL, NULL, NULL, 'false', NULL, 0, NULL, NULL, 'true', 5, 6, 'false', NULL, NULL, GETDATE(), @Login),
         (@CP1, 'P_Duree_Conge',  'PERIODES', 'Duree_Conge',    N'Congé',         'DEC',  6, NULL, NULL, NULL, NULL, 'false', 'R', NULL, NULL, NULL, NULL, 'false', NULL, 1, NULL, NULL, 'true', 6, 6, 'false', NULL, NULL, GETDATE(), @Login);
 
-    INSERT INTO dbo.SP_Page_Validation (Cod_Page, Cod_Validation, Portee, Cod_Table, Cod_Champ,
+    INSERT INTO dbo.Controle_Designer_Validation (Cod_Page, Cod_Validation, Portee, Cod_Table, Cod_Champ,
         Typ_Regle, Parametres, Condition_Regle, Message, Niveau, Rang, Moment, Actif, Dat_Crea, Created_By)
     VALUES
         (@CP1, 'V00_PROPRIETAIRE', 'CHAMP', 'ENT', 'Matricule',     'SOURCE',
@@ -598,7 +598,7 @@ option (maxrecursion 0)',
             N'Erreur calcul de congé.', 'B', 9, 'SAVE', 'true', GETDATE(), @Login);
 
     -- Droits : tous les profils actifs (comme les pages standards, ouvertes a tout utilisateur connecte)
-    INSERT INTO dbo.SP_Page_Droit (Cod_Page, Cod_Profile, Consulter, Creer, Modifier, Supprimer,
+    INSERT INTO dbo.Controle_Designer_Droit (Cod_Page, Cod_Profile, Consulter, Creer, Modifier, Supprimer,
         Valider, Imprimer, GED, Dat_Crea, Created_By)
     SELECT @CP1, p.Cod_Profile, 'true', 'true', 'true', 'true', 'true', 'true', 'true', GETDATE(), @Login
     FROM dbo.Controle_Profile p WHERE ISNULL(p.Actif, 1) = 1;
@@ -629,8 +629,8 @@ option (maxrecursion 0)',
         );
     END
 
-    IF NOT EXISTS (SELECT 1 FROM dbo.SP_Page_DDL_Log WHERE Cod_Page = @CP1 AND Type_Operation = 'CREATE')
-        INSERT INTO dbo.SP_Page_DDL_Log (Cod_Page, Type_Operation, Script_DDL, Resultat, Message, Login_Exec, Date_Exec)
+    IF NOT EXISTS (SELECT 1 FROM dbo.Controle_Designer_DDL_Log WHERE Cod_Page = @CP1 AND Type_Operation = 'CREATE')
+        INSERT INTO dbo.Controle_Designer_DDL_Log (Cod_Page, Type_Operation, Script_DDL, Resultat, Message, Login_Exec, Date_Exec)
         VALUES (@CP1, 'CREATE', 'CREATE TABLE SP_XCG_Ent (script duplicata DUP-PAGES-2026-08)', 'true',
                 N'Table créée par le script duplicata', @Login, GETDATE());
 
@@ -641,10 +641,10 @@ option (maxrecursion 0)',
                ('Repos_Hebdomadaire'),('Jours_Feries'),('Duree_Conge')) v(Nom)
                WHERE COL_LENGTH('dbo.SP_XCG_Ent', v.Nom) IS NULL)
         RAISERROR('Colonnes manquantes sur SP_XCG_Ent', 16, 1);
-    IF NOT EXISTS (SELECT 1 FROM dbo.SP_Page_Droit WHERE Cod_Page = @CP1 AND ISNULL(Consulter, 'false') = 'true')
+    IF NOT EXISTS (SELECT 1 FROM dbo.Controle_Designer_Droit WHERE Cod_Page = @CP1 AND ISNULL(Consulter, 'false') = 'true')
         RAISERROR('Aucun profil n''a le droit Consulter : la page serait invisible pour tous.', 16, 1);
 
-    UPDATE dbo.SP_Page
+    UPDATE dbo.Controle_Designer
     SET Statut_Page = 'PUBLIE', Dat_Publication = GETDATE(), DDL_Genere = 'true',
         Version_Page = ISNULL(Version_Page, 1) + 1, Dat_Modif = GETDATE(), Modified_By = @Login
     WHERE Cod_Page = @CP1 AND Statut_Page <> 'PUBLIE';
@@ -669,8 +669,8 @@ option (maxrecursion 0)',
    ########################################################################## */
     DECLARE @CP2 nvarchar(30) = 'DUP_NOTE_FRAIS';
 
-    IF NOT EXISTS (SELECT 1 FROM dbo.SP_Page WHERE Cod_Page = @CP2)
-        INSERT INTO dbo.SP_Page (Cod_Page, Cod_Document, Libelle, Libelle_Court, Nom_Page,
+    IF NOT EXISTS (SELECT 1 FROM dbo.Controle_Designer WHERE Cod_Page = @CP2)
+        INSERT INTO dbo.Controle_Designer (Cod_Page, Cod_Document, Libelle, Libelle_Court, Nom_Page,
             Menu_Parent, Rang, Icone, Statut_Page, Table_Ent, Typ_Document,
             Workflow_Actif, Cod_Modele_Edition, GED_Actif, GED_Categories, GED_Obligatoire,
             Act_Enregistrer, Act_Soumettre, Act_Imprimer, Act_Exporter, Acces_Personnalise, Figer_Statuts, Dat_Crea, Created_By)
@@ -679,7 +679,7 @@ option (maxrecursion 0)',
             'true', NULL, 'true', NULL, 'false',
             'true', 'true', 'true', 'false', 'true', 'SS,SG,RJ,SP,VA', GETDATE(), @Login);
     ELSE
-        UPDATE dbo.SP_Page
+        UPDATE dbo.Controle_Designer
         SET Libelle = N'Duplicata - Note de frais (test Designer)', Libelle_Court = N'Note de frais (SP)',
             Nom_Page = N'Note de frais (SP)', Menu_Parent = 'PagesSpecifiques', Rang = 2, Icone = 'Receipt',
             Workflow_Actif = 'true', GED_Actif = 'true',
@@ -687,19 +687,19 @@ option (maxrecursion 0)',
             Acces_Personnalise = 'true', Figer_Statuts = 'SS,SG,RJ,SP,VA', Dat_Modif = GETDATE(), Modified_By = @Login
         WHERE Cod_Page = @CP2;
 
-    DELETE FROM dbo.SP_Page_Colonne    WHERE Cod_Page = @CP2;
-    DELETE FROM dbo.SP_Page_Table      WHERE Cod_Page = @CP2;
-    DELETE FROM dbo.SP_Page_Champ      WHERE Cod_Page = @CP2;
-    DELETE FROM dbo.SP_Page_Validation WHERE Cod_Page = @CP2;
-    DELETE FROM dbo.SP_Page_Droit      WHERE Cod_Page = @CP2;
+    DELETE FROM dbo.Controle_Designer_Colonne    WHERE Cod_Page = @CP2;
+    DELETE FROM dbo.Controle_Designer_Table      WHERE Cod_Page = @CP2;
+    DELETE FROM dbo.Controle_Designer_Champ      WHERE Cod_Page = @CP2;
+    DELETE FROM dbo.Controle_Designer_Validation WHERE Cod_Page = @CP2;
+    DELETE FROM dbo.Controle_Designer_Droit      WHERE Cod_Page = @CP2;
 
-    INSERT INTO dbo.SP_Page_Table (Cod_Page, Cod_Table, Nom_Physique, Role_Table, Libelle, Rang,
+    INSERT INTO dbo.Controle_Designer_Table (Cod_Page, Cod_Table, Nom_Physique, Role_Table, Libelle, Rang,
         Allow_Add, Allow_Edit, Allow_Delete, Allow_Duplicate, Tri_Defaut, Regle_Suppression, Source_Metier, Source_Mapping, Dat_Crea, Created_By)
     VALUES
         (@CP2, 'ENT',    'SP_XNF_Ent',        'ENT', N'Entête',        0, 'false', 'false', 'false', 'false', NULL, 'CASCADE', NULL, NULL, GETDATE(), @Login),
         (@CP2, 'LIGNES', 'SP_XNF_Det_LIGNES', 'DET', N'Frais engagés', 1, 'true',  'true',  'true',  'false', NULL, 'CASCADE', NULL, NULL, GETDATE(), @Login);
 
-    INSERT INTO dbo.SP_Page_Colonne (Cod_Page, Cod_Table, Nom_Colonne, Libelle, Typ_Sql, Longueur,
+    INSERT INTO dbo.Controle_Designer_Colonne (Cod_Page, Cod_Table, Nom_Colonne, Libelle, Typ_Sql, Longueur,
         Precision_Sql, Echelle_Sql, Nullable, Valeur_Defaut, estUnique, estIndexe, Technique, Rang, Dat_Crea, Created_By)
     VALUES
         (@CP2, 'ENT',    'Matricule',   N'Matricule',      'nvarchar', 20,   NULL, NULL, 'false', NULL, 'false', 'false', 'false', 1, GETDATE(), @Login),
@@ -712,7 +712,7 @@ option (maxrecursion 0)',
         (@CP2, 'LIGNES', 'Mnt',         N'Montant',        'float',    NULL, NULL, NULL, 'true',  NULL, 'false', 'false', 'false', 4, GETDATE(), @Login),
         (@CP2, 'LIGNES', 'Comment',     N'Commentaire',    'nvarchar', 200,  NULL, NULL, 'true',  NULL, 'false', 'false', 'false', 5, GETDATE(), @Login);
 
-    INSERT INTO dbo.SP_Page_Champ (Cod_Page, Cod_Champ, Cod_Table, Nom_Colonne, Libelle, Typ_Controle,
+    INSERT INTO dbo.Controle_Designer_Champ (Cod_Page, Cod_Champ, Cod_Table, Nom_Colonne, Libelle, Typ_Controle,
         Rang, Ligne, Colonne, Largeur, Valeur_Defaut, Obligatoire, Etat, Rubrique, Num_Zoom, Source_Metier, Formule,
         Persiste, Format_Affichage, Decimales, Regle_Visibilite, Regle_Activation,
         Visible_Grille, Rang_Grille, Largeur_Colonne, estCritere, Rang_Critere, Aide, Dat_Crea, Created_By)
@@ -734,7 +734,7 @@ option (maxrecursion 0)',
         (@CP2, 'Pied_Total',  'LIGNES', '',           N'Total des frais engagés', 'CALCULE', 6, NULL, NULL, NULL, NULL, 'false', 'A', NULL, NULL, NULL,
             '{"op":"SUM","table":"LIGNES","colonne":"Mnt"}', 'false', 'MNT', 2, NULL, NULL, 'false', 6, NULL, 'false', NULL, N'Pied de grille : somme des montants', GETDATE(), @Login);
 
-    INSERT INTO dbo.SP_Page_Validation (Cod_Page, Cod_Validation, Portee, Cod_Table, Cod_Champ,
+    INSERT INTO dbo.Controle_Designer_Validation (Cod_Page, Cod_Validation, Portee, Cod_Table, Cod_Champ,
         Typ_Regle, Parametres, Condition_Regle, Message, Niveau, Rang, Moment, Actif, Dat_Crea, Created_By)
     VALUES
         (@CP2, 'V00_PROPRIETAIRE', 'CHAMP', 'ENT', 'Matricule', 'SOURCE',
@@ -746,7 +746,7 @@ option (maxrecursion 0)',
             '{"expr":{"op":"NE","args":[{"ref":"Mnt_NF"},{"const":0}]}}', NULL,
             N'Le Total des frais engagés est nul.', 'W', 2, 'SAVE', 'true', GETDATE(), @Login);
 
-    INSERT INTO dbo.SP_Page_Droit (Cod_Page, Cod_Profile, Consulter, Creer, Modifier, Supprimer,
+    INSERT INTO dbo.Controle_Designer_Droit (Cod_Page, Cod_Profile, Consulter, Creer, Modifier, Supprimer,
         Valider, Imprimer, GED, Dat_Crea, Created_By)
     SELECT @CP2, p.Cod_Profile, 'true', 'true', 'true', 'true', 'true', 'true', 'true', GETDATE(), @Login
     FROM dbo.Controle_Profile p WHERE ISNULL(p.Actif, 1) = 1;
@@ -793,8 +793,8 @@ option (maxrecursion 0)',
         ALTER TABLE dbo.[SP_XNF_Det_LIGNES] WITH NOCHECK ADD CONSTRAINT [FK_SP_XNF_Det_LIGNES_Ent]
             FOREIGN KEY ([Num_Doc], [id_Societe]) REFERENCES dbo.[SP_XNF_Ent] ([Num_Doc], [id_Societe]) ON DELETE CASCADE;
 
-    IF NOT EXISTS (SELECT 1 FROM dbo.SP_Page_DDL_Log WHERE Cod_Page = @CP2 AND Type_Operation = 'CREATE')
-        INSERT INTO dbo.SP_Page_DDL_Log (Cod_Page, Type_Operation, Script_DDL, Resultat, Message, Login_Exec, Date_Exec)
+    IF NOT EXISTS (SELECT 1 FROM dbo.Controle_Designer_DDL_Log WHERE Cod_Page = @CP2 AND Type_Operation = 'CREATE')
+        INSERT INTO dbo.Controle_Designer_DDL_Log (Cod_Page, Type_Operation, Script_DDL, Resultat, Message, Login_Exec, Date_Exec)
         VALUES (@CP2, 'CREATE', 'CREATE TABLE SP_XNF_Ent / SP_XNF_Det_LIGNES + FK (script duplicata DUP-PAGES-2026-08)', 'true',
                 N'Tables créées par le script duplicata', @Login, GETDATE());
 
@@ -806,10 +806,10 @@ option (maxrecursion 0)',
     IF EXISTS (SELECT v.Nom FROM (VALUES ('Typ_Frais'),('Base'),('Tx'),('Mnt'),('Comment')) v(Nom)
                WHERE COL_LENGTH('dbo.SP_XNF_Det_LIGNES', v.Nom) IS NULL)
         RAISERROR('Colonnes manquantes sur SP_XNF_Det_LIGNES', 16, 1);
-    IF NOT EXISTS (SELECT 1 FROM dbo.SP_Page_Droit WHERE Cod_Page = @CP2 AND ISNULL(Consulter, 'false') = 'true')
+    IF NOT EXISTS (SELECT 1 FROM dbo.Controle_Designer_Droit WHERE Cod_Page = @CP2 AND ISNULL(Consulter, 'false') = 'true')
         RAISERROR('Aucun profil n''a le droit Consulter : la page serait invisible pour tous.', 16, 1);
 
-    UPDATE dbo.SP_Page
+    UPDATE dbo.Controle_Designer
     SET Statut_Page = 'PUBLIE', Dat_Publication = GETDATE(), DDL_Genere = 'true',
         Version_Page = ISNULL(Version_Page, 1) + 1, Dat_Modif = GETDATE(), Modified_By = @Login
     WHERE Cod_Page = @CP2 AND Statut_Page <> 'PUBLIE';
@@ -836,8 +836,8 @@ option (maxrecursion 0)',
    ########################################################################## */
     DECLARE @CP3 nvarchar(30) = 'DUP_DECLARATION_AT';
 
-    IF NOT EXISTS (SELECT 1 FROM dbo.SP_Page WHERE Cod_Page = @CP3)
-        INSERT INTO dbo.SP_Page (Cod_Page, Cod_Document, Libelle, Libelle_Court, Nom_Page,
+    IF NOT EXISTS (SELECT 1 FROM dbo.Controle_Designer WHERE Cod_Page = @CP3)
+        INSERT INTO dbo.Controle_Designer (Cod_Page, Cod_Document, Libelle, Libelle_Court, Nom_Page,
             Menu_Parent, Rang, Icone, Statut_Page, Table_Ent, Typ_Document,
             Workflow_Actif, Cod_Modele_Edition, GED_Actif, GED_Categories, GED_Obligatoire,
             Act_Enregistrer, Act_Soumettre, Act_Imprimer, Act_Exporter, Acces_Personnalise, Figer_Statuts, Dat_Crea, Created_By)
@@ -846,7 +846,7 @@ option (maxrecursion 0)',
             'false', NULL, 'true', NULL, 'false',
             'false', 'false', 'true', 'false', 'true', 'SG,RJ,SP,VA', GETDATE(), @Login);
     ELSE
-        UPDATE dbo.SP_Page
+        UPDATE dbo.Controle_Designer
         SET Libelle = N'Duplicata - Déclaration d''accident de travail (test Designer)', Libelle_Court = N'Déclaration AT (SP)',
             Nom_Page = N'Déclaration AT (SP)', Menu_Parent = 'PagesSpecifiques', Rang = 3, Icone = 'Healing',
             Workflow_Actif = 'false', GED_Actif = 'true',
@@ -854,19 +854,19 @@ option (maxrecursion 0)',
             Acces_Personnalise = 'true', Figer_Statuts = 'SG,RJ,SP,VA', Dat_Modif = GETDATE(), Modified_By = @Login
         WHERE Cod_Page = @CP3;
 
-    DELETE FROM dbo.SP_Page_Colonne    WHERE Cod_Page = @CP3;
-    DELETE FROM dbo.SP_Page_Table      WHERE Cod_Page = @CP3;
-    DELETE FROM dbo.SP_Page_Champ      WHERE Cod_Page = @CP3;
-    DELETE FROM dbo.SP_Page_Validation WHERE Cod_Page = @CP3;
-    DELETE FROM dbo.SP_Page_Droit      WHERE Cod_Page = @CP3;
+    DELETE FROM dbo.Controle_Designer_Colonne    WHERE Cod_Page = @CP3;
+    DELETE FROM dbo.Controle_Designer_Table      WHERE Cod_Page = @CP3;
+    DELETE FROM dbo.Controle_Designer_Champ      WHERE Cod_Page = @CP3;
+    DELETE FROM dbo.Controle_Designer_Validation WHERE Cod_Page = @CP3;
+    DELETE FROM dbo.Controle_Designer_Droit      WHERE Cod_Page = @CP3;
 
-    INSERT INTO dbo.SP_Page_Table (Cod_Page, Cod_Table, Nom_Physique, Role_Table, Libelle, Rang,
+    INSERT INTO dbo.Controle_Designer_Table (Cod_Page, Cod_Table, Nom_Physique, Role_Table, Libelle, Rang,
         Allow_Add, Allow_Edit, Allow_Delete, Allow_Duplicate, Tri_Defaut, Regle_Suppression, Source_Metier, Source_Mapping, Dat_Crea, Created_By)
     VALUES
         (@CP3, 'ENT',     'SP_XAT_Ent',         'ENT', N'Entête',               0, 'false', 'false', 'false', 'false', NULL, 'CASCADE', NULL, NULL, GETDATE(), @Login),
         (@CP3, 'CERTIFS', 'SP_XAT_Det_CERTIFS', 'DET', N'Certificats médicaux', 1, 'false', 'false', 'false', 'false', NULL, 'CASCADE', NULL, NULL, GETDATE(), @Login);
 
-    INSERT INTO dbo.SP_Page_Colonne (Cod_Page, Cod_Table, Nom_Colonne, Libelle, Typ_Sql, Longueur,
+    INSERT INTO dbo.Controle_Designer_Colonne (Cod_Page, Cod_Table, Nom_Colonne, Libelle, Typ_Sql, Longueur,
         Precision_Sql, Echelle_Sql, Nullable, Valeur_Defaut, estUnique, estIndexe, Technique, Rang, Dat_Crea, Created_By)
     VALUES
         (@CP3, 'ENT',     'Matricule',       N'Matricule',           'nvarchar', 20,   NULL, NULL, 'true', NULL, 'false', 'false', 'false', 1, GETDATE(), @Login),
@@ -882,7 +882,7 @@ option (maxrecursion 0)',
         (@CP3, 'CERTIFS', 'Comment',         N'Commentaire',         'nvarchar', 300,  NULL, NULL, 'true', NULL, 'false', 'false', 'false', 6, GETDATE(), @Login);
 
     -- Tous les champs en lecture seule ('R') : la page standard portail est une consultation
-    INSERT INTO dbo.SP_Page_Champ (Cod_Page, Cod_Champ, Cod_Table, Nom_Colonne, Libelle, Typ_Controle,
+    INSERT INTO dbo.Controle_Designer_Champ (Cod_Page, Cod_Champ, Cod_Table, Nom_Colonne, Libelle, Typ_Controle,
         Rang, Ligne, Colonne, Largeur, Valeur_Defaut, Obligatoire, Etat, Rubrique, Num_Zoom, Source_Metier, Formule,
         Persiste, Format_Affichage, Decimales, Regle_Visibilite, Regle_Activation,
         Visible_Grille, Rang_Grille, Largeur_Colonne, estCritere, Rang_Critere, Aide, Dat_Crea, Created_By)
@@ -901,7 +901,7 @@ option (maxrecursion 0)',
         (@CP3, 'C_Comment',        'CERTIFS', 'Comment',         N'Commentaire',     'TEXT', 6, NULL, NULL, NULL, NULL, 'false', 'R', NULL, NULL, NULL, NULL, 'false', NULL, NULL, NULL, NULL, 'true', 6, 20, 'false', NULL, NULL, GETDATE(), @Login);
 
     -- Consultation + pieces jointes uniquement (comme la page portail standard)
-    INSERT INTO dbo.SP_Page_Droit (Cod_Page, Cod_Profile, Consulter, Creer, Modifier, Supprimer,
+    INSERT INTO dbo.Controle_Designer_Droit (Cod_Page, Cod_Profile, Consulter, Creer, Modifier, Supprimer,
         Valider, Imprimer, GED, Dat_Crea, Created_By)
     SELECT @CP3, p.Cod_Profile, 'true', 'false', 'false', 'false', 'false', 'false', 'true', GETDATE(), @Login
     FROM dbo.Controle_Profile p WHERE ISNULL(p.Actif, 1) = 1;
@@ -950,17 +950,17 @@ option (maxrecursion 0)',
         ALTER TABLE dbo.[SP_XAT_Det_CERTIFS] WITH NOCHECK ADD CONSTRAINT [FK_SP_XAT_Det_CERTIFS_Ent]
             FOREIGN KEY ([Num_Doc], [id_Societe]) REFERENCES dbo.[SP_XAT_Ent] ([Num_Doc], [id_Societe]) ON DELETE CASCADE;
 
-    IF NOT EXISTS (SELECT 1 FROM dbo.SP_Page_DDL_Log WHERE Cod_Page = @CP3 AND Type_Operation = 'CREATE')
-        INSERT INTO dbo.SP_Page_DDL_Log (Cod_Page, Type_Operation, Script_DDL, Resultat, Message, Login_Exec, Date_Exec)
+    IF NOT EXISTS (SELECT 1 FROM dbo.Controle_Designer_DDL_Log WHERE Cod_Page = @CP3 AND Type_Operation = 'CREATE')
+        INSERT INTO dbo.Controle_Designer_DDL_Log (Cod_Page, Type_Operation, Script_DDL, Resultat, Message, Login_Exec, Date_Exec)
         VALUES (@CP3, 'CREATE', 'CREATE TABLE SP_XAT_Ent / SP_XAT_Det_CERTIFS + FK (script duplicata DUP-PAGES-2026-08)', 'true',
                 N'Tables créées par le script duplicata', @Login, GETDATE());
 
     IF OBJECT_ID('dbo.SP_XAT_Ent', 'U') IS NULL RAISERROR('Table physique inexistante : SP_XAT_Ent', 16, 1);
     IF OBJECT_ID('dbo.SP_XAT_Det_CERTIFS', 'U') IS NULL RAISERROR('Table physique inexistante : SP_XAT_Det_CERTIFS', 16, 1);
-    IF NOT EXISTS (SELECT 1 FROM dbo.SP_Page_Droit WHERE Cod_Page = @CP3 AND ISNULL(Consulter, 'false') = 'true')
+    IF NOT EXISTS (SELECT 1 FROM dbo.Controle_Designer_Droit WHERE Cod_Page = @CP3 AND ISNULL(Consulter, 'false') = 'true')
         RAISERROR('Aucun profil n''a le droit Consulter : la page serait invisible pour tous.', 16, 1);
 
-    UPDATE dbo.SP_Page
+    UPDATE dbo.Controle_Designer
     SET Statut_Page = 'PUBLIE', Dat_Publication = GETDATE(), DDL_Genere = 'true',
         Version_Page = ISNULL(Version_Page, 1) + 1, Dat_Modif = GETDATE(), Modified_By = @Login
     WHERE Cod_Page = @CP3 AND Statut_Page <> 'PUBLIE';
@@ -993,8 +993,8 @@ option (maxrecursion 0)',
    ########################################################################## */
     DECLARE @CP4 nvarchar(30) = 'DUP_DOSSIER_MALADIE';
 
-    IF NOT EXISTS (SELECT 1 FROM dbo.SP_Page WHERE Cod_Page = @CP4)
-        INSERT INTO dbo.SP_Page (Cod_Page, Cod_Document, Libelle, Libelle_Court, Nom_Page,
+    IF NOT EXISTS (SELECT 1 FROM dbo.Controle_Designer WHERE Cod_Page = @CP4)
+        INSERT INTO dbo.Controle_Designer (Cod_Page, Cod_Document, Libelle, Libelle_Court, Nom_Page,
             Menu_Parent, Rang, Icone, Statut_Page, Table_Ent, Typ_Document,
             Workflow_Actif, Cod_Modele_Edition, GED_Actif, GED_Categories, GED_Obligatoire,
             Act_Enregistrer, Act_Soumettre, Act_Imprimer, Act_Exporter, Acces_Personnalise, Figer_Statuts, Dat_Crea, Created_By)
@@ -1003,7 +1003,7 @@ option (maxrecursion 0)',
             'true', NULL, 'true', NULL, 'false',
             'true', 'true', 'true', 'false', 'true', 'SS,SG,RJ,SP,VA', GETDATE(), @Login);
     ELSE
-        UPDATE dbo.SP_Page
+        UPDATE dbo.Controle_Designer
         SET Libelle = N'Duplicata - Dossier de remboursement maladie (test Designer)', Libelle_Court = N'Dossier maladie (SP)',
             Nom_Page = N'Dossier de maladie (SP)', Menu_Parent = 'PagesSpecifiques', Rang = 4, Icone = 'MedicalInformation',
             Workflow_Actif = 'true', GED_Actif = 'true',
@@ -1011,17 +1011,17 @@ option (maxrecursion 0)',
             Acces_Personnalise = 'true', Figer_Statuts = 'SS,SG,RJ,SP,VA', Dat_Modif = GETDATE(), Modified_By = @Login
         WHERE Cod_Page = @CP4;
 
-    DELETE FROM dbo.SP_Page_Colonne    WHERE Cod_Page = @CP4;
-    DELETE FROM dbo.SP_Page_Table      WHERE Cod_Page = @CP4;
-    DELETE FROM dbo.SP_Page_Champ      WHERE Cod_Page = @CP4;
-    DELETE FROM dbo.SP_Page_Validation WHERE Cod_Page = @CP4;
-    DELETE FROM dbo.SP_Page_Droit      WHERE Cod_Page = @CP4;
+    DELETE FROM dbo.Controle_Designer_Colonne    WHERE Cod_Page = @CP4;
+    DELETE FROM dbo.Controle_Designer_Table      WHERE Cod_Page = @CP4;
+    DELETE FROM dbo.Controle_Designer_Champ      WHERE Cod_Page = @CP4;
+    DELETE FROM dbo.Controle_Designer_Validation WHERE Cod_Page = @CP4;
+    DELETE FROM dbo.Controle_Designer_Droit      WHERE Cod_Page = @CP4;
 
-    INSERT INTO dbo.SP_Page_Table (Cod_Page, Cod_Table, Nom_Physique, Role_Table, Libelle, Rang,
+    INSERT INTO dbo.Controle_Designer_Table (Cod_Page, Cod_Table, Nom_Physique, Role_Table, Libelle, Rang,
         Allow_Add, Allow_Edit, Allow_Delete, Allow_Duplicate, Tri_Defaut, Regle_Suppression, Source_Metier, Source_Mapping, Dat_Crea, Created_By)
     VALUES (@CP4, 'ENT', 'SP_XDM_Ent', 'ENT', N'Entête', 0, 'false', 'false', 'false', 'false', NULL, 'CASCADE', NULL, NULL, GETDATE(), @Login);
 
-    INSERT INTO dbo.SP_Page_Colonne (Cod_Page, Cod_Table, Nom_Colonne, Libelle, Typ_Sql, Longueur,
+    INSERT INTO dbo.Controle_Designer_Colonne (Cod_Page, Cod_Table, Nom_Colonne, Libelle, Typ_Sql, Longueur,
         Precision_Sql, Echelle_Sql, Nullable, Valeur_Defaut, estUnique, estIndexe, Technique, Rang, Dat_Crea, Created_By)
     VALUES
         (@CP4, 'ENT', 'Matricule',         N'Matricule',         'nvarchar', 20,   NULL, NULL, 'false', NULL, 'false', 'false', 'false', 1, GETDATE(), @Login),
@@ -1034,7 +1034,7 @@ option (maxrecursion 0)',
         (@CP4, 'ENT', 'Rembourse_Le',      N'Remboursé le',      'date',     NULL, NULL, NULL, 'true',  NULL, 'false', 'false', 'false', 8, GETDATE(), @Login),
         (@CP4, 'ENT', 'Mnt_Remboursement', N'Montant remboursé', 'decimal',  NULL, 18,   2,    'true',  NULL, 'false', 'false', 'false', 9, GETDATE(), @Login);
 
-    INSERT INTO dbo.SP_Page_Champ (Cod_Page, Cod_Champ, Cod_Table, Nom_Colonne, Libelle, Typ_Controle,
+    INSERT INTO dbo.Controle_Designer_Champ (Cod_Page, Cod_Champ, Cod_Table, Nom_Colonne, Libelle, Typ_Controle,
         Rang, Ligne, Colonne, Largeur, Valeur_Defaut, Obligatoire, Etat, Rubrique, Num_Zoom, Source_Metier, Formule,
         Persiste, Format_Affichage, Decimales, Regle_Visibilite, Regle_Activation,
         Visible_Grille, Rang_Grille, Largeur_Colonne, estCritere, Rang_Critere, Aide, Dat_Crea, Created_By)
@@ -1053,7 +1053,7 @@ option (maxrecursion 0)',
         (@CP4, 'Taux_Remboursement', 'ENT', '',            N'Taux de remboursement', 'CALCULE', 11, 6, 1, 6, NULL,    'false', 'A', NULL,             NULL,    NULL,
             '{"op":"DIVSAFE","args":[{"ref":"Mnt_Remboursement"},{"ref":"Mnt_Engage"}]}', 'false', 'PCT', 2, NULL, NULL, 'false', 9, NULL, 'false', NULL, N'Montant remboursé / Montant engagé', GETDATE(), @Login);
 
-    INSERT INTO dbo.SP_Page_Validation (Cod_Page, Cod_Validation, Portee, Cod_Table, Cod_Champ,
+    INSERT INTO dbo.Controle_Designer_Validation (Cod_Page, Cod_Validation, Portee, Cod_Table, Cod_Champ,
         Typ_Regle, Parametres, Condition_Regle, Message, Niveau, Rang, Moment, Actif, Dat_Crea, Created_By)
     VALUES
         (@CP4, 'V00_PROPRIETAIRE', 'CHAMP', 'ENT', 'Matricule',  'SOURCE',
@@ -1065,10 +1065,10 @@ option (maxrecursion 0)',
             N'Aucun montant engagé n''est renseigné.', 'B', 2, 'SAVE', 'true', GETDATE(), @Login);
 
     -- Zoom conditionnel (P5) : le combo "Le malade" est filtré par le matricule
-    UPDATE dbo.SP_Page_Champ SET Zoom_Condition = 'Matricule=''{Matricule}'''
+    UPDATE dbo.Controle_Designer_Champ SET Zoom_Condition = 'Matricule=''{Matricule}'''
     WHERE Cod_Page = @CP4 AND Cod_Champ = 'Nom_Malade';
 
-    INSERT INTO dbo.SP_Page_Droit (Cod_Page, Cod_Profile, Consulter, Creer, Modifier, Supprimer,
+    INSERT INTO dbo.Controle_Designer_Droit (Cod_Page, Cod_Profile, Consulter, Creer, Modifier, Supprimer,
         Valider, Imprimer, GED, Dat_Crea, Created_By)
     SELECT @CP4, p.Cod_Profile, 'true', 'true', 'true', 'true', 'true', 'true', 'true', GETDATE(), @Login
     FROM dbo.Controle_Profile p WHERE ISNULL(p.Actif, 1) = 1;
@@ -1097,8 +1097,8 @@ option (maxrecursion 0)',
         );
     END
 
-    IF NOT EXISTS (SELECT 1 FROM dbo.SP_Page_DDL_Log WHERE Cod_Page = @CP4 AND Type_Operation = 'CREATE')
-        INSERT INTO dbo.SP_Page_DDL_Log (Cod_Page, Type_Operation, Script_DDL, Resultat, Message, Login_Exec, Date_Exec)
+    IF NOT EXISTS (SELECT 1 FROM dbo.Controle_Designer_DDL_Log WHERE Cod_Page = @CP4 AND Type_Operation = 'CREATE')
+        INSERT INTO dbo.Controle_Designer_DDL_Log (Cod_Page, Type_Operation, Script_DDL, Resultat, Message, Login_Exec, Date_Exec)
         VALUES (@CP4, 'CREATE', 'CREATE TABLE SP_XDM_Ent (script duplicata DUP-PAGES-2026-08)', 'true',
                 N'Table créée par le script duplicata', @Login, GETDATE());
 
@@ -1107,10 +1107,10 @@ option (maxrecursion 0)',
                ('Mnt_Engage'),('Envoye_Le'),('Rembourse_Le'),('Mnt_Remboursement')) v(Nom)
                WHERE COL_LENGTH('dbo.SP_XDM_Ent', v.Nom) IS NULL)
         RAISERROR('Colonnes manquantes sur SP_XDM_Ent', 16, 1);
-    IF NOT EXISTS (SELECT 1 FROM dbo.SP_Page_Droit WHERE Cod_Page = @CP4 AND ISNULL(Consulter, 'false') = 'true')
+    IF NOT EXISTS (SELECT 1 FROM dbo.Controle_Designer_Droit WHERE Cod_Page = @CP4 AND ISNULL(Consulter, 'false') = 'true')
         RAISERROR('Aucun profil n''a le droit Consulter : la page serait invisible pour tous.', 16, 1);
 
-    UPDATE dbo.SP_Page
+    UPDATE dbo.Controle_Designer
     SET Statut_Page = 'PUBLIE', Dat_Publication = GETDATE(), DDL_Genere = 'true',
         Version_Page = ISNULL(Version_Page, 1) + 1, Dat_Modif = GETDATE(), Modified_By = @Login
     WHERE Cod_Page = @CP4 AND Statut_Page <> 'PUBLIE';
@@ -1135,8 +1135,8 @@ option (maxrecursion 0)',
    ########################################################################## */
     DECLARE @CP5 nvarchar(30) = 'DUP_AVANCE';
 
-    IF NOT EXISTS (SELECT 1 FROM dbo.SP_Page WHERE Cod_Page = @CP5)
-        INSERT INTO dbo.SP_Page (Cod_Page, Cod_Document, Libelle, Libelle_Court, Nom_Page,
+    IF NOT EXISTS (SELECT 1 FROM dbo.Controle_Designer WHERE Cod_Page = @CP5)
+        INSERT INTO dbo.Controle_Designer (Cod_Page, Cod_Document, Libelle, Libelle_Court, Nom_Page,
             Menu_Parent, Rang, Icone, Statut_Page, Table_Ent, Typ_Document,
             Workflow_Actif, Cod_Modele_Edition, GED_Actif, GED_Categories, GED_Obligatoire,
             Act_Enregistrer, Act_Soumettre, Act_Imprimer, Act_Exporter, Acces_Personnalise, Figer_Statuts, Dat_Crea, Created_By)
@@ -1145,7 +1145,7 @@ option (maxrecursion 0)',
             'true', NULL, 'true', NULL, 'false',
             'true', 'true', 'true', 'false', 'true', 'SS,SG,RJ,SP,VA', GETDATE(), @Login);
     ELSE
-        UPDATE dbo.SP_Page
+        UPDATE dbo.Controle_Designer
         SET Libelle = N'Duplicata - Demande d''avance (test Designer)', Libelle_Court = N'Avance (SP)',
             Nom_Page = N'Demande d''avance (SP)', Menu_Parent = 'PagesSpecifiques', Rang = 5, Icone = 'Payments',
             Workflow_Actif = 'true', GED_Actif = 'true',
@@ -1153,17 +1153,17 @@ option (maxrecursion 0)',
             Acces_Personnalise = 'true', Figer_Statuts = 'SS,SG,RJ,SP,VA', Dat_Modif = GETDATE(), Modified_By = @Login
         WHERE Cod_Page = @CP5;
 
-    DELETE FROM dbo.SP_Page_Colonne    WHERE Cod_Page = @CP5;
-    DELETE FROM dbo.SP_Page_Table      WHERE Cod_Page = @CP5;
-    DELETE FROM dbo.SP_Page_Champ      WHERE Cod_Page = @CP5;
-    DELETE FROM dbo.SP_Page_Validation WHERE Cod_Page = @CP5;
-    DELETE FROM dbo.SP_Page_Droit      WHERE Cod_Page = @CP5;
+    DELETE FROM dbo.Controle_Designer_Colonne    WHERE Cod_Page = @CP5;
+    DELETE FROM dbo.Controle_Designer_Table      WHERE Cod_Page = @CP5;
+    DELETE FROM dbo.Controle_Designer_Champ      WHERE Cod_Page = @CP5;
+    DELETE FROM dbo.Controle_Designer_Validation WHERE Cod_Page = @CP5;
+    DELETE FROM dbo.Controle_Designer_Droit      WHERE Cod_Page = @CP5;
 
-    INSERT INTO dbo.SP_Page_Table (Cod_Page, Cod_Table, Nom_Physique, Role_Table, Libelle, Rang,
+    INSERT INTO dbo.Controle_Designer_Table (Cod_Page, Cod_Table, Nom_Physique, Role_Table, Libelle, Rang,
         Allow_Add, Allow_Edit, Allow_Delete, Allow_Duplicate, Tri_Defaut, Regle_Suppression, Source_Metier, Source_Mapping, Dat_Crea, Created_By)
     VALUES (@CP5, 'ENT', 'SP_XAV_Ent', 'ENT', N'Entête', 0, 'false', 'false', 'false', 'false', NULL, 'CASCADE', NULL, NULL, GETDATE(), @Login);
 
-    INSERT INTO dbo.SP_Page_Colonne (Cod_Page, Cod_Table, Nom_Colonne, Libelle, Typ_Sql, Longueur,
+    INSERT INTO dbo.Controle_Designer_Colonne (Cod_Page, Cod_Table, Nom_Colonne, Libelle, Typ_Sql, Longueur,
         Precision_Sql, Echelle_Sql, Nullable, Valeur_Defaut, estUnique, estIndexe, Technique, Rang, Dat_Crea, Created_By)
     VALUES
         (@CP5, 'ENT', 'Matricule',       N'Matricule',            'nvarchar', 20,   NULL, NULL, 'false', NULL, 'false', 'false', 'false', 1, GETDATE(), @Login),
@@ -1172,7 +1172,7 @@ option (maxrecursion 0)',
         (@CP5, 'ENT', 'Dernier_Salaire', N'Dernier salaire',      'decimal',  NULL, 18,   2,    'true',  NULL, 'false', 'false', 'false', 4, GETDATE(), @Login),
         (@CP5, 'ENT', 'Commentaire',     N'Commentaire',          'nvarchar', 500,  NULL, NULL, 'true',  NULL, 'false', 'false', 'false', 5, GETDATE(), @Login);
 
-    INSERT INTO dbo.SP_Page_Champ (Cod_Page, Cod_Champ, Cod_Table, Nom_Colonne, Libelle, Typ_Controle,
+    INSERT INTO dbo.Controle_Designer_Champ (Cod_Page, Cod_Champ, Cod_Table, Nom_Colonne, Libelle, Typ_Controle,
         Rang, Ligne, Colonne, Largeur, Valeur_Defaut, Obligatoire, Etat, Rubrique, Num_Zoom, Source_Metier, Formule,
         Persiste, Format_Affichage, Decimales, Regle_Visibilite, Regle_Activation,
         Visible_Grille, Rang_Grille, Largeur_Colonne, estCritere, Rang_Critere, Aide, Dat_Crea, Created_By)
@@ -1190,7 +1190,7 @@ option (maxrecursion 0)',
         (@CP5, 'Statut',          'ENT', 'Statut',          N'Statut',           'RUBRIQUE', 7, 4, 1, 6, NULL,           'false', 'R', 'Statut_Signature', NULL, NULL, NULL, 'false', NULL, NULL, NULL, NULL, 'false', 7, NULL, 'true', 3, N'Statut du circuit de signature (colonne technique)', GETDATE(), @Login),
         (@CP5, 'Commentaire',     'ENT', 'Commentaire',     N'Commentaire',      'MEMO',   8, 5, 1, 12, NULL,           'false', 'S', NULL, NULL,    NULL, NULL, 'false', NULL, NULL, NULL, NULL, 'true',  6, NULL, 'false', NULL, NULL, GETDATE(), @Login);
 
-    INSERT INTO dbo.SP_Page_Validation (Cod_Page, Cod_Validation, Portee, Cod_Table, Cod_Champ,
+    INSERT INTO dbo.Controle_Designer_Validation (Cod_Page, Cod_Validation, Portee, Cod_Table, Cod_Champ,
         Typ_Regle, Parametres, Condition_Regle, Message, Niveau, Rang, Moment, Actif, Dat_Crea, Created_By)
     VALUES
         (@CP5, 'V00_PROPRIETAIRE', 'CHAMP', 'ENT', 'Matricule', 'SOURCE',
@@ -1199,7 +1199,7 @@ option (maxrecursion 0)',
         (@CP5, 'V01_MATRICULE', 'CHAMP', 'ENT', 'Matricule', 'REQUIRED', NULL, NULL,
             N'Veuillez renseigner le matricule.', 'B', 1, 'SAVE', 'true', GETDATE(), @Login);
 
-    INSERT INTO dbo.SP_Page_Droit (Cod_Page, Cod_Profile, Consulter, Creer, Modifier, Supprimer,
+    INSERT INTO dbo.Controle_Designer_Droit (Cod_Page, Cod_Profile, Consulter, Creer, Modifier, Supprimer,
         Valider, Imprimer, GED, Dat_Crea, Created_By)
     SELECT @CP5, p.Cod_Profile, 'true', 'true', 'true', 'true', 'true', 'true', 'true', GETDATE(), @Login
     FROM dbo.Controle_Profile p WHERE ISNULL(p.Actif, 1) = 1;
@@ -1224,8 +1224,8 @@ option (maxrecursion 0)',
         );
     END
 
-    IF NOT EXISTS (SELECT 1 FROM dbo.SP_Page_DDL_Log WHERE Cod_Page = @CP5 AND Type_Operation = 'CREATE')
-        INSERT INTO dbo.SP_Page_DDL_Log (Cod_Page, Type_Operation, Script_DDL, Resultat, Message, Login_Exec, Date_Exec)
+    IF NOT EXISTS (SELECT 1 FROM dbo.Controle_Designer_DDL_Log WHERE Cod_Page = @CP5 AND Type_Operation = 'CREATE')
+        INSERT INTO dbo.Controle_Designer_DDL_Log (Cod_Page, Type_Operation, Script_DDL, Resultat, Message, Login_Exec, Date_Exec)
         VALUES (@CP5, 'CREATE', 'CREATE TABLE SP_XAV_Ent (script duplicata DUP-PAGES-2026-08)', 'true',
                 N'Table créée par le script duplicata', @Login, GETDATE());
 
@@ -1233,10 +1233,10 @@ option (maxrecursion 0)',
     IF EXISTS (SELECT v.Nom FROM (VALUES ('Matricule'),('Dat_Demande'),('Montant_Avance'),('Dernier_Salaire'),('Commentaire')) v(Nom)
                WHERE COL_LENGTH('dbo.SP_XAV_Ent', v.Nom) IS NULL)
         RAISERROR('Colonnes manquantes sur SP_XAV_Ent', 16, 1);
-    IF NOT EXISTS (SELECT 1 FROM dbo.SP_Page_Droit WHERE Cod_Page = @CP5 AND ISNULL(Consulter, 'false') = 'true')
+    IF NOT EXISTS (SELECT 1 FROM dbo.Controle_Designer_Droit WHERE Cod_Page = @CP5 AND ISNULL(Consulter, 'false') = 'true')
         RAISERROR('Aucun profil n''a le droit Consulter : la page serait invisible pour tous.', 16, 1);
 
-    UPDATE dbo.SP_Page
+    UPDATE dbo.Controle_Designer
     SET Statut_Page = 'PUBLIE', Dat_Publication = GETDATE(), DDL_Genere = 'true',
         Version_Page = ISNULL(Version_Page, 1) + 1, Dat_Modif = GETDATE(), Modified_By = @Login
     WHERE Cod_Page = @CP5 AND Statut_Page <> 'PUBLIE';
@@ -1261,8 +1261,8 @@ option (maxrecursion 0)',
    ########################################################################## */
     DECLARE @CP6 nvarchar(30) = 'DUP_PRET';
 
-    IF NOT EXISTS (SELECT 1 FROM dbo.SP_Page WHERE Cod_Page = @CP6)
-        INSERT INTO dbo.SP_Page (Cod_Page, Cod_Document, Libelle, Libelle_Court, Nom_Page,
+    IF NOT EXISTS (SELECT 1 FROM dbo.Controle_Designer WHERE Cod_Page = @CP6)
+        INSERT INTO dbo.Controle_Designer (Cod_Page, Cod_Document, Libelle, Libelle_Court, Nom_Page,
             Menu_Parent, Rang, Icone, Statut_Page, Table_Ent, Typ_Document,
             Workflow_Actif, Cod_Modele_Edition, GED_Actif, GED_Categories, GED_Obligatoire,
             Act_Enregistrer, Act_Soumettre, Act_Imprimer, Act_Exporter, Acces_Personnalise, Figer_Statuts, Dat_Crea, Created_By)
@@ -1271,7 +1271,7 @@ option (maxrecursion 0)',
             'true', NULL, 'true', NULL, 'false',
             'true', 'true', 'true', 'false', 'true', 'SS,SG,RJ,SP,VA', GETDATE(), @Login);
     ELSE
-        UPDATE dbo.SP_Page
+        UPDATE dbo.Controle_Designer
         SET Libelle = N'Duplicata - Demande de prêt (test Designer)', Libelle_Court = N'Prêt (SP)',
             Nom_Page = N'Demande de prêt (SP)', Menu_Parent = 'PagesSpecifiques', Rang = 6, Icone = 'Handshake',
             Workflow_Actif = 'true', GED_Actif = 'true',
@@ -1279,17 +1279,17 @@ option (maxrecursion 0)',
             Acces_Personnalise = 'true', Figer_Statuts = 'SS,SG,RJ,SP,VA', Dat_Modif = GETDATE(), Modified_By = @Login
         WHERE Cod_Page = @CP6;
 
-    DELETE FROM dbo.SP_Page_Colonne    WHERE Cod_Page = @CP6;
-    DELETE FROM dbo.SP_Page_Table      WHERE Cod_Page = @CP6;
-    DELETE FROM dbo.SP_Page_Champ      WHERE Cod_Page = @CP6;
-    DELETE FROM dbo.SP_Page_Validation WHERE Cod_Page = @CP6;
-    DELETE FROM dbo.SP_Page_Droit      WHERE Cod_Page = @CP6;
+    DELETE FROM dbo.Controle_Designer_Colonne    WHERE Cod_Page = @CP6;
+    DELETE FROM dbo.Controle_Designer_Table      WHERE Cod_Page = @CP6;
+    DELETE FROM dbo.Controle_Designer_Champ      WHERE Cod_Page = @CP6;
+    DELETE FROM dbo.Controle_Designer_Validation WHERE Cod_Page = @CP6;
+    DELETE FROM dbo.Controle_Designer_Droit      WHERE Cod_Page = @CP6;
 
-    INSERT INTO dbo.SP_Page_Table (Cod_Page, Cod_Table, Nom_Physique, Role_Table, Libelle, Rang,
+    INSERT INTO dbo.Controle_Designer_Table (Cod_Page, Cod_Table, Nom_Physique, Role_Table, Libelle, Rang,
         Allow_Add, Allow_Edit, Allow_Delete, Allow_Duplicate, Tri_Defaut, Regle_Suppression, Source_Metier, Source_Mapping, Dat_Crea, Created_By)
     VALUES (@CP6, 'ENT', 'SP_XDP_Ent', 'ENT', N'Entête', 0, 'false', 'false', 'false', 'false', NULL, 'CASCADE', NULL, NULL, GETDATE(), @Login);
 
-    INSERT INTO dbo.SP_Page_Colonne (Cod_Page, Cod_Table, Nom_Colonne, Libelle, Typ_Sql, Longueur,
+    INSERT INTO dbo.Controle_Designer_Colonne (Cod_Page, Cod_Table, Nom_Colonne, Libelle, Typ_Sql, Longueur,
         Precision_Sql, Echelle_Sql, Nullable, Valeur_Defaut, estUnique, estIndexe, Technique, Rang, Dat_Crea, Created_By)
     VALUES
         (@CP6, 'ENT', 'Matricule',         N'Matricule',          'nvarchar', 20,   NULL, NULL, 'false', NULL, 'false', 'false', 'false', 1, GETDATE(), @Login),
@@ -1299,7 +1299,7 @@ option (maxrecursion 0)',
         (@CP6, 'ENT', 'Premiere_Echeance', N'Première échéance',  'date',     NULL, NULL, NULL, 'true',  NULL, 'false', 'false', 'false', 5, GETDATE(), @Login),
         (@CP6, 'ENT', 'Commentaire',       N'Commentaire',        'nvarchar', 500,  NULL, NULL, 'true',  NULL, 'false', 'false', 'false', 6, GETDATE(), @Login);
 
-    INSERT INTO dbo.SP_Page_Champ (Cod_Page, Cod_Champ, Cod_Table, Nom_Colonne, Libelle, Typ_Controle,
+    INSERT INTO dbo.Controle_Designer_Champ (Cod_Page, Cod_Champ, Cod_Table, Nom_Colonne, Libelle, Typ_Controle,
         Rang, Ligne, Colonne, Largeur, Valeur_Defaut, Obligatoire, Etat, Rubrique, Num_Zoom, Source_Metier, Formule,
         Persiste, Format_Affichage, Decimales, Regle_Visibilite, Regle_Activation,
         Visible_Grille, Rang_Grille, Largeur_Colonne, estCritere, Rang_Critere, Aide, Dat_Crea, Created_By)
@@ -1319,7 +1319,7 @@ option (maxrecursion 0)',
         (@CP6, 'Statut',            'ENT', 'Statut',            N'Statut',          'RUBRIQUE', 9, 5, 1, 6, NULL,           'false', 'R', 'Statut_Signature', NULL, NULL, NULL, 'false', NULL, NULL, NULL, NULL, 'false', 9, NULL, 'true', 3, N'Statut du circuit de signature (colonne technique)', GETDATE(), @Login),
         (@CP6, 'Commentaire',       'ENT', 'Commentaire',       N'Commentaire',     'MEMO',   10, 6, 1, 12, NULL,           'false', 'S', NULL, NULL,    NULL, NULL, 'false', NULL, NULL, NULL, NULL, 'true',  8, NULL, 'false', NULL, NULL, GETDATE(), @Login);
 
-    INSERT INTO dbo.SP_Page_Validation (Cod_Page, Cod_Validation, Portee, Cod_Table, Cod_Champ,
+    INSERT INTO dbo.Controle_Designer_Validation (Cod_Page, Cod_Validation, Portee, Cod_Table, Cod_Champ,
         Typ_Regle, Parametres, Condition_Regle, Message, Niveau, Rang, Moment, Actif, Dat_Crea, Created_By)
     VALUES
         (@CP6, 'V00_PROPRIETAIRE', 'CHAMP', 'ENT', 'Matricule', 'SOURCE',
@@ -1328,7 +1328,7 @@ option (maxrecursion 0)',
         (@CP6, 'V01_MATRICULE', 'CHAMP', 'ENT', 'Matricule', 'REQUIRED', NULL, NULL,
             N'Veuillez renseigner le matricule.', 'B', 1, 'SAVE', 'true', GETDATE(), @Login);
 
-    INSERT INTO dbo.SP_Page_Droit (Cod_Page, Cod_Profile, Consulter, Creer, Modifier, Supprimer,
+    INSERT INTO dbo.Controle_Designer_Droit (Cod_Page, Cod_Profile, Consulter, Creer, Modifier, Supprimer,
         Valider, Imprimer, GED, Dat_Crea, Created_By)
     SELECT @CP6, p.Cod_Profile, 'true', 'true', 'true', 'true', 'true', 'true', 'true', GETDATE(), @Login
     FROM dbo.Controle_Profile p WHERE ISNULL(p.Actif, 1) = 1;
@@ -1354,8 +1354,8 @@ option (maxrecursion 0)',
         );
     END
 
-    IF NOT EXISTS (SELECT 1 FROM dbo.SP_Page_DDL_Log WHERE Cod_Page = @CP6 AND Type_Operation = 'CREATE')
-        INSERT INTO dbo.SP_Page_DDL_Log (Cod_Page, Type_Operation, Script_DDL, Resultat, Message, Login_Exec, Date_Exec)
+    IF NOT EXISTS (SELECT 1 FROM dbo.Controle_Designer_DDL_Log WHERE Cod_Page = @CP6 AND Type_Operation = 'CREATE')
+        INSERT INTO dbo.Controle_Designer_DDL_Log (Cod_Page, Type_Operation, Script_DDL, Resultat, Message, Login_Exec, Date_Exec)
         VALUES (@CP6, 'CREATE', 'CREATE TABLE SP_XDP_Ent (script duplicata DUP-PAGES-2026-08)', 'true',
                 N'Table créée par le script duplicata', @Login, GETDATE());
 
@@ -1363,10 +1363,10 @@ option (maxrecursion 0)',
     IF EXISTS (SELECT v.Nom FROM (VALUES ('Matricule'),('Dat_Demande'),('Montant_Pret'),('Nb_Echeance'),('Premiere_Echeance'),('Commentaire')) v(Nom)
                WHERE COL_LENGTH('dbo.SP_XDP_Ent', v.Nom) IS NULL)
         RAISERROR('Colonnes manquantes sur SP_XDP_Ent', 16, 1);
-    IF NOT EXISTS (SELECT 1 FROM dbo.SP_Page_Droit WHERE Cod_Page = @CP6 AND ISNULL(Consulter, 'false') = 'true')
+    IF NOT EXISTS (SELECT 1 FROM dbo.Controle_Designer_Droit WHERE Cod_Page = @CP6 AND ISNULL(Consulter, 'false') = 'true')
         RAISERROR('Aucun profil n''a le droit Consulter : la page serait invisible pour tous.', 16, 1);
 
-    UPDATE dbo.SP_Page
+    UPDATE dbo.Controle_Designer
     SET Statut_Page = 'PUBLIE', Dat_Publication = GETDATE(), DDL_Genere = 'true',
         Version_Page = ISNULL(Version_Page, 1) + 1, Dat_Modif = GETDATE(), Modified_By = @Login
     WHERE Cod_Page = @CP6 AND Statut_Page <> 'PUBLIE';
@@ -1457,18 +1457,18 @@ option (maxrecursion 0)',
    5. Verification finale + issue de transaction
    -------------------------------------------------------------------------- */
     SELECT Cod_Page, Cod_Document, Statut_Page, Menu_Parent, Rang, Version_Page
-    FROM dbo.SP_Page
+    FROM dbo.Controle_Designer
     WHERE Cod_Page IN ('DUP_CONGE','DUP_NOTE_FRAIS','DUP_DECLARATION_AT',
                        'DUP_DOSSIER_MALADIE','DUP_AVANCE','DUP_PRET')
     ORDER BY Rang;
 
     SELECT Cod_Page,
-           (SELECT COUNT(*) FROM dbo.SP_Page_Table t      WHERE t.Cod_Page = p.Cod_Page) AS Nb_Tables,
-           (SELECT COUNT(*) FROM dbo.SP_Page_Colonne c    WHERE c.Cod_Page = p.Cod_Page) AS Nb_Colonnes,
-           (SELECT COUNT(*) FROM dbo.SP_Page_Champ ch     WHERE ch.Cod_Page = p.Cod_Page) AS Nb_Champs,
-           (SELECT COUNT(*) FROM dbo.SP_Page_Validation v WHERE v.Cod_Page = p.Cod_Page) AS Nb_Validations,
-           (SELECT COUNT(*) FROM dbo.SP_Page_Droit d      WHERE d.Cod_Page = p.Cod_Page) AS Nb_Droits
-    FROM dbo.SP_Page p
+           (SELECT COUNT(*) FROM dbo.Controle_Designer_Table t      WHERE t.Cod_Page = p.Cod_Page) AS Nb_Tables,
+           (SELECT COUNT(*) FROM dbo.Controle_Designer_Colonne c    WHERE c.Cod_Page = p.Cod_Page) AS Nb_Colonnes,
+           (SELECT COUNT(*) FROM dbo.Controle_Designer_Champ ch     WHERE ch.Cod_Page = p.Cod_Page) AS Nb_Champs,
+           (SELECT COUNT(*) FROM dbo.Controle_Designer_Validation v WHERE v.Cod_Page = p.Cod_Page) AS Nb_Validations,
+           (SELECT COUNT(*) FROM dbo.Controle_Designer_Droit d      WHERE d.Cod_Page = p.Cod_Page) AS Nb_Droits
+    FROM dbo.Controle_Designer p
     WHERE Cod_Page IN ('DUP_CONGE','DUP_NOTE_FRAIS','DUP_DECLARATION_AT',
                        'DUP_DOSSIER_MALADIE','DUP_AVANCE','DUP_PRET')
     ORDER BY Cod_Page;

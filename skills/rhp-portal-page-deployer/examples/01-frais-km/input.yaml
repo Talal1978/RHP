@@ -3,8 +3,10 @@
 # Cet input reproduit la page officielle du depot :
 #   RHP_Portail\rhpBE\sql\SP_Designer\002_SP_Designer_Exemple_FKM.sql
 #   (+ 003_SP_Designer_Criteres.sql pour estCritere/Rang_Critere)
-# Usage : generer le package avec le skill, puis comparer deploy.sql au script
-# 002 (oracle). Les ecarts doivent etre cosmetiques uniquement.
+# Usage : generer le JSON d'import avec le skill, puis comparer les metadonnees
+# encodees au script 002 (oracle). Les ecarts doivent etre cosmetiques
+# uniquement (le pied de grille Pied_Mnt remplace l'ancien Total_Grille,
+# colonne supprimee par la migration 005).
 # =============================================================================
 request:
   operation: create
@@ -137,8 +139,27 @@ components:
       decimals: 2
       grid_order: 4
       grid_width_em: 8
-      grid_total: SUM
       help: "Montant = Km x Taux"
+  # Pied de grille officiel (pattern Pied_Mnt de 002_...sql:66-67) : champ
+  # calcule rattache au detail SANS colonne physique (non persiste), affiche
+  # sous la grille. Remplace l'ancien grid_total (Total_Grille supprimee par
+  # la migration 005).
+  - component_code: Pied_Mnt
+    component_type: calculated
+    label: "Total des trajets"
+    target_block: LIGNES
+    column_name: ""
+    layout: { display_order: 5 }
+    visible: true
+    editable: false
+    properties:
+      formula: { "op": "SUM", "table": "LIGNES", "colonne": "Mnt" }
+      persist: false
+      format: "MNT"
+      decimals: 2
+      visible_in_grid: false
+      grid_order: 5
+      help: "Pied de grille : somme des montants des trajets"
 
 page_validations:
   - code: V01_MATRICULE

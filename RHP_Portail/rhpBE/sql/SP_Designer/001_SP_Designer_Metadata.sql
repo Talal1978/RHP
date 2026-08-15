@@ -3,9 +3,9 @@
    Script d'installation SQL Server - Tables de métadonnées
    ----------------------------------------------------------------------------
    Contenu :
-     1. Tables de métadonnées : SP_Page, SP_Page_Droit, SP_Page_Table,
-        SP_Page_Colonne, SP_Page_Champ, SP_Page_Validation, SP_Page_Source,
-        SP_Page_DDL_Log
+     1. Tables de métadonnées : Controle_Designer, Controle_Designer_Droit, Controle_Designer_Table,
+        Controle_Designer_Colonne, Controle_Designer_Champ, Controle_Designer_Validation, Controle_Designer_Source,
+        Controle_Designer_DDL_Log
      2. Rubriques système : SP_Statut_Page, SP_Typ_Controle, SP_Typ_Regle,
         SP_Typ_Sql, SP_Etat_Champ, SP_Niveau_Valid, SP_Moment_Valid
      3. Fonction d'habilitation : Controle_Menu_Functions 'SP_DESIGNER'
@@ -29,9 +29,9 @@ BEGIN TRANSACTION;
 /* -------------------------------------------------------------------------- */
 
 -- 1.1 Définition de la page / du type de document
-IF OBJECT_ID('dbo.SP_Page', 'U') IS NULL
+IF OBJECT_ID('dbo.Controle_Designer', 'U') IS NULL
 BEGIN
-    CREATE TABLE dbo.SP_Page (
+    CREATE TABLE dbo.Controle_Designer (
         Cod_Page          nvarchar(30)  NOT NULL,   -- identifiant technique immuable
         Cod_Document      nvarchar(10)  NOT NULL,   -- code du type de document
         Libelle           nvarchar(150) NOT NULL,
@@ -54,7 +54,7 @@ BEGIN
         Act_Soumettre     nvarchar(5)   NOT NULL CONSTRAINT DF_SP_Page_ActSubmit DEFAULT ('true'),
         Act_Imprimer      nvarchar(5)   NOT NULL CONSTRAINT DF_SP_Page_ActPrint DEFAULT ('false'),
         Act_Exporter      nvarchar(5)   NOT NULL CONSTRAINT DF_SP_Page_ActExport DEFAULT ('false'),
-        -- Habilitations : 'true' = consultation réservée aux profils de SP_Page_Droit ;
+        -- Habilitations : 'true' = consultation réservée aux profils de Controle_Designer_Droit ;
         -- 'false' = consultation ouverte à tous les profils (même créés ultérieurement)
         Acces_Personnalise nvarchar(5)  NOT NULL CONSTRAINT DF_SP_Page_AccesPerso DEFAULT ('true'),
         -- Gouvernance
@@ -78,9 +78,9 @@ GO
 --       'true' par défaut : les pages existantes conservent leurs habilitations
 --       par profil inchangées (aucune ouverture de consultation en douce).
 IF NOT EXISTS (SELECT 1 FROM sys.columns
-               WHERE object_id = OBJECT_ID('dbo.SP_Page') AND name = 'Acces_Personnalise')
+               WHERE object_id = OBJECT_ID('dbo.Controle_Designer') AND name = 'Acces_Personnalise')
 BEGIN
-    ALTER TABLE dbo.SP_Page
+    ALTER TABLE dbo.Controle_Designer
         ADD Acces_Personnalise nvarchar(5) NOT NULL
             CONSTRAINT DF_SP_Page_AccesPerso DEFAULT ('true') WITH VALUES;
 END
@@ -89,15 +89,15 @@ GO
 -- 1.1.c Migration : fusion des champs 'Code document' / 'Type document' en un seul
 --       code (2 à 10 car., index unique UQ_SP_Page_Document) qui pilote les noms
 --       physiques des tables ET sert de code workflow.
---       - SP_Page.Typ_Document est élargie (2 -> 10) puis alignée sur Cod_Document ;
+--       - Controle_Designer.Typ_Document est élargie (2 -> 10) puis alignée sur Cod_Document ;
 --       - la table historique Param_Workflow_Typ_Document (limitée à 2 car.) est
 --         élargie à 10 car. : tous les codes existants (<= 2 car.) restent valides.
 IF (SELECT CHARACTER_MAXIMUM_LENGTH FROM INFORMATION_SCHEMA.COLUMNS
-    WHERE TABLE_NAME = 'SP_Page' AND COLUMN_NAME = 'Typ_Document') < 10
+    WHERE TABLE_NAME = 'Controle_Designer' AND COLUMN_NAME = 'Typ_Document') < 10
 BEGIN
-    ALTER TABLE dbo.SP_Page ALTER COLUMN Typ_Document nvarchar(10) NULL;
+    ALTER TABLE dbo.Controle_Designer ALTER COLUMN Typ_Document nvarchar(10) NULL;
 END
-UPDATE dbo.SP_Page SET Typ_Document = Cod_Document
+UPDATE dbo.Controle_Designer SET Typ_Document = Cod_Document
 WHERE isnull(Typ_Document, '') <> isnull(Cod_Document, '');
 GO
 IF (SELECT CHARACTER_MAXIMUM_LENGTH FROM INFORMATION_SCHEMA.COLUMNS
@@ -121,9 +121,9 @@ END
 GO
 
 -- 1.2 Habilitations par profil et par action
-IF OBJECT_ID('dbo.SP_Page_Droit', 'U') IS NULL
+IF OBJECT_ID('dbo.Controle_Designer_Droit', 'U') IS NULL
 BEGIN
-    CREATE TABLE dbo.SP_Page_Droit (
+    CREATE TABLE dbo.Controle_Designer_Droit (
         Cod_Page     nvarchar(30) NOT NULL,
         Cod_Profile  nvarchar(10) NOT NULL,
         Consulter    nvarchar(5)  NOT NULL CONSTRAINT DF_SPDroit_Cons DEFAULT ('false'),
@@ -138,15 +138,15 @@ BEGIN
         Dat_Modif    datetime     NULL,
         Modified_By  nvarchar(50) NULL,
         CONSTRAINT PK_SP_Page_Droit PRIMARY KEY (Cod_Page, Cod_Profile),
-        CONSTRAINT FK_SPDroit_Page FOREIGN KEY (Cod_Page) REFERENCES dbo.SP_Page (Cod_Page)
+        CONSTRAINT FK_SPDroit_Page FOREIGN KEY (Cod_Page) REFERENCES dbo.Controle_Designer (Cod_Page)
     );
 END
 GO
 
 -- 1.3 Tables rattachées (entête + 0..n détails)
-IF OBJECT_ID('dbo.SP_Page_Table', 'U') IS NULL
+IF OBJECT_ID('dbo.Controle_Designer_Table', 'U') IS NULL
 BEGIN
-    CREATE TABLE dbo.SP_Page_Table (
+    CREATE TABLE dbo.Controle_Designer_Table (
         Cod_Page       nvarchar(30) NOT NULL,
         Cod_Table      nvarchar(20) NOT NULL,       -- 'ENT' ou code du détail (ex: 'LIGNES')
         Nom_Physique   nvarchar(60) NOT NULL,       -- SP_<CodDocument>_Ent / _Det_<Cod_Table>
@@ -166,7 +166,7 @@ BEGIN
         Modified_By    nvarchar(50) NULL,
         CONSTRAINT PK_SP_Page_Table PRIMARY KEY (Cod_Page, Cod_Table),
         CONSTRAINT UQ_SP_Page_Table_Nom UNIQUE (Nom_Physique),
-        CONSTRAINT FK_SPTable_Page FOREIGN KEY (Cod_Page) REFERENCES dbo.SP_Page (Cod_Page),
+        CONSTRAINT FK_SPTable_Page FOREIGN KEY (Cod_Page) REFERENCES dbo.Controle_Designer (Cod_Page),
         CONSTRAINT CK_SPTable_Role CHECK (Role_Table IN ('ENT','DET')),
         CONSTRAINT CK_SPTable_RglDel CHECK (Regle_Suppression IN ('CASCADE','RESTRICT'))
     );
@@ -174,9 +174,9 @@ END
 GO
 
 -- 1.4 Colonnes physiques des tables
-IF OBJECT_ID('dbo.SP_Page_Colonne', 'U') IS NULL
+IF OBJECT_ID('dbo.Controle_Designer_Colonne', 'U') IS NULL
 BEGIN
-    CREATE TABLE dbo.SP_Page_Colonne (
+    CREATE TABLE dbo.Controle_Designer_Colonne (
         Cod_Page       nvarchar(30) NOT NULL,
         Cod_Table      nvarchar(20) NOT NULL,
         Nom_Colonne    nvarchar(50) NOT NULL,
@@ -198,15 +198,15 @@ BEGIN
         Modified_By    nvarchar(50) NULL,
         CONSTRAINT PK_SP_Page_Colonne PRIMARY KEY (Cod_Page, Cod_Table, Nom_Colonne),
         CONSTRAINT FK_SPCol_Table FOREIGN KEY (Cod_Page, Cod_Table)
-            REFERENCES dbo.SP_Page_Table (Cod_Page, Cod_Table)
+            REFERENCES dbo.Controle_Designer_Table (Cod_Page, Cod_Table)
     );
 END
 GO
 
 -- 1.5 Champs de la page (conception UI : entête + colonnes de grilles)
-IF OBJECT_ID('dbo.SP_Page_Champ', 'U') IS NULL
+IF OBJECT_ID('dbo.Controle_Designer_Champ', 'U') IS NULL
 BEGIN
-    CREATE TABLE dbo.SP_Page_Champ (
+    CREATE TABLE dbo.Controle_Designer_Champ (
         Cod_Page       nvarchar(30)  NOT NULL,
         Cod_Champ      nvarchar(50)  NOT NULL,      -- identifiant technique du champ
         Cod_Table      nvarchar(20)  NOT NULL,      -- table associée (ENT ou code détail)
@@ -228,7 +228,7 @@ BEGIN
         Num_Zoom       nvarchar(10)  NULL,
         Zoom_Retour    nvarchar(1000) NULL,         -- json : {"ChampCible":"ColonneZoom",...}
         -- Combo libre / source métier
-        Source_Metier  nvarchar(50)  NULL,          -- SP_Page_Source.Cod_Source
+        Source_Metier  nvarchar(50)  NULL,          -- Controle_Designer_Source.Cod_Source
         -- Champ calculé
         Formule        nvarchar(max) NULL,          -- json déclaratif (jamais de code libre)
         Persiste       nvarchar(5)   NOT NULL CONSTRAINT DF_SPChamp_Persiste DEFAULT ('false'),
@@ -253,7 +253,7 @@ BEGIN
         Dat_Modif      datetime      NULL,
         Modified_By    nvarchar(50)  NULL,
         CONSTRAINT PK_SP_Page_Champ PRIMARY KEY (Cod_Page, Cod_Champ),
-        CONSTRAINT FK_SPChamp_Page FOREIGN KEY (Cod_Page) REFERENCES dbo.SP_Page (Cod_Page),
+        CONSTRAINT FK_SPChamp_Page FOREIGN KEY (Cod_Page) REFERENCES dbo.Controle_Designer (Cod_Page),
         CONSTRAINT CK_SPChamp_Etat CHECK (Etat IN ('S','R','A','I')),
         CONSTRAINT CK_SPChamp_Typ CHECK (Typ_Controle IN
             ('TEXT','MEMO','INT','DEC','MNT','DATE','DATETIME','CHECK','RADIO',
@@ -263,9 +263,9 @@ END
 GO
 
 -- 1.6 Validations déclaratives (champ + règles globales avant enregistrement)
-IF OBJECT_ID('dbo.SP_Page_Validation', 'U') IS NULL
+IF OBJECT_ID('dbo.Controle_Designer_Validation', 'U') IS NULL
 BEGIN
-    CREATE TABLE dbo.SP_Page_Validation (
+    CREATE TABLE dbo.Controle_Designer_Validation (
         Cod_Page        nvarchar(30)  NOT NULL,
         Cod_Validation  nvarchar(50)  NOT NULL,
         Portee          nvarchar(10)  NOT NULL,     -- CHAMP/ENTETE/LIGNE/DETAIL/DOCUMENT
@@ -284,7 +284,7 @@ BEGIN
         Dat_Modif       datetime      NULL,
         Modified_By     nvarchar(50)  NULL,
         CONSTRAINT PK_SP_Page_Validation PRIMARY KEY (Cod_Page, Cod_Validation),
-        CONSTRAINT FK_SPValid_Page FOREIGN KEY (Cod_Page) REFERENCES dbo.SP_Page (Cod_Page),
+        CONSTRAINT FK_SPValid_Page FOREIGN KEY (Cod_Page) REFERENCES dbo.Controle_Designer (Cod_Page),
         CONSTRAINT CK_SPValid_Portee CHECK (Portee IN ('CHAMP','ENTETE','LIGNE','DETAIL','DOCUMENT')),
         CONSTRAINT CK_SPValid_Niveau CHECK (Niveau IN ('I','W','B')),
         CONSTRAINT CK_SPValid_Typ CHECK (Typ_Regle IN
@@ -295,9 +295,9 @@ END
 GO
 
 -- 1.7 Catalogue sécurisé de sources métier autorisées
-IF OBJECT_ID('dbo.SP_Page_Source', 'U') IS NULL
+IF OBJECT_ID('dbo.Controle_Designer_Source', 'U') IS NULL
 BEGIN
-    CREATE TABLE dbo.SP_Page_Source (
+    CREATE TABLE dbo.Controle_Designer_Source (
         Cod_Source   nvarchar(50)  NOT NULL,
         Libelle      nvarchar(150) NOT NULL,
         Typ_Source   nvarchar(10)  NOT NULL,        -- SQL / PROC
@@ -318,9 +318,9 @@ END
 GO
 
 -- 1.8 Journal des générations / migrations DDL
-IF OBJECT_ID('dbo.SP_Page_DDL_Log', 'U') IS NULL
+IF OBJECT_ID('dbo.Controle_Designer_DDL_Log', 'U') IS NULL
 BEGIN
-    CREATE TABLE dbo.SP_Page_DDL_Log (
+    CREATE TABLE dbo.Controle_Designer_DDL_Log (
         RowId          int IDENTITY(1,1) NOT NULL,
         Cod_Page       nvarchar(30)  NOT NULL,
         Type_Operation nvarchar(20)  NOT NULL,      -- CREATE / MIGRATE
@@ -330,7 +330,7 @@ BEGIN
         Login_Exec     nvarchar(50)  NULL,
         Date_Exec      datetime      NOT NULL CONSTRAINT DF_SPDDLLog_Date DEFAULT (GETDATE()),
         CONSTRAINT PK_SP_Page_DDL_Log PRIMARY KEY (RowId),
-        CONSTRAINT FK_SPDDLLog_Page FOREIGN KEY (Cod_Page) REFERENCES dbo.SP_Page (Cod_Page)
+        CONSTRAINT FK_SPDDLLog_Page FOREIGN KEY (Cod_Page) REFERENCES dbo.Controle_Designer (Cod_Page)
     );
 END
 GO
@@ -439,9 +439,9 @@ GO
 /*    déclaré dans Parametres (json). @id_Societe est injecté automatiquement */
 /*    par le serveur et ne doit pas être déclaré.                             */
 /* -------------------------------------------------------------------------- */
-IF NOT EXISTS (SELECT 1 FROM SP_Page_Source WHERE Cod_Source = 'solde_conge')
+IF NOT EXISTS (SELECT 1 FROM Controle_Designer_Source WHERE Cod_Source = 'solde_conge')
 BEGIN
-    INSERT INTO SP_Page_Source (Cod_Source, Libelle, Typ_Source, Code_Sql, Parametres, Typ_Retour, Cod_Profile, Actif, Dat_Crea, Created_By)
+    INSERT INTO Controle_Designer_Source (Cod_Source, Libelle, Typ_Source, Code_Sql, Parametres, Typ_Retour, Cod_Profile, Actif, Dat_Crea, Created_By)
     VALUES ('solde_conge', 'Solde de congé de l''agent', 'SQL',
             'select Solde_Conge from dbo.Sys_Rh_Conge(@id_Societe, convert(date, getdate())) where Matricule = @Matricule',
             '[{"Nom":"Matricule","Typ":"nvarchar","Obligatoire":true}]',

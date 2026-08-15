@@ -124,7 +124,7 @@ table.mk-grid td.ro{background:#EFEFEF !important;color:#888}
 <!-- ============================ BARRE LATÉRALE ============================ -->
 <nav id="sidebar">
   <h1>🛠 Designer de pages portail</h1>
-  <div class="version">RHP — module SP_ · Aide utilisateur complète · v1.0 · Août 2026</div>
+  <div class="version">RHP — module SP_ · Aide utilisateur complète · v1.1 (intégrée à l'écran : bouton Aide / F1) · Août 2026</div>
   <input type="text" id="searchBox" placeholder="🔍 Rechercher dans l'aide… (ex : SOMME, grille virtuelle, zoom)" autocomplete="off">
   <div id="searchMeta"></div>
   <div id="searchResults"></div>
@@ -185,8 +185,8 @@ table.mk-grid td.ro{background:#EFEFEF !important;color:#888}
 documents (demandes, notes de frais, déclarations…), avec entête, une ou plusieurs grilles de détail, champs calculés,
 contrôles de saisie, validations, workflow de signature, pièces jointes (GED) et habilitations par profil.</p>
 <p>Tout ce que vous configurez dans le Designer est stocké dans des tables de métadonnées SQL Server
-(<code>SP_Page</code>, <code>SP_Page_Table</code>, <code>SP_Page_Colonne</code>, <code>SP_Page_Champ</code>,
-<code>SP_Page_Validation</code>, <code>SP_Page_Source</code>, <code>SP_Page_Droit</code>) puis <b>interprété à
+(<code>Controle_Designer</code>, <code>Controle_Designer_Table</code>, <code>Controle_Designer_Colonne</code>, <code>Controle_Designer_Champ</code>,
+<code>Controle_Designer_Validation</code>, <code>Controle_Designer_Source</code>, <code>Controle_Designer_Droit</code>) puis <b>interprété à
 l'exécution</b> par le moteur générique du portail. L'enregistrement d'une page crée ou fait évoluer
 <b>automatiquement les tables métier</b> de la base (préfixe <code>SP_</code>) dans la même transaction.</p>
 <div class="astuce"><b class="t">Ce que vous pouvez construire</b>
@@ -199,7 +199,7 @@ imprimable — le tout publié dans le menu du portail en un clic.</div>
   <div class="mk-title"><span><span class="mk-ico">◈</span> Chaîne de conception → exécution</span></div>
   <div style="padding:14px 16px;font-size:13.5px;line-height:2">
     <b>① RHP_DeskTop — Designer</b> (<code>SP_Page_Designer</code>) : vous décrivez la page (tables, colonnes, champs, validations, droits)
-    &nbsp;⟶&nbsp; <b>② Tables de métadonnées</b> <code>SP_Page*</code> + <b>tables métier</b> <code>SP_&lt;TypeDoc&gt;_Ent / _Det_…</code> créées par le DDL automatique
+    &nbsp;⟶&nbsp; <b>② Tables de métadonnées</b> <code>Controle_Designer*</code> + <b>tables métier</b> <code>SP_&lt;TypeDoc&gt;_Ent / _Det_…</code> créées par le DDL automatique
     &nbsp;⟶&nbsp; <b>③ Bouton « Publier »</b> : la page devient visible sur le portail (statut <code>PUBLIE</code>)
     &nbsp;⟶&nbsp; <b>④ RHP_Portail</b> : la page apparaît dans le menu latéral ; le moteur <code>DynamicPage</code> / <code>DynamicPage_Liste</code>
     génère l'écran web à la volée ; le serveur ré-applique calculs et validations (le client n'est jamais cru).
@@ -214,7 +214,7 @@ serveur ; formules et validations sont <b>déclaratives (json)</b>, jamais du co
 <h3 id="s01-cycle">1.3 Cycle de vie d'une page</h3>
 <table class="ref">
 <tr><th style="width:130px">Statut</th><th>Signification</th><th>Comment on y arrive</th></tr>
-<tr><td class="c"><code>BROUILLON</code></td><td>Page en cours de conception, <b>invisible sur le portail</b>. Seul statut où la suppression de la page est possible (et seulement si aucun document n'existe).</td><td>Statut initial à la création (bouton <b>Nouveau</b>) et après <b>Dupliquer</b>.</td></tr>
+<tr><td class="c"><code>BROUILLON</code></td><td>Page en cours de conception, <b>invisible sur le portail</b>. La suppression de la page est possible dès que toutes ses tables SQL sont vides, quel que soit le statut (les tables vides sont supprimées avec elle).</td><td>Statut initial à la création (bouton <b>Nouveau</b>) et après <b>Dupliquer</b>.</td></tr>
 <tr><td class="c"><code>PUBLIE</code></td><td>Page <b>visible et utilisable sur le portail</b> : entrée de menu créée, documents saisissables. Le numéro de version (<code>Version_Page</code>) est incrémenté à chaque publication.</td><td>Bouton <b>Publier</b> (après contrôles de cohérence automatiques).</td></tr>
 <tr><td class="c"><code>DESACTIVE</code></td><td>Page <b>retirée du portail</b> ; les documents existants sont conservés.</td><td>Bouton <b>Publier / Désactiver</b> sur une page déjà publiée.</td></tr>
 <tr><td class="c"><code>ARCHIVE</code></td><td>Statut de fin de vie (réservé, positionnable en base).</td><td>—</td></tr>
@@ -355,20 +355,21 @@ bloquant indiquant la migration à jouer (ex. <i>« Appliquez la migration 006_S
   <div class="mk-toolbar">
     <span class="mk-btn"><b>➕</b> Nouveau<span class="bdg">1</span></span>
     <span class="mk-btn"><b>💾</b> Enregistrer<span class="bdg">2</span></span>
-    <span class="mk-btn"><b>🗑</b> Supprimer<span class="bdg">3</span></span>
-    <span class="mk-btn"><b>⧉</b> Dupliquer<span class="bdg">4</span></span>
-    <span class="mk-btn"><b>📜</b> Aperçu DDL<span class="bdg">5</span></span>
-    <span class="mk-btn"><b>✅</b> Publier / Désactiver<span class="bdg">6</span></span>
+    <span class="mk-btn"><b>?</b> Aide<span class="bdg">3</span></span>
+    <span class="mk-btn"><b>🗑</b> Supprimer<span class="bdg">4</span></span>
+    <span class="mk-btn"><b>⧉</b> Dupliquer<span class="bdg">5</span></span>
+    <span class="mk-btn"><b>📜</b> Aperçu DDL<span class="bdg">6</span></span>
+    <span class="mk-btn"><b>✅</b> Publier / Désactiver<span class="bdg">7</span></span>
   </div>
   <div class="mk-group"><span class="mk-gt">Définition du type de document</span>
     <div class="mk-row">
-      <span class="mk-field"><span class="mk-lbl"><u>Code page</u></span><span class="mk-inp ro">PG_20260814_000001</span><span class="bdg">7</span></span>
-      <span class="mk-field"><span class="mk-lbl">Nom de la page</span><span class="mk-inp" style="min-width:230px">Frais kilométriques</span><span class="bdg">8</span></span>
-      <span class="mk-field"><span class="mk-lbl">Statut</span><span class="mk-inp ro combo">BROUILLON</span><span class="bdg">9</span></span>
+      <span class="mk-field"><span class="mk-lbl"><u>Code page</u></span><span class="mk-inp ro">PG_20260814_000001</span><span class="bdg">8</span></span>
+      <span class="mk-field"><span class="mk-lbl">Nom de la page</span><span class="mk-inp" style="min-width:230px">Frais kilométriques</span><span class="bdg">9</span></span>
+      <span class="mk-field"><span class="mk-lbl">Statut</span><span class="mk-inp ro combo">BROUILLON</span><span class="bdg">10</span></span>
     </div>
   </div>
   <div class="mk-tabs">
-    <span class="mk-tab on">Structure des tables</span><span class="mk-tab">Sources externes</span><span class="mk-tab">Champs de la page</span><span class="mk-tab">Conception de la page</span><span class="mk-tab">Comportement</span><span class="mk-tab">Habilitations</span><span class="bdg" style="margin-top:4px">10</span>
+    <span class="mk-tab on">Structure des tables</span><span class="mk-tab">Sources externes</span><span class="mk-tab">Champs de la page</span><span class="mk-tab">Conception de la page</span><span class="mk-tab">Comportement</span><span class="mk-tab">Habilitations</span><span class="bdg" style="margin-top:4px">11</span>
   </div>
   <div class="mk-body" style="color:#888;font-style:italic">… contenu de l'onglet actif (grilles de configuration) …</div>
 </div>
@@ -376,14 +377,16 @@ bloquant indiquant la migration à jouer (ex. <i>« Appliquez la migration 006_S
 <div class="mk-legend">
 <p><span class="bdg">1</span><b>Nouveau</b> : réinitialise l'écran, génère un nouveau code page, re-rend le type document saisissable, recrée la table ENT. Statut : BROUILLON.</p>
 <p><span class="bdg">2</span><b>Enregistrer</b> (raccourci : touche <span class="kbd">Entrée</span> hors grille) : contrôle toute la configuration puis écrit métadonnées + crée/migre les tables métier <b>dans une seule transaction</b>. Recharge la page ensuite.</p>
-<p><span class="bdg">3</span><b>Supprimer</b> : uniquement un <b>brouillon sans aucun document</b> saisi. Les tables métier et leurs données ne sont <b>jamais</b> supprimées. → §14.5.</p>
-<p><span class="bdg">4</span><b>Dupliquer</b> : copie tout le paramétrage affiché sous une nouvelle identité (nouveau code page ; nouveau type document à ressaisir ; statut Brouillon). Rien n'est écrit avant « Enregistrer ». → §14.4.</p>
-<p><span class="bdg">5</span><b>Aperçu DDL</b> : affiche le script SQL de création/migration des tables <b>sans l'exécuter</b>, précédé de commentaires <code>-- …</code> (créations, colonnes ajoutées, avertissements non destructifs). → §14.2.</p>
-<p><span class="bdg">6</span><b>Publier / Désactiver</b> : publie la page sur le portail (après contrôles) ; sur une page déjà publiée, propose la désactivation. → §14.3.</p>
-<p><span class="bdg">7</span><b>Code page</b> : identifiant technique généré (<code>PG_&lt;date&gt;_&lt;séquence&gt;</code>), toujours en lecture seule. <b>Cliquez sur le libellé « Code page »</b> (lien) pour ouvrir le zoom de sélection et <b>charger une page existante</b>.</p>
-<p><span class="bdg">8</span><b>Nom de la page</b> : titre affiché dans le menu du portail (obligatoire, 60 caractères max).</p>
-<p><span class="bdg">9</span><b>Statut</b> : BROUILLON / PUBLIE / DESACTIVE / ARCHIVE — <b>non modifiable directement</b> : il ne change que via le bouton Publier / Désactiver.</p>
-<p><span class="bdg">10</span>Les <b>6 onglets</b> de configuration, détaillés aux chapitres 4 à 9.</p>
+<p><span class="bdg">3</span><b>Aide</b> : ouvre cette aide (guide complet, indexé, avec recherche intégrée) dans le navigateur — également accessible à tout moment par la touche <span class="kbd">F1</span>.</p>
+<p><span class="bdg">4</span><b>Supprimer</b> : possible dès que <b>toutes les tables SQL de la page sont vides</b> (quel que soit le statut) ; les tables vides et leurs références sont supprimées avec la page. Aucune donnée n'est jamais détruite. → §14.6.</p>
+<p><span class="bdg">5</span><b>Dupliquer</b> : copie tout le paramétrage affiché sous une nouvelle identité (nouveau code page ; nouveau type document à ressaisir ; statut Brouillon). Rien n'est écrit avant « Enregistrer ». → §14.4.</p>
+<p><b>Exporter / Importer JSON</b> : exporte la configuration de la page (hors habilitations) vers un fichier json, ou recharge un tel fichier dans le Designer (création ou mise à jour, sans écriture en base avant « Enregistrer »). → §14.5.</p>
+<p><span class="bdg">6</span><b>Aperçu DDL</b> : affiche le script SQL de création/migration des tables <b>sans l'exécuter</b>, précédé de commentaires <code>-- …</code> (créations, colonnes ajoutées, avertissements non destructifs). → §14.2.</p>
+<p><span class="bdg">7</span><b>Publier / Désactiver</b> : publie la page sur le portail (après contrôles) ; sur une page déjà publiée, propose la désactivation. → §14.3.</p>
+<p><span class="bdg">8</span><b>Code page</b> : identifiant technique généré (<code>PG_&lt;date&gt;_&lt;séquence&gt;</code>), toujours en lecture seule. <b>Cliquez sur le libellé « Code page »</b> (lien) pour ouvrir le zoom de sélection et <b>charger une page existante</b>.</p>
+<p><span class="bdg">9</span><b>Nom de la page</b> : titre affiché dans le menu du portail (obligatoire, 60 caractères max).</p>
+<p><span class="bdg">10</span><b>Statut</b> : BROUILLON / PUBLIE / DESACTIVE / ARCHIVE — <b>non modifiable directement</b> : il ne change que via le bouton Publier / Désactiver.</p>
+<p><span class="bdg">11</span>Les <b>6 onglets</b> de configuration, détaillés aux chapitres 4 à 9.</p>
 </div>
 
 <h3 id="s03-bandeau">3.3 Règles d'or de l'écran</h3>
@@ -394,6 +397,8 @@ bloquant indiquant la migration à jouer (ex. <i>« Appliquez la migration 006_S
 <b>curseur main</b> au survol et ouvrent un assistant — le json technique est toujours généré, jamais saisi à la main.</li>
 <li>La <b>touche <span class="kbd">Suppr</span></b> supprime la ligne sélectionnée d'une grille (avec contrôles :
 impossible de supprimer la table ENT, une table encore référencée, ou une colonne utilisée par des champs).</li>
+<li><b>La touche <span class="kbd">F1</span></b> (ou le bouton <b>Aide</b> de la barre d'outils) ouvre cette aide
+à tout moment, dans le navigateur par défaut.</li>
 <li>Les listes déroulantes des grilles sont <b>fermées</b> (valeurs prédéterminées partagées avec les contrôles
 d'enregistrement) : impossible de saisir une valeur hors domaine.</li>
 <li>Les booléens sont des <b>cases à cocher</b> ; les entêtes de colonnes sont des libellés utilisateur (« Type source »,
@@ -1229,7 +1234,7 @@ les validations de portée DETAIL (ex. <code>NB_LIGNES</code>) s'appliquent sur 
 </ul>
 </section>
 <!-- ============================================================ S14 -->
-<section id="s14" data-title="14. Cycle de vie : enregistrer, publier, dupliquer, supprimer">
+<section id="s14" data-title="14. Cycle de vie : enregistrer, publier, dupliquer, exporter/importer JSON, supprimer">
 <h2>14. Cycle de vie : enregistrer, publier, dupliquer, supprimer</h2>
 
 <h3 id="s14-save">14.1 Enregistrer — contrôles puis écriture transactionnelle</h3>
@@ -1244,15 +1249,17 @@ dans l'ordre — chaque échec affiche un message précis et rien n'est écrit :
 <tr><td>Validations</td><td>Portée et type valides ; code unique ; table configurée ; <b>message obligatoire</b>.</td></tr>
 <tr><td>Habilitations</td><td>Pas de profil en doublon.</td></tr>
 </table>
-<p>Puis tout est écrit dans <b>une seule transaction</b> : métadonnées (mise à jour de <code>SP_Page</code>, purge et
+<p>Puis tout est écrit dans <b>une seule transaction</b> : métadonnées (mise à jour de <code>Controle_Designer</code>, purge et
 réinsertion des lignes filles, mise à jour du catalogue de sources) <b>puis création/migration des tables métier</b>
 (<code>CREATE TABLE</code> / <code>ALTER TABLE … ADD</code>, index <code>IX_/UX_</code>, clé étrangère détail→entête
 <code>ON DELETE CASCADE</code> si demandé). Toute erreur SQL annule <b>tout</b> (rollback). Le journal
-<code>SP_Page_DDL_Log</code> conserve chaque exécution (script, résultat, login, date). Message de succès :
+<code>Controle_Designer_DDL_Log</code> conserve chaque exécution (script, résultat, login, date). Message de succès :
 <i>« Enregistré avec succès. »</i> suivi du récapitulatif DDL (tables créées, colonnes ajoutées, avertissements).</p>
 <div class="note"><b class="t">Migration non destructive</b>
 Une colonne retirée de la configuration n'est <b>jamais supprimée en base</b> (avertissement « ATTENTION … Elle n'est
-PAS supprimée »). Le DDL étant non destructif, <b>ré-enregistrer une page publiée ne l'invalide pas</b> : elle reste publiée.</div>
+PAS supprimée ») ; une table retirée de la configuration devient une <b>table orpheline</b>, conservée elle aussi —
+elle ne sera supprimée, si elle est vide, qu'à la suppression de la page (→ §14.6).
+Le DDL étant non destructif, <b>ré-enregistrer une page publiée ne l'invalide pas</b> : elle reste publiée.</div>
 
 <h3 id="s14-ddl">14.2 Aperçu DDL — voir avant d'exécuter</h3>
 <p>Le bouton <b>Aperçu DDL</b> génère le script <b>depuis les grilles en mémoire, sans l'exécuter</b>, et l'affiche dans
@@ -1307,14 +1314,64 @@ Le catalogue des sources (global, partagé) · les règles du workflow de signat
 de confirmation vous y invite : <i>« redéfinissez-les pour le nouveau type document »</i>) · les artefacts de publication
 (écran SPP_, version, dates).</div>
 
-<h3 id="s14-supprimer">14.5 Supprimer une page</h3>
-<p>Conditions — toutes obligatoires : page <b>enregistrée</b>, statut <b>BROUILLON</b> (sinon : passez-la en
-« Désactivé »), <b>aucun document</b> dans la table d'entête (le message indique le nombre le cas échéant).
-La suppression purge les métadonnées de la page (dans l'ordre des clés étrangères, y compris le journal DDL) et les
-règles de workflow orphelines du type document (signalées dans la confirmation). <b>Les tables métier SP_ et leurs
-données ne sont JAMAIS supprimées</b> ; le catalogue des sources n'est pas touché.</p>
+<h3 id="s14-json">14.5 Exporter / Importer la configuration (JSON)</h3>
+<p>Les boutons <b>Exporter JSON</b> et <b>Importer JSON</b> permettent de <b>transférer une page configurée d'un
+environnement RHP vers un autre</b> (ou d'en conserver une copie de sauvegarde), sans jamais manipuler les tables
+SQL à la main. Le fichier produit est un json lisible, versionné (<code>format: "RHP_PAGE_DESIGNER"</code>,
+<code>version: "1.0"</code>), nommé <code>RHP_Page_&lt;CodePage&gt;_&lt;AAAAMMJJ_HHMMSS&gt;.json</code>.</p>
+<p><b>Contenu du fichier</b> : identification de la page (code, type document, nom, section de menu, rang, icône,
+options workflow / GED / actions) · structure SQL logique (tables ENT/DET, colonnes physiques avec types, tailles,
+nullabilité, défauts, index) · champs de la page (entête et colonnes de grilles, avec formules, zooms, rubriques,
+sources) · grilles virtuelles (source + mapping) · validations déclaratives · <b>sources métier utilisées</b> par la
+page. <b>Les habilitations ne figurent JAMAIS dans le fichier</b> (ni profils, ni droits, ni l'option « Accès
+personnalisé » en mise à jour).</p>
+<h4>Exporter</h4>
+<p>Ouvrez la page, cliquez <b>Exporter JSON</b>, choisissez l'emplacement : l'état affiché (saisies validées
+incluses, miroir de « Dupliquer ») est sérialisé. Le message de confirmation rappelle les compteurs exportés.</p>
+<h4>Importer — dans le Designer, jamais directement en base</h4>
+<p><b>Importer JSON</b> enchaîne : lecture du fichier → <b>validation complète</b> (format, version, structure,
+domaines, doublons, références entre éléments, sources, mappings) → <b>prévisualisation</b> (création ou mise à
+jour, éléments détectés, ajouts / modifications / suppressions / inchangés, dépendances non résolues) → au
+« Valider » seulement, la configuration est chargée dans les contrôles et grilles du Designer. <b>Aucune écriture
+en base</b> n'a lieu à ce stade : c'est le bouton <b>Enregistrer</b> qui applique tous les contrôles standards et
+génère/migre les tables SQL. Un fichier invalide est rejeté avec la liste précise des anomalies, <b>sans rien
+modifier à l'écran</b>.</p>
+<ul>
+<li><b>Création</b> : le code page du fichier est inconnu (ou absent ⇒ code automatique) — l'écran passe en mode
+création, toutes les grilles sont alimentées ; le statut repart à BROUILLON.</li>
+<li><b>Mise à jour</b> : le code page existe — la configuration du fichier <b>remplace</b> celle de l'écran
+(synchronisation : ajouts, modifications, suppressions d'éléments). Le <b>type document doit être identique</b>
+(il est immuable après création : un écart bloque l'import). <b>Les habilitations existantes sont intégralement
+préservées.</b></li>
+<li><b>Sources métier</b> : le catalogue étant global, les sources du fichier sont <b>fusionnées</b> par code
+(créées ou mises à jour), jamais supprimées.</li>
+<li><b>Dépendances</b> (section de menu, zooms, rubriques, modèle d'édition, profils de sources) : résolues par
+code fonctionnel dans la base cible ; une dépendance introuvable produit un <b>avertissement</b> explicite à
+corriger dans l'écran avant l'enregistrement — la sauvegarde reste bloquée tant qu'une donnée obligatoire manque.</li>
+</ul>
+<div class="note"><b class="t">Traçabilité</b>
+Le fichier embarque date d'export, utilisateur et version RHP. L'import d'une page existante est journalisé dans
+<code>Controle_Designer_DDL_Log</code> (opération <code>IMPORT</code> : utilisateur, date, nombre d'éléments ajoutés /
+modifiés / supprimés). La migration SQL reste <b>non destructive</b> : une colonne ou table retirée par l'import
+disparaît de la configuration mais n'est jamais supprimée physiquement (signalée à l'enregistrement ; une table
+orpheline vide ne sera supprimée qu'à la suppression de la page — → §14.6).</div>
 
-<h3 id="s14-docs">14.6 Vie des documents (rappels utiles au concepteur)</h3>
+<h3 id="s14-supprimer">14.6 Supprimer une page</h3>
+<p>Conditions — toutes obligatoires : page <b>enregistrée</b>, <b>tables SQL vides</b> — chaque table physique de la
+page (entête <b>et</b> détails, y compris les tables orphelines du préfixe <code>SP_&lt;TypeDocument&gt;_%</code>,
+ex. détail retiré de la configuration après génération ; les détails virtuels alimentés par une source n'ont pas de
+table physique) ne doit contenir aucune ligne — et <b>aucune référence extérieure</b> : aucune clé étrangère d'une
+table extérieure ne doit pointer vers ces tables (le message liste les tables non vides ou les références le cas
+échéant). Le statut n'est pas un critère : brouillon, publiée ou désactivée, une page sans donnée se supprime.
+La suppression purge les métadonnées de la page (dans l'ordre des clés étrangères, y compris le journal DDL),
+<b>supprime physiquement les tables SQL vides</b> (détails et orphelines d'abord, entête en dernier — les clés
+étrangères internes détail → entête partent avec elles) ainsi que les éventuelles configurations d'audit (espions)
+posées sur ces tables, les <b>artefacts de publication</b> (écran portail <code>SPP_&lt;CodPage&gt;</code> et
+déclaration du type document au moteur de workflow — uniquement si elle est rattachée à cet écran) et les règles de
+workflow orphelines du type document (signalés dans la confirmation). <b>Aucune donnée n'est jamais détruite</b> :
+seules des tables vides sont supprimées ; le catalogue des sources n'est pas touché.</p>
+
+<h3 id="s14-docs">14.7 Vie des documents (rappels utiles au concepteur)</h3>
 <ul>
 <li><b>Numérotation</b> : <code>&lt;TypeDocument&gt;&lt;idSociete&gt;-&lt;année&gt;&lt;séquence 6 chiffres&gt;</code> (ex. <code>FKM1-2026000001</code>), attribuée à l'enregistrement.</li>
 <li><b>Concurrence optimiste</b> : la colonne <code>RV</code> détecte les conflits — « Document modifié par un autre utilisateur. Rechargez la page. » ; un verrou d'accès signale aussi « Document utilisé par : X ».</li>
@@ -1538,7 +1595,7 @@ Droits : tous les profils actifs, toutes actions (script <code>SELECT … FROM C
 <tr><td>« La requête ne passe pas le contrôle d'injection : … »</td><td>SQL non conforme (écriture, mot-clé interdit, plusieurs instructions, procédure non autorisée). → SELECT/WITH unique, ou EXEC dbo.Sys_* uniquement.</td></tr>
 <tr><td>« Publication impossible : - … »</td><td>Liste de contrôles en échec (tables/colonnes absentes, zoom/rubrique/source introuvable, cycle de calculs, droits…). → Traitez chaque puce puis republiez.</td></tr>
 <tr><td>« Référence circulaire dans les calculs : A -&gt; B -&gt; A »</td><td>Deux champs calculés se référencent mutuellement. → Cassez la boucle (recalculez depuis des champs saisis).</td></tr>
-<tr><td>« Supprimer (brouillon sans document uniquement) »</td><td>Suppression refusée : page publiée ou documents existants. → Désactivez la page ; les documents sont conservés.</td></tr>
+<tr><td>« … ne peut pas être supprimée : ses tables SQL contiennent des données / sont référencées par des clés étrangères extérieures »</td><td>Suppression refusée : des lignes existent dans les tables listées, ou une table extérieure référence ces tables. → Désactivez la page (les documents sont conservés), ou retirez d'abord les références listées.</td></tr>
 <tr><td>« Document modifié par un autre utilisateur. Rechargez la page. » (portail)</td><td>Concurrence optimiste (RV). → Rechargez et ressaisissez.</td></tr>
 <tr><td>La page n'apparaît pas dans le menu du portail</td><td>Statut non PUBLIE, droit Consulter manquant, ou cache de 60 s. → Publiez, vérifiez les habilitations, patientez 1 minute.</td></tr>
 <tr><td>Un bouton du menu flottant est absent (portail)</td><td>Action décochée (Conception), droit manquant (Habilitations), document figé (statut) ou verrouillé par un autre utilisateur.</td></tr>
@@ -1553,7 +1610,7 @@ Droits : tous les profils actifs, toutes actions (script <code>SELECT … FROM C
 <li><b>Avertissement (W) plutôt que blocage (B)</b> pour les contrôles de plausibilité (kilométrage inhabituel…) ; blocage pour l'intégrité.</li>
 <li><b>Centralisez le SQL métier dans les sources</b> (catalogue réutilisable, contrôle d'injection, restriction par profil) plutôt que de multiplier les variantes.</li>
 <li><b>Dupliquez</b> une page éprouvée plutôt que de repartir de zéro.</li>
-<li><b>Aperçu DDL systématique</b> avant publication sur une base de production ; le journal <code>SP_Page_DDL_Log</code> garde la trace de chaque exécution.</li>
+<li><b>Aperçu DDL systématique</b> avant publication sur une base de production ; le journal <code>Controle_Designer_DDL_Log</code> garde la trace de chaque exécution.</li>
 <li>Documentez chaque champ délicat dans sa colonne <b>Aide</b> (affichée sur le portail).</li>
 </ul>
 </section>
@@ -1561,6 +1618,8 @@ Droits : tous les profils actifs, toutes actions (script <code>SELECT … FROM C
 <!-- ============================================================ S18 -->
 <section id="s18" data-title="18. FAQ">
 <h2>18. Foire aux questions</h2>
+<h4>Comment accéder à cette aide depuis l'écran ?</h4>
+<p>Par le bouton <b>?</b> <b>Aide</b> de la barre d'outils du Designer (juste après « Enregistrer »), ou par la touche <span class="kbd">F1</span> à tout moment : le guide s'ouvre dans le navigateur par défaut (il est déployé avec l'application, dossier <code>rsc\aide</code>).</p>
 <h4>Le code page peut-il être changé ?</h4>
 <p>Non. Il est généré (<code>PG_&lt;date&gt;_&lt;séquence&gt;</code>) et immuable. Seuls le nom, la structure et les paramètres évoluent.</p>
 <h4>Le type document peut-il être changé après enregistrement ?</h4>
@@ -1588,7 +1647,7 @@ Droits : tous les profils actifs, toutes actions (script <code>SELECT … FROM C
 <h2>19. Glossaire</h2>
 <table class="ref">
 <tr><th style="width:180px">Terme</th><th>Définition</th></tr>
-<tr><td><b>Page (SP_Page)</b></td><td>Configuration complète d'un écran métier du portail : tables, champs, validations, droits, publication.</td></tr>
+<tr><td><b>Page (Controle_Designer)</b></td><td>Configuration complète d'un écran métier du portail : tables, champs, validations, droits, publication.</td></tr>
 <tr><td><b>Type document (Cod_Document)</b></td><td>Code unique de 2 à 10 caractères pilotant les noms physiques des tables et le code workflow. Immuable.</td></tr>
 <tr><td><b>ENT / DET</b></td><td>Table d'entête (une seule, obligatoire) / table de détail (grille de lignes).</td></tr>
 <tr><td><b>Champ</b></td><td>Élément d'interface du portail (zone de saisie, case, combo, calcul…) rattaché ou non à une colonne physique.</td></tr>
@@ -1621,7 +1680,7 @@ Droits : tous les profils actifs, toutes actions (script <code>SELECT … FROM C
 <p><span class="lt">D</span><br>
 <a href="#s06-controles">DATE / DATETIME</a> · <a href="#s06">Décimales</a> · <a href="#s01-cycle">DESACTIVE</a> · <a href="#s08">DETAIL (portée)</a> · <a href="#s08">DOCUMENT (portée)</a> · <a href="#s14-dupliquer">Dupliquer une page</a> · <a href="#s10-dates">DUREE</a></p>
 <p><span class="lt">E</span><br>
-<a href="#s04-tables">ENT (entête)</a> · <a href="#s06">État S/R/A/I</a> · <a href="#s08-types">EXPR</a></p>
+<a href="#s04-tables">ENT (entête)</a> · <a href="#s06">État S/R/A/I</a> · <a href="#s14-json">Exporter JSON</a> · <a href="#s08-types">EXPR</a></p>
 <p><span class="lt">F</span><br>
 <a href="#s15">FAB (menu flottant)</a> · <a href="#s14-docs">Figer_Statuts</a> · <a href="#s10-niveaux">Format d'affichage</a> · <a href="#s10">Formule</a></p>
 <p><span class="lt">G</span><br>
@@ -1629,7 +1688,7 @@ Droits : tous les profils actifs, toutes actions (script <code>SELECT … FROM C
 <p><span class="lt">H</span><br>
 <a href="#s09">Habilitations</a></p>
 <p><span class="lt">I</span><br>
-<a href="#s07">Icône MUI</a> · <a href="#s08-types">IN</a> · <a href="#s04-colonnes">Index (IX_/UX_)</a> · <a href="#s12">Injection automatique (@id_Societe…)</a></p>
+<a href="#s07">Icône MUI</a> · <a href="#s14-json">Importer JSON</a> · <a href="#s08-types">IN</a> · <a href="#s04-colonnes">Index (IX_/UX_)</a> · <a href="#s12">Injection automatique (@id_Societe…)</a></p>
 <p><span class="lt">J</span><br>
 <a href="#s10-dates">JOURSEM</a></p>
 <p><span class="lt">L</span><br>

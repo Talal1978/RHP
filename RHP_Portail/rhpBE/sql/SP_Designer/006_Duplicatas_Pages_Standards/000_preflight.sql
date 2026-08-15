@@ -13,27 +13,27 @@ SET NOCOUNT ON;
 
 /* A. Niveau de schema SP_ (SP3 = estCritere present) ------------------------ */
 SELECT 'A. Niveau schema SP_' AS Controle,
-       CASE WHEN OBJECT_ID('dbo.SP_Page','U') IS NOT NULL
-             AND OBJECT_ID('dbo.SP_Page_Table','U') IS NOT NULL
-             AND OBJECT_ID('dbo.SP_Page_Colonne','U') IS NOT NULL
-             AND OBJECT_ID('dbo.SP_Page_Champ','U') IS NOT NULL
-             AND OBJECT_ID('dbo.SP_Page_Validation','U') IS NOT NULL
-             AND OBJECT_ID('dbo.SP_Page_Source','U') IS NOT NULL
-             AND OBJECT_ID('dbo.SP_Page_Droit','U') IS NOT NULL
-             AND OBJECT_ID('dbo.SP_Page_DDL_Log','U') IS NOT NULL
-             AND COL_LENGTH('dbo.SP_Page','Acces_Personnalise') IS NOT NULL
-             AND COL_LENGTH('dbo.SP_Page_Champ','estCritere') IS NOT NULL
+       CASE WHEN OBJECT_ID('dbo.Controle_Designer','U') IS NOT NULL
+             AND OBJECT_ID('dbo.Controle_Designer_Table','U') IS NOT NULL
+             AND OBJECT_ID('dbo.Controle_Designer_Colonne','U') IS NOT NULL
+             AND OBJECT_ID('dbo.Controle_Designer_Champ','U') IS NOT NULL
+             AND OBJECT_ID('dbo.Controle_Designer_Validation','U') IS NOT NULL
+             AND OBJECT_ID('dbo.Controle_Designer_Source','U') IS NOT NULL
+             AND OBJECT_ID('dbo.Controle_Designer_Droit','U') IS NOT NULL
+             AND OBJECT_ID('dbo.Controle_Designer_DDL_Log','U') IS NOT NULL
+             AND COL_LENGTH('dbo.Controle_Designer','Acces_Personnalise') IS NOT NULL
+             AND COL_LENGTH('dbo.Controle_Designer_Champ','estCritere') IS NOT NULL
             THEN 'OK (SP3)' ELSE 'KO' END AS Resultat;
 
 /* B1. Codes pages / documents encore libres ---------------------------------- */
 SELECT 'B1. Codes pages existants' AS Controle, Cod_Page, Statut_Page
-FROM dbo.SP_Page
+FROM dbo.Controle_Designer
 WHERE Cod_Page IN ('DUP_CONGE','DUP_NOTE_FRAIS','DUP_DECLARATION_AT',
                    'DUP_DOSSIER_MALADIE','DUP_AVANCE','DUP_PRET');
 -- Attendu : 0 ligne (sinon le deploiement mettra a jour la page existante).
 
 SELECT 'B2. Cod_Document deja pris' AS Controle, Cod_Page, Cod_Document
-FROM dbo.SP_Page
+FROM dbo.Controle_Designer
 WHERE Cod_Document IN ('XCG','XNF','XAT','XDM','XAV','XDP')
   AND Cod_Page NOT IN ('DUP_CONGE','DUP_NOTE_FRAIS','DUP_DECLARATION_AT',
                        'DUP_DOSSIER_MALADIE','DUP_AVANCE','DUP_PRET');
@@ -46,7 +46,7 @@ WHERE t.name IN ('SP_XCG_Ent','SP_XNF_Ent','SP_XNF_Det_LIGNES',
                  'SP_XAT_Ent','SP_XAT_Det_CERTIFS','SP_XDM_Ent',
                  'SP_XAV_Ent','SP_XDP_Ent');
 -- Attendu : 0 ligne. Toute ligne = verifier qu'elle appartient bien a la page
--- (SP_Page_Table.Nom_Physique), sinon KO.
+-- (Controle_Designer_Table.Nom_Physique), sinon KO.
 
 /* C1. Section cible + rubriques --------------------------------------------- */
 SELECT 'C1a. Section "PagesSpecifiques"' AS Controle, Valeur, Membre
@@ -103,7 +103,7 @@ ORDER BY Typ_Document, id_Societe;
 
 /* C6. Sources metier duplicatas deja presentes ------------------------------- */
 SELECT 'C6. Sources SP_ existantes' AS Controle, Cod_Source, Actif
-FROM dbo.SP_Page_Source
+FROM dbo.Controle_Designer_Source
 WHERE Cod_Source IN ('sp_solde_conge_date','sp_cng_periode_cloturee',
                      'sp_cng_controle_paie','sp_cng_repos','sp_cng_feries',
                      'sp_cng_duree','sp_avances_encours','sp_prets_encours',

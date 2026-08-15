@@ -5,7 +5,7 @@ Imports System.Text.RegularExpressions
 ''' Module SP_ - Génération et exécution sécurisée du DDL des tables métier SP_.
 ''' Appelé à l'enregistrement d'une page dans le Designer (SP_Page_Designer) :
 ''' les tables métier sont créées/migrées dans la MÊME transaction ADODB que
-''' l'enregistrement des métadonnées, avec journalisation dans SP_Page_DDL_Log.
+''' l'enregistrement des métadonnées, avec journalisation dans Controle_Designer_DDL_Log.
 ''' Règles :
 '''   - identifiants SQL validés (regex + liste noire) et systématiquement quotés ;
 '''   - jamais de DROP silencieux : une colonne retirée des métadonnées produit
@@ -91,7 +91,7 @@ Public Module Module_SP_DDL
         Return cols
     End Function
 
-    ''' <summary>DDL d'une colonne métier configurée (ligne SP_Page_Colonne).</summary>
+    ''' <summary>DDL d'une colonne métier configurée (ligne Controle_Designer_Colonne).</summary>
     Private Function ColonneDDL(r As DataRow, nomPhysique As String, ByRef erreurs As List(Of String)) As String
         Dim nomCol As String = IsNull(r("Nom_Colonne"), "")
         Dim v = ValiderIdentifiantSql(nomCol)
@@ -182,10 +182,10 @@ Public Module Module_SP_DDL
         messages = If(messages, New List(Of String))
         erreurs = If(erreurs, New List(Of String))
         If tblTables Is Nothing Then
-            tblTables = DATA_READER_GRD("select * from SP_Page_Table where Cod_Page='" & codPage.Replace("'", "''") & "' order by Rang")
+            tblTables = DATA_READER_GRD("select * from Controle_Designer_Table where Cod_Page='" & codPage.Replace("'", "''") & "' order by Rang")
         End If
         If tblColsToutes Is Nothing Then
-            tblColsToutes = DATA_READER_GRD("select * from SP_Page_Colonne where Cod_Page='" & codPage.Replace("'", "''") &
+            tblColsToutes = DATA_READER_GRD("select * from Controle_Designer_Colonne where Cod_Page='" & codPage.Replace("'", "''") &
                                             "' and isnull(Technique,'false')='false' order by Cod_Table, Rang")
         End If
         Dim script As New StringBuilder()
@@ -323,7 +323,7 @@ Public Module Module_SP_DDL
 
     ''' <summary>
     ''' Exécute un script DDL dans la transaction ADODB ouverte sur cnTx (connexion
-    ''' dédiée ouverte par l'appelant) et journalise dans SP_Page_DDL_Log.
+    ''' dédiée ouverte par l'appelant) et journalise dans Controle_Designer_DDL_Log.
     ''' L'appelant gère BeginTrans/Commit/Rollback.
     ''' NB : la connexion globale cn n'est JAMAIS utilisée ici : des recordsets
     ''' firehose peuvent y rester en attente (CnExecuting), ce qui fait échouer
@@ -339,13 +339,13 @@ Public Module Module_SP_DDL
         JournaliserDDL(codPage, typeOperation, script, "true", "", cnTx)
     End Sub
 
-    ''' <summary>Journalise un DDL exécuté (ou tenté) dans SP_Page_DDL_Log.
+    ''' <summary>Journalise un DDL exécuté (ou tenté) dans Controle_Designer_DDL_Log.
     ''' cnTx fourni : journalise dans la transaction de l'enregistrement ;
     ''' cnTx omis : journalise hors transaction (cas d'un échec, après rollback).</summary>
     Public Sub JournaliserDDL(codPage As String, typeOperation As String, script As String, resultat As String, message As String,
                               Optional cnTx As ADODB.Connection = Nothing)
         Try
-            Dim sql As String = "insert into SP_Page_DDL_Log (Cod_Page, Type_Operation, Script_DDL, Resultat, Message, Login_Exec, Date_Exec) values ('" &
+            Dim sql As String = "insert into Controle_Designer_DDL_Log (Cod_Page, Type_Operation, Script_DDL, Resultat, Message, Login_Exec, Date_Exec) values ('" &
                         codPage.Replace("'", "''") & "','" & typeOperation.Replace("'", "''") & "','" &
                         IsNull(script, "").Replace("'", "''") & "','" & resultat & "','" &
                         IsNull(message, "").Replace("'", "''").Substring(0, Math.Min(3900, IsNull(message, "").Length)) & "','" &

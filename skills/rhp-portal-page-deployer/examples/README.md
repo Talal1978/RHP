@@ -2,15 +2,15 @@
 
 | Exemple | Contenu | Objectif |
 |---|---|---|
-| `01-frais-km-input.yaml` | Input canonique de la page FRAIS_KM | Reproduit le script officiel `002_SP_Designer_Exemple_FKM.sql` (+ critères de `003_...sql`) : sert d'oracle — la sortie générée ne doit en différer que cosmétiquement. |
-| `02-teletravail/` | Package complet : `input.yaml`, `preflight.sql`, `deploy.sql`, `rollback.sql`, `manifest.md` | Exemple abouti de bout en bout : ENT + DET, zoom, champ calculé persisté, source métier, validations, workflow, droits. |
+| `01-frais-km/` | `input.yaml` + `RHP_Page_FRAIS_KM.json` | Reproduit la page officielle `002_SP_Designer_Exemple_FKM.sql` (+ critères de `003_...sql`) : sert d'oracle — le JSON généré doit encoder les mêmes métadonnées (y compris le pied de grille `Pied_Mnt`, qui remplace l'ancienne colonne `Total_Grille` supprimée par la migration 005). |
+| `02-teletravail/` | Package complet : `input.yaml`, `RHP_Page_TELETRAVAIL.json`, `manifest.md` | Exemple abouti de bout en bout : ENT + DET, zoom, champ calculé persisté, source métier, pied de grille, validations, workflow. |
 
 Mode d'emploi de l'exemple 02 sur une base de test :
 
-```bash
-sqlcmd -S .\SQL2019 -d RHP -i preflight.sql                 # tout KO = bloquant
-sqlcmd -S .\SQL2019 -d RHP -i deploy.sql                    # dry-run (@DryRun=1)
-# passer @DryRun a 0 dans deploy.sql, puis :
-sqlcmd -S .\SQL2019 -d RHP -i deploy.sql                    # deploiement reel
-sqlcmd -S .\SQL2019 -d RHP -i rollback.sql                  # dry-run rollback
-```
+1. Ouvrir `SP_Page_Designer` → **« Importer JSON »** → sélectionner
+   `RHP_Page_TELETRAVAIL.json`.
+2. Vérifier l'aperçu (mode NOUVELLE PAGE, compteurs, avertissements) →
+   **« Valider »**.
+3. **« Enregistrer »** (contrôles + création des tables `SP_TT_Ent` /
+   `SP_TT_Det_JOURS`), accorder les droits dans l'onglet **Habilitations**,
+   puis **« Publier »** — voir les étapes détaillées dans `manifest.md`.

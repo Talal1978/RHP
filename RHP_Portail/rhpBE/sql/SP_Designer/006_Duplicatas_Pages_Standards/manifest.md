@@ -44,7 +44,7 @@ Tests exécutés contre la base de développement (scripts archivés dans `tests
    (`'1;1;1;1;1;1;0'`) a été réécrite sans point-virgule
    (`replace('1.1.1.1.1.1.0', '.', char(59))`).
 2. **Idempotence du déploiement** : l'ordre officiel des suppressions
-   (`SP_Page_Table` avant `SP_Page_Colonne`, pattern du script 002) viole la FK
+   (`Controle_Designer_Table` avant `Controle_Designer_Colonne`, pattern du script 002) viole la FK
    `FK_SPCol_Table` dès la ré-exécution. Ce package supprime **Colonne avant
    Table** (ordre FK-safe) — à reporter dans le pattern officiel.
 3. **Agrégats SQL** : `SUM(CASE ... EXISTS (sous-requête))` est refusé par
@@ -95,10 +95,10 @@ Suite à l'analyse des écarts, les 9 propositions ont été **implémentées**
 | # | Évolution | Mise en œuvre |
 |---|---|---|
 | P1 | **Contexte technique dans validations/sources** : `Num_Doc`, `Statut`, `Created_By` injectés dans le contexte serveur à l'enregistrement ; `@Login`, `@Matricule`, `@Cod_Profile` injectés dans les sources (comme `@id_Societe`) | Le contrôle de **chevauchement** du congé duplicata exclut le document courant (modification possible, doublon bloqué) ; la règle **propriétaire** (« on ne saisit que pour soi ») est active sur les 5 pages d'édition |
-| P2 | **Détail virtuel alimenté par une source TABLE** (`SP_Page_Table.Source_Metier` + `Source_Mapping`) | La grille « Détail par période de paie » du congé duplicata est **identique au standard** (source `sp_cng_detail`, miroir de `calcul_conge`) ; lecture seule, ré-exécutée côté serveur à l'enregistrement, jamais persistée |
+| P2 | **Détail virtuel alimenté par une source TABLE** (`Controle_Designer_Table.Source_Metier` + `Source_Mapping`) | La grille « Détail par période de paie » du congé duplicata est **identique au standard** (source `sp_cng_detail`, miroir de `calcul_conge`) ; lecture seule, ré-exécutée côté serveur à l'enregistrement, jamais persistée |
 | P3 | **Champ Statut affichable** (convention : champ lié au nom technique `Statut`, sans colonne métier déclarée — exclu de l'UPSERT de fait) | Le statut (rubrique `Statut_Signature`, lecture seule) s'affiche dans l'entête des pages Note de frais / Avance / Prêt, comme le standard |
-| P4 | **`SP_Page.Figer_Statuts`** (CSV, défaut `'SG,RJ,SP,VA'`) | Duplicatas : `'SS,SG,RJ,SP,VA'` → un document soumis n'est plus modifiable/supprimable, **comme le standard** (vérifié par test : « Document déjà traité ») |
-| P5 | **`SP_Page_Champ.Zoom_Condition`** avec placeholders `{Champ}` | Le combo « Le malade » (dossier maladie duplicata) est filtré par le matricule courant : `Matricule='{Matricule}'` — `ComboBox`/`TextZoom`/`Grille` rechargent le zoom quand la condition change |
+| P4 | **`Controle_Designer.Figer_Statuts`** (CSV, défaut `'SG,RJ,SP,VA'`) | Duplicatas : `'SS,SG,RJ,SP,VA'` → un document soumis n'est plus modifiable/supprimable, **comme le standard** (vérifié par test : « Document déjà traité ») |
+| P5 | **`Controle_Designer_Champ.Zoom_Condition`** avec placeholders `{Champ}` | Le combo « Le malade » (dossier maladie duplicata) est filtré par le matricule courant : `Matricule='{Matricule}'` — `ComboBox`/`TextZoom`/`Grille` rechargent le zoom quand la condition change |
 | P6 | **Critères de liste** : plages de dates (`<col>__Du`/`__Au`), libellé rubrique du statut (`FindRubrique`), colonne « Nom » de l'agent jointe, critère Statut (prefix) | Les listes des duplicatas affichent Nom, Statut libellé, et filtrent par plage Du/Au et Statut comme les listes standards |
 | P7 | **Cascade SOURCE → CALCULE** (client) + **ré-exécution serveur** des champs SOURCE persistés à l'enregistrement | La valeur persistée fait foi côté serveur (jamais la valeur client) |
 | P8 | **Impression générique** par les métadonnées (`SpPrintDialog`, sans modèle Crystal) quand `Act_Imprimer='true'` sans `Cod_Modele_Edition` | Le bouton Imprimer du FAB est actif sur les 6 duplicatas (la consultation AT retrouve son impression, comme le standard) |

@@ -17,7 +17,7 @@ déclaratif, whitelisté à la génération (`validerExpression`,
 
 ## 1. Format de l'arbre (AST json)
 
-Stocké dans `SP_Page_Champ.Formule` (nvarchar(max)). Quatre formes de nœuds :
+Stocké dans `Controle_Designer_Champ.Formule` (nvarchar(max)). Quatre formes de nœuds :
 
 | Forme | Exemple | Évaluation (`operande`, L.330-342) |
 |---|---|---|
@@ -288,8 +288,9 @@ existante ou préparer les exemples du manifeste :
    rendu (`valeurAffichee`, `DynamicField.tsx` L.27-54 : MNT = monétaire FR,
    NUM = nombre à `Decimales` décimales, PCT = pourcentage `0,15 → 15 %`,
    DAT/DTM = date / date+heure FR ; à défaut `Decimales` puis texte brut).
-6. Ne jamais écrire la **valeur** d'un calculé dans le script : le serveur
-   recalcule. Le DDL ne crée que la colonne (avec son défaut `DF_` si NOT NULL).
+6. Ne jamais écrire la **valeur** d'un calculé dans le fichier : le serveur
+   recalcule. Le DDL du `Saving` ne crée que la colonne (avec son défaut `DF_`
+   si NOT NULL).
 7. Rappel sémantique à faire figurer au manifeste si la formule utilise des
    dates : canon « heure naïve » (§2.2) — les durées sont en lectures
    d'horloge, sans fuseau.

@@ -6,7 +6,7 @@ Imports Newtonsoft.Json.Linq
 ''' (onglet "Comportement" du SP_Page_Designer).
 ''' L'utilisateur décrit la règle en français (type, champ, paramètres, conditions)
 ''' et les syntaxes json attendues par le moteur (colonnes Parametres et
-''' Condition_Regle de SP_Page_Validation) sont générées automatiquement :
+''' Condition_Regle de Controle_Designer_Validation) sont générées automatiquement :
 ''' aucune saisie de code n'est nécessaire.
 ''' Interface : Zoom_SP_Assistant_Validation.Designer.vb (convention permanente :
 ''' tout le code de design est dans le .Designer.vb ; ce fichier ne contient que

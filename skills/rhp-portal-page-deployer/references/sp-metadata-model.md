@@ -1,10 +1,14 @@
-# SP_ Metadata Model — Generation Reference
+# SP_ Metadata Model — Reference
 
-Distilled, verbatim-faithful reference for generating deployment SQL.
-Primary sources: `RHP_Portail\rhpBE\sql\SP_Designer\001_SP_Designer_Metadata.sql`,
+Distilled, verbatim-faithful reference of the metadata model encoded in the
+generated JSON, and of what the Designer's **Saving** then applies (checks +
+non-destructive DDL). Primary sources:
+`RHP_Portail\rhpBE\sql\SP_Designer\001_SP_Designer_Metadata.sql`,
 `002_SP_Designer_Exemple_FKM.sql`, `003_SP_Designer_Criteres.sql`,
 `005_SP_Designer_Migration_Total_Grille.sql`, `006_SP_Designer_Evolutions.sql`
-(SP4), `RHP_DeskTop\RHP\Portail\Module_SP_DDL.vb`, `SP_Page_Designer.vb`.
+(SP4), `RHP_DeskTop\RHP\Portail\Module_SP_DDL.vb`, `SP_Page_Designer.vb`,
+`Module_SP_Page_Json.vb` (import/export contract — see the dedicated
+`references/json-import-format.md`).
 
 > Deep-dive companions (read before generating the corresponding parts):
 > - `references/formules-calculees.md` — `Formule` AST, operators, GV_*,
@@ -12,13 +16,13 @@ Primary sources: `RHP_Portail\rhpBE\sql\SP_Designer\001_SP_Designer_Metadata.sql
 > - `references/comportement-page.md` — `Etat`, dynamic rules, the 13
 >   validation types with exact `Parametres` json, moments/levels, document
 >   lifecycle (`Figer_Statuts`, RV concurrency), detail flags, rights, list;
-> - `references/sources-metier.md` — `SP_Page_Source` guard, parameters &
+> - `references/sources-metier.md` — `Controle_Designer_Source` guard, parameters &
 >   auto-injection, the 3 usages (SOURCE field, virtual detail, SOURCE
 >   validation), zoom condition.
 
 ---
 
-## 1. `dbo.SP_Page` — page / document type
+## 1. `dbo.Controle_Designer` — page / document type
 
 | Column | Type | Null | Default | Notes |
 |---|---|---|---|---|
@@ -49,39 +53,39 @@ Primary sources: `RHP_Portail\rhpBE\sql\SP_Designer\001_SP_Designer_Metadata.sql
 | `Dat_Publication` | datetime | YES | — | |
 | audit | | | | `Dat_Crea, Created_By, Dat_Modif, Modified_By` |
 
-## 2. `dbo.SP_Page_Droit` — rights per profile
+## 2. `dbo.Controle_Designer_Droit` — rights per profile
 
-PK `(Cod_Page, Cod_Profile)`; FK → `SP_Page`.
+PK `(Cod_Page, Cod_Profile)`; FK → `Controle_Designer`.
 Flag columns (all nvarchar(5), default `'false'`):
 `Consulter, Creer, Modifier, Supprimer, Valider, Imprimer, GED`.
 Profile `'1'` bypasses all checks (RHP convention, `module_sp_engine.ts:271`).
 
-## 3. `dbo.SP_Page_Table` — attached tables
+## 3. `dbo.Controle_Designer_Table` — attached tables
 
-PK `(Cod_Page, Cod_Table)`; `UQ` on `Nom_Physique`; FK → `SP_Page`.
+PK `(Cod_Page, Cod_Table)`; `UQ` on `Nom_Physique`; FK → `Controle_Designer`.
 - `Cod_Table`: `'ENT'` (header) or detail code (e.g. `'LIGNES'`).
 - `Nom_Physique`: `SP_<CodDocument>_Ent` / `SP_<CodDocument>_Det_<CodTable>`.
 - `Role_Table` ∈ `ENT|DET`; `Regle_Suppression` ∈ `CASCADE|RESTRICT`.
 - Detail editing flags: `Allow_Add/Allow_Edit/Allow_Delete/Allow_Duplicate`
   (defaults `'true','true','true','false'`); `Tri_Defaut` e.g. `'Rang asc'`.
 - **SP4** (006) — `Source_Metier` + `Source_Mapping` : a DET table may be
-  *virtual* — fed read-only by a `SP_Page_Source` with `Typ_Retour='TABLE'`
+  *virtual* — fed read-only by a `Controle_Designer_Source` with `Typ_Retour='TABLE'`
   (params mapped from header fields). No physical table is created/read/written
   for it (virtual name `SP_<doc>_Virt_<Cod_Table>`); the server re-executes the
   source at save time before validations. Full contract:
   `references/sources-metier.md` §6. The Designer includes both columns in its
   DELETE+INSERT — virtual details survive Designer re-saves.
 
-## 4. `dbo.SP_Page_Colonne` — physical columns
+## 4. `dbo.Controle_Designer_Colonne` — physical columns
 
-PK `(Cod_Page, Cod_Table, Nom_Colonne)`; FK → `SP_Page_Table(Cod_Page,Cod_Table)`.
+PK `(Cod_Page, Cod_Table, Nom_Colonne)`; FK → `Controle_Designer_Table(Cod_Page,Cod_Table)`.
 `Typ_Sql` ∈ `nvarchar|int|bigint|float|decimal|bit|date|datetime|smalldatetime`;
 `Longueur` (nvarchar, `-1`=max); `Precision_Sql`/`Echelle_Sql` (decimal);
 `Nullable`, `Valeur_Defaut`, `estUnique`, `estIndexe`, `Technique`, `Rang`.
 
-## 5. `dbo.SP_Page_Champ` — UI fields
+## 5. `dbo.Controle_Designer_Champ` — UI fields
 
-PK `(Cod_Page, Cod_Champ)`; FK → `SP_Page`.
+PK `(Cod_Page, Cod_Champ)`; FK → `Controle_Designer`.
 - `Typ_Controle` ∈ `TEXT,MEMO,INT,DEC,MNT,DATE,DATETIME,CHECK,RADIO,COMBO,RUBRIQUE,ZOOM,CALCULE,SOURCE,GED`.
 - `Etat` ∈ `S` (saisissable) `R` (lecture seule) `A` (affiché) `I` (invisible).
 - Header placement: `Rang`, `Ligne`, `Colonne`, `Largeur` (1..12, default 3 —
@@ -91,10 +95,11 @@ PK `(Cod_Page, Cod_Champ)`; FK → `SP_Page`.
 - `Num_Zoom` + `Zoom_Retour` json `{"ChampCible":"ColonneZoom",…}` (ZOOM, COMBO).
 - **SP4** (006) — `Zoom_Condition` : condition du zoom avec placeholders
   `{Champ}` évalués dans le contexte entête (ex. `Matricule='{Matricule}'`) —
-  COMBO et ZOOM. **Not editable in the Desktop Designer** — a Designer re-save
-  (DELETE+INSERT of `SP_Page_Champ` without this column) resets it to NULL;
-  re-apply the deployment script afterwards.
-- `Source_Metier` → `SP_Page_Source.Cod_Source` (SOURCE).
+  COMBO et ZOOM. **Not editable in the Desktop Designer, not in the JSON import
+  format either** — a Designer re-save (DELETE+INSERT of
+  `Controle_Designer_Champ` without this column) resets it to NULL; only a
+  targeted SQL UPDATE can set it (outside this skill's scope).
+- `Source_Metier` → `Controle_Designer_Source.Cod_Source` (SOURCE).
 - `Formule` json déclaratif (CALCULE, and SOURCE mapping
   `{"source":"…","mapping":{"Param":{"ref":"Colonne"}}}`) — full AST and
   semantics: `references/formules-calculees.md`.
@@ -105,13 +110,16 @@ PK `(Cod_Page, Cod_Champ)`; FK → `SP_Page`.
   as `Zoom_Condition`).
 - `Format_Affichage`, `Decimales`; dynamic rules `Regle_Visibilite`,
   `Regle_Activation` (json AST).
-- Grid: `Visible_Grille`, `Rang_Grille`, `Largeur_Colonne` (em),
-  `Total_Grille` ∈ `'',SUM,AVG,MIN,MAX,COUNT`.
+- Grid: `Visible_Grille`, `Rang_Grille`, `Largeur_Colonne` (em). Grid totals
+  are **footer calculated fields** (`Pied_*` pattern: `Cod_Table=<det>`,
+  `Nom_Colonne=''`, `Persiste='false'`, aggregate formula) — the former
+  `Total_Grille` column was **dropped by migration 005**, which converts each
+  value into such a field.
 - List criteria: `estCritere`, `Rang_Critere` (migration 003).
 
-## 6. `dbo.SP_Page_Validation` — declarative validations
+## 6. `dbo.Controle_Designer_Validation` — declarative validations
 
-PK `(Cod_Page, Cod_Validation)`; FK → `SP_Page`.
+PK `(Cod_Page, Cod_Validation)`; FK → `Controle_Designer`.
 `Portee` ∈ `CHAMP,ENTETE,LIGNE,DETAIL,DOCUMENT`;
 `Typ_Regle` ∈ `REQUIRED,IN,BETWEEN,MIN,MAX,MINLEN,MAXLEN,REGEX,COMPARE,UNIQUE,SOURCE,EXPR,NB_LIGNES`;
 `Niveau` ∈ `I,W,B` (default `B` = blocking); `Moment` ∈ `SAISIE,CHANGE,AJOUT_LIGNE,SAVE`
@@ -120,7 +128,7 @@ Verified json shapes (from `002_...sql:66-76`):
 - `NB_LIGNES`: `{"min":1}` · `BETWEEN`: `{"min":0,"max":1000}`
 - `EXPR`: `{"expr":{"op":"GE","args":[{"ref":"Total"},{"const":0}]}}`
 
-## 7. `dbo.SP_Page_Source` — secured source catalog
+## 7. `dbo.Controle_Designer_Source` — secured source catalog
 
 PK `(Cod_Source)`; `Typ_Source` ∈ `SQL,PROC`; `Typ_Retour` ∈ `SCALAIRE,TABLE`
 (default `SCALAIRE`); `Cod_Profile` default `''` (= all profiles); `Actif`.
@@ -130,7 +138,7 @@ single statement; must start with `select|with|exec dbo.Sys_*`; blacklist
 restore|shutdown|kill|waitfor|openrowset|opendatasource|xp_*|sp_*`.
 `@id_Societe` is auto-injected by the server — **never declare it** in `Parametres`.
 
-## 8. `dbo.SP_Page_DDL_Log` — DDL journal
+## 8. `dbo.Controle_Designer_DDL_Log` — DDL journal
 
 `RowId int IDENTITY` PK; `Cod_Page` FK; `Type_Operation` `CREATE|MIGRATE`;
 `Script_DDL`; `Resultat` `'true'/'false'`; `Message`; `Login_Exec`; `Date_Exec`.
@@ -171,16 +179,16 @@ Business column rules:
 Blocking preconditions:
 1. Every `Nom_Physique` exists in DB; every configured non-technical column exists.
 2. Every `Num_Zoom` exists in `Controle_Def_Zoom`; every `Rubrique` exists in
-   `Param_Rubriques`; every `Source_Metier` exists and is active in `SP_Page_Source`.
+   `Param_Rubriques`; every `Source_Metier` exists and is active in `Controle_Designer_Source`.
 3. No circular reference between CALCULE fields (`{"ref":…}` graph).
-4. If `Acces_Personnalise='true'`: at least one `SP_Page_Droit` row with
+4. If `Acces_Personnalise='true'`: at least one `Controle_Designer_Droit` row with
    `Consulter='true'` (otherwise the page would be invisible to everyone).
 5. `Menu_Parent` not empty.
 6. `Workflow_Actif='true'` ⇒ `Cod_Document` not empty.
 
 Publication writes:
 ```sql
-UPDATE SP_Page SET Statut_Page='PUBLIE', Dat_Publication=GETDATE(),
+UPDATE Controle_Designer SET Statut_Page='PUBLIE', Dat_Publication=GETDATE(),
        Version_Page=ISNULL(Version_Page,1)+1, Dat_Modif=GETDATE(), Modified_By=…
 WHERE Cod_Page=@CP;                                    -- (002 guards: AND Statut_Page <> 'PUBLIE')
 -- Screen registry (GED link):
@@ -197,9 +205,9 @@ INSERT/UPDATE Param_Workflow_Typ_Document  Typ_Document=<Cod_Document>, Intitule
 ## 11. Deletion semantics (mirror of `SP_Page_Designer.Deleting`)
 
 - Only a `BROUILLON` page may be structurally deleted.
-- Deletion removes metadata only, in FK-safe order: `SP_Page_Colonne`,
-  `SP_Page_Champ`, `SP_Page_Validation`, `SP_Page_Droit`, `SP_Page_Table`,
-  `SP_Page_DDL_Log`, then `SP_Page`.
+- Deletion removes metadata only, in FK-safe order: `Controle_Designer_Colonne`,
+  `Controle_Designer_Champ`, `Controle_Designer_Validation`, `Controle_Designer_Droit`, `Controle_Designer_Table`,
+  `Controle_Designer_DDL_Log`, then `Controle_Designer`.
 - **Business tables `SP_*` and their data are NEVER dropped by the module.**
 - A published page is retired via `Statut_Page='DESACTIVE'`
   (disappears from the portal; documents are preserved).

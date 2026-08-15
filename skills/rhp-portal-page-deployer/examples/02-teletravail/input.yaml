@@ -131,9 +131,25 @@ components:
       decimals: 1
       grid_order: 2
       grid_width_em: 6
-      grid_total: SUM
       help: "1 = journée ; 0,5 = demi-journée"
     required: true
+  # Pied de grille (pattern officiel Pied_*, migration 005) : total des quotités
+  - component_code: Pied_Nb
+    component_type: calculated
+    label: "Total des jours"
+    target_block: JOURS
+    column_name: ""
+    layout: { display_order: 4 }
+    visible: true
+    editable: false
+    properties:
+      formula: { "op": "SUM", "table": "JOURS", "colonne": "Nb" }
+      persist: false
+      format: "NUM"
+      decimals: 1
+      visible_in_grid: false
+      grid_order: 4
+      help: "Pied de grille : somme des quotités saisies"
   - component_code: L_Commentaire
     component_type: text
     label: "Commentaire"

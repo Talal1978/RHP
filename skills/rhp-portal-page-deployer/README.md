@@ -1,8 +1,14 @@
-# RHP Portal Page Deployer — Skill Package
+# RHP Portal Page Deployer — Skill Package (JSON import)
 
-Generate **safe, auditable, idempotent, reversible** SQL Server deployment
-packages for portal pages of the RHP **Page Designer module (SP_)**, from a
-precise functional description.
+Generate, from a precise functional description, a **JSON file importable in
+the RHP Page Designer** (`SP_Page_Designer` → « Importer JSON », format
+`RHP_PAGE_DESIGNER` 1.0) for portal pages of the **Page Designer module
+(SP_)**.
+
+The skill writes **no SQL and never touches a database**: the import only
+fills the Designer's grids, and the actual write remains a human action in
+the Designer — « Enregistrer » (checks + transaction + non-destructive DDL),
+then « Publier ».
 
 ## Layout
 
@@ -11,25 +17,31 @@ rhp-portal-page-deployer/
 ├── SKILL.md                              # skill definition (start here)
 ├── README.md                             # this file
 ├── references/
+│   ├── json-import-format.md             # exact output contract (mirror of
+│   │                                     # Module_SP_Page_Json.vb) + never-imported features
 │   ├── schema-mapping.md                 # verified concept -> RHP object mapping
-│   ├── sp-metadata-model.md              # SP_Page* columns, DDL rules, publication
+│   ├── sp-metadata-model.md              # Controle_Designer* columns, DDL rules of Saving,
+│   │                                     # publication
 │   ├── formules-calculees.md             # formula logic: AST, 43 ops, GV_*, graph/cycles
 │   ├── comportement-page.md              # states, dynamic rules, 13 validation types,
 │   │                                     # lifecycle, rights, list behavior
 │   ├── sources-metier.md                 # source catalog, read-only guard, parameters,
 │   │                                     # 3 usages (SOURCE field / virtual grid / validation)
 │   ├── environment-discovery.md          # discovery procedure + schema levels (SP1..SP4)
-│   └── testing-acceptance-checklist.md   # test & acceptance checklist
+│   └── testing-acceptance-checklist.md   # test & acceptance checklist (import mode)
 ├── templates/
 │   ├── input-template.yaml               # annotated input contract
-│   ├── deploy-template.sql               # deployment skeleton (placeholders {{...}})
-│   ├── rollback-template.sql             # rollback skeleton
-│   └── preflight-template.sql            # read-only pre-deployment checks
+│   └── page-template.json                # annotated skeleton of the generated file
 ├── scripts/
 │   └── validate_input.py                 # blocking-rule validator (stdlib only)
 └── examples/
-    ├── 01-frais-km-input.yaml            # reproduces the official FKM example
+    ├── 01-frais-km/                      # input oracle of the official FKM page
+    │   ├── input.yaml                    #   + the expected generated JSON
+    │   └── RHP_Page_FRAIS_KM.json
     └── 02-teletravail/                   # complete worked package
+        ├── input.yaml
+        ├── RHP_Page_TELETRAVAIL.json
+        └── manifest.md
 ```
 
 ## Usage (with Claude)
@@ -40,41 +52,37 @@ rhp-portal-page-deployer/
    ```bash
    python scripts/validate_input.py <canonical-input.json>
    ```
-   Any `errors` entry is blocking: no SQL is produced.
+   Any `errors` entry is blocking: no JSON is produced.
 3. Claude generates the package `NNN_<page_code>/`:
-   `input.yaml`, `preflight.sql`, `deploy.sql`, `rollback.sql`, `manifest.md`.
-4. A human reviews, runs `preflight.sql` (every `KO` is blocking), then runs
-   `deploy.sql` — first with `@DryRun = 1` (default; full rollback), then with
-   `@DryRun = 0` to actually deploy.
+   `input.yaml`, `RHP_Page_<page_code>.json`, `manifest.md`.
+4. A human reviews the manifest, then in the Desktop Designer:
+   « Importer JSON » → preview (mode, diff, warnings) → « Valider » →
+   « Enregistrer » → Habilitations tab → « Publier ».
 5. Verify with the checklist in `manifest.md`
    (`references/testing-acceptance-checklist.md`).
 
-## Execution (DBA)
-
-```bash
-sqlcmd -S .\SQL2019 -d RHP -i preflight.sql -o preflight.out.txt
-sqlcmd -S .\SQL2019 -d RHP -i deploy.sql    -o deploy.dryrun.out.txt   REM @DryRun=1
-sqlcmd -S .\SQL2019 -d RHP -i deploy.sql    -o deploy.out.txt          REM @DryRun=0
-```
-
 ## Guarantees
 
-- **Safe**: identifier whitelist, read-only sources, no `DROP`/`TRUNCATE`/
-  uncontrolled `DELETE`, single transaction with full rollback on error.
-- **Auditable**: provenance header, `SP_Page_DDL_Log` entries, manifest with
-  fact classification, pre/post verification output.
-- **Idempotent**: every statement guarded; re-running converges to the same state.
-- **Reversible**: `rollback.sql` (deactivation always; metadata removal guarded;
-  business tables never dropped — official RHP rule).
-- **Deterministic**: fixed section order, `Rang`-ordered inserts, derived
-  physical names — same input ⇒ functionally equivalent SQL.
+- **Safe**: the generated file must pass every blocking rule of the product
+  importer (mirrored by `validate_input.py`); a blocking anomaly leaves the
+  Designer screen strictly unchanged; `Saving` runs in a single transaction.
+- **Auditable**: fact classification in the manifest, expected import
+  warnings listed, import trace + `Controle_Designer_DDL_Log` written by the
+  Designer itself.
+- **Non-destructive**: metadata collections synchronized by the Designer;
+  business DDL is ADD-only; business tables are never dropped.
+- **Rights-safe**: permissions are never in the file
+  (`metadata.habilitations="EXCLUES"`); existing rights preserved on update.
+- **Deterministic**: fixed section order, derived physical names — same
+  input ⇒ functionally equivalent JSON.
 
 ## Ground truth
 
 Everything maps to verified repository objects only
-(see `references/schema-mapping.md` for evidence paths/lines):
+(see `references/json-import-format.md` and `references/schema-mapping.md`
+for evidence paths/lines):
+`RHP_DeskTop\RHP\Portail\Module_SP_Page_Json.vb`, `SP_Page_Designer.vb`,
+`Module_SP_DDL.vb`, the `Zoom_SP_*` screens,
 `RHP_Portail\rhpBE\sql\SP_Designer\001..006*.sql`,
-`RHP_DeskTop\RHP\Portail\Module_SP_DDL.vb`, `SP_Page_Designer.vb` and the
-`Zoom_SP_Assistant_*` / `Zoom_SP_SqlSource` / `Zoom_SP_MappingSource` screens,
 `RHP_Portail\rhpBE\modules\module_sp_engine.ts`, `controlers\sp_document.ts`,
 `RHP_Portail\rhpfe\src\Pages\Dynamic\*` (client engine mirror).

@@ -136,6 +136,8 @@ const DynamicPage = ({ codPage }: { codPage: string }) => {
   const [isAccessible, setAccessible] = useState({ canModify: true, Taken_By_User: "", Process_Id: "" });
   const [actionsGrille, setActionsGrille] = useState<{ [k: string]: TGrilleAction }>({});
   const [showPrint, setShowPrint] = useState(false);
+  // Signal de (re)chargement du document : force la ré-exécution des champs SOURCE
+  const [seqChargement, setSeqChargement] = useState(0);
   const ligneSelectionnee = useRef<{ [k: string]: number }>({});
   const nameEcran = `SPP_${codPage}`;
   const tablesDet = useMemo(
@@ -160,6 +162,7 @@ const DynamicPage = ({ codPage }: { codPage: string }) => {
     setDetails(r.details);
     enteteRef.current = r.entete;
     detailsRef.current = r.details;
+    setSeqChargement((s) => s + 1);
   }, [meta, tablesDet]);
 
   const loadData = useCallback(async () => {
@@ -185,6 +188,10 @@ const DynamicPage = ({ codPage }: { codPage: string }) => {
       } else {
         resetDocument();
       }
+      // Les champs SOURCE ne sont jamais persistés ni renvoyés par le serveur :
+      // ce signal force leur ré-exécution après chaque (re)chargement, même quand
+      // leurs paramètres mappés sont inchangés (ex. après un enregistrement).
+      setSeqChargement((s) => s + 1);
     } finally {
       setShowLoading(false);
     }
@@ -258,7 +265,7 @@ const DynamicPage = ({ codPage }: { codPage: string }) => {
         }).catch(() => {});
       } catch { /* source invalide : ignorée */ }
     });
-  }, [depsSources, meta]);
+  }, [depsSources, meta, seqChargement]);
 
   /* ---- Détails VIRTUELS : grilles alimentées par une source (Typ_Retour
      TABLE), rafraîchies quand les paramètres mappés changent. Lecture seule. ---- */
@@ -410,7 +417,7 @@ const DynamicPage = ({ codPage }: { codPage: string }) => {
   }
 
   /* ---- Actions du document ---- */
-  // Statuts figeant le document : paramétrables par page (SP_Page.Figer_Statuts),
+  // Statuts figeant le document : paramétrables par page (Controle_Designer.Figer_Statuts),
   // défaut = convention RHP. Ex. 'SS,SG,RJ,SP,VA' fige dès la soumission.
   const statutFiges = useMemo(
     () => String(meta?.page?.Figer_Statuts ?? "SG,RJ,SP,VA").split(",").map((s) => s.trim()).filter(Boolean),

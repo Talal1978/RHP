@@ -2,7 +2,7 @@
    RHP - Module SP_ : EXEMPLE de page dynamique "Note de frais kilométriques"
    ----------------------------------------------------------------------------
    Ce script reproduit exactement ce que le Designer (SP_Page_Designer) fait :
-     1. insertion des métadonnées (SP_Page, _Table, _Colonne, _Champ,
+     1. insertion des métadonnées (Controle_Designer, _Table, _Colonne, _Champ,
         _Validation, _Droit) ;
      2. génération des tables métier SP_FKM_Ent / SP_FKM_Det_LIGNES
         (même format que Module_SP_DDL : colonnes techniques + audit + RV + FK) ;
@@ -19,9 +19,9 @@ DECLARE @CP NVARCHAR(30) = 'FRAIS_KM';
 /* -------------------------------------------------------------------------- */
 /* 1. Métadonnées                                                             */
 /* -------------------------------------------------------------------------- */
-IF NOT EXISTS (SELECT 1 FROM SP_Page WHERE Cod_Page = @CP)
+IF NOT EXISTS (SELECT 1 FROM Controle_Designer WHERE Cod_Page = @CP)
 BEGIN
-    INSERT INTO SP_Page (Cod_Page, Cod_Document, Libelle, Libelle_Court, Nom_Page, Menu_Parent, Rang, Icone,
+    INSERT INTO Controle_Designer (Cod_Page, Cod_Document, Libelle, Libelle_Court, Nom_Page, Menu_Parent, Rang, Icone,
         Statut_Page, Table_Ent, Typ_Document, Workflow_Actif, Cod_Modele_Edition, GED_Actif, GED_Obligatoire,
         Act_Enregistrer, Act_Soumettre, Act_Imprimer, Act_Exporter, DDL_Genere, Dat_Crea, Created_By)
     VALUES (@CP, 'FKM', 'Note de frais kilométriques', 'Frais KM', 'Frais kilométriques', 'MesDemandes', 90, 'Commute',
@@ -29,14 +29,14 @@ BEGIN
         'true', 'true', 'false', 'false', 'true', GETDATE(), 'SCRIPT');
 END
 
-DELETE FROM SP_Page_Colonne WHERE Cod_Page = @CP;   -- FK-safe : colonnes avant tables
-DELETE FROM SP_Page_Table WHERE Cod_Page = @CP;
-INSERT INTO SP_Page_Table (Cod_Page, Cod_Table, Nom_Physique, Role_Table, Libelle, Rang, Allow_Add, Allow_Edit, Allow_Delete, Allow_Duplicate, Tri_Defaut, Regle_Suppression, Dat_Crea, Created_By)
+DELETE FROM Controle_Designer_Colonne WHERE Cod_Page = @CP;   -- FK-safe : colonnes avant tables
+DELETE FROM Controle_Designer_Table WHERE Cod_Page = @CP;
+INSERT INTO Controle_Designer_Table (Cod_Page, Cod_Table, Nom_Physique, Role_Table, Libelle, Rang, Allow_Add, Allow_Edit, Allow_Delete, Allow_Duplicate, Tri_Defaut, Regle_Suppression, Dat_Crea, Created_By)
 VALUES
     (@CP, 'ENT',    'SP_FKM_Ent',        'ENT', 'Entête',            0, 'false', 'false', 'false', 'false', NULL, 'CASCADE', GETDATE(), 'SCRIPT'),
     (@CP, 'LIGNES', 'SP_FKM_Det_LIGNES', 'DET', 'Trajets parcourus', 1, 'true',  'true',  'true',  'true',  NULL, 'CASCADE', GETDATE(), 'SCRIPT');
 
-INSERT INTO SP_Page_Colonne (Cod_Page, Cod_Table, Nom_Colonne, Libelle, Typ_Sql, Longueur, Precision_Sql, Echelle_Sql, Nullable, Valeur_Defaut, estUnique, estIndexe, Technique, Rang, Dat_Crea, Created_By)
+INSERT INTO Controle_Designer_Colonne (Cod_Page, Cod_Table, Nom_Colonne, Libelle, Typ_Sql, Longueur, Precision_Sql, Echelle_Sql, Nullable, Valeur_Defaut, estUnique, estIndexe, Technique, Rang, Dat_Crea, Created_By)
 VALUES
     (@CP, 'ENT',    'Matricule',   'Matricule',        'nvarchar', 20,   NULL, NULL, 'false', NULL, 'false', 'false', 'false', 1, GETDATE(), 'SCRIPT'),
     (@CP, 'ENT',    'Dat_Demande', 'Date de demande',  'date',     NULL, NULL, NULL, 'true',  NULL, 'false', 'false', 'false', 2, GETDATE(), 'SCRIPT'),
@@ -47,8 +47,8 @@ VALUES
     (@CP, 'LIGNES', 'Tx',          'Taux / km',        'float',    NULL, NULL, NULL, 'true',  NULL, 'false', 'false', 'false', 3, GETDATE(), 'SCRIPT'),
     (@CP, 'LIGNES', 'Mnt',         'Montant (calculé)','decimal',  NULL, 18,   2,    'true',  NULL, 'false', 'false', 'false', 4, GETDATE(), 'SCRIPT');
 
-DELETE FROM SP_Page_Champ WHERE Cod_Page = @CP;
-INSERT INTO SP_Page_Champ (Cod_Page, Cod_Champ, Cod_Table, Nom_Colonne, Libelle, Typ_Controle, Rang, Largeur, Valeur_Defaut, Obligatoire, Etat,
+DELETE FROM Controle_Designer_Champ WHERE Cod_Page = @CP;
+INSERT INTO Controle_Designer_Champ (Cod_Page, Cod_Champ, Cod_Table, Nom_Colonne, Libelle, Typ_Controle, Rang, Largeur, Valeur_Defaut, Obligatoire, Etat,
     Rubrique, Num_Zoom, Source_Metier, Formule, Persiste, Format_Affichage, Decimales, Visible_Grille, Rang_Grille, Largeur_Colonne, Aide, Dat_Crea, Created_By)
 VALUES
     (@CP, 'Matricule',   'ENT', 'Matricule',   'Matricule',       'ZOOM',    1, 3, 'GV_MATRICULE', 'true',  'S', NULL, 'MS067', NULL, NULL, 'false', NULL, NULL, 'true', 1, NULL, 'Choisir l''agent via le zoom MS067', GETDATE(), 'SCRIPT'),
@@ -66,8 +66,8 @@ VALUES
     (@CP, 'Pied_Mnt', 'LIGNES', '',   'Total des trajets', 'CALCULE', 5, NULL, NULL, 'false', 'A', NULL, NULL, NULL,
         '{"op":"SUM","table":"LIGNES","colonne":"Mnt"}', 'false', 'MNT', 2, 'false', 5, NULL, 'Pied de grille : somme des montants des trajets', GETDATE(), 'SCRIPT');
 
-DELETE FROM SP_Page_Validation WHERE Cod_Page = @CP;
-INSERT INTO SP_Page_Validation (Cod_Page, Cod_Validation, Portee, Cod_Table, Cod_Champ, Typ_Regle, Parametres, Condition_Regle, Message, Niveau, Rang, Moment, Actif, Dat_Crea, Created_By)
+DELETE FROM Controle_Designer_Validation WHERE Cod_Page = @CP;
+INSERT INTO Controle_Designer_Validation (Cod_Page, Cod_Validation, Portee, Cod_Table, Cod_Champ, Typ_Regle, Parametres, Condition_Regle, Message, Niveau, Rang, Moment, Actif, Dat_Crea, Created_By)
 VALUES
     (@CP, 'V01_MATRICULE', 'CHAMP',   'ENT',    'Matricule', 'REQUIRED', NULL, NULL,
         'Le matricule est obligatoire.', 'B', 1, 'SAVE', 'true', GETDATE(), 'SCRIPT'),
@@ -79,8 +79,8 @@ VALUES
         '{"expr":{"op":"GE","args":[{"ref":"Total"},{"const":0}]}}', NULL,
         'Le total ne peut pas être négatif.', 'B', 4, 'SAVE', 'true', GETDATE(), 'SCRIPT');
 
-DELETE FROM SP_Page_Droit WHERE Cod_Page = @CP;
-INSERT INTO SP_Page_Droit (Cod_Page, Cod_Profile, Consulter, Creer, Modifier, Supprimer, Valider, Imprimer, GED, Dat_Crea, Created_By)
+DELETE FROM Controle_Designer_Droit WHERE Cod_Page = @CP;
+INSERT INTO Controle_Designer_Droit (Cod_Page, Cod_Profile, Consulter, Creer, Modifier, Supprimer, Valider, Imprimer, GED, Dat_Crea, Created_By)
 VALUES (@CP, '1', 'true', 'true', 'true', 'true', 'true', 'true', 'true', GETDATE(), 'SCRIPT');
 
 /* -------------------------------------------------------------------------- */
@@ -127,14 +127,14 @@ IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = 'FK_SP_FKM_Det_LIGNES
     ALTER TABLE dbo.[SP_FKM_Det_LIGNES] WITH NOCHECK ADD CONSTRAINT [FK_SP_FKM_Det_LIGNES_Ent]
         FOREIGN KEY ([Num_Doc], [id_Societe]) REFERENCES dbo.[SP_FKM_Ent] ([Num_Doc], [id_Societe]) ON DELETE CASCADE;
 
-IF NOT EXISTS (SELECT 1 FROM SP_Page_DDL_Log WHERE Cod_Page = @CP)
-    INSERT INTO SP_Page_DDL_Log (Cod_Page, Type_Operation, Script_DDL, Resultat, Message, Login_Exec, Date_Exec)
+IF NOT EXISTS (SELECT 1 FROM Controle_Designer_DDL_Log WHERE Cod_Page = @CP)
+    INSERT INTO Controle_Designer_DDL_Log (Cod_Page, Type_Operation, Script_DDL, Resultat, Message, Login_Exec, Date_Exec)
     VALUES (@CP, 'CREATE', 'CREATE TABLE SP_FKM_Ent / SP_FKM_Det_LIGNES + FK (script exemple)', 'true', 'Tables créées par le script exemple', 'SCRIPT', GETDATE());
 
 /* -------------------------------------------------------------------------- */
 /* 3. Publication (contrôles + rattachements)                                 */
 /* -------------------------------------------------------------------------- */
-UPDATE SP_Page SET Statut_Page = 'PUBLIE', Dat_Publication = GETDATE(), DDL_Genere = 'true',
+UPDATE Controle_Designer SET Statut_Page = 'PUBLIE', Dat_Publication = GETDATE(), DDL_Genere = 'true',
        Version_Page = ISNULL(Version_Page, 1) + 1, Dat_Modif = GETDATE(), Modified_By = 'SCRIPT'
 WHERE Cod_Page = @CP AND Statut_Page <> 'PUBLIE';
 
@@ -154,4 +154,4 @@ IF NOT EXISTS (SELECT 1 FROM Param_Workflow_Typ_Document WHERE Typ_Document = 'F
 COMMIT TRANSACTION;
 GO
 
-SELECT Cod_Page, Statut_Page, Table_Ent, Menu_Parent, Rang FROM SP_Page WHERE Cod_Page = 'FRAIS_KM';
+SELECT Cod_Page, Statut_Page, Table_Ent, Menu_Parent, Rang FROM Controle_Designer WHERE Cod_Page = 'FRAIS_KM';

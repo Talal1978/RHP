@@ -6,7 +6,7 @@ Imports Newtonsoft.Json.Linq
 ''' colonne 'Source métier' est renseignée dans le SP_Page_Designer) : pour
 ''' chaque paramètre déclaré de la source, l'utilisateur choisit comment il est
 ''' alimenté — un champ de l'entête du document ou une constante — et le mapping
-''' json attendu par le moteur (SP_Page_Table.Source_Mapping :
+''' json attendu par le moteur (Controle_Designer_Table.Source_Mapping :
 ''' {"Paramètre":{"ref":"ChampEntete"} | {"const":"valeur"}}) est généré
 ''' automatiquement - aucune saisie de code.
 ''' Interface : Zoom_SP_MappingSource.Designer.vb (convention permanente : tout
@@ -27,7 +27,7 @@ Public Class Zoom_SP_MappingSource
     Private Const MODE_AUCUN As String = "(non alimenté)"
 
     ''' <summary>Crée l'assistant. codTable / codSource : contexte (titre) ;
-    ''' paramsJson : paramètres déclarés de la source (SP_Page_Source.Parametres) ;
+    ''' paramsJson : paramètres déclarés de la source (Controle_Designer_Source.Parametres) ;
     ''' champsEnt : colonnes de l'entête proposées (métier déclarées + techniques) ;
     ''' mappingExistant : contenu actuel de Source_Mapping ("" si aucun).</summary>
     Public Sub New(codTable As String, codSource As String, paramsJson As String, champsEnt As List(Of String), mappingExistant As String)
