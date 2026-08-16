@@ -248,8 +248,13 @@ const Demande_Avance = () => {
         nameEcran: "RH_Demande_Avance",
         idEcran: currentNum,
       });
+      navigate(`/myspace/RH_Demande_Avance/Demande d'avance/new`);
+    } else {
+      // Déjà sur /new : la navigation vers la même URL est sans effet (useParams
+      // inchangé, Request non rejoué) — réinitialisation explicite obligatoire.
+      setEntete(iniEntete);
+      enteteRef.current = iniEntete;
     }
-    navigate(`/myspace/RH_Demande_Avance/Demande d'avance/new`);
   }, [entete, currentNum]);
   const SoumettreEnSignature = useCallback(async () => {
     if (!currentNum) return;

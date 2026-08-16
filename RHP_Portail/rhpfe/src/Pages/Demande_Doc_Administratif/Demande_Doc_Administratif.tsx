@@ -367,8 +367,15 @@ const Demande_Doc_Administratif = () => {
                 nameEcran: "Demande_Doc_Admin",
                 idEcran: currentNum,
             });
+            navigate("/myspace/Demande_Doc_Administratif/Demande Documents/new");
+        } else {
+            // Déjà sur /new : la navigation vers la même URL est sans effet (useParams
+            // inchangé, Request non rejoué) — réinitialisation explicite obligatoire.
+            setEntete(iniEntete);
+            setDetail([iniDetail]);
+            enteteRef.current = iniEntete;
+            detailRef.current = [iniDetail];
         }
-        navigate("/myspace/Demande_Doc_Administratif/Demande Documents/new");
     }, [entete, detail, currentNum]);
 
     const SoumettreEnSignature = useCallback(async () => {

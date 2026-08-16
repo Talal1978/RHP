@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { DesktopDatePicker, DesktopDateTimePicker } from "@mui/x-date-pickers";
 import {
   estDate,
@@ -51,6 +51,12 @@ const CalendarZoom = ({
   showTime?: boolean;
 }) => {
   const lastEmitted = useRef<number | null>(null);
+  // Réinitialisation externe de la valeur (Nouveau document, reset du formulaire)
+  // : le composant n'est pas remonté, lastEmitted survivrait et avalerait la
+  // prochaine sélection si elle retombe sur la même date (onchange jamais appelé).
+  useEffect(() => {
+    if (valeur === "" || valeur === null || valeur === undefined) lastEmitted.current = null;
+  }, [valeur]);
 
   const parsedValue = parseValue(valeur, showTime);
   // showTime : sélecteur date + heure (format jj/mm/aaaa hh:mm, 24h)

@@ -547,8 +547,15 @@ const Outillage_Mouvement = () => {
                 nameEcran: "RH_Outillage_Mouvement",
                 idEcran: currentNum,
             });
+            navigate("/myspace/Outillage_Mouvement/Mouvement Outillage/new");
+        } else {
+            // Déjà sur /new : la navigation vers la même URL est sans effet (useParams
+            // inchangé, Request non rejoué) — réinitialisation explicite obligatoire.
+            setEntete(iniEntete);
+            setDetail([]);
+            enteteRef.current = iniEntete;
+            detailRef.current = [];
         }
-        navigate("/myspace/Outillage_Mouvement/Mouvement Outillage/new");
     }, [entete, detail, currentNum]);
 
     const Valider = useCallback(async () => {

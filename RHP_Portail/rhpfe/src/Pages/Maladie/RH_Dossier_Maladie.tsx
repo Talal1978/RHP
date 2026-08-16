@@ -252,8 +252,13 @@ const RH_Dossier_Maladie = () => {
         nameEcran: "RH_Dossier_Maladie",
         idEcran: currentNum,
       });
+      navigate(`/myspace/RH_Dossier_Maladie/Dossier de maladie/new`);
+    } else {
+      // Déjà sur /new : la navigation vers la même URL est sans effet (useParams
+      // inchangé, Request non rejoué) — réinitialisation explicite obligatoire.
+      setEntete(iniEntete);
+      enteteRef.current = iniEntete;
     }
-    navigate(`/myspace/RH_Dossier_Maladie/Dossier de maladie/new`);
   }, [entete, currentNum]);
   const SoumettreEnSignature = useCallback(async () => {
     if (!currentNum) return;

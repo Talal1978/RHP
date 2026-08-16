@@ -404,8 +404,13 @@ const RH_Demande_Conge = () => {
         nameEcran: "RH_Demande_Conge",
         idEcran: currentNum,
       });
+      navigate(`/myspace/RH_Demande_Conge/Demande de congé/new`);
+    } else {
+      // Déjà sur /new : la navigation vers la même URL est sans effet (useParams
+      // inchangé, Request non rejoué) — réinitialisation explicite obligatoire.
+      setEntete(iniEntete);
+      enteteRef.current = iniEntete;
     }
-    navigate(`/myspace/RH_Demande_Conge/Demande de congé/new`);
   }, [entete, currentNum]);
   const SoumettreEnSignature = useCallback(async () => {
     if (!currentNum) return;

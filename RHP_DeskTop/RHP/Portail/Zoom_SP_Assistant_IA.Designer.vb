@@ -157,8 +157,8 @@ Partial Class Zoom_SP_Assistant_IA
         '
         Me.pnlModes.BackColor = System.Drawing.Color.FromArgb(CType(CType(250, Byte), Integer), CType(CType(250, Byte), Integer), CType(CType(250, Byte), Integer))
         Me.pnlModes.ColumnCount = 3
-        Me.pnlModes.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.AutoSize))
-        Me.pnlModes.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.AutoSize))
+        Me.pnlModes.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle())
+        Me.pnlModes.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle())
         Me.pnlModes.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100.0!))
         Me.pnlModes.Controls.Add(Me.rdoAide, 0, 0)
         Me.pnlModes.Controls.Add(Me.rdoGeneration, 1, 0)
@@ -179,10 +179,11 @@ Partial Class Zoom_SP_Assistant_IA
         Me.rdoAide.Font = New System.Drawing.Font("Century Gothic", 8.25!)
         Me.rdoAide.Location = New System.Drawing.Point(3, 3)
         Me.rdoAide.Name = "rdoAide"
-        Me.rdoAide.Size = New System.Drawing.Size(449, 22)
+        Me.rdoAide.Size = New System.Drawing.Size(595, 22)
         Me.rdoAide.TabIndex = 0
         Me.rdoAide.TabStop = True
-        Me.rdoAide.Text = "Aide — questions sur la création de pages (formules, paramètres, sources métier…)"
+        Me.rdoAide.Text = "Aide — questions sur la création de pages (formules, paramètres, sources métier…)" &
+    ""
         Me.rdoAide.UseVisualStyleBackColor = True
         '
         'rdoGeneration
@@ -190,9 +191,9 @@ Partial Class Zoom_SP_Assistant_IA
         Me.rdoGeneration.AutoSize = True
         Me.rdoGeneration.Dock = System.Windows.Forms.DockStyle.Fill
         Me.rdoGeneration.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        Me.rdoGeneration.Location = New System.Drawing.Point(458, 3)
+        Me.rdoGeneration.Location = New System.Drawing.Point(604, 3)
         Me.rdoGeneration.Name = "rdoGeneration"
-        Me.rdoGeneration.Size = New System.Drawing.Size(320, 22)
+        Me.rdoGeneration.Size = New System.Drawing.Size(353, 22)
         Me.rdoGeneration.TabIndex = 1
         Me.rdoGeneration.Text = "Génération — créer le fichier JSON d'une page"
         Me.rdoGeneration.UseVisualStyleBackColor = True
@@ -202,9 +203,9 @@ Partial Class Zoom_SP_Assistant_IA
         Me.lblStatut.Dock = System.Windows.Forms.DockStyle.Fill
         Me.lblStatut.Font = New System.Drawing.Font("Century Gothic", 8.25!)
         Me.lblStatut.ForeColor = System.Drawing.Color.FromArgb(CType(CType(110, Byte), Integer), CType(CType(110, Byte), Integer), CType(CType(110, Byte), Integer))
-        Me.lblStatut.Location = New System.Drawing.Point(784, 0)
+        Me.lblStatut.Location = New System.Drawing.Point(963, 0)
         Me.lblStatut.Name = "lblStatut"
-        Me.lblStatut.Size = New System.Drawing.Size(103, 28)
+        Me.lblStatut.Size = New System.Drawing.Size(1, 28)
         Me.lblStatut.TabIndex = 2
         Me.lblStatut.TextAlign = System.Drawing.ContentAlignment.MiddleRight
         '
@@ -217,7 +218,7 @@ Partial Class Zoom_SP_Assistant_IA
         Me.txtChat.Location = New System.Drawing.Point(13, 45)
         Me.txtChat.Name = "txtChat"
         Me.txtChat.ReadOnly = True
-        Me.txtChat.Size = New System.Drawing.Size(890, 411)
+        Me.txtChat.Size = New System.Drawing.Size(890, 443)
         Me.txtChat.TabIndex = 1
         Me.txtChat.Text = ""
         '
@@ -228,7 +229,7 @@ Partial Class Zoom_SP_Assistant_IA
         Me.pnlTelechargement.Controls.Add(Me.lnkTelechargement)
         Me.pnlTelechargement.Controls.Add(Me.lnkDossier)
         Me.pnlTelechargement.Dock = System.Windows.Forms.DockStyle.Fill
-        Me.pnlTelechargement.Location = New System.Drawing.Point(13, 462)
+        Me.pnlTelechargement.Location = New System.Drawing.Point(13, 494)
         Me.pnlTelechargement.Name = "pnlTelechargement"
         Me.pnlTelechargement.Size = New System.Drawing.Size(890, 24)
         Me.pnlTelechargement.TabIndex = 2
@@ -241,7 +242,7 @@ Partial Class Zoom_SP_Assistant_IA
         Me.lblFichier.ForeColor = System.Drawing.Color.FromArgb(CType(CType(46, Byte), Integer), CType(CType(125, Byte), Integer), CType(CType(50, Byte), Integer))
         Me.lblFichier.Location = New System.Drawing.Point(8, 3)
         Me.lblFichier.Name = "lblFichier"
-        Me.lblFichier.Size = New System.Drawing.Size(129, 19)
+        Me.lblFichier.Size = New System.Drawing.Size(154, 19)
         Me.lblFichier.TabIndex = 0
         Me.lblFichier.Text = "Fichier JSON généré :"
         '
@@ -252,7 +253,7 @@ Partial Class Zoom_SP_Assistant_IA
         Me.lnkTelechargement.LinkColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
         Me.lnkTelechargement.Location = New System.Drawing.Point(143, 3)
         Me.lnkTelechargement.Name = "lnkTelechargement"
-        Me.lnkTelechargement.Size = New System.Drawing.Size(134, 19)
+        Me.lnkTelechargement.Size = New System.Drawing.Size(126, 17)
         Me.lnkTelechargement.TabIndex = 1
         Me.lnkTelechargement.TabStop = True
         Me.lnkTelechargement.Text = "RHP_Page_....json"
@@ -266,7 +267,7 @@ Partial Class Zoom_SP_Assistant_IA
         Me.lnkDossier.LinkColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
         Me.lnkDossier.Location = New System.Drawing.Point(772, 3)
         Me.lnkDossier.Name = "lnkDossier"
-        Me.lnkDossier.Size = New System.Drawing.Size(110, 19)
+        Me.lnkDossier.Size = New System.Drawing.Size(114, 19)
         Me.lnkDossier.TabIndex = 2
         Me.lnkDossier.TabStop = True
         Me.lnkDossier.Text = "Ouvrir le dossier"
@@ -279,7 +280,7 @@ Partial Class Zoom_SP_Assistant_IA
         Me.pnlSaisie.Controls.Add(Me.txtMessage, 0, 0)
         Me.pnlSaisie.Controls.Add(Me.Envoyer_pb, 1, 0)
         Me.pnlSaisie.Dock = System.Windows.Forms.DockStyle.Fill
-        Me.pnlSaisie.Location = New System.Drawing.Point(13, 492)
+        Me.pnlSaisie.Location = New System.Drawing.Point(13, 524)
         Me.pnlSaisie.Name = "pnlSaisie"
         Me.pnlSaisie.RowCount = 1
         Me.pnlSaisie.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100.0!))
@@ -303,7 +304,7 @@ Partial Class Zoom_SP_Assistant_IA
         '
         Me.Envoyer_pb.Anchor = System.Windows.Forms.AnchorStyles.None
         Me.Envoyer_pb.Cursor = System.Windows.Forms.Cursors.Hand
-        Me.Envoyer_pb.Image = Global.RHP.My.Resources.Resources.btn_execute
+        Me.Envoyer_pb.Image = Global.RHP.My.Resources.Resources.btn_div_next
         Me.Envoyer_pb.Location = New System.Drawing.Point(850, 9)
         Me.Envoyer_pb.Margin = New System.Windows.Forms.Padding(4)
         Me.Envoyer_pb.Name = "Envoyer_pb"

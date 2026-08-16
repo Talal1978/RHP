@@ -219,7 +219,72 @@ Public Class Zoom_SP_Assistant_IA
     End Sub
 
     Private Sub AjouterMessageBot(texte As String)
+        SupprimerReflexion()
         AjouterMessage("Assistant", texte, colorBase01)
+    End Sub
+
+    '---------------- Indicateur de réflexion ----------------
+    ' Message provisoire animé affiché dans le chat pendant l'appel au modèle
+    ' (« Assistant — réflexion en cours… ») ; retiré dès l'affichage de la vraie
+    ' réponse (SupprimerReflexion, appelée par AjouterMessageBot).
+    Private _reflexionDebut As Integer = -1
+    Private _reflexionTimer As System.Windows.Forms.Timer
+    Private _reflexionTicks As Integer = 0
+    Private _reflexionPhase As String = ""
+    Private ReadOnly _policeReflexionTitre As New Font("Century Gothic", 8.25!, FontStyle.Bold)
+    Private ReadOnly _policeReflexion As New Font("Century Gothic", 8.25!, FontStyle.Italic)
+
+    ''' <summary>Affiche dans le chat que l'assistant réfléchit (points animés par timer).</summary>
+    Private Sub AfficherReflexion()
+        SupprimerReflexion()
+        _reflexionDebut = txtChat.TextLength
+        _reflexionPhase = ""
+        _reflexionTicks = 0
+        lblStatut.Text = "L'assistant écrit…"
+        RendreReflexion()
+        _reflexionTimer = New System.Windows.Forms.Timer() With {.Interval = 500}
+        AddHandler _reflexionTimer.Tick, AddressOf ReflexionTimer_Tick
+        _reflexionTimer.Start()
+    End Sub
+
+    Private Sub ReflexionTimer_Tick(sender As Object, e As EventArgs)
+        _reflexionTicks += 1
+        RendreReflexion()
+    End Sub
+
+    ''' <summary>(Ré)écrit le message provisoire de réflexion à la fin du chat.</summary>
+    Private Sub RendreReflexion()
+        If _reflexionDebut < 0 OrElse txtChat.IsDisposed Then Return
+        txtChat.Select(_reflexionDebut, txtChat.TextLength - _reflexionDebut)
+        txtChat.SelectedText = ""
+        AjouterTexte("Assistant", _policeReflexionTitre, colorBase01)
+        AjouterTexte(" — réflexion en cours" & If(_reflexionPhase = "", "", " (" & _reflexionPhase & ")") & " " &
+                     New String("."c, _reflexionTicks Mod 4), _policeReflexion, Color.FromArgb(120, 120, 120))
+        txtChat.SelectionStart = txtChat.TextLength
+        txtChat.ScrollToCaret()
+    End Sub
+
+    ''' <summary>Met à jour la phase en cours (lecture des références, correction du
+    ''' JSON…), dans le message de réflexion comme dans le libellé de statut.</summary>
+    Private Sub AfficherPhaseReflexion(phase As String)
+        lblStatut.Text = "L'assistant écrit…" & If(phase = "", "", " (" & phase & ")")
+        _reflexionPhase = phase
+        RendreReflexion()
+    End Sub
+
+    ''' <summary>Retire le message provisoire de réflexion et arrête son animation.</summary>
+    Private Sub SupprimerReflexion()
+        If _reflexionTimer IsNot Nothing Then
+            RemoveHandler _reflexionTimer.Tick, AddressOf ReflexionTimer_Tick
+            _reflexionTimer.Stop()
+            _reflexionTimer.Dispose()
+            _reflexionTimer = Nothing
+        End If
+        If _reflexionDebut >= 0 AndAlso Not txtChat.IsDisposed Then
+            txtChat.Select(_reflexionDebut, txtChat.TextLength - _reflexionDebut)
+            txtChat.SelectedText = ""
+        End If
+        _reflexionDebut = -1
     End Sub
 
     '---------------- Envoi d'un message ----------------
@@ -239,7 +304,7 @@ Public Class Zoom_SP_Assistant_IA
         Envoyer_pb.Enabled = False
         AjouterMessageUtilisateur(q)
         txtMessage.Clear()
-        lblStatut.Text = "L'assistant écrit…"
+        AfficherReflexion()
         Try
             If rdoGeneration.Checked Then
                 Await GenererPage(q)
@@ -249,6 +314,7 @@ Public Class Zoom_SP_Assistant_IA
         Catch ex As Exception
             AjouterMessageBot("Erreur : " & ex.Message)
         Finally
+            SupprimerReflexion()
             _envoiEnCours = False
             txtMessage.Enabled = True
             Envoyer_pb.Enabled = True
@@ -444,7 +510,7 @@ Public Class Zoom_SP_Assistant_IA
                 End If
             Next
             msgs.Add(New AiChatMessage("user", sb.ToString()))
-            lblStatut.Text = "L'assistant écrit… (lecture des références)"
+            AfficherPhaseReflexion("lecture des références")
         Next
 
         '---------------- Extraction du JSON produit ----------------
@@ -465,7 +531,7 @@ Public Class Zoom_SP_Assistant_IA
                 "Le JSON généré ne passe pas la validation de l'importeur du Designer :" & vbCrLf &
                 " - " & String.Join(vbCrLf & " - ", res.Erreurs) & vbCrLf &
                 "Corrige TOUTES ces anomalies et renvoie UNIQUEMENT le bloc ```json ... ``` corrigé complet."))
-            lblStatut.Text = "L'assistant écrit… (correction du JSON)"
+            AfficherPhaseReflexion("correction du JSON")
             rep = Await _config.EnvoyerChatAsync(msgs, 300000)
             json = ExtraireJson(rep)
             If json <> "" Then res = SP_Page_Json_Import.Analyser(json)
@@ -638,6 +704,13 @@ Public Class Zoom_SP_Assistant_IA
             Me.DialogResult = DialogResult.Cancel
             Me.Close()
         End If
+    End Sub
+
+    ''' <summary>Fermeture : arrête l'animation de réflexion et libère ses ressources.</summary>
+    Private Sub Zoom_SP_Assistant_IA_FormClosed(sender As Object, e As FormClosedEventArgs) Handles Me.FormClosed
+        SupprimerReflexion()
+        _policeReflexionTitre.Dispose()
+        _policeReflexion.Dispose()
     End Sub
 
 End Class

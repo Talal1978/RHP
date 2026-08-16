@@ -246,8 +246,13 @@ const Demande_Pret = () => {
         nameEcran: "RH_Demande_Pret",
         idEcran: currentNum,
       });
+      navigate(`/myspace/RH_Demande_Pret/Demande de prêt/new`);
+    } else {
+      // Déjà sur /new : la navigation vers la même URL est sans effet (useParams
+      // inchangé, Request non rejoué) — réinitialisation explicite obligatoire.
+      setEntete(iniEntete);
+      enteteRef.current = iniEntete;
     }
-    navigate(`/myspace/RH_Demande_Pret/Demande de prêt/new`);
   }, [entete, currentNum]);
   const SoumettreEnSignature = useCallback(async () => {
     if (!currentNum) return;

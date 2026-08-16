@@ -2071,7 +2071,7 @@ Public Class SP_Page_Designer
     ''' La ligne courante n'est validée que si l'utilisateur l'a réellement modifiée
     ''' (un simple clic sur la ligne vide ne doit pas créer de ligne).</summary>
     Private Sub TerminerEditionGrille(grd As DataGridView)
-        grd.EndEdit()
+        grd.EndEdit(True)
         If Not grd.IsCurrentRowDirty OrElse grd.DataSource Is Nothing Then Return
         Dim bc As BindingContext = grd.BindingContext
         If bc Is Nothing Then Return
@@ -2469,7 +2469,7 @@ Public Class SP_Page_Designer
             End If
             cnTx.CommitTrans() : enTransaction = False
             Dim msg As String = "Enregistré avec succès."
-            If messages.Count > 0 Then msg &= vbCrLf & String.Join(vbCrLf, messages)
+            '  If messages.Count > 0 Then msg &= vbCrLf & String.Join(vbCrLf, messages)
             Return New savingResult With {.result = True, .message = msg}
         Catch ex As Exception
             If enTransaction Then
@@ -2651,6 +2651,8 @@ Public Class SP_Page_Designer
             cnTx.Execute("delete from Controle_Designer_DDL_Log where Cod_Page=" & SqlV(codPage))
             cnTx.Execute("delete from Controle_Designer where Cod_Page=" & SqlV(codPage))
             cnTx.CommitTrans() : enTransaction = False
+            ShowMessageBox("Page supprimée",
+                         "Suppression", MessageBoxButtons.OK, msgIcon.Information)
         Catch ex As Exception
             If enTransaction Then
                 Try : cnTx.RollbackTrans() : Catch : End Try

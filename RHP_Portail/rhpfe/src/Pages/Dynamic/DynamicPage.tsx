@@ -251,7 +251,9 @@ const DynamicPage = ({ codPage }: { codPage: string }) => {
           // exécuter la source renverrait une valeur parasite (0) qui pourrait
           // arriver APRES la bonne réponse et l'écraser (course asynchrone).
           if (def?.ref && (v === null || v === undefined || v === "")) incomplet = true;
-          params[nomP] = v;
+          // valeurPourEnvoi : Date -> chaîne locale naïve (jamais l'ISO UTC qui
+          // décalerait la date d'un jour côté SQL).
+          params[nomP] = valeurPourEnvoi(v);
         }
         if (incomplet) return;
         myAxios("sp_exec_source", { codSource: f.source, params }).then((dt) => {
@@ -293,14 +295,15 @@ const DynamicPage = ({ codPage }: { codPage: string }) => {
       try {
         const m = JSON.parse(t.Source_Mapping ?? "{}");
         const params: { [k: string]: any } = {};
-        let incomplet = false;
         for (const [nomP, def] of Object.entries<any>(m)) {
           const v = def?.ref ? entete?.[def.ref] : def?.const;
-          // Même garde que les champs SOURCE : pas d'exécution à paramètres vides.
-          if (def?.ref && (v === null || v === undefined || v === "")) incomplet = true;
-          params[nomP] = v;
+          // Une source métier se recharge dès qu'un paramètre change, y compris
+          // vers vide (document neuf : NULL -> la source décide du résultat,
+          // ex. tous les créneaux « Libre »). L'anti-course virtSeq écarte les
+          // réponses périmées. valeurPourEnvoi : Date -> chaîne locale naïve
+          // (jamais l'ISO UTC qui décalerait la date d'un jour côté SQL).
+          params[nomP] = (v === "" || v === null || v === undefined) ? null : valeurPourEnvoi(v);
         }
-        if (incomplet) return;
         myAxios("sp_exec_source", { codSource: t.Source_Metier, params }).then((dt) => {
           if (seq !== virtSeq.current) return; // réponse périmée : ignorée
           if (dt?.data?.result) {

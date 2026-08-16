@@ -200,6 +200,8 @@ const Note_Frais = () => {
       } else {
         setEntete(iniEntete);
         setDetail([iniDetail]);
+        enteteRef.current = iniEntete;
+        detailRef.current = [iniDetail];
       }
     } finally {
       setShowLoading(false);
@@ -392,8 +394,15 @@ const Note_Frais = () => {
         nameEcran: "Note_Frais",
         idEcran: currentNum,
       });
+      navigate("/myspace/Note_Frais/Note de frais/new");
+    } else {
+      // Déjà sur /new : la navigation vers la même URL est sans effet (useParams
+      // inchangé, loadData non rejoué) — réinitialisation explicite obligatoire.
+      setEntete(iniEntete);
+      setDetail([iniDetail]);
+      enteteRef.current = iniEntete;
+      detailRef.current = [iniDetail];
     }
-    navigate("/myspace/Note_Frais/Note de frais/new");
   }, [entete, detail, currentNum]);
   const SoumettreEnSignature = useCallback(async () => {
     if (!currentNum) return;
