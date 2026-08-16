@@ -115,12 +115,25 @@
   ],
   "components": [
     {
+      "Cod_Champ": "Num_Doc",
+      "Cod_Table": "ENT",
+      "Nom_Colonne": "",
+      "Libelle": "N° demande",
+      "Typ_Controle": "TEXT",
+      "Rang": 1,
+      "Largeur": 6,
+      "Etat": "R",
+      "Visible_Grille": false,
+      "Rang_Grille": 1,
+      "Aide": "Numéro attribué à l'enregistrement"
+    },
+    {
       "Cod_Champ": "Matricule",
       "Cod_Table": "ENT",
       "Nom_Colonne": "Matricule",
       "Libelle": "Matricule",
       "Typ_Controle": "ZOOM",
-      "Rang": 1,
+      "Rang": 2,
       "Largeur": 3,
       "Valeur_Defaut": "GV_MATRICULE",
       "Obligatoire": true,
@@ -136,7 +149,7 @@
       "Nom_Colonne": "Dat_Demande",
       "Libelle": "Date de demande",
       "Typ_Controle": "DATE",
-      "Rang": 2,
+      "Rang": 3,
       "Largeur": 3,
       "Valeur_Defaut": "GV_NOW",
       "Rang_Grille": 2,
@@ -149,7 +162,7 @@
       "Nom_Colonne": "Commentaire",
       "Libelle": "Commentaire",
       "Typ_Controle": "MEMO",
-      "Rang": 3,
+      "Rang": 4,
       "Largeur": 6,
       "Rang_Grille": 3
     },
@@ -159,7 +172,7 @@
       "Nom_Colonne": "Total",
       "Libelle": "Total frais",
       "Typ_Controle": "CALCULE",
-      "Rang": 4,
+      "Rang": 5,
       "Largeur": 3,
       "Etat": "A",
       "Formule": "{\"op\":\"SUM\",\"table\":\"LIGNES\",\"colonne\":\"Mnt\"}",
@@ -288,7 +301,7 @@
     "habilitations": "EXCLUES",
     "nbTables": 2,
     "nbColonnes": 8,
-    "nbChamps": 9,
+    "nbChamps": 10,
     "nbSources": 0,
     "nbValidations": 4
   }

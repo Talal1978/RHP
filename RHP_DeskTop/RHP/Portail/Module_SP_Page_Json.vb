@@ -478,6 +478,17 @@ Public Class SP_Page_Json_Import
         Return ok
     End Function
 
+    ''' <summary>Contrôle de longueur : miroir des tailles de colonnes SQL des
+    ''' tables de métadonnées (001_SP_Designer_Metadata.sql). Sans lui, une valeur
+    ''' trop longue passait la validation puis faisait échouer le chargement des
+    ''' grilles sur le MaxLength du DataTable (erreur brute « Impossible de
+    ''' définir la colonne … » — ex. Num_Zoom nvarchar(10)).</summary>
+    Private Shared Sub VerifierLongueur(E As List(Of String), quoi As String, val As String, max As Integer)
+        If val IsNot Nothing AndAlso val.Trim().Length > max Then
+            E.Add(quoi & " : " & val.Trim().Length & " caractères, au-delà de la limite de " & max & " (taille de la colonne en base).")
+        End If
+    End Sub
+
     ''' <summary>Point d'extension de migration de format (1.0 -> 1.1...) :
     ''' transforme l'objet json d'une version antérieure avant désérialisation.
     ''' Aucune migration n'existe à ce jour (seule version : 1.0).</summary>
@@ -575,6 +586,10 @@ Public Class SP_Page_Json_Import
             E.Add("Type document (Cod_Document) absent ou invalide : '" & p.Cod_Document & "' (2 à 10 caractères alphanumériques, commence par une lettre).")
         End If
         If p.Nom_Page.Trim = "" Then E.Add("Le nom de la page (Nom_Page) est obligatoire.")
+        VerifierLongueur(E, "Nom de la page (Nom_Page)", p.Nom_Page, 60)
+        VerifierLongueur(E, "Section du menu (Menu_Parent)", p.Menu_Parent, 60)
+        VerifierLongueur(E, "Icône (Icone)", p.Icone, 50)
+        VerifierLongueur(E, "Modèle d'édition (Cod_Modele_Edition)", p.Cod_Modele_Edition, 20)
         If p.Statut_Page.Trim <> "" AndAlso Not {"BROUILLON", "PUBLIE", "DESACTIVE", "ARCHIVE"}.Contains(p.Statut_Page.Trim) Then
             W.Add("Statut_Page '" & p.Statut_Page & "' inconnu : ignoré (le statut n'est jamais importé).")
         End If
@@ -613,6 +628,9 @@ Public Class SP_Page_Json_Import
             If t.Regle_Suppression.Trim <> "CASCADE" AndAlso t.Regle_Suppression.Trim <> "RESTRICT" Then
                 E.Add("Règle de suppression invalide ('" & t.Regle_Suppression & "') pour la table '" & ct & "' : CASCADE ou RESTRICT attendu.")
             End If
+            VerifierLongueur(E, "Code table", ct, 20)
+            VerifierLongueur(E, "Libellé de la table '" & ct & "'", t.Libelle, 150)
+            VerifierLongueur(E, "Tri par défaut de la table '" & ct & "'", t.Tri_Defaut, 200)
             '---------------- Grille virtuelle : source + mapping ----------------
             If t.Source_Metier.Trim <> "" Then
                 If ct.Equals("ENT", StringComparison.OrdinalIgnoreCase) Then
@@ -646,6 +664,9 @@ Public Class SP_Page_Json_Import
                 If Not SP_Page_Designer.TYPES_SQL.Contains(LCase(c.Typ_Sql.Trim)) Then
                     E.Add("Type SQL invalide ('" & c.Typ_Sql & "') pour la colonne '" & ct & "." & nc & "'.")
                 End If
+                VerifierLongueur(E, "Nom de colonne", nc, 50)
+                VerifierLongueur(E, "Libellé de la colonne '" & ct & "." & nc & "'", c.Libelle, 150)
+                VerifierLongueur(E, "Valeur par défaut de la colonne '" & ct & "." & nc & "'", c.Valeur_Defaut, 200)
                 If Not colonnesParTable.ContainsKey(ct) Then colonnesParTable(ct) = New List(Of String)
                 If Not colonnesParTable(ct).Contains(nc) Then colonnesParTable(ct).Add(nc)
             Next
@@ -667,6 +688,14 @@ Public Class SP_Page_Json_Import
             End If
             If ValiderIdentifiantSql(cc) <> "" Then E.Add("Champ invalide : '" & cc & "'.")
             If Not champsVus.Add(cc) Then E.Add("Champ en doublon : '" & cc & "'.")
+            VerifierLongueur(E, "Code champ", cc, 50)
+            VerifierLongueur(E, "Libellé du champ '" & cc & "'", c.Libelle, 150)
+            VerifierLongueur(E, "Valeur par défaut du champ '" & cc & "'", c.Valeur_Defaut, 200)
+            VerifierLongueur(E, "Aide du champ '" & cc & "'", c.Aide, 300)
+            VerifierLongueur(E, "Rubrique du champ '" & cc & "'", c.Rubrique, 60)
+            VerifierLongueur(E, "N° de zoom du champ '" & cc & "'", c.Num_Zoom, 10)
+            VerifierLongueur(E, "Source métier du champ '" & cc & "'", c.Source_Metier, 50)
+            VerifierLongueur(E, "Format d'affichage du champ '" & cc & "'", c.Format_Affichage, 50)
             If Not SP_Page_Designer.TYPES_CONTROLE.Contains(c.Typ_Controle.Trim) Then
                 E.Add("Type de contrôle invalide ('" & c.Typ_Controle & "') pour le champ '" & cc & "'.")
             End If
@@ -691,6 +720,36 @@ Public Class SP_Page_Json_Import
                 ElseIf Not colonnesAffectees.Add(ctEff & "." & ncCh) Then
                     E.Add("Colonne affectée en double : '" & ctEff & "." & ncCh & "' est utilisée par plusieurs champs (dont '" & cc & "').")
                 End If
+            Else
+                ' Miroir du verrou de Saving : un champ sans colonne ne peut produire
+                ' une valeur que s'il est CALCULE / SOURCE (non persisté), GED, ou un
+                ' affichage d'une colonne TECHNIQUE de l'entête — Cod_Champ = nom
+                ' technique EXACT, casse comprise (convention « N° demande » :
+                ' Cod_Champ = 'Num_Doc'). Tout autre champ sans colonne ne
+                ' s'afficherait jamais (clé absente du contexte portail).
+                Dim typCh As String = c.Typ_Controle.Trim
+                Dim ctEff As String = If(ctCh = "", "ENT", ctCh)
+                Dim affTechnique As Boolean = ctEff = "ENT" AndAlso
+                                              SP_Page_Designer.ColonnesTechniquesTable("ENT").Contains(cc)
+                If typCh <> "CALCULE" AndAlso typCh <> "SOURCE" AndAlso typCh <> "GED" AndAlso Not affTechnique Then
+                    E.Add("Le champ '" & cc & "' n'est rattaché à aucune colonne : il ne s'affichera jamais. Seuls peuvent être sans colonne : les champs calculés ou source (non persistés), les champs GED, et l'affichage d'une colonne technique de l'entête (Cod_Champ = nom technique exact, ex. 'Num_Doc' pour le N° de demande).")
+                End If
+            End If
+            ' Convention « N° de document » (miroir de Saving) : le champ
+            ' Cod_Champ='Num_Doc' (casse exacte) est obligatoire sur l'entête —
+            ' présence contrôlée après la boucle. Il ne peut être lié qu'à la
+            ' colonne technique Num_Doc (ou à aucune — forme canonique), et
+            ' réciproquement.
+            If cc.Equals("Num_Doc", StringComparison.Ordinal) Then
+                If ncCh <> "" AndAlso Not ncCh.Equals("Num_Doc", StringComparison.OrdinalIgnoreCase) Then
+                    E.Add("Le champ 'Num_Doc' ne peut être lié qu'à la colonne technique Num_Doc (ou à aucune colonne — forme canonique).")
+                End If
+                If c.Etat.Trim = "S" Then
+                    E.Add("Le champ 'Num_Doc' est toujours en lecture seule (Etat 'R' ou 'A') : sa valeur est attribuée par le serveur.")
+                End If
+            End If
+            If ncCh.Equals("Num_Doc", StringComparison.OrdinalIgnoreCase) AndAlso Not cc.Equals("Num_Doc", StringComparison.Ordinal) Then
+                E.Add("La colonne technique Num_Doc ne peut porter que le champ 'Num_Doc' (convention « N° de document ») : renommez le champ '" & cc & "'.")
             End If
             If c.Typ_Controle.Trim = "ZOOM" Then
                 If c.Num_Zoom.Trim = "" Then
@@ -713,6 +772,14 @@ Public Class SP_Page_Json_Import
                 E.Add("Le champ '" & cc & "' référence la source métier '" & c.Source_Metier & "', absente du fichier ET de cette base : la dépendance est indispensable.")
             End If
         Next
+        ' Le champ d'affichage du N° de document est obligatoire par convention,
+        ' au même titre que la table ENT (miroir de Saving) : Cod_Champ='Num_Doc'
+        ' (casse exacte) sur l'entête, sans colonne physique ou lié à la colonne
+        ' technique Num_Doc.
+        If Not pkg.Components.Any(Function(c) c.Cod_Champ.Trim.Equals("Num_Doc", StringComparison.Ordinal) AndAlso
+                                              (c.Cod_Table.Trim = "" OrElse c.Cod_Table.Trim = "ENT")) Then
+            E.Add("Le champ 'Num_Doc' est obligatoire (convention des pages SP_, au même titre que la table ENT) : champ d'entête TEXT en lecture seule, sans colonne physique, pour l'affichage du N° de document attribué par le serveur.")
+        End If
         '---------------- Validations ----------------
         Dim validationsVues As New HashSet(Of String)(StringComparer.OrdinalIgnoreCase)
         For Each v As SP_Page_ValidationDto In pkg.Validations
@@ -735,6 +802,8 @@ Public Class SP_Page_Json_Import
                 E.Add("Moment invalide ('" & v.Moment & "') pour la validation '" & cv & "'.")
             End If
             If v.Message.Trim = "" Then E.Add("Message obligatoire pour la validation '" & cv & "'.")
+            VerifierLongueur(E, "Code validation", cv, 50)
+            VerifierLongueur(E, "Message de la validation '" & cv & "'", v.Message, 300)
             If v.Cod_Table.Trim <> "" AndAlso Not tablesVues.Contains(v.Cod_Table.Trim) Then
                 E.Add("La validation '" & cv & "' référence une table absente du fichier : '" & v.Cod_Table & "'.")
             End If
@@ -762,6 +831,9 @@ Public Class SP_Page_Json_Import
             End If
             If s.Libelle.Trim = "" Then E.Add("Libellé obligatoire pour la source '" & cs & "'.")
             If s.Code_Sql.Trim = "" Then E.Add("Requête / procédure (Code_Sql) obligatoire pour la source '" & cs & "'.")
+            VerifierLongueur(E, "Code source", cs, 50)
+            VerifierLongueur(E, "Libellé de la source '" & cs & "'", s.Libelle, 150)
+            VerifierLongueur(E, "Profil de la source '" & cs & "'", s.Cod_Profile, 10)
             If s.Parametres.Trim <> "" Then
                 Try
                     Dim jp As JToken = JToken.Parse(s.Parametres)

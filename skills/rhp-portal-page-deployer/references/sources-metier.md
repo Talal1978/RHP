@@ -212,9 +212,9 @@ Contrôle par source (`module_sp_engine.ts` L.937-949) :
    appel de procédure.
 3. `Parametres` : jamais `id_Societe` ; `Nom` sans `@`, identifiant valide ;
    sérialisation exacte `[{"Nom":…,"Typ":…,"Obligatoire":…}]` (toute autre
-   forme = bloquant à l'import) ; documenter au manifeste les auto-injections
-   (§3.2) et l'effet d'une déclaration `Login`/`Matricule`/`Cod_Profile`
-   (alimentation par champ).
+   forme = bloquant à l'import) ; documenter dans la réponse finale les
+   auto-injections (§3.2) et l'effet d'une déclaration
+   `Login`/`Matricule`/`Cod_Profile` (alimentation par champ).
 4. Champ SOURCE : `Formule` = `{"source", "mapping"}` avec `source` =
    `Source_Metier`/`data_source_code` ; `ref` = colonnes d'**entête** ;
    rappeler la ré-exécution serveur au save si persisté + `Recalc_Save='true'`.

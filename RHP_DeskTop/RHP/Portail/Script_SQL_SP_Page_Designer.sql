@@ -6,6 +6,9 @@
       - Boutons : Nouveau / Enregistrer / Supprimer / Dupliquer / Aperçu DDL / Publier / Aide (F1)
                   / Exporter JSON / Importer JSON (transfert de la configuration
                   d'une page entre environnements, HORS habilitations)
+                  / Assistant IA (chat : questions sur l'aide intégrée +
+                  génération du JSON d'une page via le skill
+                  rsc\rhp-portal-page-deployer.zip — Zoom_SP_Assistant_IA)
     - Droits : profil super-admin (1) par défaut ; à étendre via Admin_Profile
     Prérequis : 001_SP_Designer_Metadata.sql exécuté (tables Controle_Designer*).
     ============================================================================ */
@@ -29,7 +32,8 @@ INSERT INTO Controle_Def_Ecran_Button (Name_Ecran, Cod_Button, Lib_Button, ProcN
     ('SP_Page_Designer', 'Exec_D',  'Aperçu DDL',         'ApercuDDL',   'btn_request',   25, 25, 6, ''),
     ('SP_Page_Designer', 'Publi_D', 'Publier / Désactiver', 'Publier',   'btn_validate',  25, 25, 7, 'SC'),
     ('SP_Page_Designer', 'ExportJson_D', 'Exporter JSON', 'ExporterJson', 'btn_save_doc', 25, 25, 8, ''),
-    ('SP_Page_Designer', 'ImportJson_D', 'Importer JSON', 'ImporterJson', 'btn_import',   25, 25, 9, 'SC');
+    ('SP_Page_Designer', 'ImportJson_D', 'Importer JSON', 'ImporterJson', 'btn_import',   25, 25, 9, 'SC'),
+    ('SP_Page_Designer', 'AssistantIA_D', 'Assistant IA', 'AssistantIA', 'btn_analyse',  25, 25, 10, '');
 GO
 
 /* -------------------------------------------------------------------------- */
@@ -74,6 +78,9 @@ IF NOT EXISTS (SELECT 1 FROM Controle_Menu_Avance WHERE Name_Ecran='SP_Page_Desi
 IF NOT EXISTS (SELECT 1 FROM Controle_Menu_Avance WHERE Name_Ecran='SP_Page_Designer' AND Name_Controle='ExportJson_D')
     INSERT INTO Controle_Menu_Avance (Name_Ecran, Name_Controle, Text_Controle, Typ_Controle, Typ_Security, Gere_Security, InfoBulle, Source, Flag_Maj)
     VALUES ('SP_Page_Designer', 'ExportJson_D', 'Exporter JSON', 'STD_Btn', '', 1, 'Exporter la configuration de la page au format JSON (RHP_PAGE_DESIGNER) — habilitations jamais exportées', 'S', 1526881);
+IF NOT EXISTS (SELECT 1 FROM Controle_Menu_Avance WHERE Name_Ecran='SP_Page_Designer' AND Name_Controle='AssistantIA_D')
+    INSERT INTO Controle_Menu_Avance (Name_Ecran, Name_Controle, Text_Controle, Typ_Controle, Typ_Security, Gere_Security, InfoBulle, Source, Flag_Maj)
+    VALUES ('SP_Page_Designer', 'AssistantIA_D', 'Assistant IA', 'STD_Btn', '', 1, 'Assistant IA du Designer : questions sur l''aide intégrée ou génération du fichier JSON d''une page (skill rhp-portal-page-deployer) — import ensuite via ''Importer JSON''', 'S', 1526881);
 GO
 
 /* -------------------------------------------------------------------------- */

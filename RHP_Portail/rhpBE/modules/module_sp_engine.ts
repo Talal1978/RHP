@@ -1044,6 +1044,29 @@ export async function lireDocument(meta: TSpMeta, numDoc: string, agent: TAgentC
     );
     details[t.Cod_Table] = rDet.data ?? [];
   }
+  // Champs SOURCE d'entête NON persistés (aucune colonne physique, ex. Solde_Conge) :
+  // résolus ici pour que le document arrive complet au client en un seul aller-retour
+  // (sinon le champ reste vide le temps d'un second appel sp_exec_source — décalage
+  // visible par rapport aux colonnes persistées). Miroir des détails virtuels ci-dessus.
+  // En échec, le champ est laissé absent : le client le ré-exécutera si besoin.
+  const champsSource = meta.champs.filter(
+    (c) => c.Cod_Table === "ENT" && c.Typ_Controle === "SOURCE" && c.Formule && !c.Nom_Colonne
+  );
+  await Promise.all(champsSource.map(async (c) => {
+    try {
+      const f = JSON.parse(c.Formule!);
+      const params: { [k: string]: any } = {};
+      let incomplet = false;
+      for (const [nomP, def] of Object.entries<any>(f?.mapping ?? {})) {
+        const v = def?.ref ? rEnt.data[0]?.[def.ref] : def?.const;
+        if (def?.ref && (v === null || v === undefined || v === "")) incomplet = true;
+        params[nomP] = v;
+      }
+      if (incomplet || !f?.source) return;
+      const rSrc = await executerSource(String(f.source), params, agent);
+      if (rSrc.ok) rEnt.data[0][cleChamp(c)] = rSrc.valeur;
+    } catch { /* source en échec : affichage repris côté client */ }
+  }));
   return { result: true, entete: rEnt.data[0], details };
 }
 /** Sécurise une clause ORDER BY déclarée en métadonnées (noms de colonnes uniquement). */

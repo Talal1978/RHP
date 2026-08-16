@@ -245,7 +245,7 @@ Pour un CALCULE, le recalcul serveur au save est systématique et inconditionnel
 
 L'assistant (`Zoom_SP_Assistant_Formule.vb`) convertit un texte convivial en
 l'AST json — **seul json est stocké**. À connaître pour relire une formule
-existante ou préparer les exemples du manifeste :
+existante ou préparer les exemples de la réponse finale :
 
 - **Syntaxe** : arguments séparés par `;` (la `,` est refusée — séparateur
   décimal uniquement, L.426) ; chaînes entre guillemets doubles ; opérateurs
@@ -291,6 +291,6 @@ existante ou préparer les exemples du manifeste :
 6. Ne jamais écrire la **valeur** d'un calculé dans le fichier : le serveur
    recalcule. Le DDL du `Saving` ne crée que la colonne (avec son défaut `DF_`
    si NOT NULL).
-7. Rappel sémantique à faire figurer au manifeste si la formule utilise des
-   dates : canon « heure naïve » (§2.2) — les durées sont en lectures
-   d'horloge, sans fuseau.
+7. Rappel sémantique à faire figurer dans la réponse finale si la formule
+   utilise des dates : canon « heure naïve » (§2.2) — les durées sont en
+   lectures d'horloge, sans fuseau.

@@ -126,10 +126,17 @@ Dérivation pratiquée par l'assistant : `NB_LIGNES`/`UNIQUE` ⇒ `DETAIL` ;
   **Une règle en échec technique bloque par sécurité si niveau B** (serveur,
   L.953-956).
 - `Moment` (rubrique `SP_Moment_Valid`) — filtre **client** uniquement
-  (`dynamicEngine.ts` L.424-427) :
-  - `SAISIE` : jouée à la saisie — jamais au SAVE client (exclue du filtre SAVE) ;
+  (`dynamicEngine.ts` L.424-427) ; les seuls appels réels du frontend
+  (`DynamicPage.tsx`) sont `CHANGE` (L.331), `AJOUT_LIGNE` (L.353) et `SAVE`
+  (L.458) :
+  - `SAISIE` : **jamais déclenchée par le frontend actuel** (aucun appel —
+    vérifié) : une règle `SAISIE` n'est donc jouée QUE par le serveur au save
+    (et exclue du filtre SAVE client). **Ne pas l'utiliser** — préférer
+    `CHANGE` ;
   - `CHANGE` : au changement d'un champ — **seules les règles ciblant le champ
-    modifié** sont rejouées ;
+    modifié** sont rejouées (alerte de confort, non bloquante) — et elles sont
+    **aussi rejouées au SAVE client**. C'est le moment des contrôles « avant
+    enregistrement » (formats, longueurs, bornes) ;
   - `AJOUT_LIGNE` : à l'ajout d'une ligne de détail (un échec bloquant annule
     l'ajout, `DynamicPage.tsx` L.334-338) ;
   - `SAVE` : à l'enregistrement — rejoue **toutes les règles sauf SAISIE**.
@@ -170,6 +177,15 @@ Comportement complet dans `sources-metier.md` §6.
 - `Num_Doc` attribué **par le serveur uniquement** au premier enregistrement :
   `<CodDocument><idSociete>-<aaaa><seq 6>`, séquence annuelle par société avec
   verrou (`updlock, holdlock`, L.987-998). Les scripts ne l'écrivent jamais.
+- **Affichage du N° sur le document (convention verrouillée, OBLIGATOIRE — au
+  même titre que la table `ENT`)** : champ `TEXT` d'entête en lecture seule
+  `Cod_Champ='Num_Doc'` **sans colonne** (`Nom_Colonne=''`) — le client lie
+  `entete['Num_Doc']` (`cleChamp = Nom_Colonne || Cod_Champ`, casse exacte
+  exigée), toujours retourné par `lireDocument` avec les colonnes techniques.
+  Verrous `Saving`/`Valider` : son **absence est bloquante**, et un champ sans
+  colonne qui n'est ni `CALCULE`/`SOURCE` non persisté, ni `GED`, ni un nom
+  technique d'entête exact est **rejeté** (il resterait vide à vie — ex. un
+  champ `'Num_Demande'` non lié).
 
 ### 5.2 Enregistrement (transaction unique, `enregistrerDocument` L.1067-1313)
 
@@ -305,29 +321,48 @@ Côté **DDL** (`Module_SP_DDL.DefautSQL`) : seul `GV_NOW` est reconnu ⇒
 ## 10. Checklist comportement pour le générateur
 
 1. `Obligatoire='true'` ⇒ **toujours** accompagner d'une validation
-   `REQUIRED` (même cible) — sinon l'obligation n'est qu'visuelle.
-2. `Etat` cohérent avec l'usage : `A` pour CALCULE/SOURCE, `S` pour la saisie,
+   `REQUIRED` (même cible, moment `SAVE`) — sinon l'obligation n'est que
+   visuelle (le validateur du skill émet un avertissement si elle manque).
+2. **Passe validations obligatoire — pour CHAQUE composant, émettre les règles
+   pertinentes** (ne jamais se limiter aux `REQUIRED`) :
+
+   | Composant | Règles à considérer systématiquement |
+   |---|---|
+   | texte court | `MAXLEN` alignée sur la longueur physique ; `REGEX` si le contenu est normé (presets §3.1 : e-mail, tél. `^0\d{9}$`, CP `^\d{5}$`) ; `MINLEN` si un plan de codification existe |
+   | memo | `MAXLEN` de confort |
+   | entier / décimal / montant | `MIN`/`MAX` ou `BETWEEN` (ex. `>= 0`, plafonds métier) |
+   | date / datetime | `COMPARE` de cohérence (`Dat_Deb <= Dat_Fin`) ; `BETWEEN` de plausibilité si pertinent |
+   | combo / zoom / rubrique | `REQUIRED` si obligatoire (aucun autre contrôle sur une valeur vide) |
+   | case à cocher | `EXPR` de cohérence si la case en engage d'autres |
+   | grille de détail | `NB_LIGNES {"min":1}` si au moins une ligne est exigée ; `UNIQUE` sur la clé fonctionnelle de la ligne ; règles `LIGNE` sur chaque colonne saisie |
+   | document | `EXPR` / `COMPARE` de cohérence entête-détails (portée `DOCUMENT`/`ENTETE`) |
+
+3. `Moment` : `CHANGE` pour les règles de format d'un champ (feedback immédiat
+   à la saisie — les contrôles « avant enregistrement » — et rejouées au save
+   client ET serveur) ; `SAVE` pour `REQUIRED` et les cohérences multi-champs ;
+   `AJOUT_LIGNE` pour interdire l'ajout d'une ligne incohérente. **Jamais
+   `SAISIE`** (jamais déclenchée par le frontend actuel — §3.4). Rappel :
+   **le serveur rejoue tout** au save — le moment ne pilote que le confort
+   client.
+4. `Etat` cohérent avec l'usage : `A` pour CALCULE/SOURCE, `S` pour la saisie,
    `R` pour une donnée affichée non modifiable, `I` pour une donnée technique
    (ex. champ lié à `Statut` si on ne veut pas l'afficher).
-3. Règles dynamiques (`Regle_Visibilite`/`Regle_Activation`) = AST de
-   condition whitelisté (§1.2) ; rappeler au manifeste qu'elles sont
+5. Règles dynamiques (`Regle_Visibilite`/`Regle_Activation`) = AST de
+   condition whitelisté (§1.2) ; rappeler dans la réponse finale qu'elles sont
    ré-évaluées à chaque saisie et qu'une exception les neutralise.
-4. Choisir `Moment` en connaissance : `SAVE` par défaut ; `CHANGE` pour le
-   confort sur un champ ; rappeler que **le serveur rejoue tout** — le moment
-   n'allège que le client.
-5. `IN` : doubler les nombres en nombre+texte dans `valeurs` (comparaison
+6. `IN` : doubler les nombres en nombre+texte dans `valeurs` (comparaison
    stricte).
-6. `Figer_Statuts` : inclure `SS` pour figer dès soumission ; laisser le
+7. `Figer_Statuts` : inclure `SS` pour figer dès soumission ; laisser le
    défaut `'SG,RJ,SP,VA'` pour permettre la correction avant signature.
-7. Détail : définir les 4 `Allow_*` selon le besoin ; `Tri_Defaut` avec des
+8. Détail : définir les 4 `Allow_*` selon le besoin ; `Tri_Defaut` avec des
    colonnes du bloc ; `Regle_Suppression='RESTRICT'` pour interdire la
    suppression d'un document qui a des lignes.
-8. Droits : au moins un profil avec `Consulter` si `Acces_Personnalise='true'`
+9. Droits : au moins un profil avec `Consulter` si `Acces_Personnalise='true'`
    (contrôle de publication) ; `Valider` inutile sans workflow ; `Imprimer`
    inutile sans `Act_Imprimer`.
-9. Liste : marquer `estCritere` les champs de recherche usuels (dates ⇒ plages
-   automatiques) ; penser au cloisonnement `Matricule` (automatique si la
-   colonne existe) et au nom d'agent (automatique).
-10. Actions FAB : `Act_Soumettre` exige `Workflow_Actif` ; `Act_Imprimer` avec
+10. Liste : marquer `estCritere` les champs de recherche usuels (dates ⇒ plages
+    automatiques) ; penser au cloisonnement `Matricule` (automatique si la
+    colonne existe) et au nom d'agent (automatique).
+11. Actions FAB : `Act_Soumettre` exige `Workflow_Actif` ; `Act_Imprimer` avec
     modèle exige `Cod_Modele_Edition` ; vérifier après déploiement que le FAB
     s'affiche sur la page (vérification permanente du portail — AGENTS.md).

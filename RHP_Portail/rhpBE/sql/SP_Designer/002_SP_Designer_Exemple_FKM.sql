@@ -51,10 +51,13 @@ DELETE FROM Controle_Designer_Champ WHERE Cod_Page = @CP;
 INSERT INTO Controle_Designer_Champ (Cod_Page, Cod_Champ, Cod_Table, Nom_Colonne, Libelle, Typ_Controle, Rang, Largeur, Valeur_Defaut, Obligatoire, Etat,
     Rubrique, Num_Zoom, Source_Metier, Formule, Persiste, Format_Affichage, Decimales, Visible_Grille, Rang_Grille, Largeur_Colonne, Aide, Dat_Crea, Created_By)
 VALUES
-    (@CP, 'Matricule',   'ENT', 'Matricule',   'Matricule',       'ZOOM',    1, 3, 'GV_MATRICULE', 'true',  'S', NULL, 'MS067', NULL, NULL, 'false', NULL, NULL, 'true', 1, NULL, 'Choisir l''agent via le zoom MS067', GETDATE(), 'SCRIPT'),
-    (@CP, 'Dat_Demande', 'ENT', 'Dat_Demande', 'Date de demande', 'DATE',    2, 3, 'GV_NOW',       'false', 'S', NULL, NULL,    NULL, NULL, 'false', NULL, NULL, 'true', 2, NULL, NULL, GETDATE(), 'SCRIPT'),
-    (@CP, 'Commentaire', 'ENT', 'Commentaire', 'Commentaire',     'MEMO',    3, 6, NULL,           'false', 'S', NULL, NULL,    NULL, NULL, 'false', NULL, NULL, 'true', 3, NULL, NULL, GETDATE(), 'SCRIPT'),
-    (@CP, 'Total',       'ENT', 'Total',       'Total frais',     'CALCULE', 4, 3, NULL,           'false', 'A', NULL, NULL,    NULL,
+    -- Champ obligatoire par convention (au même titre que la table ENT) : affichage
+    -- du N° attribué par le serveur — TEXT, lecture seule, SANS colonne physique.
+    (@CP, 'Num_Doc',     'ENT', '',            'N° demande',      'TEXT',    1, 6, NULL,           'false', 'R', NULL, NULL,    NULL, NULL, 'false', NULL, NULL, 'false', 1, NULL, N'Numéro attribué à l''enregistrement', GETDATE(), 'SCRIPT'),
+    (@CP, 'Matricule',   'ENT', 'Matricule',   'Matricule',       'ZOOM',    2, 3, 'GV_MATRICULE', 'true',  'S', NULL, 'MS067', NULL, NULL, 'false', NULL, NULL, 'true', 1, NULL, 'Choisir l''agent via le zoom MS067', GETDATE(), 'SCRIPT'),
+    (@CP, 'Dat_Demande', 'ENT', 'Dat_Demande', 'Date de demande', 'DATE',    3, 3, 'GV_NOW',       'false', 'S', NULL, NULL,    NULL, NULL, 'false', NULL, NULL, 'true', 2, NULL, NULL, GETDATE(), 'SCRIPT'),
+    (@CP, 'Commentaire', 'ENT', 'Commentaire', 'Commentaire',     'MEMO',    4, 6, NULL,           'false', 'S', NULL, NULL,    NULL, NULL, 'false', NULL, NULL, 'true', 3, NULL, NULL, GETDATE(), 'SCRIPT'),
+    (@CP, 'Total',       'ENT', 'Total',       'Total frais',     'CALCULE', 5, 3, NULL,           'false', 'A', NULL, NULL,    NULL,
         '{"op":"SUM","table":"LIGNES","colonne":"Mnt"}', 'true', 'MNT', 2, 'true', 4, NULL, 'Somme des montants des trajets', GETDATE(), 'SCRIPT'),
     (@CP, 'L_Trajet', 'LIGNES', 'Trajet', 'Trajet',          'TEXT',    1, NULL, NULL, 'false', 'S', NULL, NULL, NULL, NULL, 'false', NULL, NULL, 'true', 1, 20, NULL, GETDATE(), 'SCRIPT'),
     (@CP, 'L_Km',     'LIGNES', 'Km',     'Km',            'DEC',     2, NULL, NULL, 'false', 'S', NULL, NULL, NULL, NULL, 'false', NULL, 2,    'true', 2, 5,  NULL, GETDATE(), 'SCRIPT'),

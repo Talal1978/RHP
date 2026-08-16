@@ -115,7 +115,7 @@ et de `SP_Page_Designer.vb` (`ImporterJson`, `AppliquerImport`, `Saving`).
 |---|---|---|
 | `Cod_Champ` | — | **Obligatoire**, identifiant SQL validé, unique |
 | `Cod_Table` | `""` | `ENT` ou code d'un bloc détail déclaré ; `""` = champ d'affichage non rattaché. Référence inconnue = **bloquant** |
-| `Nom_Colonne` | `""` | `""` = non stocké (calculé/affiché). Sinon **doit exister** dans les colonnes de sa table (ou colonnes techniques) et n'être affectée qu'**une fois** — sinon **bloquant** |
+| `Nom_Colonne` | `""` | `""` = non stocké — **réservé** aux champs `CALCULE`/`SOURCE` non persistés, `GED`, et à l'affichage d'une colonne technique de l'entête (ci-après) ; tout autre champ sans colonne est **bloquant** (il ne s'afficherait jamais — verrou `Valider`/`Saving`). Sinon **doit exister** dans les colonnes de sa table (ou colonnes techniques) et n'être affectée qu'**une fois** — sinon **bloquant** |
 | `Libelle` | `""` | |
 | `Typ_Controle` | `"TEXT"` | ∈ `TEXT, MEMO, INT, DEC, MNT, DATE, DATETIME, CHECK, RADIO, COMBO, RUBRIQUE, ZOOM, CALCULE, SOURCE, GED` — sinon **bloquant** |
 | `Rang` | 1 | |
@@ -125,7 +125,7 @@ et de `SP_Page_Designer.vb` (`ImporterJson`, `AppliquerImport`, `Saving`).
 | `Obligatoire` | `false` | Marqueur d'affichage — toujours doubler d'une validation `REQUIRED` |
 | `Etat` | `"S"` | ∈ `S, R, A, I` — sinon **bloquant**. Miroir `Saving` : un `CALCULE` ni `A` ni `I` est forcé à `A` |
 | `Rubrique` | `""` | **Obligatoire** si `RUBRIQUE` (et `RADIO`) ; absente de la base = avertissement |
-| `Num_Zoom` | `""` | **Obligatoire** si `ZOOM` (et `COMBO`) ; absent de la base = avertissement |
+| `Num_Zoom` | `""` | **Obligatoire** si `ZOOM` (et `COMBO`) ; absent de la base = avertissement. **≤ 10 caractères** (colonne `nvarchar(10)`) — au-delà, l'import échoue au chargement (§9) |
 | `Source_Metier` | `""` | **Obligatoire** si `SOURCE` ; doit être résoluble (fichier **ou** base) — sinon **bloquant** |
 | `Formule` | `""` | json : AST déclaratif (`CALCULE`) ou mapping `{"source":…,"mapping":{…}}` (`SOURCE`) |
 | `Persiste` | `false` | `CALCULE`/`SOURCE` persisté ⇒ colonne physique |
@@ -137,6 +137,21 @@ et de `SP_Page_Designer.vb` (`ImporterJson`, `AppliquerImport`, `Saving`).
 | `estCritere` | `false` | Critère de la page liste (champs ENT) |
 | `Rang_Critere` | null | |
 | `Aide` | `""` | |
+
+**Champ d'affichage du N° de document (convention verrouillée, OBLIGATOIRE —
+au même titre que la table `ENT`)** : le numéro (`Num_Doc`) est attribué par
+le serveur au premier enregistrement et **toujours retourné** dans l'entête
+(`lireDocument` inclut les colonnes techniques). Toute page DOIT comporter un
+champ d'entête `Cod_Champ="Num_Doc"` (**casse exacte** — le portail lie
+`entete[Cod_Champ]`, clés JS sensibles à la casse) : `TEXT`, lecture seule
+(`Etat` `R`/`A`), `Nom_Colonne=""`, `Persiste=false`, **sans** entrée dans
+`colonnes` (la colonne technique est ajoutée automatiquement au DDL). C'est la
+forme de toutes les pages de référence (`006_.../001_deploy.sql`). Variante
+fonctionnelle également acceptée : liaison `Nom_Colonne="Num_Doc"`. Absence,
+mauvaise casse ou mauvaise liaison = **bloquant** (`Valider` à l'import,
+`Saving` à l'enregistrement) ; un champ non dérivé sans colonne dont le
+`Cod_Champ` n'est pas un nom technique exact (ex. `'Num_Demande'`) est rejeté
+de même (il ne s'afficherait jamais).
 
 **Jamais dans le DTO** : `Zoom_Retour`, `Zoom_Condition`, `Recalc_Save`,
 `Regle_Visibilite`, `Regle_Activation`, `Total_Grille` (colonne **supprimée**
@@ -208,7 +223,7 @@ champ `CALCULE` rattaché au bloc détail avec `Nom_Colonne = ''`,
 `Visible_Grille = false`, `Format_Affichage = 'MNT'` (`'NUM'` pour `COUNT`) —
 pattern `Pied_Mnt` de `002_SP_Designer_Exemple_FKM.sql:66-67`.
 
-## 8. Ce que le format ne déploie JAMAIS (à documenter dans le manifest)
+## 8. Ce que le format ne déploie JAMAIS (à documenter dans la réponse finale)
 
 | Besoin | Pourquoi | Conduite |
 |---|---|---|
@@ -223,3 +238,46 @@ pattern `Pied_Mnt` de `002_SP_Designer_Exemple_FKM.sql:66-67`.
 
 Le skill **rejette** (erreur bloquante) toute clé d'input sans cible JSON
 renseignée — jamais de perte silencieuse.
+
+## 9. Longueurs maximales des valeurs (miroir des colonnes SQL)
+
+L'import remplit les grilles du Designer via des `DataTable` dont les colonnes
+portent le `MaxLength` de la base (`RemplirTables` → `EcrireStr`). Une valeur
+trop longue **passe la validation mais fait échouer le chargement** avec
+l'erreur brute .NET « Impossible de définir la colonne '…'. La valeur dépasse
+la limite MaxLength de cette colonne. » (cas réel : `Num_Zoom` =
+`CRENEAUX_VM`, 11 caractères > 10). Le générateur doit donc respecter ces
+limites — toutes vérifiées en amont par `validate_input.py` :
+
+| Cible | Colonne SQL | Max |
+|---|---|---|
+| `page.Cod_Page` | `Controle_Designer.Cod_Page` | 30 (regex import) |
+| `page.Cod_Document` | `Controle_Designer.Cod_Document` | 10 (regex import) |
+| `page.Nom_Page` | `Controle_Designer.Nom_Page` | **60** |
+| `page.Menu_Parent` | `Controle_Designer.Menu_Parent` | 60 |
+| `page.Icone` | `Controle_Designer.Icone` | **50** |
+| `page.Cod_Modele_Edition` | `Controle_Designer.Cod_Modele_Edition` | **20** |
+| table `Cod_Table` | `Controle_Designer_Table.Cod_Table` | **20** |
+| table `Libelle` | `Controle_Designer_Table.Libelle` | 150 |
+| table `Tri_Defaut` | `Controle_Designer_Table.Tri_Defaut` | **200** |
+| colonne `Nom_Colonne` | `Controle_Designer_Colonne.Nom_Colonne` | **50** |
+| colonne `Libelle` | `Controle_Designer_Colonne.Libelle` | 150 |
+| colonne `Valeur_Defaut` | `Controle_Designer_Colonne.Valeur_Defaut` | **200** |
+| champ `Cod_Champ` | `Controle_Designer_Champ.Cod_Champ` | 50 |
+| champ `Libelle` | `Controle_Designer_Champ.Libelle` | 150 |
+| champ `Valeur_Defaut` | `Controle_Designer_Champ.Valeur_Defaut` | **200** |
+| champ `Aide` | `Controle_Designer_Champ.Aide` | **300** |
+| champ `Rubrique` | `Controle_Designer_Champ.Rubrique` | **60** |
+| champ `Num_Zoom` | `Controle_Designer_Champ.Num_Zoom` | **10** |
+| champ `Source_Metier` | `Controle_Designer_Champ.Source_Metier` | 50 |
+| champ `Format_Affichage` | `Controle_Designer_Champ.Format_Affichage` | 50 |
+| validation `Cod_Validation` | `Controle_Designer_Validation.Cod_Validation` | 50 |
+| validation `Message` | `Controle_Designer_Validation.Message` | 300 |
+| source `Cod_Source` | `Controle_Designer_Source.Cod_Source` | 50 |
+| source `Libelle` | `Controle_Designer_Source.Libelle` | 150 |
+| source `Cod_Profile` | `Controle_Designer_Source.Cod_Profile` | **10** |
+
+En gras : limites **non couvertes** par une regex du contrat — piège principal
+du générateur (les identifiants passent `ValiderIdentifiantSql` qui accepte
+60 caractères, au-delà de plusieurs limites réelles). `Valider` de l'importeur
+contrôle aussi ces longueurs (erreur bloquante explicite, sans écran figé).

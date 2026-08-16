@@ -9,8 +9,8 @@ file imports **without warnings**.
 Note: every dependency the file references (menu section, icon, zoom,
 rubrique, business source, profile, print model) is **re-checked by the
 product importer** against the target base and reported as an *avertissement*
-in the preview (`Module_SP_Page_Json.Valider`) — the manifest must list the
-expected ones. Discovery upstream avoids surprises.
+in the preview (`Module_SP_Page_Json.Valider`) — the final response must list
+the expected ones. Discovery upstream avoids surprises.
 
 **Rule:** if a discovery result contradicts this reference, **STOP** — do not
 generate the JSON. Report the discrepancy as *missing/conflicting information*.
@@ -114,7 +114,7 @@ ORDER BY 1;
 | Fewer than 8 SP_ tables, or missing `Acces_Personnalise`/`estCritere` | **STOP.** Run `001_SP_Designer_Metadata.sql` (+ `003_SP_Designer_Criteres.sql`) first, or set `expected_schema_version` accordingly and regenerate. |
 | SP4 columns missing while the input uses a virtual detail (`Source_Metier`/`Source_Mapping`) | **STOP.** Run `005_SP_Designer_Migration_Total_Grille.sql` + `006_SP_Designer_Evolutions.sql` first, or drop the feature from the input and set `expected_schema_version: SP3`. (`freeze_statuses`/`zoom_condition` are not importable at all — blocked at validation.) |
 | `Param_Rubriques` columns differ from §B | **STOP.** Report; the skill targets the verified shape only. |
-| Section code absent from `SP_Menu_Portail` | Either pick an existing `Valeur`, or set `create_section_if_missing: true` (+ `new_section_label`) — the section is then created **manually** via `Zoom_SP_Nouvelle_Section` before saving (manifest step; the import itself only warns). |
+| Section code absent from `SP_Menu_Portail` | Either pick an existing `Valeur`, or set `create_section_if_missing: true` (+ `new_section_label`) — the section is then created **manually** via `Zoom_SP_Nouvelle_Section` before saving (manual step recalled in the final response; the import itself only warns). |
 | Profile absent from `Controle_Profile` | **STOP** (or remove the role from `access_control.roles` — roles are granted manually in the Habilitations tab). |
 | `Cod_Document` already used by another page | **STOP.** Choose a new `document_code` (the import blocks the update of a page whose `Cod_Document` differs). |
 | Physical table name already exists and belongs to another page (`UQ_SP_Page_Table_Nom` would fail at `Saving`) | **STOP.** Rename via a new `document_code`. |

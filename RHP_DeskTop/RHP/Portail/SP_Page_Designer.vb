@@ -20,7 +20,10 @@ Imports Newtonsoft.Json.Linq
 ''' Exporter JSON / Importer JSON (transfert de la configuration d'une page
 ''' entre environnements, HORS habilitations : l'import recharge les contrôles
 ''' et grilles de l'écran — la sauvegarde reste assurée par 'Enregistrer' ;
-''' services : Module_SP_Page_Json).
+''' services : Module_SP_Page_Json) / Assistant IA (chat à deux fonctions
+''' exclusives : questions sur l'aide intégrée, génération du JSON d'une page
+''' via le skill rsc\rhp-portal-page-deployer.zip — Zoom_SP_Assistant_IA ;
+''' client LLM : Ai_ChatClient, configuration table Ai_Agent).
 ''' </summary>
 Public Class SP_Page_Designer
     Dim New_D As ud_btn
@@ -32,6 +35,7 @@ Public Class SP_Page_Designer
     Dim Help_D As ud_btn
     Dim ExportJson_D As ud_btn
     Dim ImportJson_D As ud_btn
+    Dim AssistantIA_D As ud_btn
 
     Dim Tbl_Tables As DataTable
     Dim Tbl_Colonnes As DataTable
@@ -82,9 +86,11 @@ Public Class SP_Page_Designer
     Sub StyliserGrilles()
         For Each g As ud_Grd In {Grd_Tables, Grd_Colonnes, Grd_Droits, Grd_Champs, Grd_Sources, Grd_Validations}
             g.AlternerLesLignes = True
-            ' Tables et colonnes : en-têtes de lignes visibles (sélection d'une ligne
-            ' par le row header pour la suppression contrôlée via la touche Suppr)
-            g.AfficherLesEntetesLignes = (g Is Grd_Tables OrElse g Is Grd_Colonnes)
+            ' En-têtes de lignes visibles sur toutes les grilles éditables : sélection
+            ' d'une ligne par le row header pour la suppression via la touche Suppr
+            ' (contrôlée pour les tables et les colonnes). Habilitations exclues :
+            ' une ligne par profil, jamais supprimée (AllowUserToDeleteRows = False).
+            g.AfficherLesEntetesLignes = Not (g Is Grd_Droits)
             g.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.None
         Next
     End Sub
@@ -239,6 +245,8 @@ Public Class SP_Page_Designer
             ' script SQL (boutons simplement non proposés sur les anciennes bases)
             ExportJson_D = If(dictButtons.ContainsKey("ExportJson_D"), dictButtons("ExportJson_D"), Nothing)
             ImportJson_D = If(dictButtons.ContainsKey("ImportJson_D"), dictButtons("ImportJson_D"), Nothing)
+            ' Idem : le bouton Assistant IA n'existe qu'après rejeu du script SQL
+            AssistantIA_D = If(dictButtons.ContainsKey("AssistantIA_D"), dictButtons("AssistantIA_D"), Nothing)
         End If
         If Menu_Parent_cmb.Items.Count = 0 Then Menu_Parent_cmb.fromRubrique("SP_Menu_Portail")
         If Statut_Page_cmb.Items.Count = 0 Then Statut_Page_cmb.fromRubrique("SP_Statut_Page")
@@ -325,6 +333,22 @@ Public Class SP_Page_Designer
             Process.Start(New ProcessStartInfo(chemin) With {.UseShellExecute = True})
         Catch ex As Exception
             ShowMessageBox("Impossible d'ouvrir l'aide :" & vbCrLf & ex.Message, "Aide", MessageBoxButtons.OK, msgIcon.Stop)
+        End Try
+    End Sub
+
+    ''' <summary>Bouton "Assistant IA" : ouvre le chat de l'assistant (Zoom_SP_Assistant_IA)
+    ''' à deux fonctions exclusives — questions sur l'aide intégrée (formules, paramètres,
+    ''' sources métier…) ou génération du fichier JSON d'une page à partir d'une description
+    ''' (skill rsc\rhp-portal-page-deployer.zip), produit sur le poste de l'utilisateur et
+    ''' chargeable ici via 'Importer JSON'. Aucune écriture en base par l'assistant.</summary>
+    Sub AssistantIA()
+        Try
+            Using f As New Zoom_SP_Assistant_IA()
+                f.ShowDialog(Me)
+            End Using
+        Catch ex As Exception
+            ShowMessageBox("Erreur lors de l'ouverture de l'assistant IA : " & ex.Message,
+                           "Assistant IA", MessageBoxButtons.OK, msgIcon.Stop)
         End Try
     End Sub
 
@@ -2183,22 +2207,31 @@ Public Class SP_Page_Designer
         Next
         Dim champsVus As New HashSet(Of String)(StringComparer.OrdinalIgnoreCase)
         Dim colonnesAffectees As New HashSet(Of String)(StringComparer.OrdinalIgnoreCase)
+        Dim aChampNumDoc As Boolean = False
         For Each r As DataRow In Tbl_Champs.Rows
             If r.RowState = DataRowState.Deleted Then Continue For
             Dim cc As String = IsNull(r("Cod_Champ"), "").Trim
             Dim typCtrl As String = IsNull(r("Typ_Controle"), "")
             Dim ncCh As String = IsNull(r("Nom_Colonne"), "").Trim
             Dim etatCh As String = IsNull(r("Etat"), "S")
-            ' Un champ calculé non persisté peut n'être rattaché à aucune colonne
-            ' (valeur calculée à la volée, jamais stockée) ; sa clé est alors Cod_Champ.
-            ' Un champ affiché uniquement (État = A) peut aussi être sans colonne :
-            ' simple élément d'affichage, jamais stocké (sa clé est Cod_Champ).
-            ' Cas particulier : un champ CALCULE rattaché à un détail SANS colonne est
-            ' un pied de grille (total, moyenne... via une formule d'agrégat SOMME...) :
-            ' évalué au niveau document, affiché sous la grille du détail, jamais stocké.
-            Dim sansColonne As Boolean = (ncCh = "" AndAlso (typCtrl = "CALCULE" OrElse etatCh = "A"))
+            ' Un champ sans colonne physique ne peut produire une valeur que dans
+            ' quatre cas exacts (le portail lit entete[Cod_Champ], la formule ou la
+            ' source — toute autre clé reste vide à vie, jamais signalée) :
+            '  - CALCULE / SOURCE non persisté : valeur dérivée (formule / source) ;
+            '    cas particulier : un CALCULE rattaché à un détail SANS colonne est
+            '    un pied de grille (agrégat SOMME...), affiché sous la grille ;
+            '  - GED : bouton d'accès aux pièces jointes (aucune valeur) ;
+            '  - affichage d'une colonne TECHNIQUE de l'entête : Cod_Champ = nom
+            '    technique EXACT (casse comprise — le portail JS est sensible à la
+            '    casse des clés). Convention « N° demande » : Cod_Champ = 'Num_Doc',
+            '    sans colonne (le moteur retourne toujours Num_Doc dans l'entête).
+            Dim ctChBrut As String = IsNull(r("Cod_Table"), "").Trim
+            Dim affTechnique As Boolean = ncCh = "" AndAlso (ctChBrut = "" OrElse ctChBrut = "ENT") AndAlso
+                                          ColonnesTechniquesTable("ENT").Contains(cc)
+            Dim sansColonne As Boolean = (ncCh = "" AndAlso (typCtrl = "CALCULE" OrElse typCtrl = "SOURCE" OrElse
+                                                             typCtrl = "GED" OrElse affTechnique))
             If ncCh = "" AndAlso Not sansColonne Then
-                Return New savingResult With {.result = False, .message = "Le champ '" & cc & "' n'est rattaché à aucune colonne : seuls les champs calculés (non persistés) ou affichés uniquement (État = A) peuvent être sans colonne ni table."}
+                Return New savingResult With {.result = False, .message = "Le champ '" & cc & "' n'est rattaché à aucune colonne : il ne s'affichera jamais. Seuls peuvent être sans colonne : les champs calculés ou source (non persistés), les champs GED, et l'affichage d'une colonne technique de l'entête — Cod_Champ = nom technique exact (ex. 'Num_Doc' pour le N° de demande)."}
             End If
             If ValiderIdentifiantSql(cc) <> "" OrElse (Not sansColonne AndAlso ValiderIdentifiantSql(ncCh) <> "") Then
                 Return New savingResult With {.result = False, .message = "Champ invalide : " & cc}
@@ -2209,12 +2242,30 @@ Public Class SP_Page_Designer
             ' La table est obligatoire, sauf pour un champ affiché uniquement (hors
             ' calculé) sans colonne : il peut être non rattaché (Cod_Table vide) —
             ' pur affichage, jamais stocké. Sinon, une table vide vaut ENT (défaut).
+            ' Exception : l'affichage d'une colonne technique (Num_Doc...) est
+            ' toujours normalisé sur ENT (non rattaché, il ne serait jamais rendu).
             Dim ctCh As String = IsNull(r("Cod_Table"), "").Trim
-            Dim sansTable As Boolean = (ctCh = "" AndAlso sansColonne AndAlso etatCh = "A" AndAlso typCtrl <> "CALCULE")
+            Dim sansTable As Boolean = (ctCh = "" AndAlso sansColonne AndAlso etatCh = "A" AndAlso
+                                        typCtrl <> "CALCULE" AndAlso Not affTechnique)
             If ctCh = "" AndAlso Not sansTable Then ctCh = "ENT"
             r("Cod_Table") = ctCh   ' normalise la valeur enregistrée ('' = non rattaché)
             If Not sansTable AndAlso Not tablesVues.Contains(ctCh) Then
                 Return New savingResult With {.result = False, .message = "Le champ '" & cc & "' référence une table non configurée : '" & ctCh & "'."}
+            End If
+            ' Convention « N° de document » (verrou, au même titre que la table ENT) :
+            ' le champ Cod_Champ='Num_Doc' (casse exacte) est obligatoire sur l'entête
+            ' — présence contrôlée après la boucle. S'il est lié à une colonne, ce ne
+            ' peut être que la colonne technique Num_Doc — et réciproquement. Il n'est
+            ' jamais saisissable : un état 'S' est forcé à 'R' (miroir CALCULE -> 'A').
+            If cc.Equals("Num_Doc", StringComparison.Ordinal) Then
+                If ctCh = "ENT" Then aChampNumDoc = True
+                If ncCh <> "" AndAlso Not ncCh.Equals("Num_Doc", StringComparison.OrdinalIgnoreCase) Then
+                    Return New savingResult With {.result = False, .message = "Le champ 'Num_Doc' ne peut être lié qu'à la colonne technique Num_Doc (ou à aucune colonne — forme canonique) : sa valeur est le N° de document attribué par le serveur."}
+                End If
+                If IsNull(r("Etat"), "S") = "S" Then r("Etat") = "R"
+            End If
+            If ncCh.Equals("Num_Doc", StringComparison.OrdinalIgnoreCase) AndAlso Not cc.Equals("Num_Doc", StringComparison.Ordinal) Then
+                Return New savingResult With {.result = False, .message = "La colonne technique Num_Doc ne peut porter que le champ 'Num_Doc' (convention « N° de document ») : renommez le champ '" & cc & "' en 'Num_Doc'."}
             End If
             If sansColonne Then
                 If IsNull(r("Persiste"), "false") = "true" Then
@@ -2249,6 +2300,14 @@ Public Class SP_Page_Designer
                 Return New savingResult With {.result = False, .message = "Etat invalide (S/R/A/I) pour le champ " & cc}
             End If
         Next
+        ' Le champ d'affichage du N° de document est obligatoire par convention,
+        ' au même titre que la table ENT : Cod_Champ='Num_Doc' sur l'entête
+        ' (TEXT, lecture seule, sans colonne physique — ou lié à la colonne
+        ' technique Num_Doc). Sans lui, le N° attribué par le serveur n'apparaît
+        ' que dans la liste et l'URL.
+        If Not aChampNumDoc Then
+            Return New savingResult With {.result = False, .message = "Le champ 'Num_Doc' est obligatoire (convention des pages SP_, au même titre que la table ENT) : champ d'entête TEXT en lecture seule, sans colonne physique, pour l'affichage du N° de document attribué par le serveur."}
+        End If
         Dim validationsVues As New HashSet(Of String)(StringComparer.OrdinalIgnoreCase)
         For Each r As DataRow In Tbl_Validations.Rows
             If r.RowState = DataRowState.Deleted Then Continue For

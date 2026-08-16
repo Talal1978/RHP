@@ -27,8 +27,10 @@ time**. The actual write remains the user's action through the Designer:
 **"Enregistrer"** (`Saving`: full checks, single transaction, non-destructive
 DDL generation/migration via `Module_SP_DDL`), then **"Publier"**.
 
-The skill **generates a file; it never touches a database**. Review, import
-and publication remain human actions in the Designer.
+The skill **generates exactly one file — the importable JSON** (no manifest,
+no copy of the input, no companion file: token-efficient by design) **and it
+never touches a database**. Review, import and publication remain human
+actions in the Designer; everything else is said in the chat response.
 
 ## 2. Trigger conditions
 
@@ -53,10 +55,10 @@ module.
 | `references/comportement-page.md` | Field states, the 13 validation types with exact `Parametres` json, scopes/levels/moments, document lifecycle, detail-grid flags, rights & FAB actions, list criteria |
 | `references/sources-metier.md` | Any `data_sources` entry, `source` field, virtual detail grid, `SOURCE` validation — catalog, read-only guard, parameters, the 3 usages |
 | `references/environment-discovery.md` | Dependencies uncertain / new environment (section codes, zooms, rubriques, sources, profiles, print model) |
-| `templates/input-template.yaml` | Building or completing an input |
+| `templates/input-template.yaml` | Building the canonical input (working structure — validated via stdin, **never persisted**) |
 | `templates/page-template.json` | Generating the output file |
-| `references/testing-acceptance-checklist.md` | Finalizing the package (manifest section) |
-| `examples/` | Worked inputs/outputs |
+| `references/testing-acceptance-checklist.md` | Final self-check before answering |
+| `examples/` | Worked inputs (contract illustration) + expected JSON outputs |
 
 Repository ground truth (read-only): `RHP_DeskTop\RHP\Portail\Module_SP_Page_Json.vb`
 (the import/export contract itself), `SP_Page_Designer.vb` (`ImporterJson`,
@@ -83,9 +85,9 @@ Full annotated contract: `templates/input-template.yaml`. Fixed skeleton:
   `title` (→`Nom_Page`), `target_section_code` (→`Menu_Parent`),
   `display_order` (→`Rang`), `icon`, `layout_type` (hint only), `actions`,
   `print_model`, `attachments.enabled/required`, `workflow.enabled`, `enabled`
-  (true ⇒ the manifest includes the manual "Publier" step), plus
+  (true ⇒ the final response recalls the manual "Publier" step), plus
   `create_section_if_missing` (⇒ manual pre-import step, never automated).
-  `page_name`/`short_title` are manifest-only (the Designer persists
+  `page_name`/`short_title` are response-only (the Designer persists
   `Libelle = Nom_Page`).
 - `components`: fields/blocks. `component_type` ∈ whitelist
   (`text,memo,integer,decimal,money,date,datetime,checkbox,radio,combo,
@@ -95,6 +97,12 @@ Full annotated contract: `templates/input-template.yaml`. Fixed skeleton:
   `references/formules-calculees.md`; a `detail_grid` with `data_source_code`
   is a **virtual detail** fed by a TABLE source (→`Source_Metier`/
   `Source_Mapping`, SP4 — see `references/sources-metier.md` §6).
+  The **document-number display field** is the reserved component
+  `component_code: Num_Doc` (`text`, ENT, `editable: false`, **no**
+  `column_name`) — **mandatory by convention on every page** (like the `ENT`
+  table): the portal binds `entete['Num_Doc']`, always returned by the engine
+  (locked convention, see §6 — a wrongly-wired or missing number field is a
+  blocking error).
 - `page_validations` / component `validations`: → `validations[]`
   (13 verified `Typ_Regle` with exact `Parametres` json per type — see
   `references/comportement-page.md` §3).
@@ -102,8 +110,9 @@ Full annotated contract: `templates/input-template.yaml`. Fixed skeleton:
   `Saving`; full parameter/execution model in `references/sources-metier.md`).
 - `access_control`: `default_policy` deny|open_read → `Acces_Personnalise`
   (applied **at creation only**); `roles[].permissions` are **never in the
-  file** — they become a manual step of the manifest (Habilitations tab).
-  RHP has **no separate export right** — export maps to `Imprimer`.
+  file** — they become a manual step recalled in the final response
+  (Habilitations tab). RHP has **no separate export right** — export maps to
+  `Imprimer`.
 - `deployment`: `update_if_exists` (explicit authorization to modify an
   existing page), `expected_schema_version` (SP1|SP2|SP3|SP4 — SP4 required
   for virtual detail grids).
@@ -116,17 +125,33 @@ field), `recalc_save: false`, `attachments.categories`, `operation: disable`.
 
 ## 5. Analysis workflow
 
-1. **Restate** the request as the canonical input (fill `input-template.yaml`).
+1. **Restate** the request as the canonical input (structure of
+   `templates/input-template.yaml`) — an in-memory **working structure, never
+   written to disk**: the only file this skill ever produces is the final
+   JSON (§8).
 2. **Classify every fact**: `verified` (in repo sources) / `assumption`
-   (reasonable default, listed in the manifest) / `missing` (blocks — see §6).
+   (reasonable default, listed in the final response) / `missing` (blocks —
+   see §6).
 3. **Check the environment** via `references/environment-discovery.md`:
    schema level, section codes, zooms, rubriques, sources, profiles, print
-   model, workflow proc. Without DB access, list the dependencies in the
-   manifest as expected import warnings (the import itself re-checks them
+   model, workflow proc. Without DB access, list the dependencies in the final
+   response as expected import warnings (the import itself re-checks them
    against the target base and reports them as *avertissements*).
-4. **Validate**: run `scripts/validate_input.py <canonical.json>`
-   (stdlib only; YAML must be converted to JSON first). All errors are blocking.
-5. Only then generate the JSON (§7).
+4. **Design the validations — mandatory pass over EVERY component** (never
+   skip it): emit the pertinent rules per `references/comportement-page.md`
+   §10 — a `REQUIRED` for every `required` field, format rules (`REGEX`/
+   `MINLEN`/`MAXLEN`/`MIN`/`MAX`/`BETWEEN`) where the data calls for them,
+   `COMPARE` for date/amount coherence, `UNIQUE`/`NB_LIGNES` on detail grids —
+   and choose each `Moment` deliberately: `CHANGE` for immediate field
+   feedback (formats), `SAVE` for obligations and cross-field coherence,
+   `AJOUT_LIGNE` for detail grids. Never use `SAISIE` (never triggered by the
+   current frontend — verified).
+5. **Validate**: pipe the canonical input as json to
+   `python scripts/validate_input.py -` (stdin; stdlib only — a file path
+   also works). All errors are blocking; fix and re-run until clean, then
+   review every warning (it flags a missing `REQUIRED`, a suboptimal `Moment`,
+   an overlong value…).
+6. Only then generate the JSON (§7).
 
 ## 6. Blocking validation rules (STOP — no JSON output)
 
@@ -135,7 +160,9 @@ Hard stops (full list enforced by `validate_input.py`):
   button); `operation=update` without `update_if_exists=true`.
 - Missing/invalid `page_code` (`^[A-Za-z_][A-Za-z0-9_]{2,29}$`, not `Page*`),
   `document_code` (`^[A-Za-z][A-Za-z0-9]{1,9}$` — import regex), `title`,
-  `target_section_code`.
+  `target_section_code`. **Missing reserved `Num_Doc` component**
+  (document-number display field — mandatory by convention, like the `ENT`
+  table; mirrored by `Saving` and the import `Valider`).
 - Unknown `component_type`; layout `width` outside 1..12; non-null `height`.
 - `radio`/`reference_list` without `rubrique`; `zoom`/`combo` without `zoom`;
   `calculated` without `formula`; `source` without `data_source_code`;
@@ -147,10 +174,15 @@ Hard stops (full list enforced by `validate_input.py`):
   emit a `Pied_*` footer calculated field instead), `recalc_save: false`,
   non-empty `attachments.categories`.
 - A stored field with `column_name` explicitly empty (only
-  `calculated`/`source` non-persisted and `attachments` may have no physical
-  column); `persist: true` without a column name; a technical column name
-  (`RowId`, `Num_Doc`, `id_Societe`, `Statut`, `Dat_Crea`, `Created_By`,
-  `Dat_Modif`, `Modified_By`, `RV`) used as `column_name`.
+  `calculated`/`source` non-persisted, `attachments` and the reserved
+  document-number field may have no physical column); `persist: true` without
+  a column name; a technical column name (`RowId`, `Num_Doc`, `id_Societe`,
+  `Statut`, `Dat_Crea`, `Created_By`, `Dat_Modif`, `Modified_By`, `RV`) used as
+  `column_name`. The reserved `Num_Doc` component (document-number display)
+  must be `text`, `ENT`, `editable: false`, never `required`, without
+  `column_name` — **exact case** (`num_doc` would never bind: JS keys are
+  case-sensitive). Locked in the Designer too (`Saving` + import `Valider`
+  reject any other columnless, non-derived field).
 - Formula AST: non-whitelisted op, unknown `ref` (GV_* accepted), unknown
   aggregate target, cycle between calculated fields (mirror of
   `DetecterCycle`).
@@ -221,7 +253,10 @@ json, **null properties omitted**, true json booleans, UTF-8 without BOM.
    `calculated`; `{"source":…,"mapping":{…}}` for `source` — both must name
    the same source), `Persiste`, `Format_Affichage`, `Decimales`,
    `Visible_Grille`, `Rang_Grille`, `Largeur_Colonne`, `estCritere`,
-   `Rang_Critere`, `Aide`.
+   `Rang_Critere`, `Aide`. The reserved document-number component is emitted
+   as `Cod_Champ:"Num_Doc"`, `Cod_Table:"ENT"`, `Nom_Colonne:""`,
+   `Typ_Controle:"TEXT"`, `Etat:"R"`, `Persiste:false` — and **no** `colonnes`
+   entry (the technical column is auto-added by the DDL).
 6. **`validations`**: `page_validations` then component-level `validations`
    (implicit scope: `CHAMP` for ENT fields, `LIGNE` for grid children),
    `Rang` = global emission order, defaults `Niveau:"B"`, `Moment:"SAVE"`,
@@ -233,24 +268,25 @@ json, **null properties omitted**, true json booleans, UTF-8 without BOM.
 8. **`metadata`**: `habilitations:"EXCLUES"` + the 5 counters
    (`nbTables/nbColonnes/nbChamps/nbSources/nbValidations`).
 
-Also generate the **manifest** (§8). Physical names are never written:
+Physical names are never written:
 `Nom_Physique`/`Table_Ent` are recomputed by the Designer from
 `Cod_Document`; the DDL itself is produced by `Saving` (`Module_SP_DDL`
 format, `references/sp-metadata-model.md` §9) — never by the skill.
 
 ## 8. Output format
 
-A directory `NNN_<page_code>/` (NNN = sequence or change ref) containing:
+**One single file: `RHP_Page_<page_code>.json`** (RHP_PAGE_DESIGNER 1.0) —
+nothing else. Never write `input.yaml`, `manifest.md` or any companion file:
+the canonical input is a throwaway working structure (validated via stdin)
+and the reporting lives in the chat response (token-efficient).
 
-| File | Content |
-|---|---|
-| `input.yaml` (or `.json`) | The validated canonical input |
-| `RHP_Page_<page_code>.json` | The importable file (RHP_PAGE_DESIGNER 1.0) |
-| `manifest.md` | Facts/assumptions/missing-info classification; mapping decisions; **expected import warnings** (dependencies not verifiable offline); **manual post-import steps** (below); checklist from `references/testing-acceptance-checklist.md` |
-
-Response to the user: package path + the classification summary + explicit
-statement of anything the JSON cannot deploy (habilitations, section creation,
-publication, workflow circuit…).
+Response to the user (concise, in chat — no file):
+1. Path of the generated JSON + detected mode (création / mise à jour).
+2. Fact classification: verified / assumptions / missing info.
+3. Expected import warnings (dependencies not verifiable offline) and the
+   manual post-import steps (§10), condensed.
+4. Explicit statement of anything the JSON cannot deploy (habilitations,
+   section creation, publication, workflow circuit…).
 
 ## 9. Security constraints (non-negotiable)
 
@@ -273,9 +309,9 @@ publication, workflow circuit…).
   `requested_by`.
 - The skill writes **no SQL and touches no database** — ever.
 
-## 10. Post-import manual steps (manifest section)
+## 10. Post-import manual steps (recalled in the final response)
 
-The JSON never performs these — list them explicitly in the manifest:
+The JSON never performs these — list them explicitly in the final response:
 1. If `create_section_if_missing` and the section is absent: create it via
    `Zoom_SP_Nouvelle_Section` (or the rubriques screen) **before** saving.
 2. `SP_Page_Designer` → "Importer JSON" → select the file → review the
@@ -309,12 +345,13 @@ only, business tables never dropped); after publication → "Désactiver".
 
 ## 12. Examples and limitations
 
-- `examples/01-frais-km/`: input that reproduces the repo's official
+- `examples/01-frais-km/`: worked input that reproduces the repo's official
   `002_SP_Designer_Exemple_FKM.sql` page definition, plus the expected
   generated JSON (use both as oracle — the generated file must encode the
   same metadata).
-- `examples/02-teletravail/`: complete worked package (input + generated JSON
-  + manifest).
+- `examples/02-teletravail/`: worked input + expected generated JSON.
+  (The `input.yaml` files illustrate the internal canonical contract — they
+  are never produced as deliverables; **only the JSON is**.)
 
 Known limitations:
 - `operation: disable` is not expressible via JSON (Designer "Désactiver").

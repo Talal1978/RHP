@@ -60,6 +60,11 @@ Every row below is **verified** against the repository sources listed in
    `UX_<Table>_<Col>` (unique) (`Module_SP_DDL.vb:281-310`).
 8. Document numbering: `<CodDocument><idSociete>-<yyyy><seq 6>` assigned
    server-side (`module_sp_engine.ts:788-799`) — no one inserts `Num_Doc`.
+   On-document display: read-only ENT `TEXT` field `Cod_Champ='Num_Doc'`
+   **without a column** (the portal binds `entete['Num_Doc']`, always
+   returned; exact case) — **mandatory by convention, like the `ENT` table**:
+   `Saving`/import `Valider` reject its absence and any other columnless,
+   non-derived field (it would stay empty forever).
 9. `Saving` = single transaction for metadata + DDL (`SP_Page_Designer.vb`).
 10. Physical names are always **derived** (`SP_<CodDocument>_Ent`,
     `SP_<CodDocument>_Det_<CodTable>`) — the import recomputes them from

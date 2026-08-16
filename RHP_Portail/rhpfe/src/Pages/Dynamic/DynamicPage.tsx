@@ -136,8 +136,6 @@ const DynamicPage = ({ codPage }: { codPage: string }) => {
   const [isAccessible, setAccessible] = useState({ canModify: true, Taken_By_User: "", Process_Id: "" });
   const [actionsGrille, setActionsGrille] = useState<{ [k: string]: TGrilleAction }>({});
   const [showPrint, setShowPrint] = useState(false);
-  // Signal de (re)chargement du document : force la ré-exécution des champs SOURCE
-  const [seqChargement, setSeqChargement] = useState(0);
   const ligneSelectionnee = useRef<{ [k: string]: number }>({});
   const nameEcran = `SPP_${codPage}`;
   const tablesDet = useMemo(
@@ -162,7 +160,6 @@ const DynamicPage = ({ codPage }: { codPage: string }) => {
     setDetails(r.details);
     enteteRef.current = r.entete;
     detailsRef.current = r.details;
-    setSeqChargement((s) => s + 1);
   }, [meta, tablesDet]);
 
   const loadData = useCallback(async () => {
@@ -188,10 +185,6 @@ const DynamicPage = ({ codPage }: { codPage: string }) => {
       } else {
         resetDocument();
       }
-      // Les champs SOURCE ne sont jamais persistés ni renvoyés par le serveur :
-      // ce signal force leur ré-exécution après chaque (re)chargement, même quand
-      // leurs paramètres mappés sont inchangés (ex. après un enregistrement).
-      setSeqChargement((s) => s + 1);
     } finally {
       setShowLoading(false);
     }
@@ -241,16 +234,28 @@ const DynamicPage = ({ codPage }: { codPage: string }) => {
       } catch { return []; }
     })
   );
+  // Anti-course : seules les réponses de la dernière exécution sont appliquées.
+  const sourceSeq = useRef(0);
+  const virtSeq = useRef(0);
   useEffect(() => {
     if (!meta || champsSource.length === 0) return;
+    const seq = ++sourceSeq.current;
     champsSource.forEach((c) => {
       try {
         const f = JSON.parse(c.Formule!);
         const params: { [k: string]: any } = {};
+        let incomplet = false;
         for (const [nomP, def] of Object.entries<any>(f?.mapping ?? {})) {
-          params[nomP] = def?.ref ? entete?.[def.ref] : def?.const;
+          const v = def?.ref ? entete?.[def.ref] : def?.const;
+          // Paramètre mappé sur un champ vide (document pas encore chargé) :
+          // exécuter la source renverrait une valeur parasite (0) qui pourrait
+          // arriver APRES la bonne réponse et l'écraser (course asynchrone).
+          if (def?.ref && (v === null || v === undefined || v === "")) incomplet = true;
+          params[nomP] = v;
         }
+        if (incomplet) return;
         myAxios("sp_exec_source", { codSource: f.source, params }).then((dt) => {
+          if (seq !== sourceSeq.current) return; // réponse périmée : ignorée
           if (dt?.data?.result) {
             const val = dt.data.data?.[0]?.valeur;
             // Cascade SOURCE -> CALCULE : les champs calculés référençant cette
@@ -265,7 +270,7 @@ const DynamicPage = ({ codPage }: { codPage: string }) => {
         }).catch(() => {});
       } catch { /* source invalide : ignorée */ }
     });
-  }, [depsSources, meta, seqChargement]);
+  }, [depsSources, meta]);
 
   /* ---- Détails VIRTUELS : grilles alimentées par une source (Typ_Retour
      TABLE), rafraîchies quand les paramètres mappés changent. Lecture seule. ---- */
@@ -283,14 +288,21 @@ const DynamicPage = ({ codPage }: { codPage: string }) => {
   );
   useEffect(() => {
     if (!meta || tablesVirtuelles.length === 0) return;
+    const seq = ++virtSeq.current;
     tablesVirtuelles.forEach((t) => {
       try {
         const m = JSON.parse(t.Source_Mapping ?? "{}");
         const params: { [k: string]: any } = {};
+        let incomplet = false;
         for (const [nomP, def] of Object.entries<any>(m)) {
-          params[nomP] = def?.ref ? entete?.[def.ref] : def?.const;
+          const v = def?.ref ? entete?.[def.ref] : def?.const;
+          // Même garde que les champs SOURCE : pas d'exécution à paramètres vides.
+          if (def?.ref && (v === null || v === undefined || v === "")) incomplet = true;
+          params[nomP] = v;
         }
+        if (incomplet) return;
         myAxios("sp_exec_source", { codSource: t.Source_Metier, params }).then((dt) => {
+          if (seq !== virtSeq.current) return; // réponse périmée : ignorée
           if (dt?.data?.result) {
             const lignes = (dt.data.data ?? []).map((l: any, i: number) => ({ ...l, RowId: i + 1 }));
             setDetails((prv) => {
@@ -499,9 +511,15 @@ const DynamicPage = ({ codPage }: { codPage: string }) => {
         msg: "Vous avez des modifications non enregistrées. Voulez-vous les abandonner?",
       })) === "Cancel") return;
     }
-    if (!estNouveau) await myAxios("release_accessible", { nameEcran, idEcran: currentNum });
+    if (estNouveau) {
+      // Déjà sur /new : la navigation vers la même URL est sans effet (useParams
+      // inchangé, loadData non rejoué) — réinitialisation explicite obligatoire.
+      resetDocument();
+      return;
+    }
+    await myAxios("release_accessible", { nameEcran, idEcran: currentNum });
     navigate(`/myspace/${nameEcran}/${meta?.page?.Nom_Page}/new`);
-  }, [entete, details, currentNum, meta]);
+  }, [entete, details, currentNum, meta, estNouveau, resetDocument, nameEcran]);
   const Supprimer = useCallback(async () => {
     if (!meta) return;
     if (estNouveau) { resetDocument(); return; }

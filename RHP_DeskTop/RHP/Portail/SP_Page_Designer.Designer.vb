@@ -291,7 +291,6 @@ Partial Class SP_Page_Designer
         DataGridViewCellStyle3.BackColor = System.Drawing.Color.FromArgb(CType(CType(169, Byte), Integer), CType(CType(210, Byte), Integer), CType(CType(224, Byte), Integer))
         DataGridViewCellStyle3.Font = New System.Drawing.Font("Century Gothic", 8.25!)
         Me.Grd_Tables.RowHeadersDefaultCellStyle = DataGridViewCellStyle3
-        Me.Grd_Tables.RowHeadersVisible = False
         Me.Grd_Tables.RowHeadersWidth = 51
         Me.Grd_Tables.Size = New System.Drawing.Size(1222, 552)
         Me.Grd_Tables.TabIndex = 0
@@ -443,7 +442,6 @@ Partial Class SP_Page_Designer
         DataGridViewCellStyle6.BackColor = System.Drawing.Color.FromArgb(CType(CType(169, Byte), Integer), CType(CType(210, Byte), Integer), CType(CType(224, Byte), Integer))
         DataGridViewCellStyle6.Font = New System.Drawing.Font("Century Gothic", 8.25!)
         Me.Grd_Colonnes.RowHeadersDefaultCellStyle = DataGridViewCellStyle6
-        Me.Grd_Colonnes.RowHeadersVisible = False
         Me.Grd_Colonnes.RowHeadersWidth = 51
         Me.Grd_Colonnes.Size = New System.Drawing.Size(1222, 527)
         Me.Grd_Colonnes.TabIndex = 1
@@ -799,7 +797,6 @@ Partial Class SP_Page_Designer
         DataGridViewCellStyle9.BackColor = System.Drawing.Color.FromArgb(CType(CType(169, Byte), Integer), CType(CType(210, Byte), Integer), CType(CType(224, Byte), Integer))
         DataGridViewCellStyle9.Font = New System.Drawing.Font("Century Gothic", 8.25!)
         Me.Grd_Sources.RowHeadersDefaultCellStyle = DataGridViewCellStyle9
-        Me.Grd_Sources.RowHeadersVisible = False
         Me.Grd_Sources.RowHeadersWidth = 51
         Me.Grd_Sources.Size = New System.Drawing.Size(1236, 565)
         Me.Grd_Sources.TabIndex = 1

@@ -38,10 +38,23 @@ page:
     enabled: true
 
 components:
+  # Champ reserve obligatoire (convention, au meme titre que la table ENT) :
+  # affichage du N° attribue par le serveur — text, ENT, sans colonne, lecture
+  # seule. Forme canonique : Cod_Champ='Num_Doc', Nom_Colonne=''.
+  - component_code: Num_Doc
+    component_type: text
+    label: "N° demande"
+    column_name: ""
+    layout: { width: 6, display_order: 1 }
+    editable: false
+    properties:
+      visible_in_grid: false
+      grid_order: 1
+      help: "Numéro attribué à l'enregistrement"
   - component_code: Matricule
     component_type: zoom
     label: "Matricule"
-    layout: { width: 3, display_order: 1 }
+    layout: { width: 3, display_order: 2 }
     properties:
       sql_type: nvarchar
       length: 20
@@ -56,7 +69,7 @@ components:
   - component_code: Dat_Debut
     component_type: date
     label: "Date de début"
-    layout: { width: 3, display_order: 2 }
+    layout: { width: 3, display_order: 3 }
     properties:
       sql_type: date
       default: "GV_NOW"
@@ -67,13 +80,13 @@ components:
   - component_code: Dat_Fin
     component_type: date
     label: "Date de fin"
-    layout: { width: 3, display_order: 3 }
+    layout: { width: 3, display_order: 4 }
     properties: { sql_type: date, grid_order: 3 }
     required: true
   - component_code: Nb_Jours
     component_type: calculated
     label: "Nombre de jours"
-    layout: { width: 3, display_order: 4 }
+    layout: { width: 3, display_order: 5 }
     visible: true
     editable: false
     properties:
@@ -88,7 +101,7 @@ components:
   - component_code: Solde_Conge
     component_type: source
     label: "Solde de congés"
-    layout: { width: 3, display_order: 5 }
+    layout: { width: 3, display_order: 6 }
     visible: true
     editable: false
     data_source_code: solde_conge
@@ -99,7 +112,7 @@ components:
   - component_code: Motif
     component_type: memo
     label: "Motif"
-    layout: { width: 6, display_order: 6 }
+    layout: { width: 6, display_order: 7 }
     properties: { sql_type: nvarchar, length: 300, grid_order: 5 }
   - component_code: JOURS
     component_type: detail_grid

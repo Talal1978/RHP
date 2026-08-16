@@ -40,6 +40,59 @@
         End With
     End Sub
 
+    Sub CollerDepuisExcel()
+        Try
+            If Nom_Controle_Text.Text.Trim = "" Then
+                ShowMessageBox("Veuillez sélectionner une rubrique.", "Coller depuis Excel", MessageBoxButtons.OK, msgIcon.Warning)
+                Return
+            End If
+            If Not Clipboard.ContainsText Then Return
+            Dim clipboardText As String = Clipboard.GetText().Trim
+            If clipboardText = "" Then
+                ShowMessageBox("Le presse-papiers ne contient pas de données.", "Coller depuis Excel", MessageBoxButtons.OK, msgIcon.Error)
+                Return
+            End If
+            Grille.EndEdit()
+            Dim lines As String() = clipboardText.Split(New String() {Environment.NewLine}, StringSplitOptions.RemoveEmptyEntries)
+            Dim nbAjout As Integer = 0, nbMaj As Integer = 0, nbIgnore As Integer = 0
+            With Grille
+                For Each line As String In lines
+                    Dim columns As String() = line.Split(vbTab)
+                    Dim valeur As String = columns(0).Trim.Replace("'", "").Replace(".", "").Replace(",", "")
+                    If valeur = "" Then Continue For
+                    Dim membre As String = If(columns.Length > 1, columns(1).Trim, "")
+                    Dim champs02 As String = If(columns.Length > 2, columns(2).Trim, "")
+                    Dim rang As String = If(columns.Length > 3, columns(3).Trim, "")
+                    Dim rowFound As DataGridViewRow = Nothing
+                    For Each r As DataGridViewRow In .Rows
+                        If Not r.IsNewRow AndAlso IsNull(r.Cells("Valeur").Value, "").Trim = valeur Then
+                            rowFound = r
+                            Exit For
+                        End If
+                    Next
+                    If rowFound IsNot Nothing Then
+                        If IsNull(rowFound.Cells("Typ").Value, "U") <> "S" Then
+                            rowFound.Cells("Membre").Value = membre
+                            rowFound.Cells("Champs02").Value = champs02
+                            rowFound.Cells("Rang").Value = rang
+                            nbMaj += 1
+                        Else
+                            nbIgnore += 1
+                        End If
+                    ElseIf .AllowUserToAddRows Then
+                        .Rows.Add(valeur, membre, champs02, rang, "U", Nom_Controle_Text.Text)
+                        nbAjout += 1
+                    Else
+                        nbIgnore += 1
+                    End If
+                Next
+            End With
+            ShowMessageBox($"{nbAjout} ligne(s) ajoutée(s), {nbMaj} ligne(s) mise(s) à jour" & If(nbIgnore > 0, $", {nbIgnore} ligne(s) ignorée(s)", "") & ".", "Coller depuis Excel", MessageBoxButtons.OK, msgIcon.Information)
+        Catch ex As Exception
+            ErrorMsg(ex)
+        End Try
+    End Sub
+
     Sub Saving()
         Dim rs As New ADODB.Recordset
         Dim Cod_Sql As String
@@ -123,7 +176,7 @@
 
     Private Sub Param_Rubriques_Load(ByVal sender As Object, ByVal e As System.EventArgs) Handles Me.Load
         Dim menu_context_copy As New ContextMenuStrip
-        Dim oMenu1, oMenu2 As New ToolStripMenuItem
+        Dim oMenu1, oMenu2, oMenu3 As New ToolStripMenuItem
         With oMenu1
             .Text = "Copier le Contenu de la liste"
             AddHandler .Click, AddressOf menu_context_grd
@@ -132,7 +185,13 @@
             .Text = "Exporter le Contenu vers Excel"
             AddHandler .Click, AddressOf ToExcel
         End With
-        menu_context_copy.Items.AddRange(New System.Windows.Forms.ToolStripItem() {oMenu1, oMenu2})
+        With oMenu3
+            .Name = "collerDepuisExcel"
+            .Text = "Coller depuis Excel"
+            .Image = My.Resources.coller_presspapier
+            AddHandler .Click, AddressOf CollerDepuisExcel
+        End With
+        menu_context_copy.Items.AddRange(New System.Windows.Forms.ToolStripItem() {oMenu1, oMenu2, oMenu3})
         With Grille
 
             .ContextMenuStrip = menu_context_copy

@@ -4,9 +4,11 @@
 # YAML or JSON accepted. Natural language is NOT accepted directly: convert it
 # to this structure first, then validate (scripts/validate_input.py).
 #
-# OUTPUT: a JSON file importable in the Desktop Designer (SP_Page_Designer >
-# 'Importer JSON', format RHP_PAGE_DESIGNER 1.0) - exact contract:
-# references/json-import-format.md. The skill writes NO SQL.
+# OUTPUT: ONE single JSON file importable in the Desktop Designer
+# (SP_Page_Designer > 'Importer JSON', format RHP_PAGE_DESIGNER 1.0) - exact
+# contract: references/json-import-format.md. The skill writes NO SQL and NO
+# other file: this input is a working structure, validated via stdin
+# (python scripts/validate_input.py -), NEVER persisted to disk.
 #
 # Conventions:
 #   (r)  required - blocking error if missing/empty
@@ -27,12 +29,12 @@ request:
                                #     disable : [NO-JSON-TARGET] not expressible -
                                #              use the Designer 'Desactiver' button
   environment: development     # (r) development | test | production
-                               #     production => extra confirmations in the manifest
+                               #     production => extra confirmations in the final response
   dry_run: true                # (o) ACCEPTED, IGNORED: an import never writes by
                                #     itself (nothing persists before 'Enregistrer')
   requested_by: ""             # (r) login echoed in the file (exportedBy) and the
                                #     import audit trail
-  change_reference: ""         # (r) ticket/change id, echoed in the manifest
+  change_reference: ""         # (r) ticket/change id, echoed in the final response
 
 page:
   page_code: ""                # (r) => page.Cod_Page. ^[A-Za-z_][A-Za-z0-9_]{2,29},
@@ -42,25 +44,26 @@ page:
                                #     (letter first, NO underscore - import regex).
                                #     Drives physical names: SP_<document_code>_Ent ...
                                #     Immutable once the page exists.
-  page_name: ""                # (r) full functional label (<=150). MANIFEST ONLY:
-                               #     the Designer persists Libelle = Nom_Page.
-  short_title: ""              # (o) manifest only (no Libelle_Court in the format).
+  page_name: ""                # (r) full functional label (<=150). RESPONSE ONLY
+                               #     (no artifact): the Designer persists
+                               #     Libelle = Nom_Page.
+  short_title: ""              # (o) response only (no Libelle_Court in the format).
   title: ""                    # (r) => page.Nom_Page (portal menu title, <=60)
-  description: ""              # (o) manifest only.
+  description: ""              # (o) response only.
   target_section_code: ""      # (r) => page.Menu_Parent. Must be a Valeur of the
                                #     SP_Menu_Portail rubrique - absence is an import
                                #     WARNING (choose/create it before saving).
   create_section_if_missing: false  # (o)(x) NEVER automated (the import creates no
-                               #     rubrique): true => manual manifest step
-                               #     (create via Zoom_SP_Nouvelle_Section first)
+                               #     rubrique): true => manual step recalled in the
+                               #     final response (create via Zoom_SP_Nouvelle_Section first)
   new_section_label: ""        # (r if create_section_if_missing) rubrique Membre
-  icon: ""                     # (o)(x) => page.Icone (SP_Menu_Icones rubrique value)
+  icon: ""                     # (o)(x) => page.Icone (SP_Menu_Icones rubrique value, <=50)
   layout_type: standard        # (o) hint only, NOT persisted: standard | wide | compact
                                #     standard : fields default Largeur 3
                                #     wide     : fields default Largeur 6
                                #     compact  : fields default Largeur 2
   display_order: null          # (o) => page.Rang (int, default 99)
-  enabled: true                # (o) true  => the manifest includes the manual
+  enabled: true                # (o) true  => the final response recalls the manual
                                #     'Publier' step (publication is never automated)
                                #     false => the page stays BROUILLON
   freeze_statuses: ""          # [NO-JSON-TARGET] keep "" (Figer_Statuts is not in
@@ -71,7 +74,7 @@ page:
     submit: false              #   => page.Act_Soumettre (requires workflow.enabled=true)
     print: false               #   => page.Act_Imprimer (requires print_model)
     export: false              #   => page.Act_Exporter (metadata only in current frontend)
-  print_model: ""              # (o)(x) => page.Cod_Modele_Edition = Param_Mod_Edition.Cod_Report
+  print_model: ""              # (o)(x) => page.Cod_Modele_Edition = Param_Mod_Edition.Cod_Report (<=20)
   attachments:                 # (o)(x) GED (pieces jointes)
     enabled: false             #   => page.GED_Actif (PJ at publication)
     categories: []             #   [NO-JSON-TARGET] keep [] (GED_Categories not in format)
@@ -91,17 +94,32 @@ page:
 #   calculated->CALCULE  source->SOURCE  attachments->GED
 #   detail_grid->(structural: creates a sqlStructure[] DET block; children
 #                reference it via target_block)
+#
+# RESERVED COMPONENT — document-number display (locked convention, MANDATORY
+# on every page, like the ENT table):
+#   {component_code: Num_Doc, component_type: text, label: "N° demande",
+#    target_block: ENT, column_name: '', editable: false}
+#   => Cod_Champ='Num_Doc', Nom_Colonne='', TEXT, Etat='R' : the portal binds
+#   entete['Num_Doc'], always returned by the engine (the number is assigned
+#   server-side at first save). Exact case, no physical column, read-only,
+#   never required, always visible (first row). Its ABSENCE is a blocking
+#   error (mirrored by the Designer's Saving and the import Valider).
+#   Any OTHER field without a physical column that is not calculated/source/
+#   attachments would stay empty forever — blocking error too.
 # -----------------------------------------------------------------------------
 components:
-  - component_code: ""         # (r) => Cod_Champ; default => Nom_Colonne
+  - component_code: ""         # (r) => Cod_Champ (<=50 ; <=20 for a detail_grid -
+                               #     it becomes Cod_Table nvarchar(20)); default => Nom_Colonne
+                               #     'Num_Doc' is RESERVED (document-number field, see above)
     component_type: ""         # (r) whitelist above
-    label: ""                  # (r) => Libelle
+    label: ""                  # (r) => Libelle (<=150)
     target_block: ENT          # (o)(x) ENT or the component_code of a detail_grid
-    column_name: ""            # (o)(x) => Nom_Colonne (default = component_code).
+    column_name: ""            # (o)(x) => Nom_Colonne (<=50 ; default = component_code).
                                #     EXPLICITLY EMPTY ('') only for calculated/source
                                #     with persist:false (unstored field, e.g. a grid
-                               #     footer) - and GED (never stored). Technical
-                               #     column names are forbidden.
+                               #     footer), GED (never stored) and the reserved
+                               #     Num_Doc field. Technical column names are
+                               #     forbidden.
     layout:
       row: null                # (o) => Ligne   (sort only - flow layout, no absolute position)
       column: null             # (o) => Colonne (sort only)
@@ -120,10 +138,13 @@ components:
       scale: null              #   decimal scale (default 2)
       nullable: true           #   physical column nullability (false => DF default added
                                #     by the Saving-generated DDL)
-      default: ""              #   => Valeur_Defaut; constants or GV_MATRICULE/GV_NOW/GV_LOGIN
+      default: ""              #   => Valeur_Defaut (<=200); constants or GV_MATRICULE/GV_NOW/GV_LOGIN
       help: ""                 #   => Aide (<=300)
-      rubrique: ""             #   (r for radio, reference_list) Param_Rubriques.Nom_Controle
-      zoom: ""                 #   (r for zoom, combo) Controle_Def_Zoom.Num_Zoom
+      rubrique: ""             #   (r for radio, reference_list) Param_Rubriques.Nom_Controle (<=60)
+      zoom: ""                 #   (r for zoom, combo) Controle_Def_Zoom.Num_Zoom - MAX 10
+                               #     CHARACTERS (Num_Zoom nvarchar(10)) : beyond, the import
+                               #     FAILS at load (DataTable MaxLength). Prefer existing
+                               #     codes (discovery) - never invent a long one.
       zoom_return: {}          #   [NO-JSON-TARGET] keep {} (Zoom_Retour not in format)
       zoom_condition: ""       #   [NO-JSON-TARGET] keep "" (Zoom_Condition not in format)
       formula: {}              #   (r for calculated; required mapping for source)
@@ -166,7 +187,7 @@ components:
       allow_delete: true       #   => Allow_Delete
       allow_duplicate: false   #   => Allow_Duplicate
       delete_rule: CASCADE     #   => Regle_Suppression: CASCADE|RESTRICT
-      default_sort: ""         #   => Tri_Defaut (e.g. 'Dat_Jour asc') - validated names only
+      default_sort: ""         #   => Tri_Defaut (<=200 ; e.g. 'Dat_Jour asc') - validated names only
       # detail_grid VIRTUAL (SP4) - read-only grid fed by a TABLE source, no
       # physical table; allow_* forced false; logical columns still declared.
       # Full contract: references/sources-metier.md section 6.
@@ -212,7 +233,12 @@ page_validations: []
 #                            #     failure blocks too when B)
 #    moment: SAVE             # (o) => Moment: SAISIE|CHANGE|AJOUT_LIGNE|SAVE - CLIENT-side
 #                            #     comfort filter only: the server re-runs EVERY active rule
-#                            #     at save
+#                            #     at save. CHANGE = immediate feedback on the field
+#                            #     (pre-save controls: formats/lengths/bounds), replayed at
+#                            #     SAVE too. NEVER SAISIE: never triggered by the current
+#                            #     frontend (verified) - the rule would only run server-side.
+#                            #     Matrix of pertinent rules per component type:
+#                            #     references/comportement-page.md section 10.
 #    active: true             # (o) => Actif
 # (component-level validations[] accept the same shape; scope is implied:
 #  CHAMP for ENT fields, LIGNE for detail_grid children.)
@@ -241,7 +267,7 @@ data_sources: []               # (o) => businessSources[] (read-only catalog,
 #                            #     them from a page field via the mapping).
 #    return_type: scalar       # (o)(x) scalar|table => Typ_Retour SCALAIRE|TABLE
 #                            #     (table REQUIRED for a virtual detail grid)
-#    profile: ""               # (o)(x) => Cod_Profile ('' = all profiles; '1' bypasses)
+#    profile: ""               # (o)(x) => Cod_Profile (<=10 ; '' = all profiles; '1' bypasses)
 #    allowed_operations:       # (r) MUST keep read:true and all others false:
 #      read: true              #     RHP sources are read-only by design (server-enforced);
 #      create: false           #     any write flag => blocking error.
@@ -255,8 +281,8 @@ access_control:
                                #     open_read => page.Acces_Personnalise=false
   roles: []                    # (r when default_policy=deny: >=1 role with view:true)
                                #     NEVER in the file (metadata.habilitations="EXCLUES"):
-                               #     they become a MANUAL manifest step (Habilitations tab;
-                               #     preserved on update).
+                               #     they become a MANUAL step recalled in the final
+                               #     response (Habilitations tab; preserved on update).
 #  - role_code: ""             # (r) => Controle_Designer_Droit.Cod_Profile (must exist in Controle_Profile)
 #    permissions:
 #      view: true              # (r) => Consulter

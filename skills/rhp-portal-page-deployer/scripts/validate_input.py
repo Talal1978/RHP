@@ -85,6 +85,12 @@ NO_CRITERIA_TYPES = {"calculated", "source", "attachments", "checkbox", "radio"}
 # Types allowed to have NO physical column (explicitly empty column_name):
 # unstored calculated/source fields (e.g. grid footers) and GED attachments
 NO_COLUMN_TYPES = {"calculated", "source", "attachments"}
+# Reserved component: document-number display field (locked convention, mirror
+# of SP_Page_Designer.Saving / Module_SP_Page_Json.Valider). The portal binds
+# entete[Cod_Champ] and the engine ALWAYS returns the technical Num_Doc in the
+# header — so the field is Cod_Champ='Num_Doc' (EXACT case, JS keys are
+# case-sensitive), TEXT, ENT, WITHOUT any physical column, read-only.
+DOC_NUMBER_CODE = "Num_Doc"
 # Keys with no target in the JSON import format (json-import-format.md §8) -
 # any non-neutral value is blocking, never silently dropped
 NO_JSON_TARGET = {
@@ -93,6 +99,22 @@ NO_JSON_TARGET = {
     "visibility_rule": "Regle_Visibilite absente du format d'import",
     "activation_rule": "Regle_Activation absente du format d'import",
 }
+# Taille des colonnes SQL des tables de metadonnees (001_SP_Designer_Metadata.sql)
+# pour les valeurs portees par des cles d'input SANS controle de longueur par
+# ailleurs : sans ce garde-fou, l'import plante au chargement du Designer sur
+# le MaxLength du DataTable (ex. Num_Zoom nvarchar(10) : 'CRENEAUX_VM' = 11).
+# component properties key -> max length
+PROP_MAXLEN = {"zoom": 10, "rubrique": 60, "default": 200,
+               "help": 300, "format": 50, "default_sort": 200}
+# page key -> max length (icon = Icone nvarchar(50), print_model =
+# Cod_Modele_Edition nvarchar(20))
+PAGE_MAXLEN = {"icon": 50, "print_model": 20}
+COL_NOM_MAX = 50        # Nom_Colonne nvarchar(50)
+COD_TABLE_MAX = 20      # Cod_Table nvarchar(20) (component_code d'un detail_grid)
+COD_PROFILE_MAX = 10    # Controle_Designer_Source.Cod_Profile nvarchar(10)
+# Regles de "format" : Moment CHANGE recommande (feedback immediat a la saisie,
+# rejoue au save client ET serveur) - comportement-page.md section 10
+FORMAT_RULES = {"IN", "MIN", "MAX", "MINLEN", "MAXLEN", "REGEX", "BETWEEN"}
 
 errors, warnings = [], []
 
@@ -290,8 +312,20 @@ def check_validation(v, path, blocks, fields_by_block, block_cols, grids,
         err(f"{path}.message", "longueur > 300")
     if v.get("level", "B") not in VALID_LEVELS:
         err(f"{path}.level", "Niveau invalide (I/W/B)")
-    if v.get("moment", "SAVE") not in VALID_MOMENTS:
+    moment = v.get("moment", "SAVE")
+    if moment not in VALID_MOMENTS:
         err(f"{path}.moment", "Moment invalide (SAISIE/CHANGE/AJOUT_LIGNE/SAVE)")
+    elif moment == "SAISIE":
+        warn(f"{path}.moment",
+             "SAISIE n'est jamais declenche par le frontend actuel (aucun appel "
+             "validerClient 'SAISIE' - verifie DynamicPage.tsx) : la regle ne "
+             "serait jouee QUE par le serveur au save. Utiliser CHANGE (feedback "
+             "immediat au changement du champ, rejoue au save client) ou SAVE")
+    elif moment == "SAVE" and vtype in FORMAT_RULES and scope in ("CHAMP", "LIGNE"):
+        warn(f"{path}.moment",
+             "regle de format sur un champ : Moment CHANGE donne un feedback "
+             "immediat a la saisie (rejoue aussi au save client et serveur - "
+             "comportement-page.md section 10)")
     tb = v.get("target_block", "ENT")
     if tb not in blocks:
         err(f"{path}.target_block", f"bloc inconnu : {tb!r}")
@@ -433,7 +467,8 @@ def validate(spec):
         if len(pg["short_title"]) > 50:
             err("page.short_title", "longueur > 50")
         warn("page.short_title", "non persiste en mode JSON (pas de Libelle_Court "
-                                 "dans le format ; Libelle = Nom_Page au Saving) - manifest seulement")
+                                 "dans le format ; Libelle = Nom_Page au Saving) - "
+                                 "reponse finale seulement")
     if pg.get("target_section_id") is not None:
         err("page.target_section_id", "[UNSUPPORTED] les sections n'ont pas d'id : target_section_code")
     section = req_str(pg, "target_section_code", "page", 60)
@@ -444,13 +479,19 @@ def validate(spec):
             err("page.new_section_label", "requis quand create_section_if_missing=true")
         warn("page.create_section_if_missing",
              "jamais automatise (l'import ne cree pas de rubrique) : creer la section "
-             "via Zoom_SP_Nouvelle_Section AVANT l'enregistrement - etape du manifest")
+             "via Zoom_SP_Nouvelle_Section AVANT l'enregistrement - etape manuelle "
+             "a rappeler dans la reponse finale")
     route = pg.get("route") or ""
     if route:
         ok = route.startswith(f"/myspace/SPPL_{code}") or route.startswith(f"/myspace/SPP_{code}")
         if not ok:
             err("page.route", f"les routes RHP sont conventionnelles : /myspace/SPPL_{code}/... "
                               f"ou /myspace/SPP_{code}/...")
+    for key, mx in PAGE_MAXLEN.items():
+        val = pg.get(key)
+        if isinstance(val, str) and len(val.strip()) > mx:
+            err(f"page.{key}", f"longueur {len(val.strip())} > {mx} "
+                               f"(taille de la colonne en base)")
     if pg.get("layout_type", "standard") not in ("standard", "wide", "compact"):
         err("page.layout_type", "standard | wide | compact")
     if pg.get("display_order") is not None and not isinstance(pg["display_order"], int):
@@ -497,6 +538,8 @@ def validate(spec):
             if ct == "attachments" or not props.get("persist"):
                 return ""
         raw = c.get("column_name")
+        if c.get("component_code") == DOC_NUMBER_CODE and (raw is None or str(raw).strip() == ""):
+            return ""  # champ reserve d'affichage du N° : jamais de colonne physique
         if raw is not None and str(raw).strip() == "":
             return ""
         return str(raw).strip() if raw is not None else c.get("component_code", "")
@@ -517,6 +560,10 @@ def validate(spec):
         req_str(c, "label", p, 150)
         tb = c.get("target_block", "ENT")
         if ct == "detail_grid":
+            if cc and len(cc) > COD_TABLE_MAX:
+                err(f"{p}.component_code",
+                    f"longueur {len(cc)} > {COD_TABLE_MAX} : le code d'un "
+                    f"detail_grid devient Cod_Table nvarchar({COD_TABLE_MAX})")
             grids[cc] = c
         else:
             block_fields.setdefault(tb, set()).add(cc)
@@ -530,6 +577,12 @@ def validate(spec):
             (c.get("target_block", "ENT") == "ENT") and c.get("component_type") != "detail_grid"
             for c in comps):
         warn("components", "aucun champ d'entete : page liste sans entete exploitable")
+    if comps and DOC_NUMBER_CODE not in codes:
+        err("components",
+            "le champ d'affichage du N° de document est OBLIGATOIRE par convention "
+            "(au meme titre que la table ENT) : composant reserve 'Num_Doc' "
+            "(text, ENT, sans colonne, editable: false, premiere ligne) — sinon le "
+            "numero attribue par le serveur n'apparait que dans la liste et l'URL")
 
     col_pairs = set()
     header_cols = block_cols.get("ENT", set()) | TECH_ENT_COLS
@@ -584,9 +637,41 @@ def validate(spec):
 
         # ----- colonne physique (stocke / non stocke) -----
         col = phys_col(c)
+        # Champ reserve 'Num_Doc' (affichage du N° attribue par le serveur) :
+        # convention verrouillee — texte d'entete en lecture seule, SANS colonne
+        # physique (la valeur vient de la colonne technique toujours retournee
+        # dans l'entete par le moteur ; la cle est Cod_Champ, sensible a la casse).
+        if cc.lower() == DOC_NUMBER_CODE.lower() and cc != DOC_NUMBER_CODE:
+            err(f"{p}.component_code",
+                f"casse exacte requise : '{DOC_NUMBER_CODE}' (le portail lie "
+                f"entete[Cod_Champ] — les cles JS sont sensibles a la casse)")
+        if cc == DOC_NUMBER_CODE:
+            if ct != "text":
+                err(f"{p}.component_type",
+                    "le champ reserve 'Num_Doc' est un 'text' en lecture seule")
+            if tb != "ENT":
+                err(f"{p}.target_block", "le champ 'Num_Doc' appartient a l'entete (ENT)")
+            if c.get("column_name") is not None and str(c.get("column_name")).strip() != "":
+                err(f"{p}.column_name",
+                    "le champ 'Num_Doc' ne declare jamais de colonne physique : laisser "
+                    "vide (la colonne technique est ajoutee automatiquement au DDL)")
+            if c.get("editable", True) is not False:
+                err(f"{p}.editable",
+                    "le champ 'Num_Doc' est toujours en lecture seule : editable: false "
+                    "(Etat 'R') — sa valeur est attribuee par le serveur")
+            if c.get("visible", True) is not True:
+                err(f"{p}.visible",
+                    "le champ 'Num_Doc' est le champ d'affichage du N° : visible: true "
+                    "(un champ invisible contredirait la convention)")
+            if c.get("required"):
+                err(f"{p}.required",
+                    "le champ 'Num_Doc' est attribue par le serveur : jamais obligatoire")
         if col:
             if not is_ident(col):
                 err(f"{p}.column_name", "identifiant SQL invalide ou reserve")
+            if len(col) > COL_NOM_MAX:
+                err(f"{p}.column_name",
+                    f"longueur {len(col)} > {COL_NOM_MAX} (Nom_Colonne nvarchar({COL_NOM_MAX}))")
             if col in TECH_COLS_ALL:
                 err(f"{p}.column_name",
                     f"'{col}' est une colonne technique (ajoutee automatiquement au "
@@ -596,10 +681,11 @@ def validate(spec):
                 err(f"{p}.column_name", f"colonne dupliquee dans le bloc {tb}: {col!r}")
             col_pairs.add(pair)
         else:
-            if ct not in NO_COLUMN_TYPES:
+            if ct not in NO_COLUMN_TYPES and cc != DOC_NUMBER_CODE:
                 err(f"{p}.column_name",
                     f"column_name explicitement vide interdit pour {ct} : seuls "
-                    f"calculated/source non persistes et attachments peuvent ne pas "
+                    f"calculated/source non persistes, attachments et le champ "
+                    f"reserve 'Num_Doc' (affichage du N° de document) peuvent ne pas "
                     f"avoir de colonne physique")
             if props.get("persist"):
                 err(f"{p}.properties.persist", "persist=true exige une colonne physique "
@@ -646,6 +732,14 @@ def validate(spec):
                 "[NO-JSON-TARGET] Recalc_Save absent du format d'import (defaut base "
                 "'true') : laisser true")
 
+        # ----- longueurs maximales des valeurs (miroir des colonnes SQL des
+        # metadonnees : sinon l'import plante au chargement du Designer sur le
+        # MaxLength du DataTable, ex. Num_Zoom nvarchar(10)) -----
+        for key, mx in PROP_MAXLEN.items():
+            val = props.get(key)
+            if isinstance(val, str) and len(val.strip()) > mx:
+                err(f"{p}.properties.{key}",
+                    f"longueur {len(val.strip())} > {mx} (taille de la colonne en base)")
         if ct in ("radio", "reference_list") and not props.get("rubrique"):
             err(f"{p}.properties.rubrique", f"requis pour {ct}")
         if ct in ("zoom", "combo"):
@@ -725,10 +819,13 @@ def validate(spec):
 
     # ----- validations
     vcodes = []
+    required_targets = set()  # component_codes couverts par une regle REQUIRED
     for i, v in enumerate(spec.get("page_validations") or []):
         vcodes.append(check_validation(v, f"page_validations[{i}]", {"ENT", *grids},
                                        block_fields, block_cols, grids, src_index,
                                        header_cols))
+        if v.get("type") == "REQUIRED" and v.get("target_field"):
+            required_targets.add(v["target_field"])
     for i, c in enumerate(comps):
         if c.get("component_type") == "detail_grid":
             continue
@@ -741,8 +838,18 @@ def validate(spec):
             vcodes.append(check_validation(vv, f"components[{i}].validations[{j}]",
                                            {"ENT", *grids}, block_fields, block_cols,
                                            grids, src_index, header_cols))
+            if vv.get("type") == "REQUIRED" and vv.get("target_field"):
+                required_targets.add(vv["target_field"])
     if len(set(vcodes)) != len([c for c in vcodes if c]):
         err("validations", "code de validation duplique")
+    # Obligatoire n'est qu'un marqueur visuel : la REQUIRED associee est exigible
+    for i, c in enumerate(comps):
+        if c.get("component_type") == "detail_grid":
+            continue
+        if c.get("required") and c.get("component_code") not in required_targets:
+            warn(f"components[{i}].required",
+                 "Obligatoire = marqueur d'affichage seul : ajouter une validation "
+                 "REQUIRED ciblant ce champ (comportement-page.md section 10)")
 
     # ----- data sources
     seen_src = []
@@ -753,6 +860,10 @@ def validate(spec):
             err(f"{p}.data_source_code", "identifiant SQL invalide ou reserve")
         seen_src.append(sc)
         req_str(s, "label", p, 150)
+        prof = s.get("profile")
+        if isinstance(prof, str) and len(prof.strip()) > COD_PROFILE_MAX:
+            err(f"{p}.profile", f"longueur {len(prof.strip())} > {COD_PROFILE_MAX} "
+                                f"(Cod_Profile nvarchar({COD_PROFILE_MAX}))")
         if s.get("source_type") not in ("sql", "proc"):
             err(f"{p}.source_type", "sql | proc attendu (Typ_Source SQL/PROC)")
         ref = s.get("reference")
@@ -827,10 +938,13 @@ def validate(spec):
 
 def main():
     if len(sys.argv) != 2:
-        print("usage: python validate_input.py <input.json>", file=sys.stderr)
+        print("usage: python validate_input.py <input.json | - (stdin)>", file=sys.stderr)
         sys.exit(2)
-    with open(sys.argv[1], "r", encoding="utf-8-sig") as f:
-        spec = json.load(f)
+    if sys.argv[1] == "-":  # canonical input piped (never persisted)
+        spec = json.load(sys.stdin)
+    else:
+        with open(sys.argv[1], "r", encoding="utf-8-sig") as f:
+            spec = json.load(f)
     validate(spec)
     report = {
         "status": "errors" if errors else "ok",

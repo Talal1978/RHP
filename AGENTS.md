@@ -1,5 +1,15 @@
 # Conventions du projet RHP
 
+## Connexion SQL Server (instruction permanente)
+
+- **Serveur** : `.\SQL2019`
+- **Utilisateur** : `sa`
+- **Mot de passe** : `123`
+- **Base** : `RHP`
+
+Ces identifiants sont à utiliser pour toute connexion à la base de données du
+projet (tests, scripts, outils en ligne de commande, chaînes de connexion).
+
 ## RHP_DeskTop (WinForms VB.NET)
 
 - **Code de design des formulaires (instruction permanente)** : tout le code de
@@ -56,6 +66,19 @@
   `Cursors.Hand` au survol de la cellule (`CellMouseEnter`), un tooltip sur
   la colonne et un style de cellule lecture seule (fond grisé). Ex. :
   `Grd_Sources` (`Parametres`, `Code_Sql`) dans `SP_Page_Designer`.
+- **Pages SP_ — champ `Num_Doc` obligatoire (instruction permanente)** : toute
+  page du Designer de pages portail (`SP_Page_Designer`) comporte un champ
+  d'entête `Cod_Champ = 'Num_Doc'` (**casse exacte**), `TEXT`, lecture seule
+  (`Etat` `R`/`A`), **sans colonne physique** (`Nom_Colonne = ''`, ou lié à la
+  colonne technique `Num_Doc`) — le portail lie `entete['Num_Doc']`, toujours
+  retourné par le moteur (`lireDocument`). Verrouillé dans `Saving`
+  (`SP_Page_Designer.vb`) et dans l'import JSON (`Module_SP_Page_Json.Valider`)
+  au même titre que la table `ENT` : absence, mauvaise casse ou mauvaise
+  liaison = erreur bloquante. Réciproquement, un champ sans colonne n'est
+  légal que s'il est `CALCULE`/`SOURCE` non persisté, `GED`, ou l'affichage
+  d'une colonne technique d'entête (Cod_Champ = nom technique exact) — tout
+  autre champ non lié ne s'afficherait jamais (ex. bug `DemVisiteMed` :
+  champ `'Num_Demande'` sans colonne, vide à vie).
 - **Écrans affichés exclusivement en modal : nommage et thème (instruction
   permanente)** : tout écran qui s'affiche exclusivement en modal porte un nom
   (classe et fichiers) commençant par `Zoom` (ex. `Zoom_SP_SqlSource`,

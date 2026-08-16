@@ -5,9 +5,11 @@ the RHP Page Designer** (`SP_Page_Designer` → « Importer JSON », format
 `RHP_PAGE_DESIGNER` 1.0) for portal pages of the **Page Designer module
 (SP_)**.
 
-The skill writes **no SQL and never touches a database**: the import only
-fills the Designer's grids, and the actual write remains a human action in
-the Designer — « Enregistrer » (checks + transaction + non-destructive DDL),
+The skill writes **no SQL, never touches a database, and produces exactly one
+file — the importable JSON** (no manifest, no input copy: token-efficient by
+design; the reporting lives in the chat response): the import only fills the
+Designer's grids, and the actual write remains a human action in the
+Designer — « Enregistrer » (checks + transaction + non-destructive DDL),
 then « Publier ».
 
 ## Layout
@@ -36,38 +38,39 @@ rhp-portal-page-deployer/
 │   └── validate_input.py                 # blocking-rule validator (stdlib only)
 └── examples/
     ├── 01-frais-km/                      # input oracle of the official FKM page
-    │   ├── input.yaml                    #   + the expected generated JSON
+    │   ├── input.yaml                    #   (contract illustration - never a
+    │   │                                 #   deliverable) + the expected JSON
     │   └── RHP_Page_FRAIS_KM.json
-    └── 02-teletravail/                   # complete worked package
-        ├── input.yaml
-        ├── RHP_Page_TELETRAVAIL.json
-        └── manifest.md
+    └── 02-teletravail/                   # complete worked example
+        ├── input.yaml                    #   (contract illustration - never a
+        │                                 #   deliverable)
+        └── RHP_Page_TELETRAVAIL.json
 ```
 
 ## Usage (with Claude)
 
-1. Describe the page functionally (or drop a filled `input-template.yaml`).
-2. Claude converts it to the canonical input, classifies facts
-   (verified / assumption / missing) and validates it:
+1. Describe the page functionally (or paste a filled `input-template.yaml`).
+2. Claude converts it to the canonical input **in memory** (never persisted),
+   classifies facts (verified / assumption / missing) and validates it:
    ```bash
-   python scripts/validate_input.py <canonical-input.json>
+   cat <canonical-input.json> | python scripts/validate_input.py -
    ```
    Any `errors` entry is blocking: no JSON is produced.
-3. Claude generates the package `NNN_<page_code>/`:
-   `input.yaml`, `RHP_Page_<page_code>.json`, `manifest.md`.
-4. A human reviews the manifest, then in the Desktop Designer:
+3. Claude generates **one single file**: `RHP_Page_<page_code>.json`, then
+   answers in chat with the fact classification, the expected import warnings
+   and the manual post-import steps.
+4. A human reviews the response, then in the Desktop Designer:
    « Importer JSON » → preview (mode, diff, warnings) → « Valider » →
    « Enregistrer » → Habilitations tab → « Publier ».
-5. Verify with the checklist in `manifest.md`
-   (`references/testing-acceptance-checklist.md`).
+5. Verify with `references/testing-acceptance-checklist.md`.
 
 ## Guarantees
 
 - **Safe**: the generated file must pass every blocking rule of the product
   importer (mirrored by `validate_input.py`); a blocking anomaly leaves the
   Designer screen strictly unchanged; `Saving` runs in a single transaction.
-- **Auditable**: fact classification in the manifest, expected import
-  warnings listed, import trace + `Controle_Designer_DDL_Log` written by the
+- **Auditable**: fact classification and expected import warnings in the
+  final response, import trace + `Controle_Designer_DDL_Log` written by the
   Designer itself.
 - **Non-destructive**: metadata collections synchronized by the Designer;
   business DDL is ADD-only; business tables are never dropped.

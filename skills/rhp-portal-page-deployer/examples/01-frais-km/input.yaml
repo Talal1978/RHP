@@ -1,4 +1,4 @@
-# =============================================================================
+﻿# =============================================================================
 # Exemple 01 - "Note de frais kilometriques" (FRAIS_KM)
 # Cet input reproduit la page officielle du depot :
 #   RHP_Portail\rhpBE\sql\SP_Designer\002_SP_Designer_Exemple_FKM.sql
@@ -42,10 +42,23 @@ page:
     enabled: true
 
 components:
+  # Champ reserve obligatoire (convention, au meme titre que la table ENT) :
+  # affichage du N° attribue par le serveur — text, ENT, sans colonne, lecture
+  # seule. Forme canonique : Cod_Champ='Num_Doc', Nom_Colonne=''.
+  - component_code: Num_Doc
+    component_type: text
+    label: "N° demande"
+    column_name: ""
+    layout: { width: 6, display_order: 1 }
+    editable: false
+    properties:
+      visible_in_grid: false
+      grid_order: 1
+      help: "Numéro attribué à l'enregistrement"
   - component_code: Matricule
     component_type: zoom
     label: "Matricule"
-    layout: { width: 3, display_order: 1 }
+    layout: { width: 3, display_order: 2 }
     properties:
       sql_type: nvarchar
       length: 20
@@ -60,7 +73,7 @@ components:
   - component_code: Dat_Demande
     component_type: date
     label: "Date de demande"
-    layout: { width: 3, display_order: 2 }
+    layout: { width: 3, display_order: 3 }
     properties:
       sql_type: date
       default: "GV_NOW"
@@ -70,7 +83,7 @@ components:
   - component_code: Commentaire
     component_type: memo
     label: "Commentaire"
-    layout: { width: 6, display_order: 3 }
+    layout: { width: 6, display_order: 4 }
     properties:
       sql_type: nvarchar
       length: 300
@@ -78,7 +91,7 @@ components:
   - component_code: Total
     component_type: calculated
     label: "Total frais"
-    layout: { width: 3, display_order: 4 }
+    layout: { width: 3, display_order: 5 }
     visible: true
     editable: false
     properties:
