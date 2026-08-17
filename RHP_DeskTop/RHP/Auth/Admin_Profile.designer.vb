@@ -66,6 +66,8 @@ Partial Class Admin_Profile
         Me.Ecr = New DevComponents.Editors.ComboItem()
         Me.CntScripts = New System.Windows.Forms.ContextMenuStrip(Me.components)
         Me.Scripts = New System.Windows.Forms.ToolStripMenuItem()
+        Me.CntDroitsSP = New System.Windows.Forms.ContextMenuStrip(Me.components)
+        Me.DroitsSP = New System.Windows.Forms.ToolStripMenuItem()
         Me.TabPage4 = New System.Windows.Forms.TabPage()
         Me.AdvPortail = New DevComponents.AdvTree.AdvTree()
         Me.ColumnHeader4 = New DevComponents.AdvTree.ColumnHeader()
@@ -87,6 +89,7 @@ Partial Class Admin_Profile
         Me.TabPage4.SuspendLayout()
         CType(Me.AdvPortail, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.CntScripts.SuspendLayout()
+        Me.CntDroitsSP.SuspendLayout()
         Me.SuspendLayout()
         '
         'Lib_Profile_Text
@@ -642,6 +645,20 @@ Partial Class Admin_Profile
         Me.Scripts.Size = New System.Drawing.Size(265, 26)
         Me.Scripts.Text = "Gestion des accès par écran"
         '
+        'CntDroitsSP
+        '
+        Me.CntDroitsSP.ImageScalingSize = New System.Drawing.Size(20, 20)
+        Me.CntDroitsSP.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.DroitsSP})
+        Me.CntDroitsSP.Name = "CntDroitsSP"
+        Me.CntDroitsSP.Size = New System.Drawing.Size(301, 30)
+        '
+        'DroitsSP
+        '
+        Me.DroitsSP.Image = Global.RHP.My.Resources.Resources.script_small
+        Me.DroitsSP.Name = "DroitsSP"
+        Me.DroitsSP.Size = New System.Drawing.Size(300, 26)
+        Me.DroitsSP.Text = "Habilitations de la page (Créer, Modifier, GED...)"
+        '
         'Admin_Profile
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(120.0!, 120.0!)
@@ -673,6 +690,7 @@ Partial Class Admin_Profile
         Me.TabPage4.ResumeLayout(False)
         CType(Me.AdvPortail, System.ComponentModel.ISupportInitialize).EndInit()
         Me.CntScripts.ResumeLayout(False)
+        Me.CntDroitsSP.ResumeLayout(False)
         Me.ResumeLayout(False)
 
     End Sub
@@ -701,6 +719,8 @@ Partial Class Admin_Profile
     Friend WithEvents Actif_Check As ud_CheckBox
     Friend WithEvents CntScripts As ContextMenuStrip
     Friend WithEvents Scripts As ToolStripMenuItem
+    Friend WithEvents CntDroitsSP As ContextMenuStrip
+    Friend WithEvents DroitsSP As ToolStripMenuItem
     Friend WithEvents TabPage3 As TabPage
     Friend WithEvents AdvFonction As DevComponents.AdvTree.AdvTree
     Friend WithEvents ColumnHeader1 As DevComponents.AdvTree.ColumnHeader

@@ -136,8 +136,9 @@ projet (tests, scripts, outils en ligne de commande, chaînes de connexion).
   entêtes = libellés de la grille, dates jj/mm/aaaa, valeurs typées —,
   grille en lecture seule via `sp_query_exec`, plafond 500 lignes). Sécurité (mêmes règles que les widgets du tableau de bord, helpers
   réexportés de `controlers/dashboard_query_widgets.ts`) : droit `Actif` de
-  `Controle_Droit` sur le `Cod_Query` (écran des profils ; profil `1`
-  bypass), garde-fou lecture seule mono-instruction, paramètres de contexte
+  `Controle_Droit` sur le `Cod_Query` (onglet **Portail** de l'écran des
+  profils `Admin_Profile` ; profil `1` bypass), garde-fou lecture seule
+  mono-instruction, paramètres de contexte
   (`@idSoc`, `@Matricule`, `@Login`...) alimentés **uniquement** par le JWT —
   ces critères-là ne sont jamais demandés ; pour filtrer sur un **autre**
   agent, nommer le paramètre autrement (ex. `@Mat`). `Default_Value`
@@ -173,7 +174,12 @@ projet (tests, scripts, outils en ligne de commande, chaînes de connexion).
   (par `Mail`, compatibilité) > **profil par défaut**
   (`Controle_Profile.Portail_Defaut = 'true'`, un seul — index filtré unique
   `UX_Controle_Profile_Portail_Defaut`, case « Profil portail par défaut » de
-  l'écran `Admin_Profile`) > `-1` ; un profil inactif est ignoré. Migration :
+  l'écran `Admin_Profile`) > `-1` ; un profil inactif est ignoré. Le profil
+  est embarqué dans le JWT ; il est **réévalué en base à chaque
+  rafraîchissement du jeton** (`refreshToken` → `resoudreProfilPortail`,
+  mêmes priorités, ligne agent ciblée par `Matricule` + `id_Societe`) :
+  les changements de droits s'appliquent au plus tard à l'expiration du
+  jeton d'accès en cours (15 min), sans déconnexion. Migration :
   `RHP_Portail/rhpBE/sql/Securite/001_Profil_Portail_Agents.sql`.
   **Référentiel des pages standards** : table `Controle_Menu_Portail`
   (miroir de `rhpfe/public/menus.json` — à re-seeder si menus.json évolue) ;
@@ -197,3 +203,49 @@ projet (tests, scripts, outils en ligne de commande, chaînes de connexion).
   page standard du portail doit être ajoutée à `Controle_Menu_Portail` (seed)
   et ses endpoints protégés par `gardePage`. Enregistrement desktop de
   l'écran d'affectation : `RHP_DeskTop/RHP/Auth/Admin_Profil_Agent_Menu.sql`.
+  **Sections, widgets et pages SP_ gérés dans l'onglet Portail
+  d'`Admin_Profile`** : en plus des pages standards, l'onglet charge les
+  **sections créées en base** (rubrique `SP_Menu_Portail` —
+  `Zoom_SP_Nouvelle_Section` —, union avec `Controle_Menu_Portail` sans
+  doublon ; droit `Visible` sur `PRT_<code section>`, appliqué aux sections
+  dynamiques par `sp_menu_portail`, fail-open sans ligne pour le profil —
+  **une section contenant au moins un élément accessible à tout le monde**
+  (page SP_ publiée avec `Acces_Personnalise='false'`) **est toujours
+  visible** : bypass dans la requête des sections de `sp_menu_portail`, case
+  `Visible` cochée d'office dans l'arbre d'`Admin_Profile` et forcée à
+  `True` à l'enregistrement (`SavingPortailNodes`), sinon la page ouverte
+  serait inaccessible), les
+  **requêtes exposées au portail** (`Param_Query_Widget` : pages-requêtes sous
+  leur section ou « Pages racines », widgets sous le dossier virtuel « Widgets
+  du tableau de bord », dont les cases cochent/décochent tous les widgets
+  d'un coup, comme les sections) — enregistrées sous leur **`Cod_Query` SANS
+  préfixe** (`Typ_Ecran='QRY'` dans l'arbre), le backend exigeant `Actif` sur
+  `Name_Ecran = Cod_Query`   — et les **pages SP_ publiées du Designer**
+  (`Controle_Designer`, `Typ_Ecran='SPP'`, suffixe « (Designer) ») : la case
+  **Visible** porte `Consulter` (`Controle_Designer_Droit` — pour ces pages,
+  affichage au menu et accès ne font qu'un ; pas de case `Actif`), et le
+  **menu contextuel** du nœud (« Habilitations de la page (Créer, Modifier,
+  GED...) ») ouvre `Zoom_Profile_Droits_SP` — édition des **6 autres
+  habilitations** (`Creer/Modifier/Supprimer/Valider/Imprimer/GED`), conservées dans
+  le `Tag(2)` du nœud puis persistées avec le profil (`SavingPortailNodes`,
+  upsert qui préserve les colonnes non portées) : **va et vient** avec
+  l'onglet Habilitations de `SP_Page_Designer`, les deux écrans lisant et
+  écrivant la même table. Une page en accès ouvert
+  (`Acces_Personnalise='false'`) est affichée sans case, suffixe « (Designer —
+  ouverte à tous) » — seule sa consultation est ouverte ; ses autres
+  habilitations restent éditables via le menu contextuel. Les lectures de
+  droits de l'onglet
+  sont en `TOP 1` (une ligne `Controle_Droit` dupliquée ne doit pas dupliquer
+  l'entrée dans l'arbre — déduplication des doublons exacts :
+  `sql/Securite/002_Dedup_Controle_Droit.sql`). L'enregistrement d'un profil
+  ne supprime de `Controle_Droit` que les lignes qu'il gère (arborescence
+  desktop, `PRT_`, requêtes `Param_Query_Widget`) ; la purge
+  d'`Admin_TreeView` épargne `PRT_` et les requêtes existantes, et l'onglet
+  Sécurité de `Param_Query` ne met à jour que `Visible` (il préserve
+  `Actif`).
+  **Page d'accueil toujours accessible** : `Dashboard` (cible de la route par
+  défaut `/myspace`) ne peut être retirée à aucun profil — sinon le portail
+  serait inaccessible (aucune page d'atterrissage). Bypass dans
+  `module_droits_portail.ts` (`PAGE_ACCUEIL_PORTAIL`, forcée dans
+  `droitsPage` et `pagesMenuAutorisees`) et ligne verrouillée cochée dans
+  l'onglet Portail d'`Admin_Profile` (`VerrouillerAccueil`).

@@ -97,11 +97,27 @@ export async function sp_menu_portail(req: Request, res: Response) {
   // par le profil (page SP_ OU page-requête) sont retournées (une section vide ne
   // mène nulle part). Marquées dyn:true pour que le client puisse les distinguer
   // des sections de menus.json.
+  // Visibilité par profil : droit Visible de Controle_Droit sur 'PRT_' + code de
+  // la section (onglet Portail d'Admin_Profile, au même titre que les sections de
+  // menus.json) ; sans ligne pour le profil, la section est NON CONTRÔLÉE
+  // (visible) — convention fail-open ; profil '1' bypass.
+  // Une section contenant au moins un élément accessible à tout le monde (page
+  // SP_ publiée en accès ouvert, Acces_Personnalise='false') est TOUJOURS
+  // visible : masquer la section rendrait la page ouverte inaccessible.
   // L'icône MUI choisie à la création est stockée dans la colonne libre Champs02.
   const rslSections = await lireSql(
     `select r.Valeur, r.Membre, r.Rang, isnull(r.Champs02,'') as Icone
      from Param_Rubriques r
      where r.Nom_Controle='SP_Menu_Portail'
+       and ( @p_pr = '1'
+             or not exists (select 1 from Controle_Droit d
+                            where d.Cod_Profile=@p_pr and d.Name_Ecran='PRT_'+r.Valeur)
+             or exists (select 1 from Controle_Droit d
+                        where d.Cod_Profile=@p_pr and d.Name_Ecran='PRT_'+r.Valeur
+                          and isnull(d.Visible,'false')='true')
+             or exists (select 1 from Controle_Designer po
+                        where po.Menu_Parent = r.Valeur and po.Statut_Page='PUBLIE'
+                          and isnull(po.Acces_Personnalise,'true')='false') )
        and ( exists (select 1 from Controle_Designer p
                       where p.Menu_Parent = r.Valeur and p.Statut_Page='PUBLIE'
                         and ( @p_pr = '1'

@@ -1009,14 +1009,23 @@ Cod_Query_Text.Text.Contains("&") = True Then
 
     Private Sub SecuriteUpdate_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles Save_ud.Click
         Dim rs As New ADODB.Recordset
-        CnExecuting("Delete from Controle_Droit where Name_Ecran='" & Cod_Query_Text.Text & "' and Cod_Profile<>1")
+        'Seul le droit Visible est géré ici : le droit Actif des requêtes exposées
+        'au portail (pages-requêtes / widgets du tableau de bord) est géré profil
+        'par profil dans Admin_Profile (onglet Portail) et ne doit pas être perdu —
+        'les lignes dont Actif est acquis sont conservées, seul Visible est MAJ.
+        CnExecuting("Delete from Controle_Droit where Name_Ecran='" & Cod_Query_Text.Text & "' and Cod_Profile<>1 and isnull(Actif,'false')<>'true'")
+        CnExecuting("update Controle_Droit set Visible='False' where Name_Ecran='" & Cod_Query_Text.Text & "' and Cod_Profile<>1")
         With Securite_Grd
             For i = 0 To .RowCount - 1
                 If IsNull(.Item("Visibl", i).Value, "False") = "True" And IsNull(.Item(id_User.Index, i).Value, "0") <> "1" Then
-                    rs.Open("select * from Controle_Droit", cn, 2, 2)
-                    rs.AddNew()
-                    rs("Name_Ecran").Value = Cod_Query_Text.Text
-                    rs("Cod_Profile").Value = .Item(id_User.Index, i).Value
+                    rs.Open("select * from Controle_Droit where Name_Ecran='" & Cod_Query_Text.Text & "' and Cod_Profile='" & .Item(id_User.Index, i).Value & "'", cn, 2, 2)
+                    If rs.EOF Then
+                        rs.AddNew()
+                        rs("Name_Ecran").Value = Cod_Query_Text.Text
+                        rs("Cod_Profile").Value = .Item(id_User.Index, i).Value
+                    Else
+                        rs.Update()
+                    End If
                     rs("Visible").Value = .Item("Visibl", i).Value
                     rs.Update()
                     rs.Close()

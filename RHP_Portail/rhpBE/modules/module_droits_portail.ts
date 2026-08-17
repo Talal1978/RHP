@@ -31,6 +31,13 @@ export interface TDroitPage {
   actif: boolean;
 }
 
+/** Page d'accueil du portail (cible de la route par défaut /myspace) :
+    TOUJOURS visible et accessible, quel que soit le profil — la retirer à un
+    profil rendrait le portail inaccessible pour ses agents (aucune page
+    d'atterrissage). Verrouillée cochée dans l'onglet Portail d'Admin_Profile ;
+    bypass de sécurité ici au cas où la donnée dirait le contraire. */
+export const PAGE_ACCUEIL_PORTAIL = "Dashboard";
+
 /** Droits d'une page standard du portail pour un profil. */
 export const droitsPage = async (
   codProfile: string,
@@ -38,6 +45,8 @@ export const droitsPage = async (
 ): Promise<TDroitPage> => {
   const pr = String(codProfile ?? "");
   if (pr === "1") return { controlee: false, visible: true, actif: true };
+  if (String(nameEcran ?? "") === PAGE_ACCUEIL_PORTAIL)
+    return { controlee: false, visible: true, actif: true };
   const rsl = await lireSql(
     `select d.Visible as Visible, d.Actif as Actif
        from Controle_Menu_Portail m
@@ -69,7 +78,8 @@ export const peutAccederPage = async (codProfile: string, nameEcran: string) =>
 
 /**
  * Pages standards VISIBLES dans le menu pour le profil : toute page du
- * référentiel sans ligne de droit pour ce profil, ou avec Visible = 'true'.
+ * référentiel sans ligne de droit pour ce profil, ou avec Visible = 'true',
+ * plus la page d'accueil (PAGE_ACCUEIL_PORTAIL, toujours visible).
  * Retourne null si le référentiel est indisponible (-> aucun filtrage côté
  * client, fail-open) ; un profil '1' voit tout le référentiel.
  */
@@ -90,7 +100,11 @@ export const pagesMenuAutorisees = async (
   if (!rsl.result) return null;
   return (rsl.data ?? [])
     .filter(
-      (r: any) => pr === "1" || Number(r.nbLig) === 0 || Number(r.nbVis) > 0
+      (r: any) =>
+        pr === "1" ||
+        String(r.Name_Ecran) === PAGE_ACCUEIL_PORTAIL ||
+        Number(r.nbLig) === 0 ||
+        Number(r.nbVis) > 0
     )
     .map((r: any) => String(r.Name_Ecran));
 };

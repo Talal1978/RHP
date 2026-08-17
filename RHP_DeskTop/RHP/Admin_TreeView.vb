@@ -232,7 +232,14 @@ Public Class Admin_TreeView
             End With
             CnExecuting("delete from Controle_TreeView where isnull(Flag_Maj,'-1')<>" & Flg)
             CnExecuting("delete from Controle_Menu where Typ_Ecran='FDR' and isnull(Flag_Maj,'-1')<>" & Flg)
-            CnExecuting("delete from Controle_Droit where isnull(Name_Ecran,'') not in (select Name_Ecran from Controle_Menu)")
+            'Purge des droits des écrans disparus du référentiel, en épargnant les
+            'droits portail (PRT_... : pages standards et sections gérées dans
+            'l'onglet Portail d'Admin_Profile) et les droits des requêtes
+            'existantes (Param_Query : onglet Sécurité, pages-requêtes et widgets
+            'du portail).
+            CnExecuting("delete from Controle_Droit where isnull(Name_Ecran,'') not in (select Name_Ecran from Controle_Menu)" &
+                        " and isnull(Name_Ecran,'') not like 'PRT\_%' escape '\'" &
+                        " and isnull(Name_Ecran,'') not in (select Cod_Query from Param_Query)")
             Request()
             '    Accueil.Actualisation_Click(Nothing, Nothing)
             Cursor = Cursors.Default

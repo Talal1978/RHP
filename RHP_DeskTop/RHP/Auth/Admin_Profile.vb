@@ -54,16 +54,45 @@ Public Class Admin_Profile
 
     End Sub
 
-    'Arborescence des pages standards du portail (référentiel Controle_Menu_Portail)
-    'avec les droits Visible/Actif du profil (Controle_Droit, Name_Ecran = 'PRT_' + page :
-    'le préfixe isole les droits portail des écrans desktop de mêmes noms).
+    'Arborescence portail du profil :
+    '- pages standards et sections de menus.json (référentiel Controle_Menu_Portail) ;
+    '- sections créées en base (rubrique SP_Menu_Portail, Zoom_SP_Nouvelle_Section)
+    '  absentes du référentiel ;
+    '- requêtes exposées au portail (Param_Query_Widget : pages-requêtes estPortail
+    '  et widgets du tableau de bord estWidget), Typ_Ecran = 'QRY' ;
+    '- pages SP_ publiées du Designer (Controle_Designer), Typ_Ecran = 'SPP'.
+    'Droits Visible/Actif du profil (Controle_Droit) : Name_Ecran = 'PRT_' + page/section
+    '(le préfixe isole les droits portail des écrans desktop de mêmes noms), sauf les
+    'requêtes, lues sous leur Cod_Query SANS préfixe (le backend portail contrôle leur
+    'droit Actif sur Name_Ecran = Cod_Query). Pages SP_ : la case VISIBLE porte le
+    'droit Consulter de Controle_Designer_Droit (pour ces pages, affichage au menu et
+    'accès ne font qu'un) ; les autres habilitations (Créer/Modifier/...) se gèrent via
+    'le menu contextuel du nœud (Zoom_Profile_Droits_SP).
+    'Tous les outer apply sont en TOP 1 : une ligne Controle_Droit dupliquée en base
+    'ne doit pas dupliquer l'entrée dans l'arbre.
     Sub RequestPortail()
         Try
             AdvPortail.Nodes.Clear()
-            Dim CodSql As String = "select m.Name_Ecran,isnull(m.Text_Ecran,'') as Text_Ecran,isnull(m.Typ_Ecran,'ECR') as Typ_Ecran,isnull(m.Menu_Parent,'') as Menu_Parent,isnull(m.Rang,99) as Rang,isnull(o.Visible,'False') as Visible,isnull(o.Actif,'False') as Actif " &
+            Dim CodSql As String = "select m.Name_Ecran,isnull(m.Text_Ecran,'') as Text_Ecran,isnull(m.Typ_Ecran,'ECR') as Typ_Ecran,isnull(m.Menu_Parent,'') as Menu_Parent,isnull(m.Rang,99) as Rang,isnull(o.Visible,'False') as Visible,isnull(o.Actif,'False') as Actif,cast('' as varchar(5)) as estPortail,cast('' as varchar(5)) as AccesPerso " &
                                    "from Controle_Menu_Portail m " &
-                                   "outer apply (select Visible,Actif from Controle_Droit where Name_Ecran='PRT_' + m.Name_Ecran and Cod_Profile='" & Cod_Profile_Text.Text & "') o " &
-                                   "order by m.Rang"
+                                   "outer apply (select top 1 Visible,Actif from Controle_Droit where Name_Ecran='PRT_' + m.Name_Ecran and Cod_Profile='" & Cod_Profile_Text.Text & "') o " &
+                                   "union all " &
+                                   "select r.Valeur,isnull(r.Membre,''),'MNU','',isnull(try_cast(r.Rang as int),99),isnull(o.Visible,'False'),isnull(o.Actif,'False'),cast('' as varchar(5)),cast('' as varchar(5)) " &
+                                   "from Param_Rubriques r " &
+                                   "outer apply (select top 1 Visible,Actif from Controle_Droit where Name_Ecran='PRT_' + r.Valeur and Cod_Profile='" & Cod_Profile_Text.Text & "') o " &
+                                   "where r.Nom_Controle='SP_Menu_Portail' and isnull(r.Valeur,'')<>'' " &
+                                   "and not exists (select 1 from Controle_Menu_Portail m2 where m2.Name_Ecran=r.Valeur) " &
+                                   "union all " &
+                                   "select q.Cod_Query,isnull(q.Nom_Query,''),'QRY',case when isnull(w.estPortail,'false')='true' then isnull(w.Menu_Parent,'') else '' end,isnull(w.Rang,99),isnull(o.Visible,'False'),isnull(o.Actif,'False'),case when isnull(w.estPortail,'false')='true' then 'true' else 'false' end,cast('' as varchar(5)) " &
+                                   "from Param_Query q " &
+                                   "join Param_Query_Widget w on w.Cod_Query=q.Cod_Query and (isnull(w.estWidget,'false')='true' or isnull(w.estPortail,'false')='true') " &
+                                   "outer apply (select top 1 Visible,Actif from Controle_Droit where Name_Ecran=q.Cod_Query and Cod_Profile='" & Cod_Profile_Text.Text & "') o " &
+                                   "union all " &
+                                   "select p.Cod_Page,isnull(p.Nom_Page,''),'SPP',isnull(p.Menu_Parent,''),isnull(p.Rang,99),isnull(d.Consulter,'false'),'False',cast('' as varchar(5)),isnull(p.Acces_Personnalise,'true') " &
+                                   "from Controle_Designer p " &
+                                   "outer apply (select top 1 Consulter from Controle_Designer_Droit d where d.Cod_Page=p.Cod_Page and d.Cod_Profile='" & Cod_Profile_Text.Text & "') d " &
+                                   "where p.Statut_Page='PUBLIE' " &
+                                   "order by Rang"
             Dim pTable As DataTable = DATA_READER_GRD(CodSql)
             Dim nRows() As DataRow = pTable.Select("[Typ_Ecran]='MNU'", "Rang Asc")
             For i = 0 To nRows.Length - 1
@@ -88,23 +117,44 @@ Public Class Admin_Profile
                     Dim M As New Node
                     With M
                         .Name = mRows(j)("Name_Ecran")
-                        .Text = mRows(j)("Text_Ecran")
+                        .Text = mRows(j)("Text_Ecran") & SuffixePortail(mRows(j)("Typ_Ecran"), mRows(j)("AccesPerso"))
                         .Cells.Add(New Cell)
                         .Cells.Add(New Cell)
                         .Cells(1).CheckBoxStyle = eCheckBoxStyle.CheckBox
                         .Cells(2).CheckBoxStyle = eCheckBoxStyle.CheckBox
-                        .Cells(1).CheckBoxVisible = True
-                        .Cells(2).CheckBoxVisible = True
+                        'Pages SP_ (Typ SPP) : la case VISIBLE porte Consulter (affichage
+                        'au menu et accès ne font qu'un pour ces pages) ; pas de case Actif
+                        '(pas de contrôle distinct) ; aucune case quand l'accès est ouvert
+                        'à tous les profils (Acces_Personnalise='false').
+                        'Menu contextuel : les autres habilitations (Créer, Modifier, GED...).
+                        .Cells(1).CheckBoxVisible = (mRows(j)("Typ_Ecran") <> "SPP" OrElse mRows(j)("AccesPerso") <> "false")
+                        .Cells(2).CheckBoxVisible = (mRows(j)("Typ_Ecran") <> "SPP")
                         .Cells(1).Checked = CBool(mRows(j)("Visible"))
                         .Cells(2).Checked = CBool(mRows(j)("Actif"))
-                        .Tag = {mRows(j)("Typ_Ecran"), Nothing, Nothing}
+                        .Tag = {mRows(j)("Typ_Ecran"), mRows(j)("AccesPerso"), Nothing}
+                        If mRows(j)("Typ_Ecran") = "SPP" Then .ContextMenu = CntDroitsSP
                     End With
+                    VerrouillerAccueil(M)
                     N.Nodes.Add(M)
                 Next
+                'Une section contenant au moins un élément accessible à tout le monde
+                '(page SP_ en accès ouvert, Acces_Personnalise='false') reste toujours
+                'visible — sinon la page ouverte serait inaccessible : case Visible
+                'cochée d'office (règle aussi appliquée par sp_menu_portail, et
+                'forcée à True à l'enregistrement — cf. SavingPortailNodes).
+                Dim Ouverte As Boolean = False
+                For Each child As Node In N.Nodes
+                    If IsNull(child.Tag(0), "") = "SPP" AndAlso IsNull(child.Tag(1), "") = "false" Then
+                        Ouverte = True
+                        Exit For
+                    End If
+                Next
+                If Ouverte Then N.Cells(1).Checked = True
             Next
-            'Pages racines (sans section : Dashboard, DiverseEditions...) regroupées
-            'sous un dossier virtuel (Name = "" -> jamais enregistré dans Controle_Droit)
-            Dim rw() As DataRow = pTable.Select("[Menu_Parent]='' and Typ_Ecran='ECR'", "Rang Asc")
+            'Pages racines (sans section : Dashboard, DiverseEditions..., pages-requêtes
+            'et pages SP_ sans section) regroupées sous un dossier virtuel (Name = ""
+            '-> jamais enregistré dans Controle_Droit)
+            Dim rw() As DataRow = pTable.Select("[Menu_Parent]='' and (Typ_Ecran='ECR' or (Typ_Ecran='QRY' and estPortail='true') or Typ_Ecran='SPP')", "Rang Asc")
             If rw.Length > 0 Then
                 Dim N As New Node
                 With N
@@ -123,19 +173,67 @@ Public Class Admin_Profile
                     Dim M As New Node
                     With M
                         .Name = rw(j)("Name_Ecran")
-                        .Text = rw(j)("Text_Ecran")
+                        .Text = rw(j)("Text_Ecran") & SuffixePortail(rw(j)("Typ_Ecran"), rw(j)("AccesPerso"))
+                        .Cells.Add(New Cell)
+                        .Cells.Add(New Cell)
+                        .Cells(1).CheckBoxStyle = eCheckBoxStyle.CheckBox
+                        .Cells(2).CheckBoxStyle = eCheckBoxStyle.CheckBox
+                        'Pages SP_ : cf. bloc des sections (Visible = Consulter, pas de
+                        'case Actif ; aucune case si accès ouvert à tous les profils ;
+                        'menu contextuel pour les autres habilitations).
+                        .Cells(1).CheckBoxVisible = (rw(j)("Typ_Ecran") <> "SPP" OrElse rw(j)("AccesPerso") <> "false")
+                        .Cells(2).CheckBoxVisible = (rw(j)("Typ_Ecran") <> "SPP")
+                        .Cells(1).Checked = CBool(rw(j)("Visible"))
+                        .Cells(2).Checked = CBool(rw(j)("Actif"))
+                        .Tag = {rw(j)("Typ_Ecran"), rw(j)("AccesPerso"), Nothing}
+                        If rw(j)("Typ_Ecran") = "SPP" Then .ContextMenu = CntDroitsSP
+                    End With
+                    VerrouillerAccueil(M)
+                    N.Nodes.Add(M)
+                Next
+                AdvPortail.Nodes.Add(N)
+            End If
+            'Widgets du tableau de bord (Param_Query_Widget.estWidget, hors pages-requêtes
+            'déjà affichées ci-dessus) : dossier virtuel (Name = "" -> jamais enregistré) ;
+            'chaque widget est enregistré sous son Cod_Query, sans préfixe PRT_ (le backend
+            'portail contrôle le droit Actif sur Name_Ecran = Cod_Query). Les cases du
+            'dossier cochent/décochent tous ses widgets d'un coup, comme les sections.
+            Dim wg() As DataRow = pTable.Select("Typ_Ecran='QRY' and estPortail<>'true'", "Text_Ecran Asc")
+            If wg.Length > 0 Then
+                Dim N As New Node
+                With N
+                    .Name = ""
+                    .Text = "Widgets du tableau de bord"
+                    .Cells.Add(New Cell)
+                    .Cells.Add(New Cell)
+                    .Cells(1).CheckBoxStyle = eCheckBoxStyle.CheckBox
+                    .Cells(2).CheckBoxStyle = eCheckBoxStyle.CheckBox
+                    .Cells(1).CheckBoxVisible = True
+                    .Cells(2).CheckBoxVisible = True
+                    .Tag = {"FDR", Nothing, Nothing}
+                    .Style = ElementStyle3
+                End With
+                For j = 0 To wg.GetUpperBound(0)
+                    Dim M As New Node
+                    With M
+                        .Name = wg(j)("Name_Ecran")
+                        .Text = wg(j)("Text_Ecran") & " (Widget)"
                         .Cells.Add(New Cell)
                         .Cells.Add(New Cell)
                         .Cells(1).CheckBoxStyle = eCheckBoxStyle.CheckBox
                         .Cells(2).CheckBoxStyle = eCheckBoxStyle.CheckBox
                         .Cells(1).CheckBoxVisible = True
                         .Cells(2).CheckBoxVisible = True
-                        .Cells(1).Checked = CBool(rw(j)("Visible"))
-                        .Cells(2).Checked = CBool(rw(j)("Actif"))
-                        .Tag = {rw(j)("Typ_Ecran"), Nothing, Nothing}
+                        .Cells(1).Checked = CBool(wg(j)("Visible"))
+                        .Cells(2).Checked = CBool(wg(j)("Actif"))
+                        .Tag = {wg(j)("Typ_Ecran"), Nothing, Nothing}
                     End With
                     N.Nodes.Add(M)
                 Next
+                'Etat initial des cases du dossier : coché si tous ses widgets le sont
+                '(pure présentation — le dossier virtuel n'est jamais enregistré).
+                N.Cells(1).Checked = IsChecked(N, 1)
+                N.Cells(2).Checked = IsChecked(N, 2)
                 AdvPortail.Nodes.Add(N)
             End If
         Catch ex As Exception
@@ -143,10 +241,41 @@ Public Class Admin_Profile
         End Try
     End Sub
 
+    'Suffixe d'affichage des nœuds de l'onglet Portail, selon la nature de l'entrée :
+    '"(Requête)" pour une page-requête, "(Designer)" pour une page SP_ du Designer —
+    'avec la mention "ouverte à tous" quand l'accès n'est pas personnalisé par profil
+    '(Acces_Personnalise = 'false' : consultation ouverte, sans case à cocher).
+    Function SuffixePortail(TypEcran As String, AccesPerso As String) As String
+        Select Case TypEcran
+            Case "QRY" : Return " (Requête)"
+            Case "SPP" : Return If(AccesPerso = "false", " (Designer — ouverte à tous)", " (Designer)")
+            Case Else : Return ""
+        End Select
+    End Function
+
+    'Page d'accueil du portail (route par défaut /myspace -> Dashboard) :
+    'toujours accessible, quel que soit le profil — cases verrouillées cochées,
+    'sinon le portail serait inaccessible pour les agents du profil (aucune
+    'page d'atterrissage). Sécurisé aussi côté backend (PAGE_ACCUEIL_PORTAIL).
+    Sub VerrouillerAccueil(M As Node)
+        If IsNull(M.Name, "") <> "Dashboard" Then Return
+        M.Cells(1).Checked = True
+        M.Cells(2).Checked = True
+        M.Cells(1).CheckBoxVisible = False
+        M.Cells(2).CheckBoxVisible = False
+    End Sub
+
     Private Sub AdvPortail_NodeClick(sender As Object, e As TreeNodeMouseEventArgs) Handles AdvPortail.NodeClick
         If e.Node.SelectedCell Is Nothing Then Return
-        If IsNull(e.Node.Name, "") = "" Then Return
-        Checking(e.Node, e.Node.Cells.IndexOf(e.Node.SelectedCell), e.Node.SelectedCell.Checked)
+        'Propagation à la descendance uniquement depuis une case à cocher visible :
+        'la colonne de texte, les cases verrouillées (page d'accueil) et les
+        'dossiers virtuels sans cases (ex. "Pages racines") ne déclenchent rien ;
+        'les sections et le dossier "Widgets du tableau de bord" cochent/décochent
+        'tous leurs fils d'un coup.
+        Dim Indx As Integer = e.Node.Cells.IndexOf(e.Node.SelectedCell)
+        If Indx < 1 OrElse Indx > 2 Then Return
+        If Not e.Node.Cells(Indx).CheckBoxVisible Then Return
+        Checking(e.Node, Indx, e.Node.SelectedCell.Checked)
     End Sub
 
     Private Sub LinkLabel1_LinkClicked(ByVal sender As System.Object, ByVal e As System.Windows.Forms.LinkLabelLinkClickedEventArgs) Handles LinkLabel1.LinkClicked
@@ -500,12 +629,23 @@ Public Class Admin_Profile
                 Next
                 rs1.Close()
             End With
-            CnExecuting("Delete from Controle_Droit where Cod_Profile='" & CodProfil & "'")
+            'Ne supprimer que les droits gérés par cet écran : écrans de
+            'l'arborescence desktop (Controle_Treeview), pages et sections du
+            'portail (PRT_) et requêtes exposées au portail (Cod_Query de
+            'Param_Query_Widget). Les lignes Controle_Droit des autres requêtes
+            '(onglet Sécurité de Param_Query) ne doivent pas être perdues à
+            'l'enregistrement d'un profil.
+            CnExecuting("Delete from Controle_Droit where Cod_Profile='" & CodProfil & "'" &
+                        " and (isnull(Name_Ecran,'')=''" &
+                        " or Name_Ecran in (select Name_Ecran from Controle_Treeview)" &
+                        " or Name_Ecran like 'PRT\_%' escape '\'" &
+                        " or Name_Ecran in (select Cod_Query from Param_Query_Widget where isnull(estWidget,'false')='true' or isnull(estPortail,'false')='true'))")
             For Each c As Node In Adv.Nodes
                 SavingNodes(c, CodProfil)
             Next
-            'Droits des pages standards du portail (onglet Portail) : réinsérés
-            'après le delete global, au même titre que les écrans desktop.
+            'Droits du portail (onglet Portail : pages standards, sections créées
+            'en base, pages-requêtes et widgets) : réinsérés après le delete, au
+            'même titre que les écrans desktop.
             For Each c As Node In AdvPortail.Nodes
                 SavingPortailNodes(c, CodProfil)
             Next
@@ -522,35 +662,39 @@ Public Class Admin_Profile
     End Sub
 
     Sub SavingNodes(ByVal oNode As Node, CodProfil As String)
-        Dim rs As New ADODB.Recordset
-        rs.Open("Select * from Controle_Droit", cn, 2, 2)
-        rs.AddNew()
-        rs("Name_Ecran").Value = oNode.Name
-        rs("Cod_Profile").Value = Cod_Profile_Text.Text
-        rs("Visible").Value = oNode.Cells(1).Checked
-        rs("Actif").Value = oNode.Cells(2).Checked
-        rs.Update()
-        rs.Close()
-        If oNode.Tag(0) = "ECR" Then
-            If Not oNode.Tag(1) Is Nothing Then
-                Dim oTbl As DataTable = oNode.Tag(1)
-                With oTbl
-                    For i = 0 To .Rows.Count - 1
-                        rs.Open("Select * from Controle_Droit_Avance where Cod_Profile='" & CodProfil & "' and Name_Ecran='" & oNode.Name & "' and Name_Controle='" & .Rows(i).Item("Name_Controle") & "'", cn, 2, 2)
-                        If rs.EOF Then
-                            rs.AddNew()
-                            rs("Name_Ecran").Value = oNode.Name
-                            rs("Cod_Profile").Value = Cod_Profile_Text.Text
-                            rs("Name_Controle").Value = .Rows(i).Item("Name_Controle")
-                        Else
+        'Les dossiers virtuels sans Name (ex. "Dossier générique") ne génèrent
+        'aucune ligne Controle_Droit.
+        If IsNull(oNode.Name, "") <> "" Then
+            Dim rs As New ADODB.Recordset
+            rs.Open("Select * from Controle_Droit", cn, 2, 2)
+            rs.AddNew()
+            rs("Name_Ecran").Value = oNode.Name
+            rs("Cod_Profile").Value = Cod_Profile_Text.Text
+            rs("Visible").Value = oNode.Cells(1).Checked
+            rs("Actif").Value = oNode.Cells(2).Checked
+            rs.Update()
+            rs.Close()
+            If oNode.Tag(0) = "ECR" Then
+                If Not oNode.Tag(1) Is Nothing Then
+                    Dim oTbl As DataTable = oNode.Tag(1)
+                    With oTbl
+                        For i = 0 To .Rows.Count - 1
+                            rs.Open("Select * from Controle_Droit_Avance where Cod_Profile='" & CodProfil & "' and Name_Ecran='" & oNode.Name & "' and Name_Controle='" & .Rows(i).Item("Name_Controle") & "'", cn, 2, 2)
+                            If rs.EOF Then
+                                rs.AddNew()
+                                rs("Name_Ecran").Value = oNode.Name
+                                rs("Cod_Profile").Value = Cod_Profile_Text.Text
+                                rs("Name_Controle").Value = .Rows(i).Item("Name_Controle")
+                            Else
+                                rs.Update()
+                            End If
+                            rs("Visible").Value = .Rows(i).Item("Visible")
+                            rs("Actif").Value = .Rows(i).Item("Actif")
                             rs.Update()
-                        End If
-                        rs("Visible").Value = .Rows(i).Item("Visible")
-                        rs("Actif").Value = .Rows(i).Item("Actif")
-                        rs.Update()
-                        rs.Close()
-                    Next
-                End With
+                            rs.Close()
+                        Next
+                    End With
+                End If
             End If
         End If
 
@@ -561,18 +705,75 @@ Public Class Admin_Profile
         End If
     End Sub
     Sub SavingPortailNodes(ByVal oNode As Node, CodProfil As String)
-        'Les dossiers virtuels (Name = "") ne génèrent aucune ligne Controle_Droit.
-        'Name_Ecran = 'PRT_' + page : droits portail isolés des écrans desktop.
+        'Les dossiers virtuels (Name = "") ne génèrent aucune ligne de droit.
+        'Pages standards et sections : Controle_Droit, Name_Ecran = 'PRT_' + nom
+        '(droits portail isolés des écrans desktop de mêmes noms). Exception : les
+        'requêtes (Typ QRY — pages-requêtes et widgets du portail) sont enregistrées
+        'sous leur Cod_Query, SANS préfixe (le backend contrôle Actif sur
+        'Name_Ecran = Cod_Query).
+        'Pages SP_ du Designer (Typ SPP) : Consulter (case VISIBLE de l'arbre — pour
+        'ces pages, affichage au menu et accès ne font qu'un) et, si elles ont été
+        'éditées via le menu contextuel (Zoom_Profile_Droits_SP, Tag(2)), les autres
+        'habilitations (Créer/Modifier/Supprimer/Valider/Imprimer/GED) —
+        'enregistrées dans Controle_Designer_Droit, en préservant les colonnes non
+        'portées ici (matrice complète aussi gérée dans SP_Page_Designer : va et
+        'vient entre les deux écrans). Les pages en accès ouvert
+        '(Acces_Personnalise='false', Tag(1) — sans case dans l'arbre) ne sont
+        'enregistrées que si leurs habilitations ont été éditées (Consulter est
+        'sans effet pour elles : consultation ouverte à tous les profils).
         If IsNull(oNode.Name, "") <> "" Then
-            Dim rs As New ADODB.Recordset
-            rs.Open("Select * from Controle_Droit", cn, 2, 2)
-            rs.AddNew()
-            rs("Name_Ecran").Value = "PRT_" & oNode.Name
-            rs("Cod_Profile").Value = CodProfil
-            rs("Visible").Value = oNode.Cells(1).Checked
-            rs("Actif").Value = oNode.Cells(2).Checked
-            rs.Update()
-            rs.Close()
+            If IsNull(oNode.Tag(0), "") = "SPP" Then
+                Dim oDroits As DataTable = Nothing
+                If Not oNode.Tag(2) Is Nothing Then oDroits = oNode.Tag(2)
+                If IsNull(oNode.Tag(1), "") <> "false" OrElse Not oDroits Is Nothing Then
+                    Dim rs As New ADODB.Recordset
+                    rs.Open("select * from Controle_Designer_Droit where Cod_Page='" & oNode.Name & "' and Cod_Profile='" & CodProfil & "'", cn, 2, 2)
+                    If rs.EOF Then
+                        rs.AddNew()
+                        rs("Cod_Page").Value = oNode.Name
+                        rs("Cod_Profile").Value = CodProfil
+                        rs("Created_By").Value = theUser.Login
+                        rs("Dat_Crea").Value = CnExecuting("select getdate()").Fields(0).Value
+                    Else
+                        rs.Update()
+                    End If
+                    rs("Consulter").Value = If(oNode.Cells(1).Checked, "true", "false")
+                    If Not oDroits Is Nothing Then
+                        rs("Creer").Value = oDroits.Rows(0)("Creer").ToString()
+                        rs("Modifier").Value = oDroits.Rows(0)("Modifier").ToString()
+                        rs("Supprimer").Value = oDroits.Rows(0)("Supprimer").ToString()
+                        rs("Valider").Value = oDroits.Rows(0)("Valider").ToString()
+                        rs("Imprimer").Value = oDroits.Rows(0)("Imprimer").ToString()
+                        rs("GED").Value = oDroits.Rows(0)("GED").ToString()
+                    End If
+                    rs("Modified_By").Value = theUser.Login
+                    rs("Dat_Modif").Value = CnExecuting("select getdate()").Fields(0).Value
+                    rs.Update()
+                    rs.Close()
+                End If
+            Else
+                Dim rs As New ADODB.Recordset
+                rs.Open("Select * from Controle_Droit", cn, 2, 2)
+                rs.AddNew()
+                rs("Name_Ecran").Value = If(IsNull(oNode.Tag(0), "") = "QRY", "", "PRT_") & oNode.Name
+                rs("Cod_Profile").Value = CodProfil
+                'Une section contenant au moins un élément accessible à tout le monde
+                '(page SP_ en accès ouvert) reste toujours visible : Visible forcé à
+                'True quelle que soit la case (règle aussi appliquée par sp_menu_portail).
+                Dim forceVisible As Boolean = False
+                If IsNull(oNode.Tag(0), "") = "MNU" Then
+                    For Each child As Node In oNode.Nodes
+                        If IsNull(child.Tag(0), "") = "SPP" AndAlso IsNull(child.Tag(1), "") = "false" Then
+                            forceVisible = True
+                            Exit For
+                        End If
+                    Next
+                End If
+                rs("Visible").Value = If(forceVisible, True, oNode.Cells(1).Checked)
+                rs("Actif").Value = oNode.Cells(2).Checked
+                rs.Update()
+                rs.Close()
+            End If
         End If
         If oNode.Nodes.Count > 0 Then
             For Each c As Node In oNode.Nodes
@@ -592,6 +793,22 @@ Public Class Admin_Profile
         rs.Close()
 
     End Sub
+    'Menu contextuel des pages SP_ (Designer) de l'onglet Portail : habilitations
+    'complètes de la page pour le profil courant (Zoom_Profile_Droits_SP —
+    'Consulter, Créer, Modifier, Supprimer, Valider, Imprimer, GED). Les valeurs
+    'sont conservées dans le Tag du nœud (Tag(2)) et persistées avec le profil.
+    Private Sub DroitsSP_Click(sender As Object, e As EventArgs) Handles DroitsSP.Click
+        Dim oNd As Node = AdvPortail.SelectedNode
+        If oNd Is Nothing Then Return
+        If IsNull(oNd.Name, "") = "" OrElse IsNull(oNd.Tag(0), "") <> "SPP" Then Return
+        Dim f As New Zoom_Profile_Droits_SP
+        With f
+            .oNod = oNd
+            .CodProfile = Cod_Profile_Text.Text
+            .ShowDialog()
+        End With
+    End Sub
+
     Private Sub Scripts_Click(sender As Object, e As EventArgs) Handles Scripts.Click
         Dim oNd As Node = Adv.SelectedNode
         Dim f As New Zoom_Profile_Scripts

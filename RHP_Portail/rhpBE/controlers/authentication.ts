@@ -97,6 +97,41 @@ export const authentication = async (req: Request, res: Response) => {
   }
 };
 
+/**
+ * Profil portail courant d'un agent, résolu avec les mêmes priorités qu'au
+ * login : RH_Agent.Cod_Profile > Controle_Users (Mail) > profil portail par
+ * défaut (Controle_Profile.Portail_Defaut) ; un profil inactif est ignoré ;
+ * -1 si aucun. Réévalué à chaque rafraîchissement du jeton pour que les
+ * changements de droits (affectation du profil à l'agent, matrice Portail du
+ * profil) s'appliquent sans exiger une déconnexion/reconnexion.
+ */
+const resoudreProfilPortail = async (
+  matricule: string,
+  idSociete: string
+): Promise<string> => {
+  const rsl = await lireSql(
+    `select isnull((select top 1 Cod_Profile from (
+                      select 1 as Prio, p.Cod_Profile from Controle_Profile p
+                       where p.Cod_Profile = a.Cod_Profile and isnull(p.Actif,1) = 1
+                      union all
+                      select 2, p.Cod_Profile from Controle_Profile p
+                       where p.Cod_Profile = u.Cod_Profile and isnull(p.Actif,1) = 1
+                      union all
+                      select 3, p.Cod_Profile from Controle_Profile p
+                       where isnull(p.Portail_Defaut,'false') = 'true' and isnull(p.Actif,1) = 1
+                    ) r order by Prio), -1) as Cod_Profile
+       from Rh_Agent a
+       outer apply (select top 1 Typ_Role, Cod_Profile from Controle_Users where isnull(Mail,'') = a.Mail) u
+      where a.Matricule = @mat and a.id_Societe = @soc`,
+    [
+      { param: "mat", sqlType: NVarChar, valeur: String(matricule ?? "") },
+      { param: "soc", sqlType: NVarChar, valeur: String(idSociete ?? "") },
+    ]
+  );
+  if (!rsl.result || !rsl.data?.length) return "-1";
+  return String(rsl.data[0].Cod_Profile ?? "-1");
+};
+
 export const refreshToken = async (req: Request, res: Response) => {
   const refreshToken = req.cookies.jwt; // Read from cookie
   if (!refreshToken) return res.status(401).send("Access Denied. No refresh token provided.");
@@ -104,8 +139,12 @@ export const refreshToken = async (req: Request, res: Response) => {
   const decoded = verifyRefreshToken(refreshToken);
   if (!decoded) return res.status(403).send("Invalid refresh token.");
 
+  // Le profil n'est pas repris de l'ancien jeton : il est réévalué en base
+  // (délai d'application des droits = durée de vie du jeton d'accès).
+  const codProfile = await resoudreProfilPortail(decoded.Matricule, decoded.id_Societe);
+
   const newTokens = getToken(
-    decoded.codProfile,
+    codProfile,
     decoded.Login,
     decoded.Typ_Role,
     decoded.Cod_Poste,
