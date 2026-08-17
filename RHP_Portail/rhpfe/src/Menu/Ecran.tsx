@@ -58,6 +58,7 @@ const Outillage_Mouvement_Liste = lazy(() => import("../Pages/Outillage/Outillag
 const Outillage_Mouvement = lazy(() => import("../Pages/Outillage/Outillage_Mouvement"));
 const DynamicPage = lazy(() => import("../Pages/Dynamic/DynamicPage"));
 const DynamicPage_Liste = lazy(() => import("../Pages/Dynamic/DynamicPage_Liste"));
+const PortalQuery = lazy(() => import("../Pages/Requete/PortalQuery"));
 
 const Ecran = ({ style }: { style?: React.CSSProperties }) => {
   const { tbnMenu, settbnMenu, showSignature, signatureProps, signatureVersion } =
@@ -75,9 +76,15 @@ const Ecran = ({ style }: { style?: React.CSSProperties }) => {
     }
     ecranRef.current = ecran;
     // Pages dynamiques du module SP_ (Designer) : SPPL_<Cod_Page> = liste,
-    // SPP_<Cod_Page> = document. Interprétées depuis les métadonnées publiées.
+    // SPP_<Cod_Page> = document. Pages-requêtes du requêteur (Param_Query
+    // exposées) : SPQ_<Cod_Query> = consultation directe. Interprétées depuis
+    // les métadonnées publiées.
     if (ecran?.startsWith("SPPL_")) {
       setEcran(<DynamicPage_Liste codPage={ecran.substring(5)} />);
+      return;
+    }
+    if (ecran?.startsWith("SPQ_")) {
+      setEcran(<PortalQuery codQuery={ecran.substring(4)} />);
       return;
     }
     if (ecran?.startsWith("SPP_")) {

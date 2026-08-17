@@ -22,6 +22,7 @@ function variableGlobale(nom: string): any {
   const d = new Date();
   switch (nom.toUpperCase()) {
     case "GV_NOW": return d;
+    case "GV_TODAY": return new Date(d.getFullYear(), d.getMonth(), d.getDate()); // jour sans l'heure
     case "GV_YEAR": return d.getFullYear();
     case "GV_MONTH": return d.getMonth() + 1;
     case "GV_DAY": return d.getDate();

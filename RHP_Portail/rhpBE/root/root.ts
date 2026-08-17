@@ -100,6 +100,7 @@ import {
   sp_menu_portail, sp_page_meta, sp_document_liste, sp_get_document,
   sp_save_document, sp_delete_document, sp_validate_document, sp_exec_source,
 } from "../controlers/sp_document";
+import { sp_query_meta, sp_query_exec, sp_query_zoom } from "../controlers/portal_query";
 const mainRooting = express.Router();
 const storage = multer.diskStorage({
   destination: async (req, file, cb) => {
@@ -234,5 +235,10 @@ mainRooting.post("/sp_save_document", validate, sp_save_document);
 mainRooting.post("/sp_delete_document", validate, sp_delete_document);
 mainRooting.post("/sp_validate_document", validate, sp_validate_document);
 mainRooting.post("/sp_exec_source", validate, sp_exec_source);
+
+/* ---- Requêteur : pages de consultation portail (Param_Query estPortail) ---- */
+mainRooting.post("/sp_query_meta", validate, sp_query_meta);
+mainRooting.post("/sp_query_exec", validate, sp_query_exec);
+mainRooting.post("/sp_query_zoom", validate, sp_query_zoom);
 
 

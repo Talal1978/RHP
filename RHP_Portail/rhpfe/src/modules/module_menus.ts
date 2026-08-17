@@ -23,15 +23,17 @@ export const controleMenus: controleMenusInterface[] = await loadJSON(
   });
 
 /**
- * Fusionne les entrées de menu des pages dynamiques publiées (module SP_)
- * avec le menu statique menus.json. Les anciennes entrées dynamiques
- * (pages préfixe SPPL_ et sections marquées dyn) sont remplacées à chaque appel.
+ * Fusionne les entrées de menu des pages dynamiques publiées (module SP_ :
+ * listes SPPL_, pages-requêtes SPQ_ du requêteur) avec le menu statique
+ * menus.json. Les anciennes entrées dynamiques (pages préfixe SPPL_/SPQ_ et
+ * sections marquées dyn) sont remplacées à chaque appel.
  * Une section racine déjà déclarée dans menus.json n'est jamais dupliquée.
  */
 export function fusionnerMenusDynamiques(entrees: controleMenusInterface[]) {
   for (let i = controleMenus.length - 1; i >= 0; i--) {
     if (
       controleMenus[i].name_ecran.startsWith("SPPL_") ||
+      controleMenus[i].name_ecran.startsWith("SPQ_") ||
       controleMenus[i].dyn === true
     )
       controleMenus.splice(i, 1);

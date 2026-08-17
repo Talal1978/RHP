@@ -1,4 +1,6 @@
-﻿Public Class Param_Query
+﻿Imports System.Text.RegularExpressions
+
+Public Class Param_Query
     Friend Code As String = ""
     Dim Largeur_Fixe As String = ""
     Dim First_D As ud_btn
@@ -89,6 +91,20 @@
         Widget_Type_Cmb.DropDownStyle = ComboBoxStyle.DropDownList
         Widget_ChartType_Cmb.DropDownStyle = ComboBoxStyle.DropDownList
         Widget_Span_Cmb.DropDownStyle = ComboBoxStyle.DropDownList
+        ' Bloc "Page de consultation (menu du portail)" : section portail +
+        ' texte d'aide (contenu long, posé au runtime comme le dockage de l'aperçu).
+        If Portail_Menu_cmb.Items.Count = 0 Then Portail_Menu_cmb.fromRubrique("SP_Menu_Portail")
+        Portail_Menu_cmb.DropDownStyle = ComboBoxStyle.DropDownList
+        Portail_LblInfo.Text = "La requête devient une page du menu du portail (entrée directe, sans liste) : " &
+                               "l'agent saisit les critères, clique 'Interroger' et le résultat s'affiche " &
+                               "dans une grille en lecture seule ('Nouveau' vide les critères)." & vbCrLf &
+                               "Visibilité par profil : droit 'Actif' de la requête pour le profil " &
+                               "(écran des profils, comme les widgets du tableau de bord ; profil '1' voit tout)." & vbCrLf &
+                               "Jamais saisis, alimentés automatiquement : @idSoc, @Matricule, @CodEntite, " &
+                               "@CodPoste, @Login, @idUser, @CodProfile, @TeamLeader, @DatJour, @DebMois, " &
+                               "@FinMois (ou Default_Value GV_*) ; les autres critères sont demandés." & vbCrLf &
+                               "La requête doit rester en lecture seule (SELECT / WITH / EXEC dbo.Sys_* " &
+                               "mono-instruction) : le portail la refuse sinon."
     End Sub
 
     Private Sub Widget_Couleur_Btn_Click(ByVal sender As Object, ByVal e As EventArgs)
@@ -125,6 +141,12 @@
         Widget_Couleur_Txt.Text = "#1976d2"
         Widget_Span_Cmb.SelectedItem = "6"
         Widget_Description_Txt.Text = ""
+        ' Bloc "Page de consultation (menu du portail)" : réinitialisé puis relu
+        ' (colonnes ajoutées par la migration 001_Param_Query_Page_Portail.sql —
+        ' test d'existence pour rester compatible avec une base non migrée).
+        Portail_Chk.Checked = False
+        Portail_Menu_cmb.SelectedIndex = -1
+        Portail_Rang_Txt.Value = 99
         MajCouleurSwatch()
         Dim Tbl As DataTable = DATA_READER_GRD("select * from Param_Query_Widget where Cod_Query='" & Cod_Query_Text.Text & "'")
         If Tbl.Rows.Count = 0 Then Exit Sub
@@ -139,27 +161,66 @@
             Dim sp As String = CStr(IsNull(.Item("DefaultSpan"), 6))
             If Widget_Span_Cmb.Items.Contains(sp) Then Widget_Span_Cmb.SelectedItem = sp
             Widget_Description_Txt.Text = IsNull(.Item("Description"), "")
+            If Tbl.Columns.Contains("estPortail") Then Portail_Chk.Checked = IsNull(.Item("estPortail"), False)
+            If Tbl.Columns.Contains("Menu_Parent") Then Portail_Menu_cmb.SelectedValue = IsNull(.Item("Menu_Parent"), "")
+            If Tbl.Columns.Contains("Rang") Then Portail_Rang_Txt.Value = CDec(Math.Max(Portail_Rang_Txt.Minimum, Math.Min(Portail_Rang_Txt.Maximum, CDec(Val(IsNull(.Item("Rang"), "99").ToString())))))
         End With
         MajCouleurSwatch()
     End Sub
 
+    ''' <summary>Persiste l'exposition portail de la requête (Param_Query_Widget) :
+    ''' la ligne existe dès qu'UNE exposition est demandée (widget du tableau de bord
+    ''' ET/OU page de consultation du menu) ; elle n'est supprimée que si les deux
+    ''' sont désactivées. Les colonnes estPortail/Menu_Parent/Rang proviennent de la
+    ''' migration 001_Param_Query_Page_Portail.sql (absentes sur une base non migrée :
+    ''' l'exposition page est alors simplement ignorée).</summary>
     Sub SauverWidgetMeta()
         If Widget_Chk Is Nothing Then Exit Sub
-        If Not Widget_Chk.Checked Then
+        Dim estPortail As Boolean = (Portail_Chk IsNot Nothing AndAlso Portail_Chk.Checked)
+        If Not Widget_Chk.Checked AndAlso Not estPortail Then
             CnExecuting("delete from Param_Query_Widget where Cod_Query='" & Cod_Query_Text.Text & "'")
             Exit Sub
         End If
+        Dim colonnesPage As Boolean =
+            CInt(CnExecuting("select isnull(col_length('dbo.Param_Query_Widget','estPortail'),-1)").Fields(0).Value) >= 0
         Dim strType As String = IsNull(Widget_Type_Cmb.SelectedItem, "table")
         Dim strChart As String = IsNull(Widget_ChartType_Cmb.SelectedItem, "pie")
         Dim strIcone As String = Widget_Icone_Txt.Text.Replace("'", "''")
         Dim strCouleur As String = Widget_Couleur_Txt.Text.Replace("'", "''")
         Dim strDesc As String = Widget_Description_Txt.Text.Replace("'", "''")
+        Dim sqlPage As String = ""
+        Dim colsPage As String = ""
+        Dim valsPage As String = ""
+        If colonnesPage Then
+            Dim menuParent As String = IsNull(Portail_Menu_cmb.SelectedValue, "").ToString().Trim.Replace("'", "''")
+            Dim rang As Integer = CInt(If(Portail_Rang_Txt IsNot Nothing, Portail_Rang_Txt.Value, 99))
+            sqlPage = ", estPortail=" & If(estPortail, 1, 0) & ", Menu_Parent=N'" & menuParent & "', Rang=" & rang
+            colsPage = ", estPortail, Menu_Parent, Rang"
+            valsPage = "," & If(estPortail, 1, 0) & ",N'" & menuParent & "'," & rang
+        End If
         If CnExecuting("select count(*) from Param_Query_Widget where Cod_Query='" & Cod_Query_Text.Text & "'").Fields(0).Value > 0 Then
-            CnExecuting("update Param_Query_Widget set estWidget='true', Widget_Type='" & strType & "', Widget_ChartType='" & strChart & "', Icone=N'" & strIcone & "', Couleur='" & strCouleur & "', DefaultSpan=" & CInt(IsNull(Widget_Span_Cmb.SelectedItem, "6")) & ", Description=N'" & strDesc & "', Modified_By='" & theUser.Login & "', Dat_Modif=getdate() where Cod_Query='" & Cod_Query_Text.Text & "'")
+            CnExecuting("update Param_Query_Widget set estWidget='" & B(Widget_Chk.Checked) & "', Widget_Type='" & strType & "', Widget_ChartType='" & strChart & "', Icone=N'" & strIcone & "', Couleur='" & strCouleur & "', DefaultSpan=" & CInt(IsNull(Widget_Span_Cmb.SelectedItem, "6")) & ", Description=N'" & strDesc & "'" & sqlPage & ", Modified_By='" & theUser.Login & "', Dat_Modif=getdate() where Cod_Query='" & Cod_Query_Text.Text & "'")
         Else
-            CnExecuting("insert into Param_Query_Widget (Cod_Query, estWidget, Widget_Type, Widget_ChartType, Icone, Couleur, DefaultSpan, Description, Created_By, Dat_Crea) values ('" & Cod_Query_Text.Text & "','true','" & strType & "','" & strChart & "',N'" & strIcone & "','" & strCouleur & "'," & CInt(IsNull(Widget_Span_Cmb.SelectedItem, "6")) & ",N'" & strDesc & "','" & theUser.Login & "',getdate())")
+            CnExecuting("insert into Param_Query_Widget (Cod_Query, estWidget, Widget_Type, Widget_ChartType, Icone, Couleur, DefaultSpan, Description" & colsPage & ", Created_By, Dat_Crea) values ('" & Cod_Query_Text.Text & "','" & B(Widget_Chk.Checked) & "','" & strType & "','" & strChart & "',N'" & strIcone & "','" & strCouleur & "'," & CInt(IsNull(Widget_Span_Cmb.SelectedItem, "6")) & ",N'" & strDesc & "'" & valsPage & ",'" & theUser.Login & "',getdate())")
         End If
     End Sub
+
+    ''' <summary>'true'/'false' (colonnes bit lues en chaîne, convention du socle).</summary>
+    Private Function B(valeur As Boolean) As String
+        Return If(valeur, "true", "false")
+    End Function
+
+    ''' <summary>Garde-fou lecture seule des requêtes exposées au portail (miroir
+    ''' exact du backend : littéraux neutralisés avant le test multi-instructions ;
+    ''' sp_* interdit quelle que soit la casse).</summary>
+    Private Function EstRequeteLectureSeule(sqlText As String) As Boolean
+        Dim nettoye As String = Regex.Replace(IsNull(sqlText, ""), "'(?:[^']|'')*'", "''").Trim()
+        If Not Regex.IsMatch(nettoye, "^(select|with)\b", RegexOptions.IgnoreCase) AndAlso
+           Not Regex.IsMatch(nettoye, "^exec(ute)?\s+(dbo\.)?Sys_\w+", RegexOptions.IgnoreCase) Then Return False
+        If Regex.IsMatch(nettoye, ";\s*\S") Then Return False
+        If Regex.IsMatch(nettoye, "\b(insert|update|delete|drop|alter|create|truncate|grant|revoke|merge|bulk|openrowset|opendatasource|xp_\w+|sp_\w+)\b", RegexOptions.IgnoreCase) Then Return False
+        Return True
+    End Function
 
     Private Sub Widget_Icone_Btn_Click(ByVal sender As Object, ByVal e As EventArgs)
         Dim f As New Widget_Icones_Picker
@@ -611,6 +672,23 @@
 
     Private Sub Saving()
         If Cod_Query_Text.Text = "" Then Exit Sub
+
+        ' Page de consultation portail : cohérence de l'exposition (onglet 'Widget
+        ' portail') — la section est exigée (sinon la page est invisible) et la
+        ' requête doit passer le garde-fou lecture seule du portail.
+        If Portail_Chk IsNot Nothing AndAlso Portail_Chk.Checked Then
+            If IsNull(Portail_Menu_cmb.SelectedValue, "").ToString().Trim = "" Then
+                ShowMessageBox("Page de consultation portail : choisissez la section du menu portail (onglet 'Widget portail').",
+                               "Enregistrer", MessageBoxButtons.OK, msgIcon.Stop)
+                Exit Sub
+            End If
+            If Not EstRequeteLectureSeule(Cod_Sql_Text.Text) Then
+                ShowMessageBox("Page de consultation portail : la requête doit être en lecture seule " &
+                               "(SELECT / WITH / EXEC dbo.Sys_* en une seule instruction) — le portail la refuserait à l'exécution.",
+                               "Enregistrer", MessageBoxButtons.OK, msgIcon.Stop)
+                Exit Sub
+            End If
+        End If
 
         If Cod_Query_Text.Text.Contains("'") = True Or
 Cod_Query_Text.Text.Contains(",") = True Or

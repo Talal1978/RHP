@@ -22,6 +22,9 @@ Imports System.Threading.Tasks
 ''' Le JSON généré est systématiquement validé par l'importeur du produit
 ''' (SP_Page_Json_Import.Analyser — mêmes contrôles bloquants que l'import) ;
 ''' en cas d'erreur, une tentative de correction est demandée au modèle.
+''' Si le modèle refuse pour dépassement de sa fenêtre de contexte, la conversation
+''' est reconstruite en mode réduit (historique supprimé, environnement et références
+''' tronquées) SANS perdre la progression de la boucle, jusqu'à 2 niveaux de réduction.
 ''' Aucune écriture en base : l'enregistrement reste l'action de l'utilisateur
 ''' dans le Designer ('Enregistrer' puis 'Publier').
 ''' Le LLM est celui de l'assistant IA de RHP (table Ai_Agent — Ai_ChatClient,
@@ -52,6 +55,10 @@ Public Class Zoom_SP_Assistant_IA
 
     ''' <summary>Dernier fichier JSON généré sur le poste (zone de téléchargement).</summary>
     Private _fichierGenere As String = ""
+
+    ''' <summary>Niveau de réduction du contexte de génération après une erreur de
+    ''' limite de tokens du modèle (0 = complet, 1 = réduit, 2 = minimal).</summary>
+    Private _niveauReduction As Integer = 0
 
     Private Shared ReadOnly MOTS_VIDES As New HashSet(Of String)(StringComparer.OrdinalIgnoreCase) From {
         "le", "la", "les", "de", "des", "du", "un", "une", "et", "ou", "a", "au", "aux", "en",
@@ -252,11 +259,20 @@ Public Class Zoom_SP_Assistant_IA
         RendreReflexion()
     End Sub
 
+    ''' <summary>Supprime la fin du chat à partir d'une position (le RichTextBox étant
+    ''' ReadOnly, la suppression exige une bascule temporaire de ReadOnly).</summary>
+    Private Sub SupprimerFinChat(debut As Integer)
+        If debut < 0 OrElse txtChat.IsDisposed Then Return
+        txtChat.ReadOnly = False
+        txtChat.Select(debut, txtChat.TextLength - debut)
+        txtChat.SelectedText = ""
+        txtChat.ReadOnly = True
+    End Sub
+
     ''' <summary>(Ré)écrit le message provisoire de réflexion à la fin du chat.</summary>
     Private Sub RendreReflexion()
         If _reflexionDebut < 0 OrElse txtChat.IsDisposed Then Return
-        txtChat.Select(_reflexionDebut, txtChat.TextLength - _reflexionDebut)
-        txtChat.SelectedText = ""
+        SupprimerFinChat(_reflexionDebut)
         AjouterTexte("Assistant", _policeReflexionTitre, colorBase01)
         AjouterTexte(" — réflexion en cours" & If(_reflexionPhase = "", "", " (" & _reflexionPhase & ")") & " " &
                      New String("."c, _reflexionTicks Mod 4), _policeReflexion, Color.FromArgb(120, 120, 120))
@@ -280,10 +296,7 @@ Public Class Zoom_SP_Assistant_IA
             _reflexionTimer.Dispose()
             _reflexionTimer = Nothing
         End If
-        If _reflexionDebut >= 0 AndAlso Not txtChat.IsDisposed Then
-            txtChat.Select(_reflexionDebut, txtChat.TextLength - _reflexionDebut)
-            txtChat.SelectedText = ""
-        End If
+        SupprimerFinChat(_reflexionDebut)
         _reflexionDebut = -1
     End Sub
 
@@ -375,6 +388,29 @@ Public Class Zoom_SP_Assistant_IA
                               "Rubriques couvertes par le guide :" & vbCrLf & rubriques)
             Return
         End If
+        Dim msgs As List(Of AiChatMessage) = ConstruireMessagesAide(q, extraits, True)
+        Dim rep As String = Nothing
+        Dim reessayerReduit As Boolean = False
+        Try
+            rep = Await _config.EnvoyerChatAsync(msgs)
+        Catch ex As Exception
+            If Not EstErreurLimiteTokens(ex) Then Throw
+            reessayerReduit = True
+        End Try
+        If reessayerReduit Then
+            ' Limite de tokens du modèle atteinte : réessaie sans l'historique, avec 2 extraits
+            AfficherPhaseReflexion("contexte réduit — limite de tokens du modèle")
+            msgs = ConstruireMessagesAide(q, extraits.Take(2).ToList(), False)
+            rep = Await _config.EnvoyerChatAsync(msgs)
+        End If
+        If rep.Trim() = "" Then rep = "Je n'ai reçu aucune réponse du modèle."
+        AjouterMessageBot(rep)
+        Memoriser(q, rep)
+    End Function
+
+    ''' <summary>Construit la conversation du mode Aide : prompt système appuyé sur les
+    ''' extraits du guide + historique (optionnel) + question.</summary>
+    Private Function ConstruireMessagesAide(q As String, extraits As List(Of SectionAide), avecHistorique As Boolean) As List(Of AiChatMessage)
         Dim ctx As New StringBuilder()
         For Each s As SectionAide In extraits
             ctx.Append("[Extrait — " & s.Titre & "]" & vbCrLf & s.Texte & vbCrLf & vbCrLf)
@@ -388,12 +424,9 @@ Public Class Zoom_SP_Assistant_IA
             "- Ta mission se limite à expliquer la création de pages (formules, paramètres, sources métier, validations, habilitations, publication…)." & vbCrLf & vbCrLf &
             ctx.ToString()
         Dim msgs As New List(Of AiChatMessage) From {New AiChatMessage("system", sys)}
-        msgs.AddRange(_historique)
+        If avecHistorique Then msgs.AddRange(_historique)
         msgs.Add(New AiChatMessage("user", q))
-        Dim rep As String = Await _config.EnvoyerChatAsync(msgs)
-        If rep.Trim() = "" Then rep = "Je n'ai reçu aucune réponse du modèle."
-        AjouterMessageBot(rep)
-        Memoriser(q, rep)
+        Return msgs
     End Function
 
     '---------------- Mode 2 : génération du JSON d'une page ----------------
@@ -430,31 +463,35 @@ Public Class Zoom_SP_Assistant_IA
                "1. Rédige le compte rendu concis prévu par le skill (mode création/mise à jour, faits vérifiés / hypothèses /" & vbCrLf &
                "   informations manquantes, avertissements d'import attendus, étapes manuelles post-import)." & vbCrLf &
                "2. Termine ta réponse par UN SEUL bloc ```json ... ``` contenant le fichier complet (UTF-8, vrais booléens" & vbCrLf &
-               "   json, propriétés null omises) — c'est le seul livrable ; tout le reste se dit dans le compte rendu." & vbCrLf &
+               "   json, propriétés null omises), rédigé en format COMPACT (sans indentation ni sauts de ligne superflus)" & vbCrLf &
+               "   pour limiter la taille de sortie — c'est le seul livrable ; tout le reste se dit dans le compte rendu." & vbCrLf &
                "Si la description est trop imprécise pour décider (codes, section cible, champs…), pose d'abord des questions" & vbCrLf &
                "de clarification SANS produire de bloc json."
     End Function
 
     ''' <summary>Contexte réel de la base cible (sections, zooms, rubriques, modèles,
     ''' profils, sources, pages existantes) — la 'découverte d'environnement' du skill,
-    ''' faite ici directement en lecture dans la base.</summary>
-    Private Function ContexteEnvironnement() As String
+    ''' faite ici directement en lecture dans la base. Le paramètre niveau réduit les
+    ''' listes quand le modèle refuse pour limite de tokens (0 = complet, 1 = réduit,
+    ''' 2 = minimal).</summary>
+    Private Function ContexteEnvironnement(niveau As Integer) As String
+        Dim d As Integer = If(niveau = 0, 1, If(niveau = 1, 3, 6))   ' diviseur des tailles de listes
         Dim sb As New StringBuilder()
         sb.AppendLine("ENVIRONNEMENT RÉEL DE LA BASE CIBLE (lecture directe — ne pas inventer d'autres codes) :")
         AjouterListeEnv(sb, "Sections du menu portail (Menu_Parent : Valeur — Membre)",
-                        "select Valeur, Membre from Param_Rubriques where Nom_Controle='SP_Menu_Portail' order by Rang, Membre", 60)
+                        "select Valeur, Membre from Param_Rubriques where Nom_Controle='SP_Menu_Portail' order by Rang, Membre", 60 \ d)
         AjouterListeEnv(sb, "Icônes de menu disponibles (rubrique SP_Menu_Icones)",
-                        "select Valeur, Valeur from Param_Rubriques where Nom_Controle='SP_Menu_Icones' order by Rang", 60)
+                        "select Valeur, Valeur from Param_Rubriques where Nom_Controle='SP_Menu_Icones' order by Rang", 60 \ d)
         AjouterListeEnv(sb, "Modèles d'édition (Cod_Modele_Edition)",
-                        "select Cod_Report, Nom_Report from Param_Mod_Edition order by Cod_Report", 40)
+                        "select Cod_Report, Nom_Report from Param_Mod_Edition order by Cod_Report", 40 \ d)
         AjouterListeEnv(sb, "Profils (habilitations)",
-                        "select Cod_Profile, Lib_Profile from Controle_Profile order by Cod_Profile", 40)
+                        "select Cod_Profile, Lib_Profile from Controle_Profile order by Cod_Profile", 40 \ d)
         AjouterListeEnv(sb, "Zooms référencés (Num_Zoom — table — description)",
-                        "select top 150 Num_Zoom, Table_Ref + ' — ' + isnull(Description,'') from Controle_Def_Zoom order by Num_Zoom", 150)
+                        "select top 150 Num_Zoom, Table_Ref + ' — ' + isnull(Description,'') from Controle_Def_Zoom order by Num_Zoom", 150 \ d)
         AjouterListeEnv(sb, "Sources métier déjà cataloguées (réutilisables)",
-                        "select Cod_Source, Libelle + ' [' + Typ_Retour + ']' from Controle_Designer_Source order by Cod_Source", 60)
+                        "select Cod_Source, Libelle + ' [' + Typ_Retour + ']' from Controle_Designer_Source order by Cod_Source", 60 \ d)
         AjouterListeEnv(sb, "Pages déjà définies dans le Designer",
-                        "select Cod_Page, Nom_Page + ' (doc ' + Cod_Document + ')' from Controle_Designer order by Cod_Page", 80)
+                        "select Cod_Page, Nom_Page + ' (doc ' + Cod_Document + ')' from Controle_Designer order by Cod_Page", 80 \ d)
         Return sb.ToString()
     End Function
 
@@ -476,24 +513,166 @@ Public Class Zoom_SP_Assistant_IA
         End Try
     End Sub
 
+    ''' <summary>Résultat d'un envoi de génération (la conversation peut avoir été
+    ''' reconstruite en mode réduit — voir EnvoyerGenerationAsync).</summary>
+    Private Class EnvoiGen
+        Public Messages As List(Of AiChatMessage)
+        Public Reponse As String = ""
+    End Class
+
+    ''' <summary>Construit la conversation de génération au niveau de réduction courant :
+    ''' prompt système (skill) + historique (niveau 0 uniquement) + description et
+    ''' environnement (listes réduites aux niveaux 1 et 2).</summary>
+    Private Function ConstruireMessagesGeneration(q As String) As List(Of AiChatMessage)
+        Dim msgs As New List(Of AiChatMessage) From {
+            New AiChatMessage("system", ConstruirePromptSystemeSkill())
+        }
+        If _niveauReduction = 0 Then msgs.AddRange(_historique)
+        msgs.Add(New AiChatMessage("user", "Description fonctionnelle de la page à générer :" & vbCrLf & q & vbCrLf & vbCrLf & ContexteEnvironnement(_niveauReduction)))
+        Return msgs
+    End Function
+
+    ''' <summary>Envoie la conversation de génération au modèle. Si celui-ci refuse pour
+    ''' dépassement de sa limite de tokens, la conversation est reconstruite en mode
+    ''' réduit SANS perdre la progression (historique supprimé, environnement réduit,
+    ''' références déjà servies tronquées) puis renvoyée — jusqu'à 2 réductions ;
+    ''' au-delà, une erreur explicite est levée.</summary>
+    Private Async Function EnvoyerGenerationAsync(msgs As List(Of AiChatMessage), q As String) As Task(Of EnvoiGen)
+        While True
+            Try
+                Dim rep As String = Await _config.EnvoyerChatAsync(msgs, 300000)
+                Return New EnvoiGen With {.Messages = msgs, .Reponse = rep}
+            Catch ex As Exception
+                If Not EstErreurLimiteTokens(ex) Then Throw
+                If _niveauReduction >= 2 Then
+                    Throw New Exception("La demande dépasse la capacité du modèle configuré (" & _config.Provider & " / " & _config.Modele & "), même en contexte réduit." & vbCrLf &
+                                        "Raccourcissez la description, ou configurez un modèle avec une fenêtre de contexte plus grande (écran AI_KnowledgeBase).")
+                End If
+                AfficherPhaseReflexion("contexte réduit — limite de tokens du modèle")
+                msgs = ReduireMessagesGeneration(msgs, q)
+            End Try
+        End While
+    End Function
+
+    ''' <summary>Reconstruit la conversation au niveau de réduction supérieur en
+    ''' CONSERVANT la progression de la boucle agentique : le prompt système (skill)
+    ''' et les échanges de la boucle sont gardés ; seuls l'historique est supprimé,
+    ''' l'environnement réduit et les références déjà servies tronquées.</summary>
+    Private Function ReduireMessagesGeneration(msgs As List(Of AiChatMessage), q As String) As List(Of AiChatMessage)
+        _niveauReduction += 1
+        Dim rsl As New List(Of AiChatMessage)
+        rsl.Add(msgs(0))   ' prompt système (skill) inchangé
+        rsl.Add(New AiChatMessage("user", "Description fonctionnelle de la page à générer :" & vbCrLf & q & vbCrLf & vbCrLf & ContexteEnvironnement(_niveauReduction)))
+        ' Echanges de la boucle (après la description) : gardés, références tronquées
+        Dim debutBoucle As Integer = -1
+        For i As Integer = 1 To msgs.Count - 1
+            If msgs(i).Role = "user" AndAlso msgs(i).Content.StartsWith("Description fonctionnelle de la page à générer") Then
+                debutBoucle = i + 1
+                Exit For
+            End If
+        Next
+        If debutBoucle > 0 Then
+            For i As Integer = debutBoucle To msgs.Count - 1
+                Dim m As AiChatMessage = msgs(i)
+                If m.Role = "user" AndAlso m.Content.Contains("-----") Then
+                    rsl.Add(New AiChatMessage("user", TronquerReferences(m.Content, PlafondReference())))
+                Else
+                    rsl.Add(m)
+                End If
+            Next
+        End If
+        Return rsl
+    End Function
+
+    ''' <summary>Plafond de taille (caractères) d'un fichier de référence servi ou
+    ''' conservé au niveau de réduction courant (0 = illimité).</summary>
+    Private Function PlafondReference() As Integer
+        Return If(_niveauReduction = 0, 0, If(_niveauReduction = 1, 20000, 8000))
+    End Function
+
+    ''' <summary>Contenu d'un fichier du skill servi au modèle, tronqué en mode réduit
+    ''' pour rester sous sa limite de tokens.</summary>
+    Private Function ContenuFichierSkill(cle As String) As String
+        Dim contenu As String = _skill(cle)
+        Dim plafond As Integer = PlafondReference()
+        If plafond > 0 AndAlso contenu.Length > plafond Then
+            contenu = contenu.Substring(0, plafond) & vbCrLf & "[… contenu tronqué — limite de tokens du modèle …]"
+        End If
+        Return contenu
+    End Function
+
+    ''' <summary>Tronque le contenu de chaque bloc '----- fichier -----' d'un message de
+    ''' références déjà servi (réduction de contexte sans casser le protocole ###FICHIER###).</summary>
+    Private Shared Function TronquerReferences(contenu As String, plafond As Integer) As String
+        Dim lignes As String() = contenu.Split({vbLf}, StringSplitOptions.None)
+        Dim sb As New StringBuilder()
+        Dim bloc As Integer = -1        ' longueur cumulée du bloc courant (-1 = hors bloc)
+        Dim tronque As Boolean = False  ' bloc courant déjà tronqué : la suite est ignorée
+        For Each lig As String In lignes
+            If lig.StartsWith("----- ") AndAlso lig.TrimEnd().EndsWith("-----") Then
+                bloc = 0
+                tronque = False
+                sb.AppendLine(lig)
+            ElseIf bloc >= 0 AndAlso Not tronque Then
+                If bloc + lig.Length <= plafond Then
+                    sb.AppendLine(lig)
+                    bloc += lig.Length
+                Else
+                    sb.AppendLine("[… contenu tronqué — limite de tokens du modèle …]")
+                    tronque = True
+                End If
+            ElseIf bloc < 0 Then
+                sb.AppendLine(lig)
+            End If
+        Next
+        Return sb.ToString().TrimEnd()
+    End Function
+
+    ''' <summary>L'erreur vient-elle d'un dépassement de la fenêtre de contexte du modèle ?
+    ''' (libellés des principaux fournisseurs : Kimi/Moonshot « token limit », OpenAI et
+    ''' Azure « maximum context length », Mistral « prompt is too long », Gemini « exceeds
+    ''' the maximum number of tokens », Groq « request too large »…).</summary>
+    Private Shared Function EstErreurLimiteTokens(ex As Exception) As Boolean
+        Dim m As String = If(ex.Message, "").ToLowerInvariant()
+        Return m.Contains("token limit") OrElse
+               m.Contains("context length") OrElse
+               m.Contains("context_length") OrElse
+               m.Contains("maximum context") OrElse
+               m.Contains("too many tokens") OrElse
+               m.Contains("prompt is too long") OrElse
+               m.Contains("reduce the length") OrElse
+               m.Contains("exceeds the maximum number of tokens") OrElse
+               m.Contains("request too large") OrElse
+               m.Contains("payload size exceeds")
+    End Function
+
     Private Async Function GenererPage(q As String) As Task
         If _skill.Count = 0 Then
             AjouterMessageBot("Le skill de génération est introuvable (rsc\rhp-portal-page-deployer.zip) : vérifiez le déploiement de l'application.")
             Return
         End If
-        Dim msgs As New List(Of AiChatMessage) From {
-            New AiChatMessage("system", ConstruirePromptSystemeSkill())
-        }
-        msgs.AddRange(_historique)
-        msgs.Add(New AiChatMessage("user", "Description fonctionnelle de la page à générer :" & vbCrLf & q & vbCrLf & vbCrLf & ContexteEnvironnement()))
+        _niveauReduction = 0
+        Dim msgs As List(Of AiChatMessage) = ConstruireMessagesGeneration(q)
 
         '---------------- Boucle agentique : lecture des fichiers du skill à la demande ----------------
         Dim rep As String = ""
-        For i As Integer = 1 To 8
-            rep = Await _config.EnvoyerChatAsync(msgs, 300000)
+        Dim servis As New HashSet(Of String)(StringComparer.OrdinalIgnoreCase)   ' fichiers déjà fournis
+        Dim i As Integer = 0
+        While i < 14
+            i += 1
+            Dim envoi As EnvoiGen = Await EnvoyerGenerationAsync(msgs, q)
+            msgs = envoi.Messages
+            rep = envoi.Reponse
             Dim demandes As MatchCollection = Regex.Matches(rep, "#{2,}\s*FICHIER\s*#{2,}\s*([^\r\n#]+)", RegexOptions.IgnoreCase)
-            If demandes.Count = 0 Then Exit For
+            If demandes.Count = 0 Then Exit While
             msgs.Add(New AiChatMessage("assistant", rep))
+            If servis.Count >= 10 Then
+                ' Anti-boucle : assez de références servies — le modèle doit maintenant produire.
+                msgs.Add(New AiChatMessage("user", "Tu as déjà reçu les références essentielles du skill. Ne demande plus de fichier :" & vbCrLf &
+                                           "rédige maintenant le compte rendu prévu, puis termine par le bloc ```json ... ``` complet."))
+                AfficherPhaseReflexion("rédaction du JSON")
+                Continue While
+            End If
             Dim sb As New StringBuilder()
             For Each m As Match In demandes
                 Dim chemin As String = m.Groups(1).Value.Trim().TrimStart("/"c).Replace("\"c, "/"c)
@@ -503,7 +682,12 @@ Public Class Zoom_SP_Assistant_IA
                                 k.EndsWith("/" & chemin, StringComparison.OrdinalIgnoreCase))
                 If cle IsNot Nothing Then
                     sb.AppendLine("----- " & cle & " -----")
-                    sb.AppendLine(_skill(cle))
+                    If servis.Contains(cle) Then
+                        sb.AppendLine("[déjà fourni ci-dessus — ne le redemande pas]")
+                    Else
+                        servis.Add(cle)
+                        sb.AppendLine(ContenuFichierSkill(cle))
+                    End If
                     sb.AppendLine()
                 Else
                     sb.AppendLine("Fichier inconnu : " & chemin & " — choisis parmi la liste fournie.")
@@ -511,14 +695,22 @@ Public Class Zoom_SP_Assistant_IA
             Next
             msgs.Add(New AiChatMessage("user", sb.ToString()))
             AfficherPhaseReflexion("lecture des références")
-        Next
+        End While
 
-        '---------------- Extraction du JSON produit ----------------
-        Dim json As String = ExtraireJson(rep)
+        '---------------- Extraction du JSON produit (reprise si réponse coupée) ----------------
+        Dim ext As Tuple(Of String, Boolean) = Await CompleterJsonTronqueAsync(msgs, q, rep)
+        Dim json As String = ext.Item1
         If json = "" Then
-            ' Pas de JSON : clarifications / compte rendu textuel — affiché tel quel.
-            AjouterMessageBot(If(rep.Trim() <> "", rep, "Je n'ai reçu aucune réponse du modèle."))
-            Memoriser(q, rep)
+            If ext.Item2 Then
+                ' Réponse coupée par la limite de sortie du modèle, jamais complétée
+                AjouterMessageBot("Le modèle n'a pas réussi à produire le fichier JSON complet : sa réponse est tronquée par sa limite de sortie." & vbCrLf &
+                                  "Simplifiez la page demandée (moins de champs), ou configurez un modèle avec une plus grande limite de sortie (écran AI_KnowledgeBase).")
+                Memoriser(q, "Génération impossible : json tronqué (limite de sortie du modèle).")
+            Else
+                ' Pas de JSON : clarifications / compte rendu textuel — affiché tel quel.
+                AjouterMessageBot(If(rep.Trim() <> "", rep, "Je n'ai reçu aucune réponse du modèle."))
+                Memoriser(q, rep)
+            End If
             Return
         End If
 
@@ -532,8 +724,11 @@ Public Class Zoom_SP_Assistant_IA
                 " - " & String.Join(vbCrLf & " - ", res.Erreurs) & vbCrLf &
                 "Corrige TOUTES ces anomalies et renvoie UNIQUEMENT le bloc ```json ... ``` corrigé complet."))
             AfficherPhaseReflexion("correction du JSON")
-            rep = Await _config.EnvoyerChatAsync(msgs, 300000)
-            json = ExtraireJson(rep)
+            Dim envoi As EnvoiGen = Await EnvoyerGenerationAsync(msgs, q)
+            msgs = envoi.Messages
+            rep = envoi.Reponse
+            Dim ext2 As Tuple(Of String, Boolean) = Await CompleterJsonTronqueAsync(msgs, q, rep)
+            json = ext2.Item1
             If json <> "" Then res = SP_Page_Json_Import.Analyser(json)
         End If
         If json = "" OrElse res.Bloquant Then
@@ -570,6 +765,10 @@ Public Class Zoom_SP_Assistant_IA
         compteRendu.Append("Contenu : " & pkg.SqlStructure.Count & " table(s), " & nbColonnes & " colonne(s), " &
                       pkg.Components.Count & " champ(s), " & pkg.BusinessSources.Count & " source(s) métier, " &
                       pkg.Validations.Count & " validation(s)." & vbCrLf)
+        If _niveauReduction > 0 Then
+            compteRendu.Append("⚠ La limite de tokens du modèle a été atteinte : génération faite en contexte réduit" &
+                          " (historique et listes d'environnement tronqués) — vérifiez le résultat à l'import." & vbCrLf)
+        End If
         If res.Avertissements.Count > 0 Then
             compteRendu.Append("Avertissements à prévoir à l'import :" & vbCrLf & " - " &
                           String.Join(vbCrLf & " - ", res.Avertissements.Take(10)) & vbCrLf)
@@ -582,12 +781,22 @@ Public Class Zoom_SP_Assistant_IA
     End Function
 
     ''' <summary>Extrait le premier objet json équilibré du texte (bloc ```json privilégié ;
-    ''' accolades comptées hors des chaînes, échappements gérés).</summary>
-    Private Shared Function ExtraireJson(texte As String) As String
+    ''' accolades comptées hors des chaînes, échappements gérés). Si un bloc json est amorcé
+    ''' mais jamais refermé (réponse coupée par la limite de sortie du modèle), retourne ""
+    ''' et positionne estTronque à True.</summary>
+    Private Shared Function ExtraireJson(texte As String, Optional ByRef estTronque As Boolean = False) As String
+        estTronque = False
         If String.IsNullOrEmpty(texte) Then Return ""
         Dim debut As Integer = -1
         Dim m As Match = Regex.Match(texte, "```(?:json)?\s*", RegexOptions.IgnoreCase)
-        If m.Success Then debut = texte.IndexOf("{"c, m.Index + m.Length)
+        If m.Success Then
+            debut = texte.IndexOf("{"c, m.Index + m.Length)
+            If debut < 0 Then
+                ' Balise ```json amorcée mais jamais suivie d'un objet : réponse coupée
+                estTronque = True
+                Return ""
+            End If
+        End If
         If debut < 0 Then debut = texte.IndexOf("{"c)
         If debut < 0 Then Return ""
         Dim prof As Integer = 0
@@ -614,7 +823,38 @@ Public Class Zoom_SP_Assistant_IA
                 End If
             End If
         Next
+        ' Fin du texte sans refermer l'objet : réponse coupée par la limite de sortie
+        estTronque = True
         Return ""
+    End Function
+
+    ''' <summary>Demande au modèle la suite d'une réponse dont le json a été coupé par sa
+    ''' limite de sortie (jusqu'à 3 reprises, concaténées sans saut de ligne — le json peut
+    ''' être coupé en plein jeton). Retourne (json complet ou "", True si réponse tronquée).</summary>
+    Private Async Function CompleterJsonTronqueAsync(msgs As List(Of AiChatMessage), q As String, rep As String) As Task(Of Tuple(Of String, Boolean))
+        Dim complet As String = rep
+        Dim tronque As Boolean = False
+        Dim json As String = ExtraireJson(complet, tronque)
+        If Not tronque Then Return Tuple.Create(json, False)
+        Dim nbSuites As Integer = 0
+        While tronque AndAlso nbSuites < 3
+            nbSuites += 1
+            msgs.Add(New AiChatMessage("assistant", rep))
+            msgs.Add(New AiChatMessage("user",
+                "Ta réponse a été coupée par la limite de sortie du modèle : le bloc json est incomplet." & vbCrLf &
+                "Reprends EXACTEMENT au caractère où tu t'es arrêté, sans rien répéter, sans commentaire" & vbCrLf &
+                "ni balise markdown — uniquement la suite brute du json (garde-le COMPACT, sans indentation)."))
+            AfficherPhaseReflexion("suite du JSON (" & nbSuites & ")")
+            Dim envoi As EnvoiGen = Await EnvoyerGenerationAsync(msgs, q)
+            msgs.Clear()
+            msgs.AddRange(envoi.Messages)   ' conserve la conversation (éventuellement réduite)
+            rep = envoi.Reponse
+            Dim suite As String = Regex.Replace(rep.TrimStart(), "^```(?:json)?\s*", "", RegexOptions.IgnoreCase)
+            If suite = "" Then Exit While
+            complet &= suite
+            json = ExtraireJson(complet, tronque)
+        End While
+        Return Tuple.Create(json, True)
     End Function
 
     ''' <summary>La page existe-t-elle déjà en base (mode mise à jour à l'import) ?</summary>

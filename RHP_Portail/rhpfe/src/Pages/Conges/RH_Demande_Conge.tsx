@@ -92,8 +92,11 @@ const RH_Demande_Conge = () => {
           .then((dt) => {
             calculSeq.current++;
             if (dt.data && dt.data?.result) {
-              setEntete(dt.data.data[0]);
-              enteteRef.current = dt.data.data[0];
+              // data[0] peut être undefined (tableau vide) : ne jamais mettre
+              // entete à undefined, les hooks lisent entete.Dat_Deb_Conge...
+              const ent = dt.data.data?.[0] ?? iniEntete;
+              setEntete(ent);
+              enteteRef.current = ent;
               setLigne(dt.data.lignes ?? []);
             } else {
               setEntete(iniEntete);
@@ -227,7 +230,7 @@ const RH_Demande_Conge = () => {
       });
   }, [calculerConge, entete?.Matricule, entete?.Dat_Deb_Conge]);
   const calcul_conge = useCallback(() => {
-    if (!entete.Statut) {
+    if (!entete?.Statut) {
       const seq = ++calculSeq.current;
       myAxios("calcul_conge", { entete }).then((dt) => {
         if (seq !== calculSeq.current) return;
@@ -244,11 +247,11 @@ const RH_Demande_Conge = () => {
       });
     }
   }, [
-    entete.Dat_Deb_Conge,
-    entete.Dat_Fin_Conge,
-    entete.Dat_Deb_am_pm,
-    entete.Dat_Fin_am_pm,
-    entete.Typ_Conge,
+    entete?.Dat_Deb_Conge,
+    entete?.Dat_Fin_Conge,
+    entete?.Dat_Deb_am_pm,
+    entete?.Dat_Fin_am_pm,
+    entete?.Typ_Conge,
   ]);
   useEffect(() => {
     calcul_conge();

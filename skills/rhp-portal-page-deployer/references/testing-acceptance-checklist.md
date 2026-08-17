@@ -12,6 +12,9 @@ failed item is blocking for acceptance.
       environment state (page exists or not).
 - [ ] `change_reference` and `requested_by` filled (audit trail).
 - [ ] No `[NO-JSON-TARGET]` key with a non-neutral value (validator enforces).
+- [ ] Consultation intent (« page de consultation / écran de recherche »)
+      recognized → recipe `sources-metier.md` §6.1 applied: ENT criteria +
+      virtual detail grid + `actions.save: false` (validator warns otherwise).
 
 ## 2. Generated file (before opening the Designer)
 
@@ -83,6 +86,14 @@ failed item is blocking for acceptance.
 - [ ] If workflow: submit (`statut='SS'`) ⇒ signature circuit triggered.
 - [ ] Row-level scoping: a non-TeamLeader, non-admin agent sees only own
       documents (when a `Matricule` column exists).
+- [ ] Consultation page (§6.1): entering/changing a header criterion reloads
+      the virtual grid WITHOUT saving (`sp_exec_source`); « Enregistrer » is
+      absent from the FAB (`Act_Enregistrer=false`) and the SPPL_ list stays
+      empty (no parasitic documents). Navigation = menu → list → « Nouveau »
+      (the dynamic menu always emits `SPPL_` — direct access only via a static
+      `menus.json` `SPP_` entry); the profile has **Consulter AND Creer**
+      (without `Creer`, `canSave=false` locks the criteria too —
+      `readonlyGlobal`).
 
 ## 7. Rollback path
 

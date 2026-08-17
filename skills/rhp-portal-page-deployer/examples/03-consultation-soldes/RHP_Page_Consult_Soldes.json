@@ -1,0 +1,299 @@
+{
+  "format": "RHP_PAGE_DESIGNER",
+  "version": "1.0",
+  "exportedAt": "2026-08-16T16:35:46",
+  "exportedBy": "SCRIPT",
+  "page": {
+    "Cod_Page": "Consult_Soldes",
+    "Cod_Document": "CSOLD",
+    "Nom_Page": "Soldes de congés",
+    "Menu_Parent": "mesConsultations",
+    "Rang": 10,
+    "Acces_Personnalise": true,
+    "Workflow_Actif": false,
+    "GED_Actif": false,
+    "GED_Obligatoire": false,
+    "Act_Enregistrer": false,
+    "Act_Soumettre": false,
+    "Act_Imprimer": false,
+    "Act_Exporter": false
+  },
+  "sqlStructure": [
+    {
+      "Cod_Table": "ENT",
+      "Role_Table": "ENT",
+      "Libelle": "Entête",
+      "Rang": 0,
+      "Allow_Add": false,
+      "Allow_Edit": false,
+      "Allow_Delete": false,
+      "Allow_Duplicate": false,
+      "Regle_Suppression": "CASCADE",
+      "colonnes": [
+        {
+          "Nom_Colonne": "Annee",
+          "Libelle": "Année",
+          "Typ_Sql": "int",
+          "Nullable": true,
+          "estUnique": false,
+          "estIndexe": false,
+          "Rang": 1
+        },
+        {
+          "Nom_Colonne": "Matricule",
+          "Libelle": "Matricule",
+          "Typ_Sql": "nvarchar",
+          "Longueur": 40,
+          "Nullable": true,
+          "estUnique": false,
+          "estIndexe": false,
+          "Rang": 2
+        }
+      ]
+    },
+    {
+      "Cod_Table": "SOLDES",
+      "Role_Table": "DET",
+      "Libelle": "Soldes de congés",
+      "Rang": 4,
+      "Allow_Add": false,
+      "Allow_Edit": false,
+      "Allow_Delete": false,
+      "Allow_Duplicate": false,
+      "Regle_Suppression": "CASCADE",
+      "Source_Metier": "SRC_SOLDES_CONGES",
+      "Source_Mapping": "{\"Annee\":{\"ref\":\"Annee\"},\"Matricule\":{\"ref\":\"Matricule\"}}",
+      "colonnes": [
+        {
+          "Nom_Colonne": "Matricule",
+          "Libelle": "Matricule",
+          "Typ_Sql": "nvarchar",
+          "Longueur": 40,
+          "Nullable": true,
+          "estUnique": false,
+          "estIndexe": false,
+          "Rang": 1
+        },
+        {
+          "Nom_Colonne": "Nom_Agent",
+          "Libelle": "Agent",
+          "Typ_Sql": "nvarchar",
+          "Longueur": 401,
+          "Nullable": true,
+          "estUnique": false,
+          "estIndexe": false,
+          "Rang": 2
+        },
+        {
+          "Nom_Colonne": "Annee",
+          "Libelle": "Année",
+          "Typ_Sql": "int",
+          "Nullable": true,
+          "estUnique": false,
+          "estIndexe": false,
+          "Rang": 3
+        },
+        {
+          "Nom_Colonne": "Droit_Conge",
+          "Libelle": "Droit",
+          "Typ_Sql": "float",
+          "Nullable": true,
+          "estUnique": false,
+          "estIndexe": false,
+          "Rang": 4
+        },
+        {
+          "Nom_Colonne": "Conge_Pris",
+          "Libelle": "Pris",
+          "Typ_Sql": "float",
+          "Nullable": true,
+          "estUnique": false,
+          "estIndexe": false,
+          "Rang": 5
+        },
+        {
+          "Nom_Colonne": "Solde_Conge",
+          "Libelle": "Solde",
+          "Typ_Sql": "float",
+          "Nullable": true,
+          "estUnique": false,
+          "estIndexe": false,
+          "Rang": 6
+        }
+      ]
+    }
+  ],
+  "businessSources": [
+    {
+      "Cod_Source": "SRC_SOLDES_CONGES",
+      "Libelle": "Soldes de congés par agent et année",
+      "Typ_Source": "SQL",
+      "Code_Sql": "select c.Matricule, isnull(a.Nom_Agent, '') + ' ' + isnull(a.Prenom_Agent, '') as Nom_Agent, c.Annee, c.Droit_Conge, c.Conge_Pris, c.Solde_Conge from RH_Conge c left join RH_Agent a on a.id_Societe = c.id_Societe and a.Matricule = c.Matricule where c.id_Societe = @id_Societe and (@Annee is null or c.Annee = @Annee) and (@Matricule is null or c.Matricule like '%' + @Matricule + '%') order by c.Annee desc, c.Matricule",
+      "Parametres": "[{\"Nom\":\"Annee\",\"Typ\":\"int\",\"Obligatoire\":false},{\"Nom\":\"Matricule\",\"Typ\":\"nvarchar\",\"Obligatoire\":false}]",
+      "Typ_Retour": "TABLE",
+      "Actif": true
+    }
+  ],
+  "components": [
+    {
+      "Cod_Champ": "Num_Doc",
+      "Cod_Table": "ENT",
+      "Nom_Colonne": "",
+      "Libelle": "N° document",
+      "Typ_Controle": "TEXT",
+      "Rang": 1,
+      "Largeur": 3,
+      "Obligatoire": false,
+      "Etat": "R",
+      "Persiste": false,
+      "Visible_Grille": false,
+      "Rang_Grille": 1,
+      "estCritere": false
+    },
+    {
+      "Cod_Champ": "Annee",
+      "Cod_Table": "ENT",
+      "Nom_Colonne": "Annee",
+      "Libelle": "Année",
+      "Typ_Controle": "INT",
+      "Rang": 2,
+      "Largeur": 3,
+      "Obligatoire": false,
+      "Etat": "S",
+      "Persiste": false,
+      "Visible_Grille": false,
+      "Rang_Grille": 2,
+      "estCritere": false,
+      "Aide": "Année du solde (vide = toutes les années)"
+    },
+    {
+      "Cod_Champ": "Matricule",
+      "Cod_Table": "ENT",
+      "Nom_Colonne": "Matricule",
+      "Libelle": "Matricule",
+      "Typ_Controle": "TEXT",
+      "Rang": 3,
+      "Largeur": 3,
+      "Obligatoire": false,
+      "Etat": "S",
+      "Persiste": false,
+      "Visible_Grille": false,
+      "Rang_Grille": 3,
+      "estCritere": false,
+      "Aide": "Matricule exact ou fragment (vide = tous les agents de la société)"
+    },
+    {
+      "Cod_Champ": "S_Matricule",
+      "Cod_Table": "SOLDES",
+      "Nom_Colonne": "Matricule",
+      "Libelle": "Matricule",
+      "Typ_Controle": "TEXT",
+      "Rang": 5,
+      "Obligatoire": false,
+      "Etat": "R",
+      "Persiste": false,
+      "Visible_Grille": true,
+      "Rang_Grille": 1,
+      "estCritere": false
+    },
+    {
+      "Cod_Champ": "S_Nom_Agent",
+      "Cod_Table": "SOLDES",
+      "Nom_Colonne": "Nom_Agent",
+      "Libelle": "Agent",
+      "Typ_Controle": "TEXT",
+      "Rang": 6,
+      "Obligatoire": false,
+      "Etat": "R",
+      "Persiste": false,
+      "Visible_Grille": true,
+      "Rang_Grille": 2,
+      "estCritere": false
+    },
+    {
+      "Cod_Champ": "S_Annee",
+      "Cod_Table": "SOLDES",
+      "Nom_Colonne": "Annee",
+      "Libelle": "Année",
+      "Typ_Controle": "INT",
+      "Rang": 7,
+      "Obligatoire": false,
+      "Etat": "R",
+      "Persiste": false,
+      "Visible_Grille": true,
+      "Rang_Grille": 3,
+      "estCritere": false
+    },
+    {
+      "Cod_Champ": "S_Droit",
+      "Cod_Table": "SOLDES",
+      "Nom_Colonne": "Droit_Conge",
+      "Libelle": "Droit",
+      "Typ_Controle": "DEC",
+      "Rang": 8,
+      "Obligatoire": false,
+      "Etat": "R",
+      "Persiste": false,
+      "Format_Affichage": "NUM",
+      "Decimales": 2,
+      "Visible_Grille": true,
+      "Rang_Grille": 4,
+      "estCritere": false
+    },
+    {
+      "Cod_Champ": "S_Pris",
+      "Cod_Table": "SOLDES",
+      "Nom_Colonne": "Conge_Pris",
+      "Libelle": "Pris",
+      "Typ_Controle": "DEC",
+      "Rang": 9,
+      "Obligatoire": false,
+      "Etat": "R",
+      "Persiste": false,
+      "Format_Affichage": "NUM",
+      "Decimales": 2,
+      "Visible_Grille": true,
+      "Rang_Grille": 5,
+      "estCritere": false
+    },
+    {
+      "Cod_Champ": "S_Solde",
+      "Cod_Table": "SOLDES",
+      "Nom_Colonne": "Solde_Conge",
+      "Libelle": "Solde",
+      "Typ_Controle": "DEC",
+      "Rang": 10,
+      "Obligatoire": false,
+      "Etat": "R",
+      "Persiste": false,
+      "Format_Affichage": "NUM",
+      "Decimales": 2,
+      "Visible_Grille": true,
+      "Rang_Grille": 6,
+      "estCritere": false
+    }
+  ],
+  "validations": [
+    {
+      "Cod_Validation": "V01_ANNEE_PLAUSIBLE",
+      "Portee": "CHAMP",
+      "Cod_Table": "ENT",
+      "Cod_Champ": "Annee",
+      "Typ_Regle": "BETWEEN",
+      "Parametres": "{\"min\":2000,\"max\":2100}",
+      "Message": "Année plausible comprise entre 2000 et 2100.",
+      "Niveau": "W",
+      "Rang": 1,
+      "Moment": "CHANGE",
+      "Actif": true
+    }
+  ],
+  "metadata": {
+    "habilitations": "EXCLUES",
+    "nbTables": 2,
+    "nbColonnes": 8,
+    "nbChamps": 9,
+    "nbSources": 1,
+    "nbValidations": 1
+  }
+}

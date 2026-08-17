@@ -793,6 +793,46 @@ def validate(spec):
                 if name and name not in block_cols.get(tb, set()):
                     err(f"{p}.properties.default_sort", f"colonne inconnue : {name!r}")
 
+    # ----- pattern « page de consultation » (references/sources-metier.md §6.1)
+    # Entête stocké ENTIÈREMENT absorbé par les refs des mappings de grilles
+    # virtuelles (= l'entête n'est que des critères) + enregistrement actif :
+    # chaque sauvegarde créerait un « document » parasite (table SP_<doc>_Ent +
+    # liste SPPL_). Recommander actions.save: false (Act_Enregistrer=false
+    # masque le bouton Enregistrer du FAB).
+    refs_mapping = set()
+    for g in grids.values():
+        gprops = g.get("properties") or {}
+        mp = gprops.get("source_mapping")
+        if gprops.get("data_source_code") and isinstance(mp, dict):
+            refs_mapping |= {str(d.get("ref")) for d in mp.values()
+                             if isinstance(d, dict) and d.get("ref")}
+    ent_cols = block_cols.get("ENT", set())
+    consultation = bool(refs_mapping and ent_cols and ent_cols <= refs_mapping)
+    if consultation and act.get("save", True) is not False:
+        warn("page.actions.save",
+             "entête composé uniquement de critères alimentant la/les grille(s) "
+             "virtuelle(s) (page de consultation) : poser actions.save: false — "
+             "sinon chaque enregistrement crée un document parasite "
+             "(references/sources-metier.md section 6.1)")
+    if consultation:
+        # Consulter seul ne suffit pas : sur /new, canSave exige le droit Creer
+        # (DynamicPage.tsx L.441-446) — sinon readonlyGlobal verrouille AUSSI
+        # les champs critères (DynamicField.tsx L.71) et la consultation est
+        # inutilisable. Act_Enregistrer=false bloque tout enregistrement réel.
+        roles_in = (spec.get("access_control") or {}).get("roles") or []
+        ok_creer = any(
+            (r.get("permissions") or {}).get("view") is True
+            and (r.get("permissions") or {}).get("create") is True
+            for r in roles_in
+        )
+        if not ok_creer:
+            warn("access_control.roles",
+                 "page de consultation : prévoir un rôle Consulter + Creer — sans "
+                 "Creer, canSave=false verrouille aussi les champs critères "
+                 "(readonlyGlobal) ; Act_Enregistrer=false bloque tout "
+                 "enregistrement réel, Creer ne sert qu'à saisir les critères "
+                 "(references/sources-metier.md section 6.1 point 8)")
+
     # cycle detection between calculated fields (mirror of DetecterCycle)
     calc_deps = {}
     for c in comps:

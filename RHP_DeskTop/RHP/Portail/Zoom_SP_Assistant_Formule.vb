@@ -170,6 +170,7 @@ Public Class Zoom_SP_Assistant_Formule
         ' Variables globales : exactement celles résolues par variableGlobale() du moteur
         _gvs.AddRange(New GvInfo() {
             New GvInfo With {.Nom = "GV_NOW", .Libelle = "Date et heure du moment"},
+            New GvInfo With {.Nom = "GV_TODAY", .Libelle = "Date du jour (sans l'heure)"},
             New GvInfo With {.Nom = "GV_DEBMOIS", .Libelle = "Premier jour du mois en cours"},
             New GvInfo With {.Nom = "GV_FINMOIS", .Libelle = "Dernier jour du mois en cours"},
             New GvInfo With {.Nom = "GV_DEBYEAR", .Libelle = "Premier jour de l'année en cours"},
@@ -1033,6 +1034,7 @@ Public Class Zoom_SP_Assistant_Formule
         Dim d As DateTime = DateTime.Now
         Select Case nom.ToUpperInvariant()
             Case "GV_NOW" : Return d
+            Case "GV_TODAY" : Return d.Date
             Case "GV_YEAR" : Return d.Year
             Case "GV_MONTH" : Return d.Month
             Case "GV_DAY" : Return d.Day

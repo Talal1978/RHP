@@ -206,6 +206,18 @@ test("evaluer : variables globales GV_* résolues dans les formules", () => {
   assert.equal(evaluer({ op: "ADD", args: [{ ref: "A" }, { ref: "GV_MONTH" }] }, ctx), 5 + new Date().getMonth() + 1);
   assert.equal(evaluer({ ref: "GV_INCONNUE" }, ctx), null); // inconnue -> null (0 en numérique)
 });
+test("evaluer : GV_TODAY = aujourd'hui sans l'heure (date du jour jamais « passée »)", () => {
+  const ctx: TSpContexte = { entete: {}, details: {} };
+  const maintenant = new Date();
+  const p = (n: number) => String(n).padStart(2, "0");
+  const jourCourant = `${maintenant.getFullYear()}-${p(maintenant.getMonth() + 1)}-${p(maintenant.getDate())}`;
+  // La date du jour (sans heure) satisfait GE GV_TODAY, même à 23h59
+  assert.equal(evaluer({ op: "GE", args: [{ const: jourCourant }, { ref: "GV_TODAY" }] }, ctx), true);
+  // ... alors que la même comparaison contre GV_NOW (avec l'heure) peut échouer le jour même
+  const hier = new Date(maintenant.getTime() - 86400000);
+  const jourHier = `${hier.getFullYear()}-${p(hier.getMonth() + 1)}-${p(hier.getDate())}`;
+  assert.equal(evaluer({ op: "GE", args: [{ const: jourHier }, { ref: "GV_TODAY" }] }, ctx), false);
+});
 test("evaluer : fonctions texte (positions 1-based, convention tableur)", () => {
   const ctx: TSpContexte = { entete: { Nom: "  Dupont  ", Code: "AB1234", Vide: "" }, details: {} };
   assert.equal(evaluer({ op: "LEFT", args: [{ ref: "Code" }, { const: 2 }] }, ctx), "AB");

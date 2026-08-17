@@ -127,6 +127,13 @@ Partial Class Param_Query
         Me.Widget_LblInfo = New System.Windows.Forms.Label()
         Me.Widget_Preview_Btn = New RHP.ud_button()
         Me.Widget_Preview_Pnl = New RHP.ud_Panel()
+        Me.Portail_Grp = New System.Windows.Forms.GroupBox()
+        Me.Portail_Chk = New RHP.ud_CheckBox()
+        Me.Portail_LblMenu = New System.Windows.Forms.Label()
+        Me.Portail_Menu_cmb = New RHP.ud_ComboBox()
+        Me.Portail_LblRang = New System.Windows.Forms.Label()
+        Me.Portail_Rang_Txt = New System.Windows.Forms.NumericUpDown()
+        Me.Portail_LblInfo = New System.Windows.Forms.Label()
         Me.Personnal_pnl.SuspendLayout()
         CType(Me.Criterias_GRD, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.TabControl1.SuspendLayout()
@@ -150,6 +157,8 @@ Partial Class Param_Query
         CType(Me.Grd_ExportFormat, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.GroupBox1.SuspendLayout()
         Me.TabWidget.SuspendLayout()
+        Me.Portail_Grp.SuspendLayout()
+        CType(Me.Portail_Rang_Txt, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SuspendLayout()
         '
         'Personnal_pnl
@@ -1132,6 +1141,7 @@ Partial Class Param_Query
         Me.TabWidget.Controls.Add(Me.Widget_LblInfo)
         Me.TabWidget.Controls.Add(Me.Widget_Preview_Btn)
         Me.TabWidget.Controls.Add(Me.Widget_Preview_Pnl)
+        Me.TabWidget.Controls.Add(Me.Portail_Grp)
         Me.TabWidget.Location = New System.Drawing.Point(4, 28)
         Me.TabWidget.Margin = New System.Windows.Forms.Padding(4)
         Me.TabWidget.Name = "TabWidget"
@@ -1412,6 +1422,87 @@ Partial Class Param_Query
         Me.Widget_Preview_Pnl.Size = New System.Drawing.Size(1180, 470)
         Me.Widget_Preview_Pnl.TabIndex = 18
         '
+        'Portail_Grp
+        '
+        Me.Portail_Grp.Controls.Add(Me.Portail_Chk)
+        Me.Portail_Grp.Controls.Add(Me.Portail_LblMenu)
+        Me.Portail_Grp.Controls.Add(Me.Portail_Menu_cmb)
+        Me.Portail_Grp.Controls.Add(Me.Portail_LblRang)
+        Me.Portail_Grp.Controls.Add(Me.Portail_Rang_Txt)
+        Me.Portail_Grp.Controls.Add(Me.Portail_LblInfo)
+        Me.Portail_Grp.Location = New System.Drawing.Point(700, 8)
+        Me.Portail_Grp.Name = "Portail_Grp"
+        Me.Portail_Grp.Size = New System.Drawing.Size(480, 268)
+        Me.Portail_Grp.TabIndex = 19
+        Me.Portail_Grp.TabStop = False
+        Me.Portail_Grp.Text = "Page de consultation (menu du portail)"
+        '
+        'Portail_Chk
+        '
+        Me.Portail_Chk.AutoSize = True
+        Me.Portail_Chk.Checked = False
+        Me.Portail_Chk.Font = New System.Drawing.Font("Century Gothic", 8.25!)
+        Me.Portail_Chk.Location = New System.Drawing.Point(14, 26)
+        Me.Portail_Chk.Margin = New System.Windows.Forms.Padding(4, 5, 4, 5)
+        Me.Portail_Chk.MaximumSize = New System.Drawing.Size(0, 31)
+        Me.Portail_Chk.MinimumSize = New System.Drawing.Size(146, 31)
+        Me.Portail_Chk.Name = "Portail_Chk"
+        Me.Portail_Chk.RightToLeft = System.Windows.Forms.RightToLeft.Yes
+        Me.Portail_Chk.Size = New System.Drawing.Size(400, 31)
+        Me.Portail_Chk.TabIndex = 0
+        Me.Portail_Chk.Text = "Exposer comme page de consultation dans le menu du portail"
+        '
+        'Portail_LblMenu
+        '
+        Me.Portail_LblMenu.AutoSize = True
+        Me.Portail_LblMenu.Location = New System.Drawing.Point(14, 68)
+        Me.Portail_LblMenu.Name = "Portail_LblMenu"
+        Me.Portail_LblMenu.Size = New System.Drawing.Size(157, 19)
+        Me.Portail_LblMenu.TabIndex = 1
+        Me.Portail_LblMenu.Text = "Section du menu portail"
+        '
+        'Portail_Menu_cmb
+        '
+        Me.Portail_Menu_cmb.DataSource = Nothing
+        Me.Portail_Menu_cmb.DisplayMember = ""
+        Me.Portail_Menu_cmb.DroppedDown = False
+        Me.Portail_Menu_cmb.Font = New System.Drawing.Font("Century Gothic", 8.25!)
+        Me.Portail_Menu_cmb.Location = New System.Drawing.Point(14, 90)
+        Me.Portail_Menu_cmb.Margin = New System.Windows.Forms.Padding(4, 5, 4, 5)
+        Me.Portail_Menu_cmb.Name = "Portail_Menu_cmb"
+        Me.Portail_Menu_cmb.SelectedIndex = -1
+        Me.Portail_Menu_cmb.SelectedItem = Nothing
+        Me.Portail_Menu_cmb.SelectedValue = Nothing
+        Me.Portail_Menu_cmb.Size = New System.Drawing.Size(280, 30)
+        Me.Portail_Menu_cmb.TabIndex = 2
+        Me.Portail_Menu_cmb.ValueMember = ""
+        '
+        'Portail_LblRang
+        '
+        Me.Portail_LblRang.AutoSize = True
+        Me.Portail_LblRang.Location = New System.Drawing.Point(310, 68)
+        Me.Portail_LblRang.Name = "Portail_LblRang"
+        Me.Portail_LblRang.Size = New System.Drawing.Size(41, 19)
+        Me.Portail_LblRang.TabIndex = 3
+        Me.Portail_LblRang.Text = "Rang"
+        '
+        'Portail_Rang_Txt
+        '
+        Me.Portail_Rang_Txt.Location = New System.Drawing.Point(310, 90)
+        Me.Portail_Rang_Txt.Maximum = New Decimal(New Integer() {9999, 0, 0, 0})
+        Me.Portail_Rang_Txt.Name = "Portail_Rang_Txt"
+        Me.Portail_Rang_Txt.Size = New System.Drawing.Size(80, 24)
+        Me.Portail_Rang_Txt.TabIndex = 4
+        Me.Portail_Rang_Txt.Value = New Decimal(New Integer() {99, 0, 0, 0})
+        '
+        'Portail_LblInfo
+        '
+        Me.Portail_LblInfo.ForeColor = System.Drawing.Color.Gray
+        Me.Portail_LblInfo.Location = New System.Drawing.Point(14, 132)
+        Me.Portail_LblInfo.Name = "Portail_LblInfo"
+        Me.Portail_LblInfo.Size = New System.Drawing.Size(450, 126)
+        Me.Portail_LblInfo.TabIndex = 5
+        '
         'Param_Query
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(120.0!, 120.0!)
@@ -1454,6 +1545,9 @@ Partial Class Param_Query
         Me.GroupBox1.PerformLayout()
         Me.TabWidget.ResumeLayout(False)
         Me.TabWidget.PerformLayout()
+        Me.Portail_Grp.ResumeLayout(False)
+        Me.Portail_Grp.PerformLayout()
+        CType(Me.Portail_Rang_Txt, System.ComponentModel.ISupportInitialize).EndInit()
         Me.ResumeLayout(False)
 
     End Sub
@@ -1541,4 +1635,11 @@ Partial Class Param_Query
     Friend WithEvents Widget_LblInfo As Label
     Friend WithEvents Widget_Preview_Btn As RHP.ud_button
     Friend WithEvents Widget_Preview_Pnl As RHP.ud_Panel
+    Friend WithEvents Portail_Grp As System.Windows.Forms.GroupBox
+    Friend WithEvents Portail_Chk As RHP.ud_CheckBox
+    Friend WithEvents Portail_LblMenu As System.Windows.Forms.Label
+    Friend WithEvents Portail_Menu_cmb As RHP.ud_ComboBox
+    Friend WithEvents Portail_LblRang As System.Windows.Forms.Label
+    Friend WithEvents Portail_Rang_Txt As System.Windows.Forms.NumericUpDown
+    Friend WithEvents Portail_LblInfo As System.Windows.Forms.Label
 End Class

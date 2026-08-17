@@ -66,22 +66,53 @@ export async function sp_menu_portail(req: Request, res: Response) {
     rang: p.Rang,
     img: p.Icone ?? "",
   }));
+  // Pages-requêtes (Param_Query du requêteur desktop exposées au portail :
+  // Param_Query_Widget.estPortail) — entrées DIRECTES du menu (SPQ_<Cod_Query>,
+  // page de consultation critères + grille, sans page liste). Visibilité :
+  // Controle_Droit sur Cod_Query (profil '1' bypass, convention RHP).
+  const rslQ = await lireSql(
+    `select q.Cod_Query, q.Nom_Query, w.Menu_Parent, w.Rang, isnull(w.Icone,'') as Icone
+     from Param_Query q
+     join Param_Query_Widget w on w.Cod_Query = q.Cod_Query and isnull(w.estPortail,'false')='true'
+     where ( @p_pr = '1'
+             or exists (select 1 from Controle_Droit d
+                        where d.Cod_Profile=@p_pr and d.Name_Ecran=q.Cod_Query
+                          and isnull(d.Actif,'false')='true') )
+     order by w.Menu_Parent, w.Rang`,
+    [{ param: "p_pr", sqlType: sql.NVarChar, valeur: String(codProfile ?? "") }]
+  );
+  const menusQ = (rslQ.data ?? []).map((p: any) => ({
+    name_ecran: `SPQ_${p.Cod_Query}`,          // page-requête (consultation directe)
+    text_ecran: p.Nom_Query,
+    typ_ecran: "ECR",
+    parent: p.Menu_Parent,
+    rang: p.Rang,
+    img: p.Icone ?? "",
+  }));
   // Sections créées depuis le Designer (rubrique SP_Menu_Portail) : racines du
   // menu latéral. Seules les sections contenant au moins une page publiée visible
-  // par le profil sont retournées (une section vide ne mène nulle part). Marquées
-  // dyn:true pour que le client puisse les distinguer des sections de menus.json.
+  // par le profil (page SP_ OU page-requête) sont retournées (une section vide ne
+  // mène nulle part). Marquées dyn:true pour que le client puisse les distinguer
+  // des sections de menus.json.
   // L'icône MUI choisie à la création est stockée dans la colonne libre Champs02.
   const rslSections = await lireSql(
     `select r.Valeur, r.Membre, r.Rang, isnull(r.Champs02,'') as Icone
      from Param_Rubriques r
      where r.Nom_Controle='SP_Menu_Portail'
-       and exists (select 1 from Controle_Designer p
-                   where p.Menu_Parent = r.Valeur and p.Statut_Page='PUBLIE'
-                     and ( @p_pr = '1'
-                           or isnull(p.Acces_Personnalise,'true')='false'
-                           or exists (select 1 from Controle_Designer_Droit d
-                                      where d.Cod_Page=p.Cod_Page and d.Cod_Profile=@p_pr
-                                        and isnull(d.Consulter,'false')='true') ))
+       and ( exists (select 1 from Controle_Designer p
+                      where p.Menu_Parent = r.Valeur and p.Statut_Page='PUBLIE'
+                        and ( @p_pr = '1'
+                              or isnull(p.Acces_Personnalise,'true')='false'
+                              or exists (select 1 from Controle_Designer_Droit d
+                                         where d.Cod_Page=p.Cod_Page and d.Cod_Profile=@p_pr
+                                           and isnull(d.Consulter,'false')='true') ))
+             or exists (select 1 from Param_Query q
+                        join Param_Query_Widget w on w.Cod_Query=q.Cod_Query
+                          and isnull(w.estPortail,'false')='true' and w.Menu_Parent = r.Valeur
+                        where ( @p_pr = '1'
+                                or exists (select 1 from Controle_Droit d
+                                           where d.Cod_Profile=@p_pr and d.Name_Ecran=q.Cod_Query
+                                             and isnull(d.Actif,'false')='true') )) )
      order by r.Rang, r.Membre`,
     [{ param: "p_pr", sqlType: sql.NVarChar, valeur: String(codProfile ?? "") }]
   );
@@ -94,7 +125,7 @@ export async function sp_menu_portail(req: Request, res: Response) {
     img: String(s.Icone ?? ""),
     dyn: true,
   }));
-  return res.send({ result: true, data: [...sections, ...menus], fields: [], sort: "succès" });
+  return res.send({ result: true, data: [...sections, ...menus, ...menusQ], fields: [], sort: "succès" });
 }
 
 /* -------------------------------------------------------------------------- */

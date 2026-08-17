@@ -37,7 +37,12 @@ actions in the Designer; everything else is said in the chat response.
 Use this skill when the user asks to:
 - create a new RHP portal page from a functional description;
 - update an existing SP_ page (only with explicit update authorization);
-- produce or review an SP_ page configuration file for the Designer.
+- produce or review an SP_ page configuration file for the Designer;
+- create a **consultation page** (« page de consultation », « écran de
+  recherche », « liste paramétrée » : a read-only grid fed by a TABLE business
+  source, the source criteria entered as page fields) — recipe:
+  `references/sources-metier.md` §6.1 (ENT criteria + virtual detail grid +
+  `actions.save: false`).
 
 Do NOT use it for: disabling/unpublishing a page (use the Designer's
 "Désactiver" button), hardcoded (non-SP_) portal screens, desktop WinForms
@@ -53,7 +58,7 @@ module.
 | `references/sp-metadata-model.md` | Metadata columns, DDL rules applied by `Saving`, publication preconditions |
 | `references/formules-calculees.md` | Any `calculated` field, `EXPR` validation or aggregate — AST, 43 whitelisted ops, GV_* variables, dependency cycles |
 | `references/comportement-page.md` | Field states, the 13 validation types with exact `Parametres` json, scopes/levels/moments, document lifecycle, detail-grid flags, rights & FAB actions, list criteria |
-| `references/sources-metier.md` | Any `data_sources` entry, `source` field, virtual detail grid, `SOURCE` validation — catalog, read-only guard, parameters, the 3 usages |
+| `references/sources-metier.md` | Any `data_sources` entry, `source` field, virtual detail grid, `SOURCE` validation, **consultation page** (criteria + result grid, §6.1) — catalog, read-only guard, parameters, the 3 usages |
 | `references/environment-discovery.md` | Dependencies uncertain / new environment (section codes, zooms, rubriques, sources, profiles, print model) |
 | `templates/input-template.yaml` | Building the canonical input (working structure — validated via stdin, **never persisted**) |
 | `templates/page-template.json` | Generating the output file |
@@ -128,7 +133,12 @@ field), `recalc_save: false`, `attachments.categories`, `operation: disable`.
 1. **Restate** the request as the canonical input (structure of
    `templates/input-template.yaml`) — an in-memory **working structure, never
    written to disk**: the only file this skill ever produces is the final
-   JSON (§8).
+   JSON (§8). Intent recognition: a **consultation** request (« afficher le
+   résultat d'une requête/source avec des critères », « écran de recherche »)
+   maps to the §6.1 recipe of `references/sources-metier.md` — ENT header =
+   criteria fields, ONE virtual `detail_grid` fed by the TABLE source, mapping
+   `ref` → criteria columns, `actions.save: false` (no parasitic documents),
+   `Num_Doc` component still mandatory.
 2. **Classify every fact**: `verified` (in repo sources) / `assumption`
    (reasonable default, listed in the final response) / `missing` (blocks —
    see §6).
@@ -350,6 +360,10 @@ only, business tables never dropped); after publication → "Désactiver".
   generated JSON (use both as oracle — the generated file must encode the
   same metadata).
 - `examples/02-teletravail/`: worked input + expected generated JSON.
+- `examples/03-consultation-soldes/`: **consultation page** (pattern §6.1 of
+  `references/sources-metier.md`) — ENT criteria + virtual detail grid fed by
+  a TABLE source + `actions.save: false`; oracle JSON verified against the
+  `RH_Conge` data.
   (The `input.yaml` files illustrate the internal canonical contract — they
   are never produced as deliverables; **only the JSON is**.)
 

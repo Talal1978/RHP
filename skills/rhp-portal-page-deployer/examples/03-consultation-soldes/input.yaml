@@ -1,0 +1,175 @@
+# =============================================================================
+# Exemple 03 - "Consultation des soldes de congés" (Consult_Soldes)
+# Pattern « page de consultation » (references/sources-metier.md section 6.1) :
+#   ENT = critères (Annee, Matricule) + grille VIRTUELLE alimentée par la
+#   source TABLE SRC_SOLDES_CONGES + actions.save:false (aucun document
+#   parasite). La grille se recharge SANS enregistrement à chaque changement
+#   de critère (DynamicPage.tsx -> sp_exec_source) ; critère vide => paramètre
+#   null => le SQL gère le null (@p is null or ...).
+# Vérifié sur la base RHP : tables RH_Conge / RH_Agent, section
+# mesConsultations (« Consultations ») ; oracle de production du mécanisme :
+# page DUP_CONGE (grille PERIODES <- source sp_cng_detail, aide à la saisie).
+# =============================================================================
+request:
+  operation: create
+  environment: development
+  dry_run: true
+  requested_by: SCRIPT
+  change_reference: "EXEMPLE-03"
+
+page:
+  page_code: Consult_Soldes
+  document_code: CSOLD
+  page_name: "Consultation des soldes de congés"
+  title: "Soldes de congés"
+  description: "Page de consultation : critères en entête, grille virtuelle alimentée par SRC_SOLDES_CONGES, rechargée à chaque changement de critère."
+  target_section_code: mesConsultations
+  display_order: 10
+  enabled: true
+  actions:
+    save: false            # consultation pure : pas de bouton Enregistrer (FAB)
+    submit: false
+    print: false
+    export: false
+  attachments:
+    enabled: false
+    categories: []
+    required: false
+  workflow:
+    enabled: false
+
+components:
+  # Champ réservé OBLIGATOIRE même sur une consultation (convention verrouillée)
+  - component_code: Num_Doc
+    component_type: text
+    label: "N° document"
+    column_name: ""
+    layout: { width: 3, display_order: 1 }
+    editable: false
+    properties:
+      visible_in_grid: false
+      grid_order: 1
+
+  # ----- Critères (entête, colonnes physiques — la table SP_CSOLD_Ent est
+  # créée mais reste vide, l'enregistrement étant désactivé) -----
+  - component_code: Annee
+    component_type: integer
+    label: "Année"
+    layout: { width: 3, display_order: 2 }
+    properties:
+      sql_type: int
+      help: "Année du solde (vide = toutes les années)"
+      visible_in_grid: false
+    validations:
+      - code: V01_ANNEE_PLAUSIBLE
+        type: BETWEEN
+        parameters: { min: 2000, max: 2100 }
+        message: "Année plausible comprise entre 2000 et 2100."
+        level: W
+        moment: CHANGE
+  - component_code: Matricule
+    component_type: text
+    label: "Matricule"
+    layout: { width: 3, display_order: 3 }
+    properties:
+      sql_type: nvarchar
+      length: 40
+      help: "Matricule exact ou fragment (vide = tous les agents de la société)"
+      visible_in_grid: false
+
+  # ----- Grille virtuelle = résultat de la source (aucune table physique ;
+  # Allow_* forcés à false par le Designer ; tri = ORDER BY de la source,
+  # Tri_Defaut non appliqué aux détails virtuels) -----
+  - component_code: SOLDES
+    component_type: detail_grid
+    label: "Soldes de congés"
+    layout: { display_order: 4 }
+    properties:
+      data_source_code: SRC_SOLDES_CONGES
+      source_mapping:
+        Annee: { ref: Annee }            # ref = colonne d'ENTÊTE (critère)
+        Matricule: { ref: Matricule }
+
+  # Colonnes de la grille : column_name = alias EXACT rendu par la source
+  # (clés JS sensibles à la casse), editable: false (Etat R), non persistées.
+  - component_code: S_Matricule
+    component_type: text
+    label: "Matricule"
+    target_block: SOLDES
+    column_name: Matricule
+    editable: false
+    layout: { display_order: 5 }
+    properties: { sql_type: nvarchar, length: 40, grid_order: 1 }
+  - component_code: S_Nom_Agent
+    component_type: text
+    label: "Agent"
+    target_block: SOLDES
+    column_name: Nom_Agent
+    editable: false
+    layout: { display_order: 6 }
+    properties: { sql_type: nvarchar, length: 401, grid_order: 2 }
+  - component_code: S_Annee
+    component_type: integer
+    label: "Année"
+    target_block: SOLDES
+    column_name: Annee
+    editable: false
+    layout: { display_order: 7 }
+    properties: { sql_type: int, grid_order: 3 }
+  - component_code: S_Droit
+    component_type: decimal
+    label: "Droit"
+    target_block: SOLDES
+    column_name: Droit_Conge
+    editable: false
+    layout: { display_order: 8 }
+    properties: { sql_type: float, format: NUM, decimals: 2, grid_order: 4 }
+  - component_code: S_Pris
+    component_type: decimal
+    label: "Pris"
+    target_block: SOLDES
+    column_name: Conge_Pris
+    editable: false
+    layout: { display_order: 9 }
+    properties: { sql_type: float, format: NUM, decimals: 2, grid_order: 5 }
+  - component_code: S_Solde
+    component_type: decimal
+    label: "Solde"
+    target_block: SOLDES
+    column_name: Solde_Conge
+    editable: false
+    layout: { display_order: 10 }
+    properties: { sql_type: float, format: NUM, decimals: 2, grid_order: 6 }
+
+page_validations: []
+
+data_sources:
+  - data_source_code: SRC_SOLDES_CONGES
+    label: "Soldes de congés par agent et année"
+    source_type: sql
+    # Garde-fou lecture seule OK : mono-instruction SELECT, pas de sp_ minuscule.
+    # Critères optionnels : paramètre null quand le champ est vide.
+    reference: "select c.Matricule, isnull(a.Nom_Agent, '') + ' ' + isnull(a.Prenom_Agent, '') as Nom_Agent, c.Annee, c.Droit_Conge, c.Conge_Pris, c.Solde_Conge from RH_Conge c left join RH_Agent a on a.id_Societe = c.id_Societe and a.Matricule = c.Matricule where c.id_Societe = @id_Societe and (@Annee is null or c.Annee = @Annee) and (@Matricule is null or c.Matricule like '%' + @Matricule + '%') order by c.Annee desc, c.Matricule"
+    parameters:
+      # Matricule DÉCLARÉ : alimenté par le critère de la page (sinon il serait
+      # auto-injecté avec l'identité connectée — la consultation n'afficherait
+      # silencieusement que les données de l'utilisateur). id_Societe JAMAIS
+      # déclaré (toujours injecté). Optionnels : champ vide => null à l'exécution.
+      - { name: Annee, type: int, required: false }
+      - { name: Matricule, type: nvarchar, required: false }
+    return_type: table                 # TABLE exigé pour une grille virtuelle
+    allowed_operations: { read: true, create: false, update: false, delete: false }
+
+access_control:
+  default_policy: deny                 # données RH sensibles : habilitations ciblées
+  roles:
+    - role_code: "1"                   # (super-admin — habilitations affinées à la main)
+      # create:true INDISPENSABLE sur une consultation : sans le droit Creer,
+      # canSave=false => readonlyGlobal verrouille AUSSI les champs critères
+      # (DynamicPage.tsx / DynamicField.tsx). Aucun enregistrement réel possible
+      # malgré tout : Act_Enregistrer=false supprime le bouton Enregistrer (FAB).
+      permissions: { view: true, create: true }
+
+deployment:
+  update_if_exists: false
+  expected_schema_version: SP4         # SP4 exigé pour les détails virtuels

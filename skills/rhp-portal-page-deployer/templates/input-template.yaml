@@ -191,6 +191,9 @@ components:
       # detail_grid VIRTUAL (SP4) - read-only grid fed by a TABLE source, no
       # physical table; allow_* forced false; logical columns still declared.
       # Full contract: references/sources-metier.md section 6.
+      # PATTERN "page de consultation" : ENT = criteres + grille virtuelle
+      # mappee sur ces criteres + actions.save:false (aucun document parasite)
+      # - recette complete : references/sources-metier.md section 6.1.
       data_source_code: ""     #   => table.Source_Metier (source return_type MUST be table)
       source_mapping: {}       #   => table.Source_Mapping json
                                #     {"Param":{"ref":"HeaderCol"} | {"const":"…"}}

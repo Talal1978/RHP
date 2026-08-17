@@ -63,7 +63,6 @@ $sidebar-breakpoint01: 1000px;
       left: 0;
       top: $navbar-height;
       bottom: 0;
-      height: 100%;
       position: fixed !important;
       background-color: rgba(0, 0, 0, 0.35);
       z-index: 9991;
@@ -72,6 +71,7 @@ $sidebar-breakpoint01: 1000px;
         height: 100%;
         background-color: variables.$colorBase04;
         overflow-x: hidden;
+        overflow-y: auto;
         transition: width 0.3s ease;
         z-index: 9991;
       }

@@ -63,6 +63,11 @@ const limiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: "Trop de requêtes, veuillez réessayer plus tard.",
+  // Hors production (dev localhost) : pas de bridage. Le StrictMode de React
+  // double chaque appel API et la navigation enchaîne les écrans — 200 req/15 min
+  // sont consommées en quelques minutes, puis TOUTES les API répondent 429 et
+  // chaque page document retombe sur ses valeurs initiales (page vide).
+  skip: () => process.env.NODE_ENV !== "production",
 });
 app.use(limiter);
 
@@ -70,6 +75,9 @@ const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 10,
   message: "Trop de tentatives de connexion. Réessayez plus tard.",
+  // Même exemption hors production que le limiteur global (déconnexions /
+  // reconnexions en chaîne pendant les tests ne doivent pas verrouiller).
+  skip: () => process.env.NODE_ENV !== "production",
 });
 app.use("/api/auth", authLimiter);
 app.use("/api/getNewPwd", authLimiter);

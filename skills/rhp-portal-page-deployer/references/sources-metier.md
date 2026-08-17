@@ -173,6 +173,67 @@ Un champ `Typ_Controle='SOURCE'` ramène une valeur calculée par la source :
 - Cas d'usage vérifié : découpe d'un congé par période de paie
   (`006_SP_Designer_Evolutions.sql` P2).
 
+### 6.1 Cas d'usage — page de CONSULTATION (grille de résultats paramétrée)
+
+Demande type : « une page qui affiche dans une grille le résultat d'une source
+SQL, les critères de la source saisis comme paramètres sur la page ». Il n'y a
+**pas de type de page « consultation »** : le modèle reste un document (entête
+physique obligatoire, champ `Num_Doc` verrouillé, liste SPPL_). Le pattern
+reconnu (oracle dépôt : `examples/03-consultation-soldes/`) :
+
+1. **Entête = critères** : champs d'entête **physiques** portant les critères
+   (la règle « pas de champ sans colonne hors CALCULE/SOURCE/GED/Num_Doc »
+   s'applique) ; la table `SP_<doc>_Ent` est créée mais **reste vide** si
+   l'enregistrement est désactivé (point 4).
+2. **Grille = détail virtuel** (§6) : source `TABLE`,
+   `Source_Mapping = {"Param":{"ref":"<colonne critère ENT>"}}`.
+3. **Rechargement sans enregistrement** : le client ré-exécute la source à
+   chaque changement d'une valeur mappée (`DynamicPage.tsx` L.291-321), **y
+   compris vers vide** (le paramètre arrive à `null` — écrire le SQL en
+   conséquence : `(@p is null or col = @p)`, `like '%'+@p+'%'`). Aucun bouton
+   « Rechercher » à prévoir ; critères donc **optionnels** (`Obligatoire:false`).
+4. **`actions.save: false`** (`Act_Enregistrer='false'`) : masque « Enregistrer »
+   du FAB ⇒ aucun document parasite (la liste SPPL_ reste vide). Indispensable
+   quand l'entête ne contient QUE des critères — le validateur émet un
+   avertissement si l'entête stocké est entièrement absorbé par les mappings
+   et que `save` n'est pas désactivé.
+5. Conventions (page `DUP_CONGE` / grille `PERIODES`, production) : chaque
+   colonne de la grille = un champ du bloc avec `Nom_Colonne` = **alias exact
+   de la colonne rendue par la source** (clés JS sensibles à la casse),
+   `Etat='R'`, `Persiste=false`, `Visible_Grille='true'` ; le tri est l'
+   **`ORDER BY` de la source** (`Tri_Defaut` **non appliqué** aux détails
+   virtuels — `lireDocument` L.1018-1036, le `continue` court-circuite le tri) ;
+   `Visible_Grille=false` sur les critères (la liste SPPL_ reste minimale).
+6. ⚠️ **Piège des auto-injections** (§3.2) : un critère `Matricule` (resp.
+   `Login`, `Cod_Profile`) DOIT être **déclaré** dans `Parametres` — sinon il
+   est injecté avec l'identité connectée et la consultation n'affiche
+   silencieusement que les données de l'utilisateur.
+7. Ne pas confondre avec `estCritere` (filtres de la **page liste** SPPL_ des
+   documents — `comportement-page.md` §8) : sans objet ici.
+8. Droits : `Consulter` **ET `Creer`** sont tous deux indispensables (étape
+   manuelle post-import). Subtilité vérifiée : sur `/new`, `canSave` exige le
+   droit `Creer` (`DynamicPage.tsx` L.441-446) ; sans lui `readonlyGlobal`
+   verrouille **tous les champs, critères compris** (`DynamicField.tsx` L.71)
+   — la consultation serait inutilisable. Sans risque : `Act_Enregistrer=
+   'false'` supprime le seul chemin d'enregistrement (bouton FAB masqué) — le
+   droit `Creer` ne débloque que l'éditabilité des critères. Le bouton
+   « Nouveau » de la page liste exige aussi `Creer` (`DynamicPage_Liste.tsx`
+   L.160).
+9. **Navigation** : le menu portail émet **toujours** `SPPL_<Cod_Page>`
+   (`sp_menu_portail`, `sp_document.ts` L.62) ⇒ parcours **liste → « Nouveau »
+   → page**, avec une liste vide à vie pour une consultation pure. Accès
+   **direct sans code** : entrée statique `SPP_<Cod_Page>` dans `menus.json`
+   (`Ecran.tsx` L.83-85 route sur la page ; l'URL `/myspace/SPP_<code>/<titre>`
+   sans `num` vaut `new` — `DynamicPage.tsx` L.441) ; l'entrée dynamique SPPL_
+   demeure (doublon de menu à assumer). Évolution propre : émettre `SPP_` pour
+   les pages de consultation dans `sp_menu_portail` **et** purger les entrées
+   `SPP_` dynamiques dans `fusionnerMenusDynamiques` (`module_menus.ts`
+   L.31-48, qui ne purge que `SPPL_`) — le frontend n'a rien d'autre à changer.
+
+Différence avec `DUP_CONGE` : là-bas le détail virtuel est une **aide à la
+saisie** d'un vrai document (entête métier persisté, `save` actif) ; une
+consultation pure = entête de critères + point 4.
+
 ## 7. Usage 3 — validation `SOURCE`
 
 Contrôle par source (`module_sp_engine.ts` L.937-949) :

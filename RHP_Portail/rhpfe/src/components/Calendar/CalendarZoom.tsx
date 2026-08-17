@@ -104,6 +104,14 @@ const CalendarZoom = ({
       }}
       onChange={(e: any) => {
         if (!onchange || readOnly) return;
+        // Effacement (bouton Clear / suppression du texte) : MUI émet null —
+        // propager "" pour que les dépendances (sources métier, validations)
+        // se rechargent ; sans cela l'affichage se vide mais la valeur reste.
+        if (e === null) {
+          lastEmitted.current = null;
+          onchange(nomControle, "");
+          return;
+        }
         if (estDate(e)) {
           const ts = new Date(e).getTime();
           if (lastEmitted.current === ts) {

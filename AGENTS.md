@@ -122,3 +122,44 @@ projet (tests, scripts, outils en ligne de commande, chaînes de connexion).
   4. contrôle visuel sur au moins une page document (ex. `Note_Frais`) : le
      bouton rond s'affiche et son menu s'ouvre au clic.
   Une tâche sur le portail n'est pas terminée si le FAB a disparu des pages.
+- **Pages de consultation par requête (requêteur `Param_Query` → portail,
+  instruction permanente)** : une requête du requêteur desktop devient une
+  page de consultation du portail via l'onglet « Widget portail » de
+  `Param_Query`, bloc « Page de consultation (menu du portail) »
+  (`estPortail` + `Menu_Parent` + `Rang`, stockés dans `Param_Query_Widget` —
+  migration `RHP_Portail/rhpBE/sql/Requeteur/001_Param_Query_Page_Portail.sql`).
+  Le backend l'expose dans le menu comme entrée **directe** `SPQ_<Cod_Query>`
+  (`sp_menu_portail` dans `controlers/sp_document.ts`, sans page liste) ;
+  `Menu/Ecran.tsx` route `SPQ_` vers `Pages/Requete/PortalQuery.tsx`
+  (critères saisis via `sp_query_meta`, boutons inline **Interroger** /
+  **Nouveau** / **Exporter** — export Excel `.xlsx` des résultats affichés,
+  entêtes = libellés de la grille, dates jj/mm/aaaa, valeurs typées —,
+  grille en lecture seule via `sp_query_exec`, plafond 500 lignes). Sécurité (mêmes règles que les widgets du tableau de bord, helpers
+  réexportés de `controlers/dashboard_query_widgets.ts`) : droit `Actif` de
+  `Controle_Droit` sur le `Cod_Query` (écran des profils ; profil `1`
+  bypass), garde-fou lecture seule mono-instruction, paramètres de contexte
+  (`@idSoc`, `@Matricule`, `@Login`...) alimentés **uniquement** par le JWT —
+  ces critères-là ne sont jamais demandés ; pour filtrer sur un **autre**
+  agent, nommer le paramètre autrement (ex. `@Mat`). `Default_Value`
+  (constante ou `GV_*`) pré-remplit le critère.   **Modes de saisie des
+  critères** : le portail respecte la `Fonction_Critere` déclarée dans
+  `Param_Query`, comme l'écran d'exécution desktop `Param_Query_Saisi` —
+  `TextBox`/vide = saisie libre, `Calender` = calendrier, `Boolean` = case à
+  cocher, `Appel_Zoom` (« Menu Local », zoom long : `Table_Critere` +
+  `Champs_01` code + `Champs_02` libellé + `Condition`) = **panneau zoom**
+  (`Pages/Requete/ZoomCritere.tsx`, grille Code/Libellé — aspect repris de
+  `TextZoom`), et seul `Combo` (« Rubrique » : `Table_Critere` = nom de la
+  rubrique `Param_Rubriques`) = **liste déroulante** (`ComboBox`). Les deux
+  listes sont alimentées par l'endpoint **`sp_query_zoom`**
+  (retourne `Code`/`Libelle` ; table, champs et condition lus
+  **exclusivement** depuis la déclaration `Param_Query_Criteres` — jamais du
+  client —, identifiants strictement validés, `Condition` en lecture seule ne
+  pouvant référencer que des paramètres JWT de la liste blanche).
+  **Exception FAB** : les
+  pages-requêtes n'ont **volontairement pas** de FAB — leurs actions sont
+  inline (`PortalQuery.tsx` n'alimente jamais `tbnMenu`) ; la vérification
+  permanente du FAB ci-dessus ne s'applique qu'aux pages document (SP_ et
+  standards). Exemples de référence :
+  `RHP_Portail/rhpBE/sql/Requeteur/002_Exemple_Page_Soldes_Conges.sql` et
+  `003_Exemple_Page_Departs_Retraite.sql` (critères `Calender` +
+  `Appel_Zoom`).

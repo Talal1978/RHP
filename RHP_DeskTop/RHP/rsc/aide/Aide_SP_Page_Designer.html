@@ -618,7 +618,7 @@ Exemple réel (demande de congé) : ligne 3 = <code>Du</code> (4) + <code>AM/PM<
 <tr><td>toute autre valeur</td><td>Constante littérale : <code>CAD</code>, <code>am</code>, <code>0</code>, <code>Standard</code>…</td></tr>
 </table>
 <div class="note"><b class="t">Distinction importante</b>
-Dans les <b>formules</b> (assistant de formule), la liste des variables est différente : <code>GV_NOW</code>, <code>GV_DEBMOIS</code>,
+Dans les <b>formules</b> (assistant de formule), la liste des variables est différente : <code>GV_NOW</code>, <code>GV_TODAY</code>, <code>GV_DEBMOIS</code>,
 <code>GV_FINMOIS</code>, <code>GV_DEBYEAR</code>, <code>GV_YEAR</code>, <code>GV_MONTH</code>, <code>GV_DAY</code> — voir §10.4.
 Dans les <b>valeurs par défaut SQL de colonnes</b> (onglet Colonnes), seul <code>GV_NOW</code> est reconnu (→ <code>getdate()</code>).</div>
 
@@ -856,6 +856,7 @@ et conservée telle quelle.</li>
 <table class="ref">
 <tr><th style="width:150px">Variable</th><th>Valeur retournée</th></tr>
 <tr><td><code>GV_NOW</code></td><td>Date et heure du moment.</td></tr>
+<tr><td><code>GV_TODAY</code></td><td>Date du jour <b>sans l'heure</b> (minuit) — à utiliser pour comparer un champ DATE à aujourd'hui (ex. <code>Date_Visite &gt;= GV_TODAY</code>).</td></tr>
 <tr><td><code>GV_YEAR</code></td><td>Année courante (ex. 2026).</td></tr>
 <tr><td><code>GV_MONTH</code></td><td>Mois courant (1–12).</td></tr>
 <tr><td><code>GV_DAY</code></td><td>Jour du mois courant.</td></tr>

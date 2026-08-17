@@ -22,7 +22,7 @@ interface CtxParam {
 }
 
 /** Liste blanche des paramètres de contexte, alimentés par le JWT uniquement. */
-const buildContextParams = (theAgent: any): Record<string, CtxParam> => {
+export const buildContextParams = (theAgent: any): Record<string, CtxParam> => {
   const now = new Date();
   return {
     "@idsoc": { sqlType: Int, valeur: Number(theAgent?.id_Societe || 0) },
@@ -40,7 +40,7 @@ const buildContextParams = (theAgent: any): Record<string, CtxParam> => {
 };
 
 /** Alias des variables globales du desktop (convention GV_*). */
-const GV_ALIASES: Record<string, string> = {
+export const GV_ALIASES: Record<string, string> = {
   gv_idsoc: "@idsoc",
   gv_user: "@iduser",
   gv_login: "@login",
@@ -54,7 +54,7 @@ const GV_ALIASES: Record<string, string> = {
 const stripStringLiterals = (sqlText: string) => sqlText.replace(/'(?:[^']|'')*'/g, "''");
 
 /** Garde-fou : n'autorise que des lectures en une seule instruction. */
-const isReadOnlyQuery = (sqlText: string): boolean => {
+export const isReadOnlyQuery = (sqlText: string): boolean => {
   const cleaned = stripStringLiterals(sqlText).trim();
   const isSelect = /^(select|with)\b/i.test(cleaned);
   const isSysExec = /^exec(ute)?\s+(dbo\.)?Sys_\w+/i.test(cleaned);
@@ -64,7 +64,7 @@ const isReadOnlyQuery = (sqlText: string): boolean => {
   return true;
 };
 
-const sqlTypeFromCritere = (typCritere: string) => {
+export const sqlTypeFromCritere = (typCritere: string) => {
   const t = String(typCritere || "").toLowerCase();
   if (t.startsWith("int") || t.startsWith("bigint") || t.startsWith("smallint") || t.startsWith("tinyint")) return Int;
   if (t.startsWith("float") || t.startsWith("real") || t.startsWith("decimal") || t.startsWith("numeric") || t.startsWith("money")) return Float;
@@ -72,7 +72,7 @@ const sqlTypeFromCritere = (typCritere: string) => {
   return NVarChar;
 };
 
-const parseDefaultValue = (typCritere: string, defVal: string) => {
+export const parseDefaultValue = (typCritere: string, defVal: string) => {
   const t = String(typCritere || "").toLowerCase();
   if (t.startsWith("int") || t.startsWith("bigint") || t.startsWith("smallint") || t.startsWith("tinyint")) return parseInt(defVal, 10) || 0;
   if (t.startsWith("float") || t.startsWith("real") || t.startsWith("decimal") || t.startsWith("numeric") || t.startsWith("money")) return parseFloat(defVal) || 0;
@@ -83,7 +83,7 @@ const parseDefaultValue = (typCritere: string, defVal: string) => {
   return defVal;
 };
 
-const hasQueryRight = async (codProfile: string, codQuery: string): Promise<boolean> => {
+export const hasQueryRight = async (codProfile: string, codQuery: string): Promise<boolean> => {
   const rsl = await lireSql(
     `select count(*) as nb from Controle_Droit
      where Cod_Profile=@profil and Name_Ecran=@qry and isnull(Actif,'false')='true'`,
