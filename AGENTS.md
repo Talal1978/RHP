@@ -10,6 +10,34 @@
 Ces identifiants sont à utiliser pour toute connexion à la base de données du
 projet (tests, scripts, outils en ligne de commande, chaînes de connexion).
 
+## Encodage des fichiers sources (instruction permanente)
+
+- **Vérification permanente — aucun caractère français corrompu** : après TOUTE
+  création ou modification de fichier, vérifier l'absence de caractères
+  corrompus (caractère de remplacement U+FFFD, mojibake type `Ã©`, `Ã¨`...)
+  dans les textes
+  accentués, et que les accents français (é, è, ê, à, ç, —...) s'affichent
+  correctement. Un fichier source doit être **uniformément encodé** : jamais de
+  mélange UTF-8 / ANSI dans un même fichier.
+- **Contexte** : la majorité des sources historiques de `RHP_DeskTop` (des
+  milliers de `.vb`, notamment des `.Designer.vb`) est encodée en
+  **Windows-1252 (ANSI)** ; les fichiers récents sont en **UTF-8** (avec ou
+  sans BOM). Visual Studio et Roslyn détectent l'encodage **par fichier**
+  (UTF-8 strict d'abord, sinon repli ANSI 1252) : les deux coexistent sans
+  problème, mais éditer un fichier ANSI avec un outil qui réécrit en UTF-8
+  produit un fichier mixte illisible (le caractère de remplacement U+FFFD à la
+  place des accents, ex. `M` + U+FFFD + `moire` au lieu de `Mémoire`).
+- **Contrôle systématique après édition** (fichiers modifiés) : décoder le
+  fichier en UTF-8 strict et exiger 0 exception + 0 occurrence de U+FFFD, ou
+  s'assurer qu'il est intégralement ANSI d'origine (pas de séquence UTF-8
+  introduite). Ex. PowerShell :
+  `[Text.UTF8Encoding]::new($false,$true).GetString([IO.File]::ReadAllBytes($f))`
+  puis `.Contains([char]0xFFFD)`. Pour un écran, contrôler en outre
+  visuellement les libellés accentués (designer ou exécution).
+- **Réparation** : corriger les chaînes corrompues avec les bons caractères
+  français et rendre le fichier uniforme (UTF-8 de bout en bout), puis
+  recompiler et vérifier les libellés dans le binaire produit.
+
 ## RHP_DeskTop (WinForms VB.NET)
 
 - **Code de design des formulaires (instruction permanente)** : tout le code de
@@ -95,6 +123,34 @@ projet (tests, scripts, outils en ligne de commande, chaînes de connexion).
   `Cursors.Hand`, `SizeMode.CenterImage`), et un panel de contenu clair
   docké `Fill` (fond 250,250,250) portant les contrôles `ud_TextBox` /
   `ud_ComboBox` / `ud_button`.
+
+- **Assistant IA — multi-modèles et modèle par défaut (instruction permanente)** :
+  la configuration de l'assistant IA (table `Ai_Agent`) est gérée dans l'écran
+  desktop dédié **`AI_Modeles`** (menu « Assistant AI » ; la base de
+  connaissances `AI_KnowledgeBase` ne gère que l'**embedding** — import de
+  documents, chunks, configuration `Ai_Embedding` ; la suppression d'une source
+  y efface, après confirmation, **tous ses chunks**). Elle est
+  **multi-modèles** : plusieurs
+  configurations (fournisseur/modèle/url/clé API/mémoire) par portée (globale
+  `id_Societe=-1` ou propre à la société — case « Paramétrage global »), une
+  seule marquée **modèle par défaut** (`Par_Defaut='true'` — nvarchar
+  'true'/'false', index filtré unique `UX_Ai_Agent_Par_Defaut`, clé technique
+  `Id` ; migration `RHP_Portail/rhpBE/sql/AI/001_Ai_Agent_Multi_Modeles.sql`).
+  L'écran liste les modèles dans la grille du haut (colonne « Par défaut » en
+  case à cocher, triée par priorité) et édite le modèle sélectionné dans le
+  formulaire (case « Modèle par défaut », boutons `Nouveau_pb` /
+  `SupprimerModele_pb` — la suppression d'un défaut promeut le premier modèle
+  restant de la portée). **Tout consommateur du LLM choisit par défaut le
+  modèle par défaut** avec le même ordre (jamais un `TOP 1` sans ce tri) :
+  `ORDER BY CASE WHEN ISNULL(Par_Defaut,'false')='true' THEN 0 ELSE 1 END,
+  CASE WHEN id_Societe = @soc THEN 0 ELSE 1 END` — le défaut de la société
+  prime sur le défaut global, puis une configuration de la société prime sur
+  la globale. Consommateurs : backend portail `controlers/ai_assistant.ts`
+  (`initAiContext`), desktop `Ai_ChatClient.ChargerConfig` (dont
+  `Zoom_SP_Assistant_IA`), script Python `Scan_Piece_Identite.py` (et son
+  installeur `Install_SCAN_PIECE_ID.sql`). La table `Ai_Embedding`
+  (configuration d'embedding, `Zoom_Ai_EmbeddingConfig`) n'est **pas**
+  concernée : elle reste mono-configuration.
 
 ## RHP_Portail (React/TypeScript)
 

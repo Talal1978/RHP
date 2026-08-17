@@ -251,8 +251,8 @@ Partial Class Zoom_SP_Assistant_IA
         Me.cboModele.Name = "cboModele"
         Me.cboModele.Size = New System.Drawing.Size(430, 27)
         Me.cboModele.TabIndex = 1
-        Me.ToolTip1.SetToolTip(Me.cboModele, "Modèle utilisé par l'assistant, parmi les modèles enregistrés (écran AI_Knowledge" &
-        "Base) — la clé d'API de la configuration active (Ai_Agent) est conservée.")
+        Me.ToolTip1.SetToolTip(Me.cboModele, "Modèle utilisé par l'assistant, parmi les modèles enregistrés (écran AI_Modeles)" &
+        " — la clé d'API du modèle par défaut (Ai_Agent) est conservée.")
         '
         'txtChat
         '

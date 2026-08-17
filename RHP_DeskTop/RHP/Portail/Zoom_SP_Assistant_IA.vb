@@ -27,11 +27,11 @@ Imports System.Threading.Tasks
 ''' tronquées) SANS perdre la progression de la boucle, jusqu'à 2 niveaux de réduction.
 ''' Aucune écriture en base : l'enregistrement reste l'action de l'utilisateur
 ''' dans le Designer ('Enregistrer' puis 'Publier').
-''' Le LLM est celui de l'assistant IA de RHP (table Ai_Agent — Ai_ChatClient,
-''' miroir de callAgentChat du backend portail) ; l'utilisateur peut basculer à tout
-''' moment sur un autre modèle enregistré du catalogue (table Ai_LLM_Modeles — liste
-''' déroulante 'Modèle' en haut ; clé d'API et mémoire de la configuration Ai_Agent
-''' conservées, choix valable pour la session).
+''' Le LLM est le modèle par défaut de l'assistant IA de RHP (table Ai_Agent,
+''' multi-modèles — Ai_ChatClient, miroir de callAgentChat du backend portail) ;
+''' l'utilisateur peut basculer à tout moment sur un autre modèle enregistré du
+''' catalogue (table Ai_LLM_Modeles — liste déroulante 'Modèle' en haut ; clé d'API
+''' et mémoire de la configuration par défaut conservées, choix valable pour la session).
 ''' Interface : Zoom_SP_Assistant_IA.Designer.vb (convention permanente : tout
 ''' le code de design est dans le .Designer.vb ; ce fichier ne contient que la
 ''' logique — conversation, recherche dans l'aide, génération via le skill).
@@ -99,7 +99,7 @@ Public Class Zoom_SP_Assistant_IA
         accueil.Append("  • Génération — décrivez la page voulue ; je produis le fichier JSON d'import sur VOTRE poste (lien de téléchargement)," & vbCrLf)
         accueil.Append("    à charger ensuite via le bouton 'Importer JSON' du Designer.")
         If _config Is Nothing Then
-            accueil.Append(vbCrLf & vbCrLf & "⚠ L'assistant IA n'est pas configuré (table Ai_Agent) : ouvrez l'écran 'AI_KnowledgeBase' pour renseigner le fournisseur, le modèle et la clé d'API.")
+            accueil.Append(vbCrLf & vbCrLf & "⚠ L'assistant IA n'est pas configuré (table Ai_Agent) : ouvrez l'écran 'AI_Modeles' pour renseigner le fournisseur, le modèle et la clé d'API.")
         End If
         If _sectionsAide.Count = 0 Then
             accueil.Append(vbCrLf & "⚠ Fichier d'aide introuvable (rsc\aide\Aide_SP_Page_Designer.html) : le mode Aide est indisponible.")
@@ -216,8 +216,8 @@ Public Class Zoom_SP_Assistant_IA
     Private _chargementModeles As Boolean = False
 
     ''' <summary>Alimente la liste des modèles enregistrés (catalogue Ai_LLM_Modeles,
-    ''' écran AI_KnowledgeBase) et présélectionne le modèle de la configuration active
-    ''' (Ai_Agent) — ajouté en tête de liste s'il ne figure pas au catalogue.</summary>
+    ''' écran AI_Modeles) et présélectionne le modèle par défaut (Ai_Agent —
+    ''' ChargerConfig) — ajouté en tête de liste s'il ne figure pas au catalogue.</summary>
     Private Sub ChargerModeles()
         _chargementModeles = True
         Try
@@ -244,7 +244,7 @@ Public Class Zoom_SP_Assistant_IA
 
     ''' <summary>Changement de modèle : l'assistant utilise désormais le modèle choisi
     ''' (fournisseur et gabarit d'URL du catalogue ; clé d'API et mémoire de la
-    ''' configuration Ai_Agent conservées). Choix valable pour cette conversation.</summary>
+    ''' configuration par défaut Ai_Agent conservées). Choix valable pour cette conversation.</summary>
     Private Sub cboModele_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cboModele.SelectedIndexChanged
         If _chargementModeles OrElse _config Is Nothing Then Return
         Dim m As Ai_ModeleEnregistre = TryCast(cboModele.SelectedItem, Ai_ModeleEnregistre)
@@ -359,7 +359,7 @@ Public Class Zoom_SP_Assistant_IA
         If q = "" Then Return
         If _config Is Nothing Then
             ShowMessageBox("L'assistant IA n'est pas configuré (table Ai_Agent)." & vbCrLf &
-                           "Ouvrez l'écran 'AI_KnowledgeBase' pour renseigner le fournisseur, le modèle et la clé d'API.",
+                           "Ouvrez l'écran 'AI_Modeles' pour renseigner le fournisseur, le modèle et la clé d'API.",
                            "Assistant IA", MessageBoxButtons.OK, msgIcon.Warning)
             Return
         End If
@@ -597,7 +597,7 @@ Public Class Zoom_SP_Assistant_IA
                 If Not EstErreurLimiteTokens(ex) Then Throw
                 If _niveauReduction >= 2 Then
                     Throw New Exception("La demande dépasse la capacité du modèle configuré (" & _config.Provider & " / " & _config.Modele & "), même en contexte réduit." & vbCrLf &
-                                        "Raccourcissez la description, ou choisissez un modèle avec une fenêtre de contexte plus grande (liste 'Modèle' en haut — catalogue de l'écran AI_KnowledgeBase).")
+                                        "Raccourcissez la description, ou choisissez un modèle avec une fenêtre de contexte plus grande (liste 'Modèle' en haut — catalogue de l'écran AI_Modeles).")
                 End If
                 AfficherPhaseReflexion("contexte réduit — limite de tokens du modèle")
                 msgs = ReduireMessagesGeneration(msgs, q)
@@ -755,7 +755,7 @@ Public Class Zoom_SP_Assistant_IA
             If ext.Item2 Then
                 ' Réponse coupée par la limite de sortie du modèle, jamais complétée
                 AjouterMessageBot("Le modèle n'a pas réussi à produire le fichier JSON complet : sa réponse est tronquée par sa limite de sortie." & vbCrLf &
-                                  "Simplifiez la page demandée (moins de champs), ou choisissez un modèle avec une plus grande limite de sortie (liste 'Modèle' en haut — catalogue de l'écran AI_KnowledgeBase).")
+                                  "Simplifiez la page demandée (moins de champs), ou choisissez un modèle avec une plus grande limite de sortie (liste 'Modèle' en haut — catalogue de l'écran AI_Modeles).")
                 Memoriser(q, "Génération impossible : json tronqué (limite de sortie du modèle).")
             Else
                 ' Pas de JSON : clarifications / compte rendu textuel — affiché tel quel.

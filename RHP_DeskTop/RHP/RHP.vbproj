@@ -464,7 +464,11 @@
     <Compile Include="AI_Assistant\AI_KnowledgeBase.designer.vb">
       <DependentUpon>AI_KnowledgeBase.vb</DependentUpon>
     </Compile>
-    <Compile Include="AI_Assistant\AI_KnowledgeBase.vb">
+    <Compile Include="AI_Assistant\AI_KnowledgeBase.vb" />
+    <Compile Include="AI_Assistant\AI_Modeles.Designer.vb">
+      <DependentUpon>AI_Modeles.vb</DependentUpon>
+    </Compile>
+    <Compile Include="AI_Assistant\AI_Modeles.vb">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="AI_Assistant\AiTextChunker.vb" />
@@ -1764,7 +1768,9 @@
     <Compile Include="Zoom_Profile_Droits_SP.Designer.vb">
       <DependentUpon>Zoom_Profile_Droits_SP.vb</DependentUpon>
     </Compile>
-    <Compile Include="Zoom_Profile_Droits_SP.vb" />
+    <Compile Include="Zoom_Profile_Droits_SP.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Zoom_FiltreAvance.Designer.vb">
       <DependentUpon>Zoom_FiltreAvance.vb</DependentUpon>
     </Compile>

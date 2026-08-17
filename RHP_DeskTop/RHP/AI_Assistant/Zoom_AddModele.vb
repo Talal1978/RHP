@@ -1,5 +1,5 @@
 ﻿Public Class Zoom_AddModele
-    Friend frm01 As New AI_KnowledgeBase
+    Friend frm01 As New AI_Modeles
     Friend frm02 As New Zoom_Ai_EmbeddingConfig
     Private Sub Zoom_PPeriodeAjouter_Load(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles MyBase.Load
 

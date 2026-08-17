@@ -18,7 +18,7 @@ Public Class AiChatMessage
 End Class
 
 ''' <summary>Modèle enregistré du catalogue LLM (table Ai_LLM_Modeles — alimentée par
-''' l'écran AI_KnowledgeBase / Zoom_AddModele) : fournisseur, nom du modèle et gabarit
+''' l'écran AI_Modeles / Zoom_AddModele) : fournisseur, nom du modèle et gabarit
 ''' d'URL ({MODEL} substitué à l'envoi). Affiché 'PROVIDER / modèle' dans les listes.</summary>
 Public Class Ai_ModeleEnregistre
     Public Property Provider As String = ""
@@ -30,9 +30,9 @@ Public Class Ai_ModeleEnregistre
 End Class
 
 ''' <summary>
-''' Client de conversation LLM de l'assistant IA de RHP (configuration lue dans la
-''' table Ai_Agent — écran AI_KnowledgeBase). Miroir exact de callAgentChat du
-''' backend portail (RHP_Portail\rhpBE\controlers\ai_assistant.ts) :
+''' Client de conversation LLM de l'assistant IA de RHP (modèle par défaut de la
+''' table Ai_Agent — écran AI_Modeles, multi-modèles). Miroir exact de
+''' callAgentChat du backend portail (RHP_Portail\rhpBE\controlers\ai_assistant.ts) :
 '''   - GEMINI       : contenus fusionnés par rôle (assistant->model, system->user),
 '''                    clé d'API dans l'url (?key=...) ;
 '''   - OLLAMA       : prompt unique concaténé (stream:false) ;
@@ -47,12 +47,17 @@ Public Class Ai_ChatClient
     Public Property ApiKey As String = ""
     Public Property NbMsgMemory As Integer = 5
 
-    ''' <summary>Charge la configuration de l'agent (société courante, repli sur la
-    ''' configuration globale id_Societe=-1 — même requête que AI_KnowledgeBase).
-    ''' Retourne Nothing si l'assistant n'est pas configuré (provider/modèle/url).</summary>
+    ''' <summary>Charge la configuration de l'agent parmi les modèles enregistrés
+    ''' (table Ai_Agent, multi-modèles — écran AI_Modeles) : le MODÈLE PAR DÉFAUT
+    ''' (Par_Defaut='true') de la société courante prime sur le défaut global
+    ''' (id_Societe=-1) ; à défaut, une configuration de la société prime sur la
+    ''' globale. Retourne Nothing si l'assistant n'est pas configuré (provider/modèle/url).</summary>
     Public Shared Function ChargerConfig() As Ai_ChatClient
         Try
-            Dim Tbl As DataTable = DATA_READER_GRD($"SELECT top 1 * FROM Ai_Agent WHERE ISNULL(NULLIF(id_Societe, -1), {Societe.id_Societe})={Societe.id_Societe} order by id_Societe")
+            Dim Tbl As DataTable = DATA_READER_GRD($"SELECT TOP 1 * FROM Ai_Agent
+                                                    WHERE ISNULL(NULLIF(id_Societe, -1), {Societe.id_Societe}) = {Societe.id_Societe}
+                                                    ORDER BY CASE WHEN ISNULL(Par_Defaut,'false')='true' THEN 0 ELSE 1 END,
+                                                             CASE WHEN id_Societe = {Societe.id_Societe} THEN 0 ELSE 1 END")
             If Tbl.Rows.Count = 0 Then Return Nothing
             Dim Dr As DataRow = Tbl.Rows(0)
             Dim cfg As New Ai_ChatClient With {

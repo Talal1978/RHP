@@ -6,6 +6,7 @@ import { Int, NVarChar } from "mssql";
 
 // Interfaces mirroring SQL Tables
 interface IAiAgentConfig {
+    Id: number;
     id_Societe: number;
     Provider: string;
     aiUrl: string;
@@ -13,6 +14,7 @@ interface IAiAgentConfig {
     ApiKey: string;
     Instructions: string;
     nb_Msg_Memory: number;
+    Par_Defaut: string; // 'true' = modèle par défaut de sa portée (écran AI_KnowledgeBase)
 }
 
 interface IAiEmbeddingConfig {
@@ -253,9 +255,14 @@ export const initAiContext = async (idSociete: number = 101) => {
 
     try {
 
-        // 1. Load Agent Config
+        // 1. Load Agent Config — multi-modèles (table Ai_Agent, écran desktop AI_KnowledgeBase) :
+        //    le modèle PAR DÉFAUT (Par_Defaut='true') de la société prime sur le défaut global ;
+        //    à défaut, une configuration de la société prime sur la globale.
         const resAgent = await lireSql(
-            `SELECT TOP 1 * FROM Ai_Agent WHERE ISNULL(NULLIF(id_Societe, -1), @p_idSociete) = @p_idSociete`,
+            `SELECT TOP 1 * FROM Ai_Agent
+             WHERE ISNULL(NULLIF(id_Societe, -1), @p_idSociete) = @p_idSociete
+             ORDER BY CASE WHEN ISNULL(Par_Defaut, 'false') = 'true' THEN 0 ELSE 1 END,
+                      CASE WHEN id_Societe = @p_idSociete THEN 0 ELSE 1 END`,
             [{ param: "p_idSociete", sqlType: Int, valeur: idSocNum }]
         );
         if (resAgent.result && resAgent.data.length > 0) {

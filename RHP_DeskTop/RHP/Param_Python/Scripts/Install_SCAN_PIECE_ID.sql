@@ -652,11 +652,15 @@ def ocr_extract(images):
 #  Extraction par LLM multimodele (parametrage Ai_Agent)
 # =============================================================================
 def get_llm_config():
-    """Lit la configuration LLM (table Ai_Agent) pour la societe courante."""
+    """Lit la configuration LLM (table Ai_Agent) pour la societe courante :
+    le modele PAR DEFAUT (Par_Defaut='true') de la societe prime sur le defaut
+    global ; a defaut, une configuration de la societe prime sur la globale."""
     cur = conn.cursor()
     sql = ("SELECT TOP 1 Provider, Modele, aiUrl, ApiKey FROM Ai_Agent "
-           "WHERE ISNULL(NULLIF(id_Societe,-1), ?) = ? ORDER BY id_Societe")
-    cur.execute(sql, (int(IDSOC), int(IDSOC)))
+           "WHERE ISNULL(NULLIF(id_Societe,-1), ?) = ? "
+           "ORDER BY CASE WHEN ISNULL(Par_Defaut,'false')='true' THEN 0 ELSE 1 END, "
+           "CASE WHEN id_Societe = ? THEN 0 ELSE 1 END")
+    cur.execute(sql, (int(IDSOC), int(IDSOC), int(IDSOC)))
     row = cur.fetchone()
     if not row:
         return None
