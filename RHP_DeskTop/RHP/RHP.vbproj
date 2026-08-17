@@ -492,12 +492,6 @@
     <Compile Include="Audit\Param_Audit.vb">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Auth\Admin_ChangePwd_Agent.designer.vb">
-      <DependentUpon>Admin_ChangePwd_Agent.vb</DependentUpon>
-    </Compile>
-    <Compile Include="Auth\Admin_ChangePwd_Agent.vb">
-      <SubType>Form</SubType>
-    </Compile>
     <Compile Include="Auth\Login_Connection.Designer.vb">
       <DependentUpon>Login_Connection.vb</DependentUpon>
     </Compile>
@@ -1077,6 +1071,12 @@
     <Compile Include="Auth\Admin_Profile.vb">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="Auth\Admin_Profil_Agent.Designer.vb">
+      <DependentUpon>Admin_Profil_Agent.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Auth\Admin_Profil_Agent.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Admin_Variable_Globale.designer.vb">
       <DependentUpon>Admin_Variable_Globale.vb</DependentUpon>
     </Compile>
@@ -1084,12 +1084,6 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="ApplicationEvents.vb" />
-    <Compile Include="Gestion des menus et écrans\Menu_Agent.Designer.vb">
-      <DependentUpon>Menu_Agent.vb</DependentUpon>
-    </Compile>
-    <Compile Include="Gestion des menus et écrans\Menu_Agent.vb">
-      <SubType>Form</SubType>
-    </Compile>
     <Compile Include="Gestion des menus et écrans\Module_Profile_User.vb" />
     <Compile Include="Organisation\Org_FichePoste.Designer.vb">
       <DependentUpon>Org_FichePoste.vb</DependentUpon>
@@ -2071,10 +2065,6 @@
     <EmbeddedResource Include="Audit\Param_Audit.resx">
       <DependentUpon>Param_Audit.vb</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Auth\Admin_ChangePwd_Agent.resx">
-      <DependentUpon>Admin_ChangePwd_Agent.vb</DependentUpon>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
     <EmbeddedResource Include="Auth\Login_Connection.resx">
       <DependentUpon>Login_Connection.vb</DependentUpon>
     </EmbeddedResource>
@@ -2371,9 +2361,6 @@
     <EmbeddedResource Include="Admin_Variable_Globale.resx">
       <DependentUpon>Admin_Variable_Globale.vb</DependentUpon>
       <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Gestion des menus et écrans\Menu_Agent.resx">
-      <DependentUpon>Menu_Agent.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Organisation\Org_FichePoste.resx">
       <DependentUpon>Org_FichePoste.vb</DependentUpon>

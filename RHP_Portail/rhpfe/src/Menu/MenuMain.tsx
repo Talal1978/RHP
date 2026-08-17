@@ -10,7 +10,10 @@ import Loading from "../components/Loading/Loading";
 import MyAlert from "../components/MyAlert/MyAlert";
 import useAxiosGet from "../hooks/useAxiosGet";
 import { rubriques, setRubriques } from "../modules/module_rubriques";
-import { fusionnerMenusDynamiques } from "../modules/module_menus";
+import {
+  filtrerMenusStatiques,
+  fusionnerMenusDynamiques,
+} from "../modules/module_menus";
 
 export const cntX = createContext<{
   setShowLoading: Dispatch<SetStateAction<boolean>>;
@@ -89,11 +92,14 @@ export const MenuMain = () => {
   const [menusDynVersion, setMenusDynVersion] = useState(0);
   useEffect(() => {
     // Pages dynamiques publiées (module SP_) : fusionnées au menu latéral
-    // (section et rang déclarés dans le Designer Desktop).
+    // (section et rang déclarés dans le Designer Desktop). Les pages
+    // STANDARDS (menus.json) sont filtrées selon les droits du profil
+    // (pagesStandards / pagesControlees renvoyés par le même endpoint).
     myAxiosGet({ apiStr: "sp_menu_portail" })
       .then((r) => {
         if (r?.data?.result && Array.isArray(r.data.data)) {
           fusionnerMenusDynamiques(r.data.data);
+          filtrerMenusStatiques(r.data.pagesStandards, r.data.pagesControlees);
           setMenusDynVersion((v) => v + 1);
         }
       })

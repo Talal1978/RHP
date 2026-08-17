@@ -93,7 +93,7 @@
                 End If
             End If
         End If
-        If theUser.Typ_Role <> "Agent" And IsNull(Societe.id_Societe, 0) <= 0 And Not "Admin_Profile;Admin_Users;DB_Societe;leMenu;Menu_Societes;Menu_System;Menu_Agent;Accueil_LicenceNC".Split(";").Contains(frm.Name) Then
+        If theUser.Typ_Role <> "Agent" And IsNull(Societe.id_Societe, 0) <= 0 And Not "Admin_Profile;Admin_Users;DB_Societe;leMenu;Menu_Societes;Menu_System;Accueil_LicenceNC".Split(";").Contains(frm.Name) Then
             ShowMessageBox("Aucune Société choisie", "Société non sélectionnée", MessageBoxButtons.OK, msgIcon.Error)
             If leMenu.pnl_PersonnalContent.Controls.Contains(Menu_Societes) Then
                 Menu_Societes.BringToFront()
@@ -123,11 +123,7 @@ suite:
             GestionDesVues(frm)
         End With
         If Not frm.estModal Then
-            If theUser.Typ_Role = "Agent" Then
-                Menu_Agent.menuPnl.Controls.Add(frm)
-            Else
-                leMenu.pnl_PersonnalContent.Controls.Add(frm)
-            End If
+            leMenu.pnl_PersonnalContent.Controls.Add(frm)
             frm.setButtons()
             If Societe.Mis_Sml And frm.Name <> "DB_Societe" Then
                 Dim nrw() = TblAccess.Select($"Name_Ecran='{frm.Name}' and Typ_Security='SC'")
@@ -140,9 +136,6 @@ suite:
             End If
             frm.BringToFront()
             frm.Visible = True
-            For Each c In Menu_Agent.menuPnl.Controls
-                If c IsNot frm Then c.close
-            Next
         Else
             Dim f As New Ecran_Container
             With f
@@ -217,12 +210,6 @@ suite:
     End Sub
 
     Function getCurrentEcran() As Ecran
-        If theUser.Typ_Role = "Agent" Then
-            If Menu_Agent.menuPnl.Controls.Count > 0 Then
-                Return Menu_Agent.menuPnl.Controls(0)
-            End If
-            Return Nothing
-        End If
         Dim isModal = False
         Dim fModal As New Ecran_Container
         For Each f In Application.OpenForms

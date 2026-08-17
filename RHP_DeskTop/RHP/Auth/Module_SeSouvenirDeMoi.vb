@@ -65,7 +65,7 @@ Module Module_SeSouvenirDeMoi
         End Try
         Return ""
     End Function
-    Sub SaveSecureRememberMe(strlogin As String, strConn As String, defaultInterface As Boolean)
+    Sub SaveSecureRememberMe(strlogin As String, strConn As String)
         Try
             ' Supprimer l'ancien fichier s'il existe
             Dim filePath As String = My.Application.Info.DirectoryPath & "\login\SecureRemember.dat"
@@ -91,7 +91,7 @@ Module Module_SeSouvenirDeMoi
             .SeSouvenir = True,
             .UserLogin = strlogin.Trim(),
             .Conn = strConn.Trim(),
-            .Default_Interface = defaultInterface,
+            .Default_Interface = False,
             .ProcessorId = processorId,
             .VolumeSerial = diskSerial,
             .CreatedDate = DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss")

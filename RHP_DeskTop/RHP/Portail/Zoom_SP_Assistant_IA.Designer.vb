@@ -37,6 +37,9 @@ Partial Class Zoom_SP_Assistant_IA
         Me.rdoAide = New System.Windows.Forms.RadioButton()
         Me.rdoGeneration = New System.Windows.Forms.RadioButton()
         Me.lblStatut = New System.Windows.Forms.Label()
+        Me.pnlModele = New System.Windows.Forms.FlowLayoutPanel()
+        Me.lblModele = New System.Windows.Forms.Label()
+        Me.cboModele = New System.Windows.Forms.ComboBox()
         Me.txtChat = New System.Windows.Forms.RichTextBox()
         Me.pnlTelechargement = New System.Windows.Forms.Panel()
         Me.lblFichier = New System.Windows.Forms.Label()
@@ -52,6 +55,7 @@ Partial Class Zoom_SP_Assistant_IA
         Me.Panel1.SuspendLayout()
         Me.main.SuspendLayout()
         Me.pnlModes.SuspendLayout()
+        Me.pnlModele.SuspendLayout()
         Me.pnlTelechargement.SuspendLayout()
         Me.pnlSaisie.SuspendLayout()
         CType(Me.Envoyer_pb, System.ComponentModel.ISupportInitialize).BeginInit()
@@ -146,7 +150,7 @@ Partial Class Zoom_SP_Assistant_IA
         Me.main.Name = "main"
         Me.main.Padding = New System.Windows.Forms.Padding(10, 8, 10, 8)
         Me.main.RowCount = 4
-        Me.main.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 34.0!))
+        Me.main.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 62.0!))
         Me.main.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100.0!))
         Me.main.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30.0!))
         Me.main.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 62.0!))
@@ -163,12 +167,15 @@ Partial Class Zoom_SP_Assistant_IA
         Me.pnlModes.Controls.Add(Me.rdoAide, 0, 0)
         Me.pnlModes.Controls.Add(Me.rdoGeneration, 1, 0)
         Me.pnlModes.Controls.Add(Me.lblStatut, 2, 0)
+        Me.pnlModes.Controls.Add(Me.pnlModele, 0, 1)
+        Me.pnlModes.SetColumnSpan(Me.pnlModele, 3)
         Me.pnlModes.Dock = System.Windows.Forms.DockStyle.Fill
         Me.pnlModes.Location = New System.Drawing.Point(13, 11)
         Me.pnlModes.Name = "pnlModes"
-        Me.pnlModes.RowCount = 1
-        Me.pnlModes.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100.0!))
-        Me.pnlModes.Size = New System.Drawing.Size(890, 28)
+        Me.pnlModes.RowCount = 2
+        Me.pnlModes.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50.0!))
+        Me.pnlModes.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50.0!))
+        Me.pnlModes.Size = New System.Drawing.Size(890, 56)
         Me.pnlModes.TabIndex = 0
         '
         'rdoAide
@@ -208,6 +215,45 @@ Partial Class Zoom_SP_Assistant_IA
         Me.lblStatut.Size = New System.Drawing.Size(1, 28)
         Me.lblStatut.TabIndex = 2
         Me.lblStatut.TextAlign = System.Drawing.ContentAlignment.MiddleRight
+        '
+        'pnlModele
+        '
+        Me.pnlModele.BackColor = System.Drawing.Color.FromArgb(CType(CType(250, Byte), Integer), CType(CType(250, Byte), Integer), CType(CType(250, Byte), Integer))
+        Me.pnlModele.Controls.Add(Me.lblModele)
+        Me.pnlModele.Controls.Add(Me.cboModele)
+        Me.pnlModele.Dock = System.Windows.Forms.DockStyle.Fill
+        Me.pnlModele.FlowDirection = System.Windows.Forms.FlowDirection.LeftToRight
+        Me.pnlModele.Location = New System.Drawing.Point(0, 28)
+        Me.pnlModele.Margin = New System.Windows.Forms.Padding(0)
+        Me.pnlModele.Name = "pnlModele"
+        Me.pnlModele.Size = New System.Drawing.Size(890, 28)
+        Me.pnlModele.TabIndex = 3
+        Me.pnlModele.WrapContents = False
+        '
+        'lblModele
+        '
+        Me.lblModele.AutoSize = True
+        Me.lblModele.Font = New System.Drawing.Font("Century Gothic", 8.25!)
+        Me.lblModele.ForeColor = System.Drawing.Color.FromArgb(CType(CType(110, Byte), Integer), CType(CType(110, Byte), Integer), CType(CType(110, Byte), Integer))
+        Me.lblModele.Location = New System.Drawing.Point(0, 5)
+        Me.lblModele.Margin = New System.Windows.Forms.Padding(0, 5, 3, 3)
+        Me.lblModele.Name = "lblModele"
+        Me.lblModele.Size = New System.Drawing.Size(57, 19)
+        Me.lblModele.TabIndex = 0
+        Me.lblModele.Text = "Modèle :"
+        '
+        'cboModele
+        '
+        Me.cboModele.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
+        Me.cboModele.FlatStyle = System.Windows.Forms.FlatStyle.Flat
+        Me.cboModele.Font = New System.Drawing.Font("Century Gothic", 8.25!)
+        Me.cboModele.FormattingEnabled = True
+        Me.cboModele.Location = New System.Drawing.Point(63, 2)
+        Me.cboModele.Margin = New System.Windows.Forms.Padding(3, 2, 3, 3)
+        Me.cboModele.Name = "cboModele"
+        Me.cboModele.Size = New System.Drawing.Size(430, 27)
+        Me.cboModele.TabIndex = 1
+        Me.ToolTip1.SetToolTip(Me.cboModele, "Modèle utilisé par l'assistant, parmi les modèles enregistrés (écran AI_KnowledgeBase) — la clé d'API de la configuration active (Ai_Agent) est conservée.")
         '
         'txtChat
         '
@@ -339,6 +385,8 @@ Partial Class Zoom_SP_Assistant_IA
         Me.main.ResumeLayout(False)
         Me.pnlModes.ResumeLayout(False)
         Me.pnlModes.PerformLayout()
+        Me.pnlModele.ResumeLayout(False)
+        Me.pnlModele.PerformLayout()
         Me.pnlTelechargement.ResumeLayout(False)
         Me.pnlTelechargement.PerformLayout()
         Me.pnlSaisie.ResumeLayout(False)
@@ -358,6 +406,9 @@ Partial Class Zoom_SP_Assistant_IA
     Friend WithEvents rdoAide As RadioButton
     Friend WithEvents rdoGeneration As RadioButton
     Friend WithEvents lblStatut As Label
+    Friend WithEvents pnlModele As FlowLayoutPanel
+    Friend WithEvents lblModele As Label
+    Friend WithEvents cboModele As ComboBox
     Friend WithEvents txtChat As RichTextBox
     Friend WithEvents pnlTelechargement As Panel
     Friend WithEvents lblFichier As Label

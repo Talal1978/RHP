@@ -1,6 +1,7 @@
 import { Fragment, lazy, useContext, useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { cntX } from "./MenuMain";
+import { estPageAutorisee } from "../modules/module_menus";
 import { FloatMenu } from "../components/FloatMenu/FloatMenu";
 import Signature from "../Pages/Workflow/Signature";
 import Org_Poste from "../Pages/Org_Poste/Org_Poste";
@@ -75,6 +76,30 @@ const Ecran = ({ style }: { style?: React.CSSProperties }) => {
       settbnMenu([]);
     }
     ecranRef.current = ecran;
+    // Garde de route par profil (pages standards référencées dans
+    // Controle_Menu_Portail) : une page retirée au profil n'est pas affichée,
+    // même saisie directement dans l'URL. Hors référentiel (documents,
+    // pages dynamiques...) : libre côté client, les endpoints restent gardés
+    // côté serveur (gardePage).
+    if (ecran && !estPageAutorisee(ecran)) {
+      setEcran(
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "100%",
+            color: "var(--title-color)",
+            fontSize: "1.1em",
+            padding: "2em",
+            textAlign: "center",
+          }}
+        >
+          Vous n'êtes pas autorisé à accéder à cette page.
+        </div>
+      );
+      return;
+    }
     // Pages dynamiques du module SP_ (Designer) : SPPL_<Cod_Page> = liste,
     // SPP_<Cod_Page> = document. Pages-requêtes du requêteur (Param_Query
     // exposées) : SPQ_<Cod_Query> = consultation directe. Interprétées depuis

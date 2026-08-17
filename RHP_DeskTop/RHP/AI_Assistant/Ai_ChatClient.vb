@@ -17,6 +17,18 @@ Public Class AiChatMessage
     End Sub
 End Class
 
+''' <summary>Modèle enregistré du catalogue LLM (table Ai_LLM_Modeles — alimentée par
+''' l'écran AI_KnowledgeBase / Zoom_AddModele) : fournisseur, nom du modèle et gabarit
+''' d'URL ({MODEL} substitué à l'envoi). Affiché 'PROVIDER / modèle' dans les listes.</summary>
+Public Class Ai_ModeleEnregistre
+    Public Property Provider As String = ""
+    Public Property Modele As String = ""
+    Public Property AiUrl As String = ""
+    Public Overrides Function ToString() As String
+        Return Provider & " / " & Modele
+    End Function
+End Class
+
 ''' <summary>
 ''' Client de conversation LLM de l'assistant IA de RHP (configuration lue dans la
 ''' table Ai_Agent — écran AI_KnowledgeBase). Miroir exact de callAgentChat du
@@ -56,6 +68,28 @@ Public Class Ai_ChatClient
             Debug.WriteLine("Erreur ChargerConfig (Ai_Agent) : " & ex.Message)
             Return Nothing
         End Try
+    End Function
+
+    ''' <summary>Liste des modèles enregistrés du catalogue (table Ai_LLM_Modeles :
+    ''' la colonne Modele est une liste de noms séparés par '|', l'URL est le gabarit
+    ''' {MODEL} du fournisseur). Retourne une liste vide si le catalogue est absent.</summary>
+    Public Shared Function ChargerModeles() As List(Of Ai_ModeleEnregistre)
+        Dim rsl As New List(Of Ai_ModeleEnregistre)
+        Try
+            Dim Tbl As DataTable = DATA_READER_GRD("SELECT Provider, Modele, aiUrl FROM Ai_LLM_Modeles ORDER BY Provider, Modele")
+            For Each Dr As DataRow In Tbl.Rows
+                Dim provider As String = IsNull(Dr("Provider"), "").Trim()
+                Dim url As String = IsNull(Dr("aiUrl"), "").Trim()
+                For Each m As String In IsNull(Dr("Modele"), "").Split("|"c)
+                    If m.Trim() <> "" Then
+                        rsl.Add(New Ai_ModeleEnregistre With {.Provider = provider, .Modele = m.Trim(), .AiUrl = url})
+                    End If
+                Next
+            Next
+        Catch ex As Exception
+            Debug.WriteLine("Erreur ChargerModeles (Ai_LLM_Modeles) : " & ex.Message)
+        End Try
+        Return rsl
     End Function
 
     ''' <summary>Envoie une conversation au LLM configuré et retourne le texte de la

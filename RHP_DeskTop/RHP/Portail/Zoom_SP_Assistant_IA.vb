@@ -28,7 +28,10 @@ Imports System.Threading.Tasks
 ''' Aucune écriture en base : l'enregistrement reste l'action de l'utilisateur
 ''' dans le Designer ('Enregistrer' puis 'Publier').
 ''' Le LLM est celui de l'assistant IA de RHP (table Ai_Agent — Ai_ChatClient,
-''' miroir de callAgentChat du backend portail).
+''' miroir de callAgentChat du backend portail) ; l'utilisateur peut basculer à tout
+''' moment sur un autre modèle enregistré du catalogue (table Ai_LLM_Modeles — liste
+''' déroulante 'Modèle' en haut ; clé d'API et mémoire de la configuration Ai_Agent
+''' conservées, choix valable pour la session).
 ''' Interface : Zoom_SP_Assistant_IA.Designer.vb (convention permanente : tout
 ''' le code de design est dans le .Designer.vb ; ce fichier ne contient que la
 ''' logique — conversation, recherche dans l'aide, génération via le skill).
@@ -88,6 +91,7 @@ Public Class Zoom_SP_Assistant_IA
             _statutConfig = _config.Provider & " / " & _config.Modele
         End If
         lblStatut.Text = _statutConfig
+        ChargerModeles()
         '---------------- Message d'accueil ----------------
         Dim accueil As New StringBuilder()
         accueil.Append("Bonjour ! Je suis l'assistant du Designer de pages portail, avec deux fonctions exclusives (choisissez en haut) :" & vbCrLf)
@@ -203,6 +207,53 @@ Public Class Zoom_SP_Assistant_IA
         Catch ex As Exception
             Debug.WriteLine("Erreur ChargerSkill : " & ex.Message)
         End Try
+    End Sub
+
+    '---------------- Choix du modèle (catalogue Ai_LLM_Modeles) ----------------
+
+    ''' <summary>True pendant l'alimentation de la liste des modèles (empêche
+    ''' cboModele_SelectedIndexChanged de basculer le modèle sur la présélection).</summary>
+    Private _chargementModeles As Boolean = False
+
+    ''' <summary>Alimente la liste des modèles enregistrés (catalogue Ai_LLM_Modeles,
+    ''' écran AI_KnowledgeBase) et présélectionne le modèle de la configuration active
+    ''' (Ai_Agent) — ajouté en tête de liste s'il ne figure pas au catalogue.</summary>
+    Private Sub ChargerModeles()
+        _chargementModeles = True
+        Try
+            cboModele.Items.Clear()
+            cboModele.Enabled = False
+            If _config Is Nothing Then Return
+            Dim modeles As List(Of Ai_ModeleEnregistre) = Ai_ChatClient.ChargerModeles()
+            Dim idx As Integer = modeles.FindIndex(
+                Function(m) String.Equals(m.Provider, _config.Provider, StringComparison.OrdinalIgnoreCase) AndAlso
+                            String.Equals(m.Modele, _config.Modele, StringComparison.OrdinalIgnoreCase))
+            If idx < 0 Then
+                modeles.Insert(0, New Ai_ModeleEnregistre With {.Provider = _config.Provider, .Modele = _config.Modele, .AiUrl = _config.AiUrl})
+                idx = 0
+            End If
+            For Each m As Ai_ModeleEnregistre In modeles
+                cboModele.Items.Add(m)
+            Next
+            cboModele.SelectedIndex = idx
+            cboModele.Enabled = True
+        Finally
+            _chargementModeles = False
+        End Try
+    End Sub
+
+    ''' <summary>Changement de modèle : l'assistant utilise désormais le modèle choisi
+    ''' (fournisseur et gabarit d'URL du catalogue ; clé d'API et mémoire de la
+    ''' configuration Ai_Agent conservées). Choix valable pour cette conversation.</summary>
+    Private Sub cboModele_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cboModele.SelectedIndexChanged
+        If _chargementModeles OrElse _config Is Nothing Then Return
+        Dim m As Ai_ModeleEnregistre = TryCast(cboModele.SelectedItem, Ai_ModeleEnregistre)
+        If m Is Nothing Then Return
+        _config.Provider = m.Provider
+        _config.Modele = m.Modele
+        _config.AiUrl = m.AiUrl   ' gabarit {MODEL} : substitué à l'envoi (EnvoyerChatAsync)
+        _statutConfig = _config.Provider & " / " & _config.Modele
+        lblStatut.Text = _statutConfig
     End Sub
 
     '---------------- Affichage de la conversation ----------------
@@ -546,7 +597,7 @@ Public Class Zoom_SP_Assistant_IA
                 If Not EstErreurLimiteTokens(ex) Then Throw
                 If _niveauReduction >= 2 Then
                     Throw New Exception("La demande dépasse la capacité du modèle configuré (" & _config.Provider & " / " & _config.Modele & "), même en contexte réduit." & vbCrLf &
-                                        "Raccourcissez la description, ou configurez un modèle avec une fenêtre de contexte plus grande (écran AI_KnowledgeBase).")
+                                        "Raccourcissez la description, ou choisissez un modèle avec une fenêtre de contexte plus grande (liste 'Modèle' en haut — catalogue de l'écran AI_KnowledgeBase).")
                 End If
                 AfficherPhaseReflexion("contexte réduit — limite de tokens du modèle")
                 msgs = ReduireMessagesGeneration(msgs, q)
@@ -704,7 +755,7 @@ Public Class Zoom_SP_Assistant_IA
             If ext.Item2 Then
                 ' Réponse coupée par la limite de sortie du modèle, jamais complétée
                 AjouterMessageBot("Le modèle n'a pas réussi à produire le fichier JSON complet : sa réponse est tronquée par sa limite de sortie." & vbCrLf &
-                                  "Simplifiez la page demandée (moins de champs), ou configurez un modèle avec une plus grande limite de sortie (écran AI_KnowledgeBase).")
+                                  "Simplifiez la page demandée (moins de champs), ou choisissez un modèle avec une plus grande limite de sortie (liste 'Modèle' en haut — catalogue de l'écran AI_KnowledgeBase).")
                 Memoriser(q, "Génération impossible : json tronqué (limite de sortie du modèle).")
             Else
                 ' Pas de JSON : clarifications / compte rendu textuel — affiché tel quel.

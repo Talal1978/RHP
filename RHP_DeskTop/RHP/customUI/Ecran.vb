@@ -119,37 +119,6 @@
                     .Controls.Add(_btn)
                 Next
             End With
-        ElseIf theUser.Typ_Role = "Agent" Then
-            With Menu_Agent.pnl_sideBarL
-                .Controls.Clear()
-                .Visible = True
-                If dictButtons.Values.Count > 0 Then
-                    Dim Xx As Integer = 20
-                    Dim Yy As Integer = 0
-                    For Each _btn In dictButtons.Values
-                        With _btn
-                            Yy = (Menu_Agent.pnl_sideBarL.Height - .Height - 2) / 2
-                            .Location = New Point(Xx, Yy)
-                            Xx += .Width + 14
-                            .BringToFront()
-                        End With
-                        .Controls.Add(_btn)
-                    Next
-                End If
-                Dim btn As New ud_btn(Me, "Close_D", "", "btn_close")
-                With btn
-                    .Size = New Size(25, 25)
-                    .ToolTip = "Fermer"
-                    .Location = New Point(Menu_Agent.menuPnl.Width - 200, (Menu_Agent.pnl_sideBarL.Height - .Height) / 2)
-                    AddHandler .Click, Sub()
-                                           Me.Close()
-                                           Menu_Agent.pnl_sideBarL.Visible = False
-                                           Menu_Agent.pnl_sideBarL.Controls.Clear()
-                                           Menu_Agent.chemin_lbl.ResetText()
-                                       End Sub
-                End With
-                .Controls.Add(btn)
-            End With
         Else
             With leMenu.pnl_sideBarL
                 .Controls.Clear()

@@ -16,11 +16,24 @@ export const authentication = async (req: Request, res: Response) => {
   const sqlStr = `declare @lg nvarchar(50)
     set @lg=upper(@login)
     select top 1 -1 id_User,id_Societe,Matricule, ltrim(rtrim(isnull(Nom_Agent,'') + ' ' + isnull(Prenom_Agent,''))) as Nom,isnull(Cod_Entite,'') as Cod_Entite, isnull(Cod_Poste,'') as Cod_Poste, Mail as Login,
-    isnull(Droit_Paie,'false') as User_Actif, isnull(u.Cod_Profile,-1) as Cod_Profile, isnull(Droit_Paie,'false') as Profile_Actif , isnull(Mail,'') as Mail,convert(bit, case when estTeamLeader>0 then 'true' else 'false' end) as TeamLeader, isnull(Typ_Role,'') as Typ_Role,
+    isnull(Droit_Paie,'false') as User_Actif, isnull(pr.Cod_Profile,-1) as Cod_Profile, isnull(Droit_Paie,'false') as Profile_Actif , isnull(Mail,'') as Mail,convert(bit, case when estTeamLeader>0 then 'true' else 'false' end) as TeamLeader, isnull(Typ_Role,'') as Typ_Role,
     isnull(is_Temp,'false') as is_Temp
     from Rh_Agent a
     outer apply (select count(*) as estTeamLeader from Sys_Org_Entite where Cod_Entite=isnull(a.Cod_Entite,'ui5465deu_è_è_çè') and Responsable=a.Matricule)o
     outer apply (select top 1 Typ_Role, Cod_Profile from Controle_Users where isnull(Mail,'')=a.Mail)u
+    -- Profil portail résolu : profil de l'agent (RH_Agent.Cod_Profile) >
+    -- profil utilisateur (Controle_Users, compatibilité) > profil portail par
+    -- défaut (Controle_Profile.Portail_Defaut) ; un profil inactif est ignoré.
+    outer apply (select top 1 Cod_Profile from (
+                   select 1 as Prio, p.Cod_Profile from Controle_Profile p
+                    where p.Cod_Profile = a.Cod_Profile and isnull(p.Actif,1) = 1
+                   union all
+                   select 2, p.Cod_Profile from Controle_Profile p
+                    where p.Cod_Profile = u.Cod_Profile and isnull(p.Actif,1) = 1
+                   union all
+                   select 3, p.Cod_Profile from Controle_Profile p
+                    where isnull(p.Portail_Defaut,'false') = 'true' and isnull(p.Actif,1) = 1
+                 ) r order by Prio)pr
     where HashBytes('SHA1',upper(Mail))=HashBytes('SHA1',@lg) and Pw=@pw`;
   const rsl = await lireSql(sqlStr, [
     { param: "login", sqlType: NVarChar, valeur: login },

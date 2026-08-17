@@ -12,6 +12,9 @@ import {
   supprimerDocument, executerValidations, recalculer, executerSource,
   qn, colonnesMetier, tableEnt, TSpContexte, TSpMeta,
 } from "../modules/module_sp_engine";
+import {
+  pagesMenuAutorisees, pagesReferenciees,
+} from "../modules/module_droits_portail";
 
 function agentDepuis(req: Request) {
   const { Login, Matricule, id_Societe, codProfile, TeamLeader } = req.params;
@@ -125,7 +128,21 @@ export async function sp_menu_portail(req: Request, res: Response) {
     img: String(s.Icone ?? ""),
     dyn: true,
   }));
-  return res.send({ result: true, data: [...sections, ...menus, ...menusQ], fields: [], sort: "succès" });
+  // Pages standards du portail (miroir de menus.json) filtrées par profil :
+  // référentiel Controle_Menu_Portail + droits Controle_Droit (Visible).
+  // pagesStandards = pages VISIBLES pour le profil (filtrage du menu client) ;
+  // pagesControlees = tout le référentiel (garde de route client). null =
+  // référentiel indisponible (migration non appliquée) -> aucun filtrage.
+  const pagesStandards = await pagesMenuAutorisees(String(codProfile ?? ""));
+  const pagesControlees = await pagesReferenciees();
+  return res.send({
+    result: true,
+    data: [...sections, ...menus, ...menusQ],
+    pagesStandards,
+    pagesControlees,
+    fields: [],
+    sort: "succès",
+  });
 }
 
 /* -------------------------------------------------------------------------- */

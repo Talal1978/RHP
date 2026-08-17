@@ -112,8 +112,6 @@
                     Next
                     If isModal Then
                         .Show(frmModal)
-                    ElseIf theUser.Typ_Role = "Agent" Then
-                        .Show(Menu_Agent)
                     Else
                         .Show(leMenu)
                     End If

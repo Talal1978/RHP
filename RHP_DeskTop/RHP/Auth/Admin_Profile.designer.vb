@@ -66,6 +66,14 @@ Partial Class Admin_Profile
         Me.Ecr = New DevComponents.Editors.ComboItem()
         Me.CntScripts = New System.Windows.Forms.ContextMenuStrip(Me.components)
         Me.Scripts = New System.Windows.Forms.ToolStripMenuItem()
+        Me.TabPage4 = New System.Windows.Forms.TabPage()
+        Me.AdvPortail = New DevComponents.AdvTree.AdvTree()
+        Me.ColumnHeader4 = New DevComponents.AdvTree.ColumnHeader()
+        Me.ColumnHeader5 = New DevComponents.AdvTree.ColumnHeader()
+        Me.ColumnHeader6 = New DevComponents.AdvTree.ColumnHeader()
+        Me.NodeConnector3 = New DevComponents.AdvTree.NodeConnector()
+        Me.ElementStyle5 = New DevComponents.DotNetBar.ElementStyle()
+        Me.Portail_Defaut_Check = New RHP.ud_CheckBox()
         Me.GNR_FAM_GROUP.SuspendLayout()
         Me.TabControl1.SuspendLayout()
         Me.TabPage1.SuspendLayout()
@@ -76,6 +84,8 @@ Partial Class Admin_Profile
         CType(Me.Tbl_Grd, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.TabPage3.SuspendLayout()
         CType(Me.AdvFonction, System.ComponentModel.ISupportInitialize).BeginInit()
+        Me.TabPage4.SuspendLayout()
+        CType(Me.AdvPortail, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.CntScripts.SuspendLayout()
         Me.SuspendLayout()
         '
@@ -101,6 +111,7 @@ Partial Class Admin_Profile
         '
         'GNR_FAM_GROUP
         '
+        Me.GNR_FAM_GROUP.Controls.Add(Me.Portail_Defaut_Check)
         Me.GNR_FAM_GROUP.Controls.Add(Me.Actif_Check)
         Me.GNR_FAM_GROUP.Controls.Add(Me.Cod_Profile_Target_Text)
         Me.GNR_FAM_GROUP.Controls.Add(Me.Lib_Profile_Target_Text)
@@ -131,6 +142,21 @@ Partial Class Admin_Profile
         Me.Actif_Check.TabIndex = 204
         Me.Actif_Check.Tag = "NC"
         Me.Actif_Check.Text = "Actif"
+        '
+        'Portail_Defaut_Check
+        '
+        Me.Portail_Defaut_Check.AutoSize = True
+        Me.Portail_Defaut_Check.Checked = False
+        Me.Portail_Defaut_Check.Font = New System.Drawing.Font("Arial", 8.25!, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Portail_Defaut_Check.Location = New System.Drawing.Point(720, 16)
+        Me.Portail_Defaut_Check.Margin = New System.Windows.Forms.Padding(4, 5, 4, 5)
+        Me.Portail_Defaut_Check.MaximumSize = New System.Drawing.Size(0, 28)
+        Me.Portail_Defaut_Check.MinimumSize = New System.Drawing.Size(190, 28)
+        Me.Portail_Defaut_Check.Name = "Portail_Defaut_Check"
+        Me.Portail_Defaut_Check.Size = New System.Drawing.Size(190, 28)
+        Me.Portail_Defaut_Check.TabIndex = 205
+        Me.Portail_Defaut_Check.Tag = "NC"
+        Me.Portail_Defaut_Check.Text = "Profil portail par défaut"
         '
         'Cod_Profile_Target_Text
         '
@@ -224,6 +250,7 @@ Partial Class Admin_Profile
         Me.TabControl1.Controls.Add(Me.TabPage1)
         Me.TabControl1.Controls.Add(Me.TabPage2)
         Me.TabControl1.Controls.Add(Me.TabPage3)
+        Me.TabControl1.Controls.Add(Me.TabPage4)
         Me.TabControl1.Dock = System.Windows.Forms.DockStyle.Fill
         Me.TabControl1.DrawMode = System.Windows.Forms.TabDrawMode.OwnerDrawFixed
         Me.TabControl1.Location = New System.Drawing.Point(0, 72)
@@ -449,6 +476,72 @@ Partial Class Admin_Profile
         Me.TabPage3.Text = "Fonctions d'accès"
         Me.TabPage3.UseVisualStyleBackColor = True
         '
+        'TabPage4
+        '
+        Me.TabPage4.Controls.Add(Me.AdvPortail)
+        Me.TabPage4.Location = New System.Drawing.Point(4, 28)
+        Me.TabPage4.Margin = New System.Windows.Forms.Padding(3, 4, 3, 4)
+        Me.TabPage4.Name = "TabPage4"
+        Me.TabPage4.Padding = New System.Windows.Forms.Padding(3, 4, 3, 4)
+        Me.TabPage4.Size = New System.Drawing.Size(947, 582)
+        Me.TabPage4.TabIndex = 3
+        Me.TabPage4.Text = "Portail"
+        Me.TabPage4.UseVisualStyleBackColor = True
+        '
+        'AdvPortail
+        '
+        Me.AdvPortail.AccessibleRole = System.Windows.Forms.AccessibleRole.Outline
+        Me.AdvPortail.AllowDrop = True
+        Me.AdvPortail.BackColor = System.Drawing.SystemColors.Window
+        '
+        '
+        '
+        Me.AdvPortail.BackgroundStyle.Class = "TreeBorderKey"
+        Me.AdvPortail.BackgroundStyle.CornerType = DevComponents.DotNetBar.eCornerType.Square
+        Me.AdvPortail.Columns.Add(Me.ColumnHeader4)
+        Me.AdvPortail.Columns.Add(Me.ColumnHeader5)
+        Me.AdvPortail.Columns.Add(Me.ColumnHeader6)
+        Me.AdvPortail.Dock = System.Windows.Forms.DockStyle.Fill
+        Me.AdvPortail.Location = New System.Drawing.Point(3, 4)
+        Me.AdvPortail.Margin = New System.Windows.Forms.Padding(3, 4, 3, 4)
+        Me.AdvPortail.Name = "AdvPortail"
+        Me.AdvPortail.NodesConnector = Me.NodeConnector3
+        Me.AdvPortail.NodeStyle = Me.ElementStyle5
+        Me.AdvPortail.PathSeparator = ";"
+        Me.AdvPortail.Size = New System.Drawing.Size(941, 574)
+        Me.AdvPortail.Styles.Add(Me.ElementStyle5)
+        Me.AdvPortail.TabIndex = 1
+        Me.AdvPortail.Text = "AdvPortail"
+        '
+        'ColumnHeader4
+        '
+        Me.ColumnHeader4.Name = "ColumnHeader4"
+        Me.ColumnHeader4.Text = "Page du portail"
+        Me.ColumnHeader4.Width.Relative = 90
+        '
+        'ColumnHeader5
+        '
+        Me.ColumnHeader5.Name = "ColumnHeader5"
+        Me.ColumnHeader5.Text = "Visible"
+        Me.ColumnHeader5.Width.Absolute = 45
+        '
+        'ColumnHeader6
+        '
+        Me.ColumnHeader6.Name = "ColumnHeader6"
+        Me.ColumnHeader6.Text = "Actif"
+        Me.ColumnHeader6.Width.Absolute = 45
+        '
+        'NodeConnector3
+        '
+        Me.NodeConnector3.LineColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(36, Byte), Integer), CType(CType(36, Byte), Integer))
+        '
+        'ElementStyle5
+        '
+        Me.ElementStyle5.Class = ""
+        Me.ElementStyle5.CornerType = DevComponents.DotNetBar.eCornerType.Square
+        Me.ElementStyle5.Name = "ElementStyle5"
+        Me.ElementStyle5.TextColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(36, Byte), Integer), CType(CType(36, Byte), Integer))
+        '
         'AdvFonction
         '
         Me.AdvFonction.AccessibleRole = System.Windows.Forms.AccessibleRole.Outline
@@ -577,6 +670,8 @@ Partial Class Admin_Profile
         CType(Me.Tbl_Grd, System.ComponentModel.ISupportInitialize).EndInit()
         Me.TabPage3.ResumeLayout(False)
         CType(Me.AdvFonction, System.ComponentModel.ISupportInitialize).EndInit()
+        Me.TabPage4.ResumeLayout(False)
+        CType(Me.AdvPortail, System.ComponentModel.ISupportInitialize).EndInit()
         Me.CntScripts.ResumeLayout(False)
         Me.ResumeLayout(False)
 
@@ -621,4 +716,12 @@ Partial Class Admin_Profile
     Friend WithEvents OuvrirParNiveau_ud As ud_ComboBox
     Friend WithEvents Search_pb As PictureBox
     Friend WithEvents Rsl_Recherche As Label
+    Friend WithEvents TabPage4 As TabPage
+    Friend WithEvents AdvPortail As DevComponents.AdvTree.AdvTree
+    Friend WithEvents ColumnHeader4 As DevComponents.AdvTree.ColumnHeader
+    Friend WithEvents ColumnHeader5 As DevComponents.AdvTree.ColumnHeader
+    Friend WithEvents ColumnHeader6 As DevComponents.AdvTree.ColumnHeader
+    Friend WithEvents NodeConnector3 As DevComponents.AdvTree.NodeConnector
+    Friend WithEvents ElementStyle5 As DevComponents.DotNetBar.ElementStyle
+    Friend WithEvents Portail_Defaut_Check As ud_CheckBox
 End Class

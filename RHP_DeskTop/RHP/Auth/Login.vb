@@ -15,23 +15,17 @@ Public Class Login
     End Sub
 
     Sub InitialisationTblUser(loginStored As String, DirectAuthentification As Boolean)
+        ' Le desktop est réservé aux utilisateurs du backoffice (Controle_Users).
+        ' Les agents passent exclusivement par le portail web.
         Tbl_User = DATA_READER_GRD("declare @lg nvarchar(50)
                                     set @lg='" & loginStored & "'
                                      select 'user' as Origine,-1 id_Societe,'' Matricule,id_User, ltrim(rtrim(isnull(Nom_User,'') + ' ' + isnull(Prenom_User,''))) as Nom,
  isnull(Cod_Entite,'') as Cod_Entite, isnull(Cod_Poste,'') as Cod_Poste,Login_User,
- isnull(Actif,'false') as User_Actif, Cod_Profile, isnull(p.Profile_Actif,'false') as Profile_Actif,isnull(Mail,'') as Mail,isnull(is_AD,'false') is_AD, 
+ isnull(Actif,'false') as User_Actif, Cod_Profile, isnull(p.Profile_Actif,'false') as Profile_Actif,isnull(Mail,'') as Mail,isnull(is_AD,'false') is_AD,
  isnull(Pwd_User,'') Pwd_User,case when HashBytes('SHA1',upper(Login_User))=HashBytes('SHA1',upper(@lg)) and (isnull(is_AD,'false')='true' or '" & DirectAuthentification & "'='true' or Pwd_User='" & Encrypt(Pwd_txt.Text) & "') then 'true' else 'false' end as isTheUSer, isnull(Typ_Role,'Ops') as Typ_Role, Dat_Modif,convert(bit,'false') TeamLeader
- from Controle_Users u 
+ from Controle_Users u
  outer apply (select Actif as Profile_Actif from Controle_Profile f where f.Cod_Profile=u.Cod_Profile) p
- where HashBytes('SHA1',upper(Login_User))=HashBytes('SHA1',upper(@lg))
- union all
- select top 1 'Agent' as Origine, id_Societe,Matricule, 0 as id_User, ltrim(rtrim(isnull(Nom_Agent,'') + ' ' + isnull(Prenom_Agent,''))) as Nom,isnull(Cod_Entite,'') as Cod_Entite, isnull(Cod_Poste,'') as Cod_Poste,Login,isnull(Droit_Paie,'false') as User_Actif, -1 as Cod_Profile, isnull(Droit_Paie,'false') as Profile_Actif ,  Mail,isnull(is_AD,'false') is_AD, 
-isnull(PW,'') Pwd_User,
-case when HashBytes('SHA1',upper(Login))=HashBytes('SHA1',upper(@lg)) and (isnull(is_AD,'false')='true' or '" & DirectAuthentification & "'='true' or PW='" & Encrypt(Pwd_txt.Text) & "') then 'true' else 'false' end as isTheUSer ,  'Agent' as Typ_Role, Dat_Modif,
-convert(bit, case when estTeamLeader>0 then 'true' else 'false' end) as TeamLeader
-from Rh_Agent a
-outer apply (select count(*) as estTeamLeader from Sys_Org_Entite where Cod_Entite=isnull(a.Cod_Entite,'ui5465deu_è_è_çè') and Responsable=a.Matricule)o
-where HashBytes('SHA1',upper(isnull(Login,'984iuiuhiuht65161')))=HashBytes('SHA1',upper(@lg) )")
+ where HashBytes('SHA1',upper(Login_User))=HashBytes('SHA1',upper(@lg))")
     End Sub
 
     Private Sub Login_Load(sender As Object, e As EventArgs) Handles Me.Load
@@ -56,16 +50,6 @@ where HashBytes('SHA1',upper(isnull(Login,'984iuiuhiuht65161')))=HashBytes('SHA1
             IO.File.Create(My.Application.Info.DirectoryPath & "\login\Login.ini").Close()
             Return
         End If
-        Dim defaultInterfacePath As String = My.Application.Info.DirectoryPath & "\login\defaultInterface.dat"
-        ' Vérifier que le fichier existe
-        If IO.File.Exists(defaultInterfacePath) Then
-            Dim defaultInterface As String = IO.File.ReadAllText(defaultInterfacePath)
-            If defaultInterface.Trim = "BackOffice" Then
-                Default_Interface_switch.Value = False
-            Else
-                Default_Interface_switch.Value = True
-            End If
-        End If
         Dim oDB As String = ""
         Dim SR As New IO.StreamReader(My.Application.Info.DirectoryPath & "\login\Login.ini")
         Do Until SR.Peek = -1
@@ -86,13 +70,12 @@ where HashBytes('SHA1',upper(isnull(Login,'984iuiuhiuht65161')))=HashBytes('SHA1
                 If storedData.UserLogin.Trim <> "" Then
                     Login_txt.Text = storedData.UserLogin.Trim
                     DatSeSouvenirMoi = storedData.creaDat
-                    Default_Interface_switch.Value = CBool(storedData.Default_Interface)
                     Entrer(storedData.UserLogin.Trim, True)
                 End If
             End If
         End With
         With pb_chk
-            seSouvenir = (storedData.UserLogin.Trim <> "" And CBool(storedData.Default_Interface) = Default_Interface_switch.Value)
+            seSouvenir = (storedData.UserLogin.Trim <> "")
             .Image = IIf(seSouvenir, My.Resources.chk_on, My.Resources.chk_off)
         End With
 
@@ -171,7 +154,7 @@ where HashBytes('SHA1',upper(isnull(Login,'984iuiuhiuht65161')))=HashBytes('SHA1
         Dim adUserInfo As ADUserInfo
         Dim Pwd_User As String = ""
         InitialisationTblUser(loginStored, storedAuthentification)
-        Usr = Tbl_User.Select($"isTheUSer ='true' and Origine='{If(Default_Interface_switch.Value, "Agent", "user")}'")
+        Usr = Tbl_User.Select("isTheUSer ='true'")
         If Usr.Length > 0 Then
             theUser.Cod_Profile = Usr(0)("Cod_Profile")
             theUser.id_User = Usr(0)("id_User")
@@ -214,7 +197,7 @@ where HashBytes('SHA1',upper(isnull(Login,'984iuiuhiuht65161')))=HashBytes('SHA1
 
         Else
             ShowMessageBox("Les éléments d'authentification ne correspondent à aucun compte.", "Authentification")
-            Dim usrNot = Tbl_User.Select($"Login_User='{Login_txt.Text}' and Origine='{If(Default_Interface_switch.Value, "Agent", "user")}' and isnull(is_AD,'false')='false' ")
+            Dim usrNot = Tbl_User.Select($"Login_User='{Login_txt.Text}' and isnull(is_AD,'false')='false' ")
             pwdForgotten.Visible = (usrNot.Length > 0)
             Exit Sub
         End If
@@ -237,11 +220,7 @@ where HashBytes('SHA1',upper(isnull(Login,'984iuiuhiuht65161')))=HashBytes('SHA1
                     Return
                 End If
                 If Encrypt(Pwd_txt.Text) <> theUser.Pwd_User Then
-                    If theUser.Typ_Role = "Agent" Then
-                        CnExecuting($"update Rh_Agent set PW='{Encrypt(Pwd_txt.Text)}' where Login='{loginStored}' ")
-                    Else
-                        CnExecuting($"update Controle_Users set Pwd_User='{Encrypt(Pwd_txt.Text)}' where Login_User='{loginStored}'")
-                    End If
+                    CnExecuting($"update Controle_Users set Pwd_User='{Encrypt(Pwd_txt.Text)}' where Login_User='{loginStored}'")
                 End If
 
             ElseIf Tbl_User.Select($"Login_User='{Login_txt.Text}' and Pwd_User='{Encrypt(Pwd_txt.Text)}'").Length = 0 Then
@@ -301,7 +280,7 @@ where HashBytes('SHA1',upper(isnull(Login,'984iuiuhiuht65161')))=HashBytes('SHA1
         rs41.Open("select * from Controle_Users_Process", cn, 2, 2)
         rs41.AddNew()
         rs41("Login_User").Value = theUser.Login
-        rs41("Interface").Value = If(Default_Interface_switch.Value, "Portail", "BackOffice")
+        rs41("Interface").Value = "BackOffice"
         rs41("Nom_User").Value = theUser.Nom
         rs41("hostname").Value = My.Computer.Name
         rs41("Process_Id").Value = System.Diagnostics.Process.GetCurrentProcess().Id
@@ -319,77 +298,47 @@ where HashBytes('SHA1',upper(isnull(Login,'984iuiuhiuht65161')))=HashBytes('SHA1
         End If
         CnExecuting("delete from Controle_Access where Process_Id not in (select hostprocess from sys.sysprocesses where isnumeric(hostprocess)=1)")
         If seSouvenir Then
-            SaveSecureRememberMe(Login_txt.Text, Connection_lbl.Text, Default_Interface_switch.Value)
+            SaveSecureRememberMe(Login_txt.Text, Connection_lbl.Text)
         End If
 
-        If theUser.Typ_Role = "Agent" Then
-            ChargerSociete("id_Societe = " & theUser.id_Societe)
-            OuvrirSociete(theUser.id_Societe, False)
+        theUser.Matricule = ""
 
-            Dim oRw() As DataRow = Tbl_Org_Entite.Select("Cod_Entite='" & theUser.Cod_Entite & "'")
-            If oRw.Length > 0 Then
-                theUser.RacineHierarchique = oRw(0)("Racine")
-            Else
-                theUser.RacineHierarchique = ""
-            End If
-            filtreUser = If(theUser.TeamLeader, "exists(
- select * from Sys_Org_Entite s where 
- ';'+isnull(Racine+';'+s.Cod_Entite,'')+';' like '%;'+isnull(nullif('" & theUser.Cod_Entite & "',''),'8787uhuhunjj')+';%' and id_Societe=" & Societe.id_Societe & " and {0}.Cod_Entite=s.Cod_Entite)", "{0}.Matricule=" & theUser.Matricule)
-            filtreEntite = "exists(
- select * from Sys_Org_Entite s where 
- ';'+isnull(Racine+';'+s.Cod_Entite,'')+';' like '%;'+isnull(nullif('" & theUser.Cod_Entite & "',''),'8787uhuhunjj')+';%' and id_Societe=" & Societe.id_Societe & " and Org_Entite.Cod_Entite=s.Cod_Entite)"
-            With Menu_Agent
-                .AutoScaleMode = AutoScaleMode.Dpi
-                .Icon = My.Resources.rhp
-                .Text = "Rh-P \ " & Connection_lbl.Text
-                Me.TopLevel = False
-                Me.TopMost = False
-                Me.Parent = Menu_Agent
-                Me.Visible = False
-                Me.Hide()
-                .Show()
-            End With
-        Else
-            theUser.Matricule = ""
-
-            ' Vérification de l'ancienneté du mot de passe (PWD_Duree en jours).
-            ' Si Dat_Maj_Pwd est NULL, on considère une date très ancienne pour forcer le changement.
-            ' Si la durée écoulée dépasse PWD_Duree (et PWD_Duree > 0), on ouvre l'écran de
-            ' changement de mot de passe avant de continuer.
-            If Not theUser.is_AD Then
-                Dim pwdDureeObj As Object = FindParam("PWD_Duree")
-                Dim pwdDuree As Integer = 0
-                If IsNumeric(pwdDureeObj) Then pwdDuree = CInt(pwdDureeObj)
-                If pwdDuree > 0 Then
-                    Dim sqlDuree As String =
-                        "select datediff(day, isnull(Dat_Maj_Pwd, dateadd(day,-10000,getdate())), getdate()) as Duree " &
-                        "from Controle_Users where id_User='" & theUser.id_User & "'"
-                    Dim rsDuree As ADODB.Recordset = CnExecuting(sqlDuree)
-                    Dim dureeJours As Integer = 0
-                    If rsDuree IsNot Nothing AndAlso Not rsDuree.EOF Then
-                        dureeJours = CInt(IsNull(rsDuree.Fields("Duree").Value, 0))
-                    End If
-                    If dureeJours > pwdDuree Then
-                        ShowMessageBox("Votre mot de passe a plus de " & pwdDuree & " jours (" & dureeJours & " jours). Vous devez le modifier.",
-                                       "Renouvellement du mot de passe", MessageBoxButtons.OK, msgIcon.Warning)
-                        Dim fPwd As New Admin_ChangePwd
-                        fPwd.Old_Pwd_User_Text.Text = Pwd_txt.Text
-                        fPwd.Pwd1_Text.Select()
-                        fPwd.ShowDialog()
-                    End If
+        ' Vérification de l'ancienneté du mot de passe (PWD_Duree en jours).
+        ' Si Dat_Maj_Pwd est NULL, on considère une date très ancienne pour forcer le changement.
+        ' Si la durée écoulée dépasse PWD_Duree (et PWD_Duree > 0), on ouvre l'écran de
+        ' changement de mot de passe avant de continuer.
+        If Not theUser.is_AD Then
+            Dim pwdDureeObj As Object = FindParam("PWD_Duree")
+            Dim pwdDuree As Integer = 0
+            If IsNumeric(pwdDureeObj) Then pwdDuree = CInt(pwdDureeObj)
+            If pwdDuree > 0 Then
+                Dim sqlDuree As String =
+                    "select datediff(day, isnull(Dat_Maj_Pwd, dateadd(day,-10000,getdate())), getdate()) as Duree " &
+                    "from Controle_Users where id_User='" & theUser.id_User & "'"
+                Dim rsDuree As ADODB.Recordset = CnExecuting(sqlDuree)
+                Dim dureeJours As Integer = 0
+                If rsDuree IsNot Nothing AndAlso Not rsDuree.EOF Then
+                    dureeJours = CInt(IsNull(rsDuree.Fields("Duree").Value, 0))
+                End If
+                If dureeJours > pwdDuree Then
+                    ShowMessageBox("Votre mot de passe a plus de " & pwdDuree & " jours (" & dureeJours & " jours). Vous devez le modifier.",
+                                   "Renouvellement du mot de passe", MessageBoxButtons.OK, msgIcon.Warning)
+                    Dim fPwd As New Admin_ChangePwd
+                    fPwd.Old_Pwd_User_Text.Text = Pwd_txt.Text
+                    fPwd.Pwd1_Text.Select()
+                    fPwd.ShowDialog()
                 End If
             End If
-
-            With Wait
-                .AutoScaleMode = AutoScaleMode.Dpi
-                .StartPosition = FormStartPosition.CenterScreen
-                .WindowState = FormWindowState.Maximized
-                Me.Owner = Wait
-                .lg = Me
-                .Show()
-            End With
-
         End If
+
+        With Wait
+            .AutoScaleMode = AutoScaleMode.Dpi
+            .StartPosition = FormStartPosition.CenterScreen
+            .WindowState = FormWindowState.Maximized
+            Me.Owner = Wait
+            .lg = Me
+            .Show()
+        End With
 
         Dim diffdate As Integer = DateDiff(DateInterval.Day, DatNow, Droits.DatFinContrat)
         If diffdate <= 30 Then
@@ -415,7 +364,7 @@ where HashBytes('SHA1',upper(isnull(Login,'984iuiuhiuht65161')))=HashBytes('SHA1
         cn.ConnectionTimeout = 0
         cn.ConnectionString = connectionString
         cn.Open()
-        Dim usrNot = Tbl_User.Select($"Login_User='{Login_txt.Text}' and Origine='{If(Default_Interface_switch.Value, "Agent", "user")}' and isnull(is_AD,'false')='false' ")
+        Dim usrNot = Tbl_User.Select($"Login_User='{Login_txt.Text}' and isnull(is_AD,'false')='false' ")
         If usrNot.Length = 0 Then
             ShowMessageBox("Aucun compte mail associé à ce compte", "Mot de passe oublié")
             Return
@@ -448,11 +397,7 @@ where HashBytes('SHA1',upper(isnull(Login,'984iuiuhiuht65161')))=HashBytes('SHA1
                 End If
                 If EnvoiDeMail(emailUser, emailUser, "Génération de mot de passe", "Bonjour" & vbCrLf & "Voici votre nouveau mot de passe : " & psw).envoye Then
                     ShowMessageBox("Votre nouveau mot de passe vous a été envoyé à votre adresse mail : " & pt_mail, "Changement de mot de passe", MessageBoxButtons.OK, msgIcon.Information)
-                    If usrNot(0)("Origine") = "Agent" Then
-                        CnExecuting("update Rh_Agent set PW='" & Encrypt(psw) & "', Dat_Modif=getdate() where isnull(Login,'')='" & theUser.Login & "'")
-                    Else
-                        CnExecuting("update Controle_Users set Pwd_User='" & Encrypt(psw) & "', Dat_Modif=getdate() where Login_User='" & theUser.Login & "'")
-                    End If
+                    CnExecuting("update Controle_Users set Pwd_User='" & Encrypt(psw) & "', Dat_Modif=getdate() where Login_User='" & theUser.Login & "'")
 
                 Else
                     ShowMessageBox("Erreur de mail :" & vbCrLf &
@@ -497,24 +442,4 @@ where HashBytes('SHA1',upper(isnull(Login,'984iuiuhiuht65161')))=HashBytes('SHA1
         Return MyBase.ProcessCmdKey(msg, keyData)
     End Function
 
-    Private Sub Default_Interface_switch_Click(sender As Object, e As EventArgs) Handles Default_Interface_switch.Click
-        Dim defaultInterfacePath As String = My.Application.Info.DirectoryPath & "\login\defaultInterface.dat"
-        Dim itsOk As Boolean = False
-        If IO.File.Exists(defaultInterfacePath) Then
-            Try
-                IO.File.Delete(defaultInterfacePath)
-                itsOk = True
-            Catch ex As Exception
-
-            End Try
-        Else
-            itsOk = True
-        End If
-        If itsOk Then
-            Dim sw As New IO.StreamWriter(defaultInterfacePath, True)
-            sw.Write(If(Default_Interface_switch.Value, "BackOffice", "Portail"))
-            sw.Close()
-        End If
-
-    End Sub
 End Class

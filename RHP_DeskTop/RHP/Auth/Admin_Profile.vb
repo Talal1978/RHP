@@ -39,15 +39,114 @@ Public Class Admin_Profile
 
         Lib_Profile_Text.Text = FindLibelle("Lib_Profile", "Cod_Profile", Cod_Profile_Text.Text, "Controle_Profile")
         Actif_Check.Checked = FindLibelle("Actif", "Cod_Profile", Cod_Profile_Text.Text, "Controle_Profile")
+        Portail_Defaut_Check.Checked = (IsNull(FindLibelle("Portail_Defaut", "Cod_Profile", Cod_Profile_Text.Text, "Controle_Profile"), "false").ToString().ToLower() = "true")
         LeProfil.Text = Lib_Profile_Text.Text
         If Cod_Profile_Text.Text = "1" Then
             Actif_Check.Enabled = False
+            Portail_Defaut_Check.Enabled = False
         Else
             Actif_Check.Enabled = True
+            Portail_Defaut_Check.Enabled = True
         End If
 
         RequestAccess()
+        RequestPortail()
 
+    End Sub
+
+    'Arborescence des pages standards du portail (référentiel Controle_Menu_Portail)
+    'avec les droits Visible/Actif du profil (Controle_Droit, Name_Ecran = 'PRT_' + page :
+    'le préfixe isole les droits portail des écrans desktop de mêmes noms).
+    Sub RequestPortail()
+        Try
+            AdvPortail.Nodes.Clear()
+            Dim CodSql As String = "select m.Name_Ecran,isnull(m.Text_Ecran,'') as Text_Ecran,isnull(m.Typ_Ecran,'ECR') as Typ_Ecran,isnull(m.Menu_Parent,'') as Menu_Parent,isnull(m.Rang,99) as Rang,isnull(o.Visible,'False') as Visible,isnull(o.Actif,'False') as Actif " &
+                                   "from Controle_Menu_Portail m " &
+                                   "outer apply (select Visible,Actif from Controle_Droit where Name_Ecran='PRT_' + m.Name_Ecran and Cod_Profile='" & Cod_Profile_Text.Text & "') o " &
+                                   "order by m.Rang"
+            Dim pTable As DataTable = DATA_READER_GRD(CodSql)
+            Dim nRows() As DataRow = pTable.Select("[Typ_Ecran]='MNU'", "Rang Asc")
+            For i = 0 To nRows.Length - 1
+                Dim N As New Node
+                With N
+                    .Name = nRows(i)("Name_Ecran")
+                    .Text = nRows(i)("Text_Ecran")
+                    .Cells.Add(New Cell)
+                    .Cells.Add(New Cell)
+                    .Cells(1).CheckBoxStyle = eCheckBoxStyle.CheckBox
+                    .Cells(2).CheckBoxStyle = eCheckBoxStyle.CheckBox
+                    .Cells(1).CheckBoxVisible = True
+                    .Cells(2).CheckBoxVisible = True
+                    .Cells(1).Checked = CBool(nRows(i)("Visible"))
+                    .Cells(2).Checked = CBool(nRows(i)("Actif"))
+                    .Tag = {nRows(i)("Typ_Ecran"), Nothing, Nothing}
+                    .Style = ElementStyle2
+                End With
+                AdvPortail.Nodes.Add(N)
+                Dim mRows() As DataRow = pTable.Select("[Menu_Parent]='" & N.Name & "'", "Rang Asc")
+                For j = 0 To mRows.GetUpperBound(0)
+                    Dim M As New Node
+                    With M
+                        .Name = mRows(j)("Name_Ecran")
+                        .Text = mRows(j)("Text_Ecran")
+                        .Cells.Add(New Cell)
+                        .Cells.Add(New Cell)
+                        .Cells(1).CheckBoxStyle = eCheckBoxStyle.CheckBox
+                        .Cells(2).CheckBoxStyle = eCheckBoxStyle.CheckBox
+                        .Cells(1).CheckBoxVisible = True
+                        .Cells(2).CheckBoxVisible = True
+                        .Cells(1).Checked = CBool(mRows(j)("Visible"))
+                        .Cells(2).Checked = CBool(mRows(j)("Actif"))
+                        .Tag = {mRows(j)("Typ_Ecran"), Nothing, Nothing}
+                    End With
+                    N.Nodes.Add(M)
+                Next
+            Next
+            'Pages racines (sans section : Dashboard, DiverseEditions...) regroupées
+            'sous un dossier virtuel (Name = "" -> jamais enregistré dans Controle_Droit)
+            Dim rw() As DataRow = pTable.Select("[Menu_Parent]='' and Typ_Ecran='ECR'", "Rang Asc")
+            If rw.Length > 0 Then
+                Dim N As New Node
+                With N
+                    .Name = ""
+                    .Text = "Pages racines"
+                    .Cells.Add(New Cell)
+                    .Cells.Add(New Cell)
+                    .Cells(1).CheckBoxStyle = eCheckBoxStyle.CheckBox
+                    .Cells(2).CheckBoxStyle = eCheckBoxStyle.CheckBox
+                    .Cells(1).CheckBoxVisible = False
+                    .Cells(2).CheckBoxVisible = False
+                    .Tag = {"FDR", Nothing, Nothing}
+                    .Style = ElementStyle3
+                End With
+                For j = 0 To rw.GetUpperBound(0)
+                    Dim M As New Node
+                    With M
+                        .Name = rw(j)("Name_Ecran")
+                        .Text = rw(j)("Text_Ecran")
+                        .Cells.Add(New Cell)
+                        .Cells.Add(New Cell)
+                        .Cells(1).CheckBoxStyle = eCheckBoxStyle.CheckBox
+                        .Cells(2).CheckBoxStyle = eCheckBoxStyle.CheckBox
+                        .Cells(1).CheckBoxVisible = True
+                        .Cells(2).CheckBoxVisible = True
+                        .Cells(1).Checked = CBool(rw(j)("Visible"))
+                        .Cells(2).Checked = CBool(rw(j)("Actif"))
+                        .Tag = {rw(j)("Typ_Ecran"), Nothing, Nothing}
+                    End With
+                    N.Nodes.Add(M)
+                Next
+                AdvPortail.Nodes.Add(N)
+            End If
+        Catch ex As Exception
+            ShowMessageBox(ex.Message)
+        End Try
+    End Sub
+
+    Private Sub AdvPortail_NodeClick(sender As Object, e As TreeNodeMouseEventArgs) Handles AdvPortail.NodeClick
+        If e.Node.SelectedCell Is Nothing Then Return
+        If IsNull(e.Node.Name, "") = "" Then Return
+        Checking(e.Node, e.Node.Cells.IndexOf(e.Node.SelectedCell), e.Node.SelectedCell.Checked)
     End Sub
 
     Private Sub LinkLabel1_LinkClicked(ByVal sender As System.Object, ByVal e As System.Windows.Forms.LinkLabelLinkClickedEventArgs) Handles LinkLabel1.LinkClicked
@@ -372,6 +471,7 @@ Public Class Admin_Profile
             End If
             rs("Lib_Profile").Value = Lib_Profile_Text.Text
             rs("Actif").Value = Actif_Check.Checked
+            rs("Portail_Defaut").Value = If(Portail_Defaut_Check.Checked, "true", "false")
             rs("Modified_By").Value = theUser.Login
             rs("Dat_Modif").Value = CnExecuting("select getdate()").Fields(0).Value
             rs.Update()
@@ -381,6 +481,10 @@ Public Class Admin_Profile
                 CodProfil = CnExecuting("select max(Cod_Profile)from Controle_Profile").Fields(0).Value
             Else
                 CodProfil = Cod_Profile_Text.Text
+            End If
+            'Un seul profil portail par défaut (index filtré unique en base)
+            If Portail_Defaut_Check.Checked Then
+                CnExecuting("update Controle_Profile set Portail_Defaut='false' where Cod_Profile<>'" & CodProfil & "' and Portail_Defaut='true'")
             End If
             CnExecuting("Delete from Controle_Profile_Regles WHERE    Cod_Profile='" & CodProfil & "'")
             With Tbl_Grd
@@ -399,6 +503,11 @@ Public Class Admin_Profile
             CnExecuting("Delete from Controle_Droit where Cod_Profile='" & CodProfil & "'")
             For Each c As Node In Adv.Nodes
                 SavingNodes(c, CodProfil)
+            Next
+            'Droits des pages standards du portail (onglet Portail) : réinsérés
+            'après le delete global, au même titre que les écrans desktop.
+            For Each c As Node In AdvPortail.Nodes
+                SavingPortailNodes(c, CodProfil)
             Next
             CnExecuting("Delete from Controle_Droit_Functions where Cod_Profile='" & CodProfil & "'")
             For Each c As Node In AdvFonction.Nodes(0).Nodes
@@ -448,6 +557,26 @@ Public Class Admin_Profile
         If oNode.Nodes.Count > 0 Then
             For Each c As Node In oNode.Nodes
                 SavingNodes(c, CodProfil)
+            Next
+        End If
+    End Sub
+    Sub SavingPortailNodes(ByVal oNode As Node, CodProfil As String)
+        'Les dossiers virtuels (Name = "") ne génèrent aucune ligne Controle_Droit.
+        'Name_Ecran = 'PRT_' + page : droits portail isolés des écrans desktop.
+        If IsNull(oNode.Name, "") <> "" Then
+            Dim rs As New ADODB.Recordset
+            rs.Open("Select * from Controle_Droit", cn, 2, 2)
+            rs.AddNew()
+            rs("Name_Ecran").Value = "PRT_" & oNode.Name
+            rs("Cod_Profile").Value = CodProfil
+            rs("Visible").Value = oNode.Cells(1).Checked
+            rs("Actif").Value = oNode.Cells(2).Checked
+            rs.Update()
+            rs.Close()
+        End If
+        If oNode.Nodes.Count > 0 Then
+            For Each c As Node In oNode.Nodes
+                SavingPortailNodes(c, CodProfil)
             Next
         End If
     End Sub
@@ -629,6 +758,10 @@ Public Class Admin_Profile
                 ShowMessageBox("Ce profile est utilisé dans la table des utilisateurs", "Suppression de profile", MessageBoxButtons.OK, msgIcon.Information)
                 Return
             End If
+            If CnExecuting("Select count(*) from RH_Agent where Cod_Profile='" & Cod_Profile_Text.Text & "'").Fields(0).Value > 0 Then
+                ShowMessageBox("Ce profile est affecté à des agents (profil portail)", "Suppression de profile", MessageBoxButtons.OK, msgIcon.Information)
+                Return
+            End If
             If ShowMessageBox("Etes-vous sûr de vouloir supprimer ce profile?", "Suppression de profile", MessageBoxButtons.OKCancel, msgIcon.Warning) = DialogResult.Cancel Then
                 Return
             End If
@@ -667,6 +800,8 @@ Public Class Admin_Profile
     Sub Reseting()
         Cod_Profile_Text.Text = ""
         Adv.Nodes.Clear()
+        AdvPortail.Nodes.Clear()
+        Portail_Defaut_Check.Checked = False
         TabControl1.SelectedIndex = 0
     End Sub
     Sub Nouveau()

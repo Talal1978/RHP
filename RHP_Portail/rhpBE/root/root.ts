@@ -101,6 +101,7 @@ import {
   sp_save_document, sp_delete_document, sp_validate_document, sp_exec_source,
 } from "../controlers/sp_document";
 import { sp_query_meta, sp_query_exec, sp_query_zoom } from "../controlers/portal_query";
+import { gardePage } from "../modules/module_droits_portail";
 const mainRooting = express.Router();
 const storage = multer.diskStorage({
   destination: async (req, file, cb) => {
@@ -130,42 +131,51 @@ mainRooting.get("/has_signature_rule", validate, has_signature_rule);
 mainRooting.get("/get_parapheur", validate, get_parapheur);
 mainRooting.post("/getreport", validate, generateReport);
 mainRooting.post("/findlibelle", findLibelleApi);
-mainRooting.post("/rh_agent", validate, rh_agent);
-mainRooting.post("/get_demande_avance", validate, get_demande_avance);
-mainRooting.post("/demande_avance_liste", validate, demande_avance_liste);
-mainRooting.post("/save_demande_avance", validate, save_demande_avance);
-mainRooting.post("/get_mnt_avances_encours", validate, get_mnt_avances_encours);
-mainRooting.post("/delete_demande_avance", validate, delete_demande_avance);
+/* --------------------------------------------------------------------------
+   Gardes d'accès par profil (gardePage) : chaque endpoint métier d'une page
+   standard du portail est protégé par le droit Actif de Controle_Droit sur
+   le nom de la page (référentiel Controle_Menu_Portail). Page sans AUCUNE
+   ligne de droit = non contrôlée (accès libre) ; profil '1' = bypass.
+   Endpoints transverses (zoom, rubrique, workflow, GED, is_paie_encours,
+   getPoste...) volontairement non gardés : le cloisonnement des données
+   (Matricule/Entité) reste appliqué dans les contrôleurs.
+   -------------------------------------------------------------------------- */
+mainRooting.post("/rh_agent", validate, gardePage("RH_Agent"), rh_agent);
+mainRooting.post("/get_demande_avance", validate, gardePage("RH_Demande_Avance_Liste"), get_demande_avance);
+mainRooting.post("/demande_avance_liste", validate, gardePage("RH_Demande_Avance_Liste"), demande_avance_liste);
+mainRooting.post("/save_demande_avance", validate, gardePage("RH_Demande_Avance_Liste"), save_demande_avance);
+mainRooting.post("/get_mnt_avances_encours", validate, gardePage("RH_Demande_Avance_Liste"), get_mnt_avances_encours);
+mainRooting.post("/delete_demande_avance", validate, gardePage("RH_Demande_Avance_Liste"), delete_demande_avance);
 
-mainRooting.post("/get_demande_pret", validate, get_demande_pret);
-mainRooting.post("/demande_pret_liste", validate, demande_pret_liste);
-mainRooting.post("/save_demande_pret", validate, save_demande_pret);
-mainRooting.post("/get_mnt_prets_encours", validate, get_mnt_prets_encours);
-mainRooting.post("/delete_demande_pret", validate, delete_demande_pret);
+mainRooting.post("/get_demande_pret", validate, gardePage("RH_Demande_Pret_Liste"), get_demande_pret);
+mainRooting.post("/demande_pret_liste", validate, gardePage("RH_Demande_Pret_Liste"), demande_pret_liste);
+mainRooting.post("/save_demande_pret", validate, gardePage("RH_Demande_Pret_Liste"), save_demande_pret);
+mainRooting.post("/get_mnt_prets_encours", validate, gardePage("RH_Demande_Pret_Liste"), get_mnt_prets_encours);
+mainRooting.post("/delete_demande_pret", validate, gardePage("RH_Demande_Pret_Liste"), delete_demande_pret);
 
-mainRooting.post("/get_dossier_maladie", validate, get_dossier_maladie);
-mainRooting.post("/dossier_maladie_liste", validate, dossier_maladie_liste);
-mainRooting.post("/save_dossier_maladie", validate, save_dossier_maladie);
+mainRooting.post("/get_dossier_maladie", validate, gardePage("RH_Dossier_Maladie_Liste"), get_dossier_maladie);
+mainRooting.post("/dossier_maladie_liste", validate, gardePage("RH_Dossier_Maladie_Liste"), dossier_maladie_liste);
+mainRooting.post("/save_dossier_maladie", validate, gardePage("RH_Dossier_Maladie_Liste"), save_dossier_maladie);
 mainRooting.post("/get_mnt_prets_encours", validate, get_mnt_prets_encours);
-mainRooting.post("/delete_dossier_maladie", validate, delete_dossier_maladie);
+mainRooting.post("/delete_dossier_maladie", validate, gardePage("RH_Dossier_Maladie_Liste"), delete_dossier_maladie);
 
-mainRooting.post("/get_demande_conge", validate, get_demande_conge);
-mainRooting.post("/demande_conge_liste", validate, demande_conge_liste);
-mainRooting.post("/save_demande_conge", validate, save_demande_conge);
+mainRooting.post("/get_demande_conge", validate, gardePage("RH_Demande_Conge_Liste"), get_demande_conge);
+mainRooting.post("/demande_conge_liste", validate, gardePage("RH_Demande_Conge_Liste"), demande_conge_liste);
+mainRooting.post("/save_demande_conge", validate, gardePage("RH_Demande_Conge_Liste"), save_demande_conge);
 mainRooting.post("/get_mnt_prets_encours", validate, get_mnt_prets_encours);
-mainRooting.post("/delete_demande_conge", validate, delete_demande_conge);
-mainRooting.post("/get_conge_droits", validate, get_conge_droits);
-mainRooting.post("/calcul_conge", validate, calcul_conge);
-mainRooting.post("/conge_planning", validate, conge_planning);
+mainRooting.post("/delete_demande_conge", validate, gardePage("RH_Demande_Conge_Liste"), delete_demande_conge);
+mainRooting.post("/get_conge_droits", validate, gardePage("RH_Demande_Conge_Liste"), get_conge_droits);
+mainRooting.post("/calcul_conge", validate, gardePage("RH_Demande_Conge_Liste"), calcul_conge);
+mainRooting.post("/conge_planning", validate, gardePage("RH_Conge_Planning"), conge_planning);
 
 mainRooting.get("/surveyQuestions", validate, surveyQuestions);
 mainRooting.get("/surveyAnswers", validate, surveyAnswers);
 mainRooting.post("/surveyAnswersSave", validate, surveyAnswersSave);
 
-mainRooting.post("/save_note_frais", validate, save_note_frais);
-mainRooting.post("/note_frais_liste", validate, noteFraisListe);
-mainRooting.post("/get_note_frais", validate, get_note_frais);
-mainRooting.post("/delete_note_frais", validate, delete_note_frais);
+mainRooting.post("/save_note_frais", validate, gardePage("Note_Frais_Liste"), save_note_frais);
+mainRooting.post("/note_frais_liste", validate, gardePage("Note_Frais_Liste"), noteFraisListe);
+mainRooting.post("/get_note_frais", validate, gardePage("Note_Frais_Liste"), get_note_frais);
+mainRooting.post("/delete_note_frais", validate, gardePage("Note_Frais_Liste"), delete_note_frais);
 mainRooting.post("/is_paie_encours", validate, isPaieEncours);
 mainRooting.post("/check_accessible", validate, checkAccessible);
 mainRooting.post("/release_accessible", validate, releaseAccessibleApi);
@@ -177,54 +187,54 @@ mainRooting.post("/ged_rename", validate, fileClass.ged_rename);
 mainRooting.post("/readfile", validate, fileClass.readFile);
 mainRooting.post("/newFolder", validate, fileClass.newFolder);
 mainRooting.post("/savingaudio", validate, fileClass.uploadAudiBase64);
-mainRooting.post("/bulletin_liste", validate, bulletin_liste);
+mainRooting.post("/bulletin_liste", validate, gardePage("RH_Bulletin_Liste"), bulletin_liste);
 
-mainRooting.post("/get_organigramme", validate, getOrganigramme);
+mainRooting.post("/get_organigramme", validate, gardePage("Org_Organigramme"), getOrganigramme);
 mainRooting.post("/getPoste", validate, getPoste);
-mainRooting.post("/evaluation_liste", validate, getEvaluationListe);
-mainRooting.post("/formation_evaluation_context", validate, formation_evaluation_context);
-mainRooting.post("/formation_evaluation_liste", validate, formation_evaluation_liste);
-mainRooting.post("/get_formation_liste", validate, get_formation_liste);
-mainRooting.post("/get_formation", validate, get_formation);
-mainRooting.post("/save_formation", validate, save_formation);
-mainRooting.post("/get_recrutement_demande", validate, get_recrutement_demande);
-mainRooting.post("/save_recrutement_demande", validate, save_recrutement_demande);
-mainRooting.post("/delete_recrutement_demande", validate, delete_recrutement_demande);
-mainRooting.post("/get_recrutement_demande_liste", validate, get_recrutement_demande_liste);
-mainRooting.post("/get_avancement_timeline", validate, get_avancement_timeline);
+mainRooting.post("/evaluation_liste", validate, gardePage("Evaluation_Liste"), getEvaluationListe);
+mainRooting.post("/formation_evaluation_context", validate, gardePage("Formation_Evaluation_Liste"), formation_evaluation_context);
+mainRooting.post("/formation_evaluation_liste", validate, gardePage("Formation_Evaluation_Liste"), formation_evaluation_liste);
+mainRooting.post("/get_formation_liste", validate, gardePage("Formation_Liste"), get_formation_liste);
+mainRooting.post("/get_formation", validate, gardePage("Formation_Liste"), get_formation);
+mainRooting.post("/save_formation", validate, gardePage("Formation_Liste"), save_formation);
+mainRooting.post("/get_recrutement_demande", validate, gardePage("Recrutement_Demande_Liste"), get_recrutement_demande);
+mainRooting.post("/save_recrutement_demande", validate, gardePage("Recrutement_Demande_Liste"), save_recrutement_demande);
+mainRooting.post("/delete_recrutement_demande", validate, gardePage("Recrutement_Demande_Liste"), delete_recrutement_demande);
+mainRooting.post("/get_recrutement_demande_liste", validate, gardePage("Recrutement_Demande_Liste"), get_recrutement_demande_liste);
+mainRooting.post("/get_avancement_timeline", validate, gardePage("RH_Avancement_Timeline"), get_avancement_timeline);
 mainRooting.post("/get_agenda", validate, get_agenda);
-mainRooting.post("/discipline_liste", validate, discipline_liste);
-mainRooting.post("/get_discipline", validate, get_discipline);
-mainRooting.get("/ficheposte", validate, ficheposte);
+mainRooting.post("/discipline_liste", validate, gardePage("RH_Discipline_Liste"), discipline_liste);
+mainRooting.post("/get_discipline", validate, gardePage("RH_Discipline_Liste"), get_discipline);
+mainRooting.get("/ficheposte", validate, gardePage("Org_Poste"), ficheposte);
 mainRooting.post(
   "/uploadfile",
   upload.single("file"),
   validate,
   fileClass.upload
 );
-mainRooting.post("/get_diverse_editions", validate, get_diverse_editions);
+mainRooting.post("/get_diverse_editions", validate, gardePage("DiverseEditions"), get_diverse_editions);
 
-mainRooting.post("/demande_doc_admin_liste", validate, demandeDocAdminListe);
-mainRooting.post("/get_demande_doc_admin", validate, get_demande_doc_admin);
-mainRooting.post("/save_demande_doc_admin", validate, save_demande_doc_admin);
-mainRooting.post("/delete_demande_doc_admin", validate, delete_demande_doc_admin);
+mainRooting.post("/demande_doc_admin_liste", validate, gardePage("Demande_Doc_Administratif_Liste"), demandeDocAdminListe);
+mainRooting.post("/get_demande_doc_admin", validate, gardePage("Demande_Doc_Administratif_Liste"), get_demande_doc_admin);
+mainRooting.post("/save_demande_doc_admin", validate, gardePage("Demande_Doc_Administratif_Liste"), save_demande_doc_admin);
+mainRooting.post("/delete_demande_doc_admin", validate, gardePage("Demande_Doc_Administratif_Liste"), delete_demande_doc_admin);
 
-mainRooting.post("/declarationATListe", validate, declarationATListe);
-mainRooting.post("/get_declaration_at", validate, get_declaration_at);
-mainRooting.post("/dashboard", validate, getDashboardData);
-mainRooting.post("/dashboard_widget", validate, getDashboardWidgetData);
+mainRooting.post("/declarationATListe", validate, gardePage("RH_Declaration_AT_Liste"), declarationATListe);
+mainRooting.post("/get_declaration_at", validate, gardePage("RH_Declaration_AT_Liste"), get_declaration_at);
+mainRooting.post("/dashboard", validate, gardePage("Dashboard"), getDashboardData);
+mainRooting.post("/dashboard_widget", validate, gardePage("Dashboard"), getDashboardWidgetData);
 mainRooting.post("/dashboard_widget_catalog", validate, getDashboardQueryWidgetCatalog);
 mainRooting.post("/dashboard_widget_exec", validate, execDashboardQueryWidget);
-mainRooting.post("/communication_blogs_liste", validate, get_communication_blogs_liste);
-mainRooting.post("/get_communication_blog", validate, get_communication_blog);
+mainRooting.post("/communication_blogs_liste", validate, gardePage("Communication_Blogs_Liste"), get_communication_blogs_liste);
+mainRooting.post("/get_communication_blog", validate, gardePage("Communication_Blogs_Liste"), get_communication_blog);
 mainRooting.post("/ask_ai", validate, ask_ai_assistant);
 
-mainRooting.post("/outillage_mouvement_liste", validate, outillageMouvementListe);
-mainRooting.post("/get_outillage_mouvement", validate, get_outillage_mouvement);
-mainRooting.post("/save_outillage_mouvement", validate, save_outillage_mouvement);
-mainRooting.post("/delete_outillage_mouvement", validate, delete_outillage_mouvement);
+mainRooting.post("/outillage_mouvement_liste", validate, gardePage("Outillage_Mouvement_Liste"), outillageMouvementListe);
+mainRooting.post("/get_outillage_mouvement", validate, gardePage("Outillage_Mouvement_Liste"), get_outillage_mouvement);
+mainRooting.post("/save_outillage_mouvement", validate, gardePage("Outillage_Mouvement_Liste"), save_outillage_mouvement);
+mainRooting.post("/delete_outillage_mouvement", validate, gardePage("Outillage_Mouvement_Liste"), delete_outillage_mouvement);
 
-mainRooting.post("/get_outillage_info", validate, get_outillage_info);
+mainRooting.post("/get_outillage_info", validate, gardePage("Outillage_Mouvement_Liste"), get_outillage_info);
 
 /* ---- Module SP_ : pages dynamiques du portail (Designer) ---- */
 mainRooting.get("/sp_menu_portail", validate, sp_menu_portail);

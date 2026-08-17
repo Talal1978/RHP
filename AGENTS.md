@@ -163,3 +163,37 @@ projet (tests, scripts, outils en ligne de commande, chaînes de connexion).
   `RHP_Portail/rhpBE/sql/Requeteur/002_Exemple_Page_Soldes_Conges.sql` et
   `003_Exemple_Page_Departs_Retraite.sql` (critères `Calender` +
   `Appel_Zoom`).
+- **Profils portail des agents — droits par page (instruction permanente)** :
+  un profil `Controle_Profile` est affecté à chaque agent via
+  **`RH_Agent.Cod_Profile`** (int NULL ; fiche agent desktop, bloc
+  « Paramétrage de l'authentification au portail », zoom MS061, ou écran
+  d'affectation de masse `Auth/Admin_Profil_Agent` — grille agents × combo
+  profils). Au login du portail (`controlers/authentication.ts`), le profil
+  est résolu par priorité : `RH_Agent.Cod_Profile` > `Controle_Users`
+  (par `Mail`, compatibilité) > **profil par défaut**
+  (`Controle_Profile.Portail_Defaut = 'true'`, un seul — index filtré unique
+  `UX_Controle_Profile_Portail_Defaut`, case « Profil portail par défaut » de
+  l'écran `Admin_Profile`) > `-1` ; un profil inactif est ignoré. Migration :
+  `RHP_Portail/rhpBE/sql/Securite/001_Profil_Portail_Agents.sql`.
+  **Référentiel des pages standards** : table `Controle_Menu_Portail`
+  (miroir de `rhpfe/public/menus.json` — à re-seeder si menus.json évolue) ;
+  les droits sont dans `Controle_Droit` avec **`Name_Ecran = 'PRT_' + nom de
+  la page`** (le préfixe `PRT_` isole les droits portail des écrans desktop
+  de mêmes noms, ex. `Note_Frais_Liste`), `Visible` = affichage menu,
+  `Actif` = accès page. **Règle par profil** : pas de ligne pour CE profil =
+  page non contrôlée pour lui (déploiement progressif ; l'onglet **Portail**
+  d'`Admin_Profile` écrit une ligne pour CHAQUE page à l'enregistrement) ;
+  profil `'1'` = bypass. Application côté portail : helper
+  `modules/module_droits_portail.ts` (`droitsPage`, `gardePage`) — garde
+  `gardePage("<Page>")` posée sur chaque route métier des pages standards
+  dans `root/root.ts` (après `validate` ; endpoints transverses — zoom,
+  rubrique, workflow, GED, `getPoste`, `is_paie_encours`... — non gardés) ;
+  `sp_menu_portail` renvoie en plus `pagesStandards` (pages visibles du
+  profil) et `pagesControlees` (tout le référentiel), exploités par
+  `modules/module_menus.ts` (`filtrerMenusStatiques` filtre `controleMenus`,
+  sections devenues vides retirées ; `estPageAutorisee` = garde de route dans
+  `Menu/Ecran.tsx`). `null` côté client = référentiel indisponible = aucun
+  filtrage (fail-open ; la sécurité réelle est côté serveur). Toute nouvelle
+  page standard du portail doit être ajoutée à `Controle_Menu_Portail` (seed)
+  et ses endpoints protégés par `gardePage`. Enregistrement desktop de
+  l'écran d'affectation : `RHP_DeskTop/RHP/Auth/Admin_Profil_Agent_Menu.sql`.

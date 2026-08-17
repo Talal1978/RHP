@@ -52,7 +52,7 @@
         If oTexte.Length > 100 Then
             Return ShowMessageBox(oTexte, MsgNum & " : " & oTitre)
         End If
-        Dim r As Rectangle = Screen.GetWorkingArea(If(theUser.Typ_Role = "Agent", Menu_Agent, leMenu))
+        Dim r As Rectangle = Screen.GetWorkingArea(leMenu)
         Dim oM As New Zoom_Alerte_Msg
         With oM
             .TitreMsg.Text = oTitre

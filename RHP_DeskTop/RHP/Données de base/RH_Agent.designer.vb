@@ -224,6 +224,9 @@ Partial Class RH_Agent
         Me.is_AD_chk = New RHP.ud_CheckBox()
         Me.Label7 = New System.Windows.Forms.Label()
         Me.Login_txt = New RHP.ud_TextBox()
+        Me.Cod_Profile_ = New System.Windows.Forms.LinkLabel()
+        Me.Cod_Profile_txt = New RHP.ud_TextBox()
+        Me.Lib_Profile_txt = New RHP.ud_TextBox()
         Me.Outillage = New System.Windows.Forms.TabPage()
         Me.Grd_Outillage = New RHP.ud_Grd()
         Me.Matricule_ = New System.Windows.Forms.LinkLabel()
@@ -3050,6 +3053,9 @@ Partial Class RH_Agent
         '
         'GroupBox5
         '
+        Me.GroupBox5.Controls.Add(Me.Lib_Profile_txt)
+        Me.GroupBox5.Controls.Add(Me.Cod_Profile_txt)
+        Me.GroupBox5.Controls.Add(Me.Cod_Profile_)
         Me.GroupBox5.Controls.Add(Me.is_AD_chk)
         Me.GroupBox5.Controls.Add(Me.Label7)
         Me.GroupBox5.Controls.Add(Me.Login_txt)
@@ -3106,6 +3112,59 @@ Partial Class RH_Agent
         Me.Login_txt.TabIndex = 209
         Me.Login_txt.TextAlign = System.Windows.Forms.HorizontalAlignment.Left
         Me.Login_txt.UseSystemPasswordChar = False
+        '
+        'Cod_Profile_
+        '
+        Me.Cod_Profile_.ActiveLinkColor = System.Drawing.Color.FromArgb(CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer))
+        Me.Cod_Profile_.AutoSize = True
+        Me.Cod_Profile_.DisabledLinkColor = System.Drawing.Color.FromArgb(CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer))
+        Me.Cod_Profile_.ForeColor = System.Drawing.Color.FromArgb(CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer))
+        Me.Cod_Profile_.LinkColor = System.Drawing.Color.FromArgb(CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer))
+        Me.Cod_Profile_.Location = New System.Drawing.Point(590, 66)
+        Me.Cod_Profile_.Name = "Cod_Profile_"
+        Me.Cod_Profile_.Size = New System.Drawing.Size(95, 19)
+        Me.Cod_Profile_.TabIndex = 213
+        Me.Cod_Profile_.TabStop = True
+        Me.Cod_Profile_.Tag = ""
+        Me.Cod_Profile_.Text = "Profil portail"
+        '
+        'Cod_Profile_txt
+        '
+        Me.Cod_Profile_txt.CharacterCasing = System.Windows.Forms.CharacterCasing.Normal
+        Me.Cod_Profile_txt.ContextMenuStrip = Nothing
+        Me.Cod_Profile_txt.Location = New System.Drawing.Point(690, 63)
+        Me.Cod_Profile_txt.Margin = New System.Windows.Forms.Padding(5, 6, 5, 6)
+        Me.Cod_Profile_txt.MaxLength = 32767
+        Me.Cod_Profile_txt.Multiline = False
+        Me.Cod_Profile_txt.Name = "Cod_Profile_txt"
+        Me.Cod_Profile_txt.Padding = New System.Windows.Forms.Padding(1, 0, 1, 0)
+        Me.Cod_Profile_txt.PasswordChar = "" & Global.Microsoft.VisualBasic.ChrW(0)
+        Me.Cod_Profile_txt.ReadOnly = True
+        Me.Cod_Profile_txt.ScrollBars = System.Windows.Forms.ScrollBars.None
+        Me.Cod_Profile_txt.SelectionStart = 0
+        Me.Cod_Profile_txt.Size = New System.Drawing.Size(80, 28)
+        Me.Cod_Profile_txt.TabIndex = 214
+        Me.Cod_Profile_txt.TextAlign = System.Windows.Forms.HorizontalAlignment.Left
+        Me.Cod_Profile_txt.UseSystemPasswordChar = False
+        '
+        'Lib_Profile_txt
+        '
+        Me.Lib_Profile_txt.CharacterCasing = System.Windows.Forms.CharacterCasing.Normal
+        Me.Lib_Profile_txt.ContextMenuStrip = Nothing
+        Me.Lib_Profile_txt.Location = New System.Drawing.Point(775, 63)
+        Me.Lib_Profile_txt.Margin = New System.Windows.Forms.Padding(5, 6, 5, 6)
+        Me.Lib_Profile_txt.MaxLength = 32767
+        Me.Lib_Profile_txt.Multiline = False
+        Me.Lib_Profile_txt.Name = "Lib_Profile_txt"
+        Me.Lib_Profile_txt.Padding = New System.Windows.Forms.Padding(1, 0, 1, 0)
+        Me.Lib_Profile_txt.PasswordChar = "" & Global.Microsoft.VisualBasic.ChrW(0)
+        Me.Lib_Profile_txt.ReadOnly = True
+        Me.Lib_Profile_txt.ScrollBars = System.Windows.Forms.ScrollBars.None
+        Me.Lib_Profile_txt.SelectionStart = 0
+        Me.Lib_Profile_txt.Size = New System.Drawing.Size(250, 28)
+        Me.Lib_Profile_txt.TabIndex = 215
+        Me.Lib_Profile_txt.TextAlign = System.Windows.Forms.HorizontalAlignment.Left
+        Me.Lib_Profile_txt.UseSystemPasswordChar = False
         '
         'Outillage
         '
@@ -3528,4 +3587,7 @@ Partial Class RH_Agent
     Friend WithEvents Label7 As Label
     Friend WithEvents Login_txt As ud_TextBox
     Friend WithEvents is_AD_chk As ud_CheckBox
+    Friend WithEvents Cod_Profile_ As LinkLabel
+    Friend WithEvents Cod_Profile_txt As ud_TextBox
+    Friend WithEvents Lib_Profile_txt As ud_TextBox
 End Class

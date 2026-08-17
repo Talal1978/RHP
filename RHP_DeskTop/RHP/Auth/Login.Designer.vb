@@ -45,7 +45,6 @@ Partial Class Login
         Me.p_1 = New System.Windows.Forms.PictureBox()
         Me.Close_D = New System.Windows.Forms.PictureBox()
         Me.NewConnection_D = New System.Windows.Forms.PictureBox()
-        Me.Default_Interface_switch = New DevComponents.DotNetBar.Controls.SwitchButton()
         Me.Ud_Panel2.SuspendLayout()
         Me.pn_log.SuspendLayout()
         CType(Me.pb_chk, System.ComponentModel.ISupportInitialize).BeginInit()
@@ -68,7 +67,6 @@ Partial Class Login
         Me.Ud_Panel2.BackgroundImage = CType(resources.GetObject("Ud_Panel2.BackgroundImage"), System.Drawing.Image)
         Me.Ud_Panel2.BorderColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
         Me.Ud_Panel2.BorderSize = 2
-        Me.Ud_Panel2.Controls.Add(Me.Default_Interface_switch)
         Me.Ud_Panel2.Controls.Add(Me.Connection_lb)
         Me.Ud_Panel2.Controls.Add(Me.pn_log)
         Me.Ud_Panel2.Controls.Add(Me.Version)
@@ -338,26 +336,6 @@ Partial Class Login
         Me.NewConnection_D.TabIndex = 1
         Me.NewConnection_D.TabStop = False
         '
-        'Default_Interface_switch
-        '
-        '
-        '
-        '
-        Me.Default_Interface_switch.BackgroundStyle.BackColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
-        Me.Default_Interface_switch.BackgroundStyle.BackColor2 = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
-        Me.Default_Interface_switch.BackgroundStyle.Class = ""
-        Me.Default_Interface_switch.BackgroundStyle.CornerType = DevComponents.DotNetBar.eCornerType.Square
-        Me.Default_Interface_switch.BackgroundStyle.TextShadowColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
-        Me.Default_Interface_switch.BorderColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
-        Me.Default_Interface_switch.Location = New System.Drawing.Point(40, 617)
-        Me.Default_Interface_switch.Name = "Default_Interface_switch"
-        Me.Default_Interface_switch.OffText = "BackOffice"
-        Me.Default_Interface_switch.OnText = "Portail"
-        Me.Default_Interface_switch.Size = New System.Drawing.Size(154, 33)
-        Me.Default_Interface_switch.Style = DevComponents.DotNetBar.eDotNetBarStyle.StyleManagerControlled
-        Me.Default_Interface_switch.SwitchWidth = 50
-        Me.Default_Interface_switch.TabIndex = 15
-        '
         'Login
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(8.0!, 16.0!)
@@ -413,5 +391,4 @@ Partial Class Login
     Friend WithEvents Connection_lb As ListBox
     Friend WithEvents pb_cbo As PictureBox
     Friend WithEvents Connection_lbl As Label
-    Friend WithEvents Default_Interface_switch As DevComponents.DotNetBar.Controls.SwitchButton
 End Class

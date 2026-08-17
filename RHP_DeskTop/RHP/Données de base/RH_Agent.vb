@@ -134,6 +134,7 @@ where a.Matricule='" & Matricule_Text.Text & "' and a.id_Societe=" & Societe.id_
             Solde_Conge_txt.Text = IsNull(CltTbl.Rows(0)("Solde_Conge"), 0)
             Login_txt.Text = IsNull(CltTbl.Rows(0)("Login"), "")
             is_AD_chk.Checked = IsNull(CltTbl.Rows(0)("is_AD"), False)
+            Cod_Profile_txt.Text = IsNull(CltTbl.Rows(0)("Cod_Profile"), "")
             'Afficher la photo
             Dim ImageData As Object = CnExecuting("select Photo from RH_Agent where Matricule='" & Matricule_Text.Text & "'  and id_Societe=" & Societe.id_Societe).Fields(0).Value
             PictureBox1.Image = AffichagePhoto(ImageData)
@@ -635,6 +636,12 @@ Recommence:
         rs("Droit_Conge_Mensuel").Value = Droit_Conge_Mensuel_txt.Text
         rs("Login").Value = Login_txt.Text.Trim
         rs("is_AD").Value = is_AD_chk.Checked
+        'Profil portail (Controle_Profile) : NULL si non renseigné -> profil par défaut
+        If Cod_Profile_txt.Text.Trim = "" Then
+            rs("Cod_Profile").Value = Nothing
+        Else
+            rs("Cod_Profile").Value = CInt(Cod_Profile_txt.Text.Trim)
+        End If
         rs("Dat_Modif").Value = Dat
         rs("Modified_By").Value = theUser.Login
         If Cod_Simulation <> "" Then
@@ -1004,6 +1011,15 @@ select 'RH_Simulation' as Tbl,count(*) from RH_Simulation where Matricule='{0}'"
     End Sub
     Private Sub Entite__LinkClicked(sender As Object, e As LinkLabelLinkClickedEventArgs) Handles Entite_.LinkClicked
         Appel_Zoom1("MS010", Cod_Entite_txt, Me)
+
+    End Sub
+
+    Private Sub Cod_Profile__LinkClicked(sender As Object, e As LinkLabelLinkClickedEventArgs) Handles Cod_Profile_.LinkClicked
+        Appel_Zoom1("MS061", Cod_Profile_txt, Me)
+    End Sub
+
+    Private Sub Cod_Profile_txt_TextChanged(sender As Object, e As EventArgs) Handles Cod_Profile_txt.TextChanged
+        Lib_Profile_txt.Text = FindLibelle("Lib_Profile", "Cod_Profile", Cod_Profile_txt.Text, "Controle_Profile")
     End Sub
     Private Sub Cod_Entite_txt_TextChanged(sender As Object, e As EventArgs) Handles Cod_Entite_txt.TextChanged
         Lib_Entite_txt.Text = FindLibelle("Lib_Entite", "Cod_Entite", Cod_Entite_txt.Text, "Org_Entite")

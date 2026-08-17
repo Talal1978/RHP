@@ -44,8 +44,6 @@ Partial Class leMenu
         Me.Srv_pb = New System.Windows.Forms.PictureBox()
         Me.Splitter1 = New System.Windows.Forms.Splitter()
         Me.Personnal_pnl = New System.Windows.Forms.TableLayoutPanel()
-        Me.pbModeAgent = New System.Windows.Forms.PictureBox()
-        Me.modeAgent_lbl = New System.Windows.Forms.Label()
         Me.Déconnexion = New System.Windows.Forms.Label()
         Me.pblogout = New System.Windows.Forms.PictureBox()
         Me.Label2 = New System.Windows.Forms.Label()
@@ -66,7 +64,6 @@ Partial Class leMenu
         CType(Me.DB_pb, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.Srv_pb, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.Personnal_pnl.SuspendLayout()
-        CType(Me.pbModeAgent, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.pblogout, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.pbchangePwd, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.pbParapheur, System.ComponentModel.ISupportInitialize).BeginInit()
@@ -333,49 +330,21 @@ Partial Class leMenu
         Me.Personnal_pnl.ColumnCount = 2
         Me.Personnal_pnl.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 18.5!))
         Me.Personnal_pnl.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 81.5!))
-        Me.Personnal_pnl.Controls.Add(Me.pbModeAgent, 0, 2)
-        Me.Personnal_pnl.Controls.Add(Me.modeAgent_lbl, 1, 2)
-        Me.Personnal_pnl.Controls.Add(Me.Déconnexion, 1, 3)
-        Me.Personnal_pnl.Controls.Add(Me.pblogout, 0, 3)
+        Me.Personnal_pnl.Controls.Add(Me.Déconnexion, 1, 2)
+        Me.Personnal_pnl.Controls.Add(Me.pblogout, 0, 2)
         Me.Personnal_pnl.Controls.Add(Me.Label2, 1, 1)
         Me.Personnal_pnl.Controls.Add(Me.pbchangePwd, 0, 0)
         Me.Personnal_pnl.Controls.Add(Me.Label1, 1, 0)
         Me.Personnal_pnl.Controls.Add(Me.pbParapheur, 0, 1)
         Me.Personnal_pnl.Location = New System.Drawing.Point(942, 65)
         Me.Personnal_pnl.Name = "Personnal_pnl"
-        Me.Personnal_pnl.RowCount = 4
-        Me.Personnal_pnl.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 25.0!))
-        Me.Personnal_pnl.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 25.0!))
-        Me.Personnal_pnl.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 25.0!))
-        Me.Personnal_pnl.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 25.0!))
+        Me.Personnal_pnl.RowCount = 3
+        Me.Personnal_pnl.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 33.33333!))
+        Me.Personnal_pnl.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 33.33333!))
+        Me.Personnal_pnl.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 33.33333!))
         Me.Personnal_pnl.Size = New System.Drawing.Size(291, 182)
         Me.Personnal_pnl.TabIndex = 0
         Me.Personnal_pnl.Visible = False
-        '
-        'pbModeAgent
-        '
-        Me.pbModeAgent.Cursor = System.Windows.Forms.Cursors.Hand
-        Me.pbModeAgent.Dock = System.Windows.Forms.DockStyle.Fill
-        Me.pbModeAgent.Image = Global.RHP.My.Resources.Resources.btn_mode_agent_w
-        Me.pbModeAgent.Location = New System.Drawing.Point(3, 93)
-        Me.pbModeAgent.Name = "pbModeAgent"
-        Me.pbModeAgent.Size = New System.Drawing.Size(47, 39)
-        Me.pbModeAgent.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage
-        Me.pbModeAgent.TabIndex = 6
-        Me.pbModeAgent.TabStop = False
-        '
-        'modeAgent_lbl
-        '
-        Me.modeAgent_lbl.Cursor = System.Windows.Forms.Cursors.Hand
-        Me.modeAgent_lbl.Dock = System.Windows.Forms.DockStyle.Fill
-        Me.modeAgent_lbl.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.modeAgent_lbl.ForeColor = System.Drawing.Color.White
-        Me.modeAgent_lbl.Location = New System.Drawing.Point(56, 90)
-        Me.modeAgent_lbl.Name = "modeAgent_lbl"
-        Me.modeAgent_lbl.Size = New System.Drawing.Size(232, 45)
-        Me.modeAgent_lbl.TabIndex = 5
-        Me.modeAgent_lbl.Text = "Mode Agent"
-        Me.modeAgent_lbl.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
         '
         'Déconnexion
         '
@@ -492,7 +461,6 @@ Partial Class leMenu
         CType(Me.DB_pb, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.Srv_pb, System.ComponentModel.ISupportInitialize).EndInit()
         Me.Personnal_pnl.ResumeLayout(False)
-        CType(Me.pbModeAgent, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.pblogout, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.pbchangePwd, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.pbParapheur, System.ComponentModel.ISupportInitialize).EndInit()
@@ -528,6 +496,4 @@ Partial Class leMenu
     Friend WithEvents pblogout As PictureBox
     Friend WithEvents Label2 As Label
     Friend WithEvents pbParapheur As PictureBox
-    Friend WithEvents modeAgent_lbl As Label
-    Friend WithEvents pbModeAgent As PictureBox
 End Class

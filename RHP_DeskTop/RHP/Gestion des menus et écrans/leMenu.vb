@@ -38,69 +38,6 @@
         f.ShowDialog()
 
     End Sub
-    Private Sub pbModeAgent_Click(sender As Object, e As EventArgs) Handles pbModeAgent.Click, modeAgent_lbl.Click
-        Usr = Tbl_User.Select($"isTheUSer ='true' and Origine='Agent' and Pwd_User='{theUser.Pwd_User}'")
-        If Usr.Length > 0 Then
-            theUser.Cod_Profile = Usr(0)("Cod_Profile")
-            theUser.id_User = Usr(0)("id_User")
-            theUser.Cod_Entite = Usr(0)("Cod_Entite")
-            theUser.Cod_Poste = Usr(0)("Cod_Poste")
-            theUser.Nom = Usr(0)("Nom").ToString()
-            theUser.Typ_Role = Usr(0)("Typ_Role").ToString()
-            theUser.Mail = Usr(0)("Mail").ToString()
-            theUser.id_Societe = Usr(0)("id_Societe")
-            theUser.Matricule = Usr(0)("Matricule")
-            theUser.Login = Usr(0)("Login_User")
-            theUser.TeamLeader = Usr(0)("TeamLeader")
-            theUser.is_AD = CBool(Usr(0)("TeamLeader"))
-            Dim rs41 As New ADODB.Recordset
-            rs41.Open("select * from Controle_Users_Process", cn, 2, 2)
-            rs41.AddNew()
-            rs41("Login_User").Value = theUser.Login
-            rs41("Interface").Value = "Portail"
-            rs41("Nom_User").Value = theUser.Nom
-            rs41("hostname").Value = My.Computer.Name
-            rs41("Process_Id").Value = System.Diagnostics.Process.GetCurrentProcess().Id
-            rs41("Dat").Value = Now
-            rs41.Update()
-            rs41.Close()
-            ChargerSociete("id_Societe = " & theUser.id_Societe)
-            OuvrirSociete(theUser.id_Societe, False)
-            Dim oRw() As DataRow = Tbl_Org_Entite.Select("Cod_Entite='" & theUser.Cod_Entite & "'")
-            If oRw.Length > 0 Then
-                theUser.RacineHierarchique = oRw(0)("Racine")
-            Else
-                theUser.RacineHierarchique = ""
-            End If
-            filtreUser = If(theUser.TeamLeader, "exists(
- select * from Sys_Org_Entite s where 
- ';'+isnull(Racine+';'+s.Cod_Entite,'')+';' like '%;'+isnull(nullif('" & theUser.Cod_Entite & "',''),'8787uhuhunjj')+';%' and id_Societe=" & Societe.id_Societe & " and {0}.Cod_Entite=s.Cod_Entite)", "{0}.Matricule=" & theUser.Matricule)
-            filtreEntite = "exists(
- select * from Sys_Org_Entite s where 
- ';'+isnull(Racine+';'+s.Cod_Entite,'')+';' like '%;'+isnull(nullif('" & theUser.Cod_Entite & "',''),'8787uhuhunjj')+';%' and id_Societe=" & Societe.id_Societe & " and Org_Entite.Cod_Entite=s.Cod_Entite)"
-            With Menu_Agent
-                .AutoScaleMode = AutoScaleMode.Dpi
-                .Icon = My.Resources.rhp
-                .Text = Me.Text
-                .Show()
-                Me.Hide()
-            End With
-        Else
-            If Login Is Nothing OrElse Login.IsDisposed Then
-                Login = New Login()
-            End If
-
-            With Login
-                ' .TopLevel = True
-                '  .TopMost = True
-                .Visible = True
-                .Opacity = 1
-                .Default_Interface_switch.Value = True
-                .Show()
-            End With
-            Me.Hide()
-        End If
-    End Sub
     Private Sub Déconnexion_Click(sender As Object, e As EventArgs) Handles Déconnexion.Click, pblogout.Click
         If ShowMessageBox("Etes-vous sûr de vouloir vous déconnecter?", "Déconnexion", MessageBoxButtons.OKCancel, msgIcon.Question) = MsgBoxResult.Cancel Then Return
         ClearSecureRememberMe()
