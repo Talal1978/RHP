@@ -12,6 +12,9 @@ Imports Newtonsoft.Json
 ''' tête : défaut de la société, puis défaut global, puis les autres) et la case
 ''' 'Modèle par défaut' désigne celui utilisé par l'assistant IA (portail, desktop,
 ''' scripts) — un seul défaut par portée (index UX_Ai_Agent_Par_Defaut).
+''' INSTRUCTION (onglet 'Instruction') : commune à tous les modèles — répliquée sur
+''' toutes les lignes Ai_Agent à l'enregistrement et reprise de la base en mode
+''' 'Nouveau' (jamais vidée).
 ''' Boutons : Nouveau_pb (vider le formulaire pour ajouter un modèle),
 ''' SupprimerModele_pb (supprimer le modèle chargé — un autre modèle de la portée
 ''' est promu défaut si besoin), AddModele_pb (catalogue des modèles
@@ -129,7 +132,9 @@ Partial Public Class AI_Modeles
         AiUrl_txt.Text = ""
         AiUrl_txt.Tag = ""
         ApiKey_txt.Text = ""
-        Instructions_txt.Text = ""
+        ' Instruction commune à tous les modèles : reprise de celle en base (jamais vidée)
+        Dim rsInst As ADODB.Recordset = CnExecuting("SELECT TOP 1 Instructions FROM Ai_Agent WHERE NULLIF(Instructions, '') IS NOT NULL")
+        Instructions_txt.Text = If(rsInst IsNot Nothing AndAlso Not rsInst.EOF, IsNull(rsInst.Fields(0).Value, "").ToString(), "")
         nb_Msg_Memory.Value = 5
         Defaut_chk.Checked = False
     End Sub
@@ -227,6 +232,8 @@ Partial Public Class AI_Modeles
                             ApiKey = '{apiKey}', Instructions = '{instructions}', nb_Msg_Memory = {memoire}, Par_Defaut = '{defaut}'
                      WHERE Id = {_idModeleCharge};" & vbCrLf
         End If
+        ' Instruction commune à tous les modèles : répliquée sur toutes les lignes Ai_Agent
+        sql &= $"UPDATE Ai_Agent SET Instructions = '{instructions}';" & vbCrLf
         ' Garantir un modèle par défaut dans la portée (première configuration ou défaut retiré)
         sql &= $"UPDATE Ai_Agent SET Par_Defaut = 'true'
                  WHERE id_Societe = {idSociete} AND Provider = '{provider}' AND Modele = '{modele}'

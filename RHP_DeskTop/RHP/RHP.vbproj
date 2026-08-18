@@ -464,7 +464,9 @@
     <Compile Include="AI_Assistant\AI_KnowledgeBase.designer.vb">
       <DependentUpon>AI_KnowledgeBase.vb</DependentUpon>
     </Compile>
-    <Compile Include="AI_Assistant\AI_KnowledgeBase.vb" />
+    <Compile Include="AI_Assistant\AI_KnowledgeBase.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="AI_Assistant\AI_Modeles.Designer.vb">
       <DependentUpon>AI_Modeles.vb</DependentUpon>
     </Compile>

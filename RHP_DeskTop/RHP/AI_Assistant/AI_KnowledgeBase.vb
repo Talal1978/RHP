@@ -83,31 +83,74 @@ Partial Public Class AI_KnowledgeBase
     End Sub
 
 
+    ''' <summary>Charge la liste des sources de la base de connaissances de façon
+    ''' ASYNCHRONE : l'écran s'affiche immédiatement, l'agrégation sur
+    ''' AI_KnowledgeBase (table potentiellement volumineuse — chunks + embeddings)
+    ''' tourne sur un thread d'arrière-plan avec une connexion dédiée (la
+    ''' connexion partagée cn n'est pas thread-safe), puis la grille est remplie
+    ''' sur le thread UI.</summary>
     Private Sub LoadList()
-        Grd_Docs.Rows.Clear()
+        Lbl_Status.Text = "Chargement de la liste des documents..."
+        Dim idSoc As Integer = Societe.id_Societe
+        Task.Run(Sub()
+                     Dim erreur As String = Nothing
+                     Dim lignes = ChargerSources(idSoc, erreur)
+                     Try
+                         Me.BeginInvoke(Sub() RemplirGrilleSources(lignes, erreur))
+                     Catch
+                         ' L'écran a été fermé avant la fin du chargement : ignorer
+                     End Try
+                 End Sub)
+    End Sub
 
+    ''' <summary>Exécute l'agrégation des sources (thread d'arrière-plan). Le
+    ''' prédicat est SARGable — (id_Societe = soc OR -1 OR NULL, équivalent de
+    ''' ISNULL(NULLIF(id_Societe,-1), soc) = soc) — pour exploiter l'index
+    ''' IX_AI_KnowledgeBase_Societe (seek) au lieu d'analyser toute la table,
+    ''' toutes sociétés confondues.</summary>
+    Private Function ChargerSources(idSoc As Integer, ByRef erreur As String) As List(Of String())
+        Dim lignes As New List(Of String())
         Try
-            ' Charger depuis la base de données
-            Dim sql = $"SELECT Source, COUNT(*) AS NbChunks, MAX(LastModified) AS LastModified
-                       FROM AI_KnowledgeBase where isnull(nullif(id_Societe,-1),{Societe.id_Societe})={Societe.id_Societe} GROUP BY Source ORDER BY Source"
-
-            Dim rs As ADODB.Recordset = CnExecuting(sql)
-
-            If rs.EOF Then
-                Grd_Docs.Rows.Add("Aucune base trouvée", "Inactif", "0")
-            Else
-                While Not rs.EOF
-                    Dim source = IsNull(rs.Fields("Source").Value, "").ToString()
-                    Dim nbChunks = IsNull(rs.Fields("NbChunks").Value, 0).ToString()
-                    Dim lastMod = IsNull(rs.Fields("LastModified").Value, "N/A").ToString()
-                    Grd_Docs.Rows.Add(source, "Actif", nbChunks, lastMod)
-                    rs.MoveNext()
-                End While
-            End If
-
+            Dim sql = $"SELECT Source, COUNT(*) AS NbChunks, MAX(LastModified) AS LastModified " &
+                      $"FROM AI_KnowledgeBase WHERE (id_Societe = {idSoc} OR id_Societe = -1 OR id_Societe IS NULL) " &
+                      $"GROUP BY Source ORDER BY Source"
+            Using cnx As New OleDb.OleDbConnection(connectionString)
+                cnx.Open()
+                Using cmd = cnx.CreateCommand()
+                    cmd.CommandText = sql
+                    Using rd = cmd.ExecuteReader()
+                        While rd.Read()
+                            lignes.Add({
+                                IsNull(rd("Source"), "").ToString(),
+                                "Actif",
+                                IsNull(rd("NbChunks"), 0).ToString(),
+                                IsNull(rd("LastModified"), "N/A").ToString()})
+                        End While
+                    End Using
+                End Using
+            End Using
         Catch ex As Exception
-            ShowMessageBox("Erreur lors du chargement: " & ex.Message, "Erreur", MessageBoxButtons.OK, msgIcon.Stop)
+            erreur = ex.Message
         End Try
+        Return lignes
+    End Function
+
+    ''' <summary>Remplit la grille des sources sur le thread UI (fin du
+    ''' chargement asynchrone).</summary>
+    Private Sub RemplirGrilleSources(lignes As List(Of String()), erreur As String)
+        Lbl_Status.Text = ""
+        If erreur IsNot Nothing Then
+            ShowMessageBox("Erreur lors du chargement: " & erreur, "Erreur", MessageBoxButtons.OK, msgIcon.Stop)
+            Return
+        End If
+        Grd_Docs.Rows.Clear()
+        If lignes.Count = 0 Then
+            Grd_Docs.Rows.Add("Aucune base trouvée", "Inactif", "0")
+        Else
+            For Each l In lignes
+                Grd_Docs.Rows.Add(l)
+            Next
+        End If
     End Sub
 
 #End Region

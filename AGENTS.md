@@ -51,7 +51,10 @@ projet (tests, scripts, outils en ligne de commande, chaînes de connexion).
   du `.Designer.vb` — référence : `Zoom_SP_SqlSource.Designer.vb`
   (déclarations de champs en bas, `Partial Class`, `Inherits` uniquement dans
   le `.Designer.vb`, `.resx` absent si inutile, entrée `<Compile>` avec
-  `<DependentUpon>` dans le `.vbproj`). Le constructeur du `.vb` appelle
+  `<DependentUpon>` dans le `.vbproj` **et `<SubType>Form</SubType>` sur
+  l'entrée `<Compile>` du `.vb`** — sans ce `SubType`, Visual Studio ne
+  reconnaît pas le formulaire et le Concepteur ne s'ouvre pas, ex. bug
+  corrigé sur `AI_Modeles`). Le constructeur du `.vb` appelle
   `InitializeComponent()` puis n'affecte que des **données** (textes
   dynamiques, valeurs), jamais de disposition.
 - **Colonnes des grilles** : comme tout autre contrôle, les colonnes des
@@ -129,7 +132,12 @@ projet (tests, scripts, outils en ligne de commande, chaînes de connexion).
   desktop dédié **`AI_Modeles`** (menu « Assistant AI » ; la base de
   connaissances `AI_KnowledgeBase` ne gère que l'**embedding** — import de
   documents, chunks, configuration `Ai_Embedding` ; la suppression d'une source
-  y efface, après confirmation, **tous ses chunks**). Elle est
+  y efface, après confirmation, **tous ses chunks** ; la liste des sources est
+  chargée **en asynchrone** (connexion dédiée, jamais la `cn` partagée hors
+  thread UI) avec un prédicat **SARGable** `(id_Societe = @soc OR id_Societe =
+  -1 OR id_Societe IS NULL)` adossé à l'index `IX_AI_KnowledgeBase_Societe`
+  (migration `RHP_Portail/rhpBE/sql/AI/004_AI_KnowledgeBase_Index_Chargement.sql`)
+  — la forme `ISNULL(NULLIF(...))` imposait un scan de toute la table). Elle est
   **multi-modèles** : plusieurs
   configurations (fournisseur/modèle/url/clé API/mémoire) par portée (globale
   `id_Societe=-1` ou propre à la société — case « Paramétrage global »), une
@@ -140,7 +148,14 @@ projet (tests, scripts, outils en ligne de commande, chaînes de connexion).
   case à cocher, triée par priorité) et édite le modèle sélectionné dans le
   formulaire (case « Modèle par défaut », boutons `Nouveau_pb` /
   `SupprimerModele_pb` — la suppression d'un défaut promeut le premier modèle
-  restant de la portée). **Tout consommateur du LLM choisit par défaut le
+  restant de la portée). **L'instruction (onglet « Instruction ») est commune
+  à tous les modèles** : répliquée sur toutes les lignes `Ai_Agent` à
+  l'enregistrement et reprise de la base en mode « Nouveau » (jamais vidée).
+  Le catalogue des modèles proposés par fournisseur (combo « Modèle ») vit
+  dans `Ai_LLM_Modeles` (migration
+  `RHP_Portail/rhpBE/sql/AI/003_Ai_LLM_Modeles_Catalogue.sql` — listes
+  volontairement limitées aux modèles phares). **Tout consommateur du LLM
+  choisit par défaut le
   modèle par défaut** avec le même ordre (jamais un `TOP 1` sans ce tri) :
   `ORDER BY CASE WHEN ISNULL(Par_Defaut,'false')='true' THEN 0 ELSE 1 END,
   CASE WHEN id_Societe = @soc THEN 0 ELSE 1 END` — le défaut de la société

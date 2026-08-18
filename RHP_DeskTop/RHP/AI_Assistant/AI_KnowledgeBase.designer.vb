@@ -57,6 +57,7 @@ Partial Class AI_KnowledgeBase
         '
         Me.Grd_Docs.AfficherLesEntetesLignes = True
         Me.Grd_Docs.AllowUserToAddRows = False
+        Me.Grd_Docs.AllowUserToDeleteRows = False
         Me.Grd_Docs.AlternerLesLignes = False
         Me.Grd_Docs.BackgroundColor = System.Drawing.Color.White
         Me.Grd_Docs.BorderStyle = System.Windows.Forms.BorderStyle.None
@@ -90,6 +91,7 @@ Partial Class AI_KnowledgeBase
         DataGridViewCellStyle3.BackColor = System.Drawing.Color.FromArgb(CType(CType(169, Byte), Integer), CType(CType(210, Byte), Integer), CType(CType(224, Byte), Integer))
         DataGridViewCellStyle3.Font = New System.Drawing.Font("Century Gothic", 8.25!)
         Me.Grd_Docs.RowHeadersDefaultCellStyle = DataGridViewCellStyle3
+        Me.Grd_Docs.RowHeadersVisible = False
         Me.Grd_Docs.RowHeadersWidth = 51
         Me.Grd_Docs.Size = New System.Drawing.Size(1191, 439)
         Me.Grd_Docs.TabIndex = 1
@@ -131,7 +133,7 @@ Partial Class AI_KnowledgeBase
         'Tester_EmbeddingConn_btn
         '
         Me.Tester_EmbeddingConn_btn.BackColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
-        Me.Tester_EmbeddingConn_btn.bgColor = System.Drawing.Color.White
+        Me.Tester_EmbeddingConn_btn.bgColor = System.Drawing.Color.FromArgb(CType(CType(250, Byte), Integer), CType(CType(250, Byte), Integer), CType(CType(250, Byte), Integer))
         Me.Tester_EmbeddingConn_btn.Border = RHP.ud_button.BorderStyle.All
         Me.Tester_EmbeddingConn_btn.BorderColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
         Me.Tester_EmbeddingConn_btn.BorderSize = 2
