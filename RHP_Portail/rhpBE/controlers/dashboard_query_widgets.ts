@@ -6,7 +6,7 @@ import { Float, Int, NVarChar, SmallDateTime } from "mssql";
  * Widgets déclarés dans Param_Query (requêteur desktop) exposés sur le portail.
  *
  * Sécurité / droits d'accès :
- * - Le catalogue est filtré par le profil du JWT via Controle_Droit (Actif) :
+ * - Le catalogue est filtré par le profil du JWT via Controle_Droit (Visible) :
  *   un profil ne voit QUE les requêtes autorisées ("angle sécurité").
  * - L'exécution re-vérifie le droit (aucune confiance dans le client).
  * - Les paramètres (@Matricule, @idSoc, @CodEntite, ...) sont alimentés
@@ -84,9 +84,12 @@ export const parseDefaultValue = (typCritere: string, defVal: string) => {
 };
 
 export const hasQueryRight = async (codProfile: string, codQuery: string): Promise<boolean> => {
+  // Droit des requêtes : seul "Visible" de Controle_Droit est pris en charge
+  // (convention simplifiée — géré dans l'onglet Sécurité de Param_Query et
+  // dans l'onglet Portail d'Admin_Profile ; "Actif" n'est pas utilisé).
   const rsl = await lireSql(
     `select count(*) as nb from Controle_Droit
-     where Cod_Profile=@profil and Name_Ecran=@qry and isnull(Actif,'false')='true'`,
+     where Cod_Profile=@profil and Name_Ecran=@qry and isnull(Visible,'false')='true'`,
     [
       { param: "profil", sqlType: NVarChar, valeur: codProfile },
       { param: "qry", sqlType: NVarChar, valeur: codQuery },
@@ -117,8 +120,9 @@ export const getDashboardQueryWidgetCatalog = async (req: Request, res: Response
               isnull(w.DefaultSpan, 6) as defaultSpan, isnull(w.Description,'') as description
        from Param_Query q
        join Param_Query_Widget w on w.Cod_Query = q.Cod_Query and isnull(w.estWidget,'false')='true'
-       where exists (select 1 from Controle_Droit d
-                     where d.Cod_Profile=@profil and d.Name_Ecran=q.Cod_Query and isnull(d.Actif,'false')='true')
+       where @profil='1' -- profil '1' bypass (convention RHP, comme portal_query)
+          or exists (select 1 from Controle_Droit d
+                     where d.Cod_Profile=@profil and d.Name_Ecran=q.Cod_Query and isnull(d.Visible,'false')='true')
        order by q.Nom_Query`,
       [{ param: "profil", sqlType: NVarChar, valeur: codProfile }]
     );
@@ -158,8 +162,9 @@ export const execDashboardQueryWidget = async (req: Request, res: Response) => {
     }
     const meta = wMeta.data[0];
 
-    // 2. Droit du profil (re-vérification à l'exécution)
-    if (!codProfile || codProfile === "-1" || !(await hasQueryRight(codProfile, widgetId))) {
+    // 2. Droit du profil (re-vérification à l'exécution) — profil '1' bypass
+    //    (convention RHP, identique aux pages-requêtes de portal_query.ts)
+    if (!codProfile || codProfile === "-1" || (codProfile !== "1" && !(await hasQueryRight(codProfile, widgetId)))) {
       return res.send({ result: false, message: "Accès non autorisé à ce widget" });
     }
 

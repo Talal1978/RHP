@@ -38,6 +38,8 @@ Partial Class Zoom_SP_Assistant_IA
         Me.rdoGeneration = New System.Windows.Forms.RadioButton()
         Me.lblStatut = New System.Windows.Forms.Label()
         Me.pnlModele = New System.Windows.Forms.FlowLayoutPanel()
+        Me.lblProvider = New System.Windows.Forms.Label()
+        Me.cboProvider = New System.Windows.Forms.ComboBox()
         Me.lblModele = New System.Windows.Forms.Label()
         Me.cboModele = New System.Windows.Forms.ComboBox()
         Me.txtChat = New System.Windows.Forms.RichTextBox()
@@ -218,6 +220,8 @@ Partial Class Zoom_SP_Assistant_IA
         '
         Me.pnlModele.BackColor = System.Drawing.Color.FromArgb(CType(CType(250, Byte), Integer), CType(CType(250, Byte), Integer), CType(CType(250, Byte), Integer))
         Me.pnlModes.SetColumnSpan(Me.pnlModele, 3)
+        Me.pnlModele.Controls.Add(Me.lblProvider)
+        Me.pnlModele.Controls.Add(Me.cboProvider)
         Me.pnlModele.Controls.Add(Me.lblModele)
         Me.pnlModele.Controls.Add(Me.cboModele)
         Me.pnlModele.Dock = System.Windows.Forms.DockStyle.Fill
@@ -228,16 +232,42 @@ Partial Class Zoom_SP_Assistant_IA
         Me.pnlModele.TabIndex = 3
         Me.pnlModele.WrapContents = False
         '
+        'lblProvider
+        '
+        Me.lblProvider.AutoSize = True
+        Me.lblProvider.Font = New System.Drawing.Font("Century Gothic", 8.25!)
+        Me.lblProvider.ForeColor = System.Drawing.Color.FromArgb(CType(CType(110, Byte), Integer), CType(CType(110, Byte), Integer), CType(CType(110, Byte), Integer))
+        Me.lblProvider.Location = New System.Drawing.Point(0, 5)
+        Me.lblProvider.Margin = New System.Windows.Forms.Padding(0, 5, 3, 3)
+        Me.lblProvider.Name = "lblProvider"
+        Me.lblProvider.Size = New System.Drawing.Size(90, 19)
+        Me.lblProvider.TabIndex = 0
+        Me.lblProvider.Text = "Fournisseur :"
+        '
+        'cboProvider
+        '
+        Me.cboProvider.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
+        Me.cboProvider.FlatStyle = System.Windows.Forms.FlatStyle.Flat
+        Me.cboProvider.Font = New System.Drawing.Font("Century Gothic", 8.25!)
+        Me.cboProvider.FormattingEnabled = True
+        Me.cboProvider.Location = New System.Drawing.Point(96, 2)
+        Me.cboProvider.Margin = New System.Windows.Forms.Padding(3, 2, 3, 3)
+        Me.cboProvider.Name = "cboProvider"
+        Me.cboProvider.Size = New System.Drawing.Size(150, 27)
+        Me.cboProvider.TabIndex = 1
+        Me.ToolTip1.SetToolTip(Me.cboProvider, "Fournisseur de l'assistant, parmi ceux enregistrés (table Ai_Agent — écran AI_Mod" &
+         "eles) : sa clé d'API et son URL sont utilisées.")
+        '
         'lblModele
         '
         Me.lblModele.AutoSize = True
         Me.lblModele.Font = New System.Drawing.Font("Century Gothic", 8.25!)
         Me.lblModele.ForeColor = System.Drawing.Color.FromArgb(CType(CType(110, Byte), Integer), CType(CType(110, Byte), Integer), CType(CType(110, Byte), Integer))
-        Me.lblModele.Location = New System.Drawing.Point(0, 5)
-        Me.lblModele.Margin = New System.Windows.Forms.Padding(0, 5, 3, 3)
+        Me.lblModele.Location = New System.Drawing.Point(261, 5)
+        Me.lblModele.Margin = New System.Windows.Forms.Padding(12, 5, 3, 3)
         Me.lblModele.Name = "lblModele"
         Me.lblModele.Size = New System.Drawing.Size(70, 19)
-        Me.lblModele.TabIndex = 0
+        Me.lblModele.TabIndex = 2
         Me.lblModele.Text = "Modèle :"
         '
         'cboModele
@@ -246,13 +276,13 @@ Partial Class Zoom_SP_Assistant_IA
         Me.cboModele.FlatStyle = System.Windows.Forms.FlatStyle.Flat
         Me.cboModele.Font = New System.Drawing.Font("Century Gothic", 8.25!)
         Me.cboModele.FormattingEnabled = True
-        Me.cboModele.Location = New System.Drawing.Point(76, 2)
+        Me.cboModele.Location = New System.Drawing.Point(337, 2)
         Me.cboModele.Margin = New System.Windows.Forms.Padding(3, 2, 3, 3)
         Me.cboModele.Name = "cboModele"
-        Me.cboModele.Size = New System.Drawing.Size(430, 27)
-        Me.cboModele.TabIndex = 1
-        Me.ToolTip1.SetToolTip(Me.cboModele, "Modèle utilisé par l'assistant, parmi les modèles enregistrés (écran AI_Modeles)" &
-        " — la clé d'API du modèle par défaut (Ai_Agent) est conservée.")
+        Me.cboModele.Size = New System.Drawing.Size(330, 27)
+        Me.cboModele.TabIndex = 3
+        Me.ToolTip1.SetToolTip(Me.cboModele, "Modèle supporté par le fournisseur choisi : modèles enregistrés (Ai_Agent) et cat" &
+         "alogue (Ai_LLM_Modeles) — choix valable pour cette conversation.")
         '
         'txtChat
         '
@@ -406,6 +436,8 @@ Partial Class Zoom_SP_Assistant_IA
     Friend WithEvents rdoGeneration As RadioButton
     Friend WithEvents lblStatut As Label
     Friend WithEvents pnlModele As FlowLayoutPanel
+    Friend WithEvents lblProvider As Label
+    Friend WithEvents cboProvider As ComboBox
     Friend WithEvents lblModele As Label
     Friend WithEvents cboModele As ComboBox
     Friend WithEvents txtChat As RichTextBox

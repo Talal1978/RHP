@@ -72,7 +72,8 @@ export async function sp_menu_portail(req: Request, res: Response) {
   // Pages-requêtes (Param_Query du requêteur desktop exposées au portail :
   // Param_Query_Widget.estPortail) — entrées DIRECTES du menu (SPQ_<Cod_Query>,
   // page de consultation critères + grille, sans page liste). Visibilité :
-  // Controle_Droit sur Cod_Query (profil '1' bypass, convention RHP).
+  // droit Visible de Controle_Droit sur Cod_Query (profil '1' bypass,
+  // convention RHP — seul "Visible" est pris en charge pour les requêtes).
   const rslQ = await lireSql(
     `select q.Cod_Query, q.Nom_Query, w.Menu_Parent, w.Rang, isnull(w.Icone,'') as Icone
      from Param_Query q
@@ -80,7 +81,7 @@ export async function sp_menu_portail(req: Request, res: Response) {
      where ( @p_pr = '1'
              or exists (select 1 from Controle_Droit d
                         where d.Cod_Profile=@p_pr and d.Name_Ecran=q.Cod_Query
-                          and isnull(d.Actif,'false')='true') )
+                          and isnull(d.Visible,'false')='true') )
      order by w.Menu_Parent, w.Rang`,
     [{ param: "p_pr", sqlType: sql.NVarChar, valeur: String(codProfile ?? "") }]
   );
@@ -131,7 +132,7 @@ export async function sp_menu_portail(req: Request, res: Response) {
                         where ( @p_pr = '1'
                                 or exists (select 1 from Controle_Droit d
                                            where d.Cod_Profile=@p_pr and d.Name_Ecran=q.Cod_Query
-                                             and isnull(d.Actif,'false')='true') )) )
+                                             and isnull(d.Visible,'false')='true') )) )
      order by r.Rang, r.Membre`,
     [{ param: "p_pr", sqlType: sql.NVarChar, valeur: String(codProfile ?? "") }]
   );

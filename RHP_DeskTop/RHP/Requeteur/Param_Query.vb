@@ -98,8 +98,9 @@ Public Class Param_Query
         Portail_LblInfo.Text = "La requête devient une page du menu du portail (entrée directe, sans liste) : " &
                                "l'agent saisit les critères, clique 'Interroger' et le résultat s'affiche " &
                                "dans une grille en lecture seule ('Nouveau' vide les critères)." & vbCrLf &
-                               "Visibilité par profil : droit 'Actif' de la requête pour le profil " &
-                               "(écran des profils, comme les widgets du tableau de bord ; profil '1' voit tout)." & vbCrLf &
+                               "Visibilité par profil : droit 'Visible' de la requête pour le profil " &
+                               "(onglet 'Sécurité' ci-contre ou écran des profils, comme les widgets " &
+                               "du tableau de bord ; profil '1' voit tout)." & vbCrLf &
                                "Jamais saisis, alimentés automatiquement : @idSoc, @Matricule, @CodEntite, " &
                                "@CodPoste, @Login, @idUser, @CodProfile, @TeamLeader, @DatJour, @DebMois, " &
                                "@FinMois (ou Default_Value GV_*) ; les autres critères sont demandés." & vbCrLf &
@@ -555,7 +556,7 @@ Public Class Param_Query
             Next
         End With
         Securite_Grd.Rows.Clear()
-        Cod_Sql = "SELECT Cod_Profile,Lib_Profile,ISNULL((SELECT Visible FROM Controle_Droit WHERE Name_Ecran='" & Cod_Query_Text.Text & "' AND Cod_Profile=Controle_Profile.Cod_Profile),'False') as 'Visible'   FROM dbo.Controle_Profile"
+        Cod_Sql = "SELECT Cod_Profile,Lib_Profile,ISNULL((SELECT top 1 Visible FROM Controle_Droit WHERE Name_Ecran='" & Cod_Query_Text.Text & "' AND Cod_Profile=Controle_Profile.Cod_Profile),'False') as 'Visible'   FROM dbo.Controle_Profile"
         Tbl = DATA_READER_GRD(Cod_Sql)
         With Tbl
             For i = 0 To .Rows.Count - 1
@@ -664,7 +665,6 @@ Public Class Param_Query
             Criterias_GRD.ReadOnly = False
 
         End If
-
         Request()
         Grd_Totaux.Rows.Clear()
 
@@ -895,6 +895,9 @@ Cod_Query_Text.Text.Contains("&") = True Then
             Next
         End With
 
+        'Droits de l'onglet Sécurité (Visible uniquement, requête courante)
+        SecuriteUpdate_Click()
+
     End Sub
 
     Private Sub Modele_Query_GRD_KeyUp(ByVal sender As Object, ByVal e As System.Windows.Forms.KeyEventArgs) Handles Criterias_GRD.KeyUp
@@ -1007,29 +1010,27 @@ Cod_Query_Text.Text.Contains("&") = True Then
     End Sub
 
 
-    Private Sub SecuriteUpdate_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles Save_ud.Click
+    Sub SecuriteUpdate_Click()
+        ' Appelé uniquement depuis Saving() : l'onglet Sécurité ne met à jour
+        ' que Visible pour la requête courante — seul droit pris en charge pour
+        ' les requêtes (menu desktop et accès portail : pages-requêtes et
+        ' widgets). Upsert sans DELETE : Actif et les autres colonnes sont
+        ' préservés (Admin_Profile recopie Actif = Visible pour les requêtes).
+        If Cod_Query_Text.Text = "" Then Exit Sub
         Dim rs As New ADODB.Recordset
-        'Seul le droit Visible est géré ici : le droit Actif des requêtes exposées
-        'au portail (pages-requêtes / widgets du tableau de bord) est géré profil
-        'par profil dans Admin_Profile (onglet Portail) et ne doit pas être perdu —
-        'les lignes dont Actif est acquis sont conservées, seul Visible est MAJ.
-        CnExecuting("Delete from Controle_Droit where Name_Ecran='" & Cod_Query_Text.Text & "' and Cod_Profile<>1 and isnull(Actif,'false')<>'true'")
-        CnExecuting("update Controle_Droit set Visible='False' where Name_Ecran='" & Cod_Query_Text.Text & "' and Cod_Profile<>1")
         With Securite_Grd
+            .EndEdit(True)
             For i = 0 To .RowCount - 1
-                If IsNull(.Item("Visibl", i).Value, "False") = "True" And IsNull(.Item(id_User.Index, i).Value, "0") <> "1" Then
-                    rs.Open("select * from Controle_Droit where Name_Ecran='" & Cod_Query_Text.Text & "' and Cod_Profile='" & .Item(id_User.Index, i).Value & "'", cn, 2, 2)
-                    If rs.EOF Then
-                        rs.AddNew()
-                        rs("Name_Ecran").Value = Cod_Query_Text.Text
-                        rs("Cod_Profile").Value = .Item(id_User.Index, i).Value
-                    Else
-                        rs.Update()
-                    End If
-                    rs("Visible").Value = .Item("Visibl", i).Value
-                    rs.Update()
-                    rs.Close()
+                If IsNull(.Item(id_User.Index, i).Value, "") = "" Then Continue For
+                rs.Open("select * from Controle_Droit where Name_Ecran='" & Cod_Query_Text.Text & "' and Cod_Profile='" & .Item(id_User.Index, i).Value & "'", cn, 2, 2)
+                If rs.EOF Then
+                    rs.AddNew()
+                    rs("Name_Ecran").Value = Cod_Query_Text.Text
+                    rs("Cod_Profile").Value = .Item(id_User.Index, i).Value
                 End If
+                rs("Visible").Value = (IsNull(.Item("Visibl", i).Value, "False") = "True" OrElse IsNull(.Item(id_User.Index, i).Value, "0") = "1")
+                rs.Update()
+                rs.Close()
             Next
         End With
     End Sub

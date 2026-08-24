@@ -90,7 +90,9 @@ PK `(Cod_Page, Cod_Champ)`; FK → `Controle_Designer`.
 - `Etat` ∈ `S` (saisissable) `R` (lecture seule) `A` (affiché) `I` (invisible).
 - Header placement: `Rang`, `Ligne`, `Colonne`, `Largeur` (1..12, default 3 —
   flow layout on a 12-column grid; `Ligne/Colonne` only affect sort order).
-- `Valeur_Defaut`: constant or variable `GV_MATRICULE`, `GV_NOW`, `GV_LOGIN`.
+- `Valeur_Defaut`: constant or variable `GV_MATRICULE`, `GV_NOW`, `GV_TODAY`,
+  `GV_LOGIN` (only ones resolved by `valeurInitiale` — a `GV_NOW` default on a
+  `DATE` field yields today at midnight, never the current time).
 - `Rubrique` → `Param_Rubriques.Nom_Controle` (RUBRIQUE + RADIO).
 - `Num_Zoom` + `Zoom_Retour` json `{"ChampCible":"ColonneZoom",…}` (ZOOM, COMBO).
 - **SP4** (006) — `Zoom_Condition` : condition du zoom avec placeholders

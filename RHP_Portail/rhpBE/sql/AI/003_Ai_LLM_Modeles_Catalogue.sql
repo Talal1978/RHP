@@ -36,7 +36,7 @@ INSERT INTO @catalogue (Provider, Modele, aiUrl) VALUES
  (N'Gemini',      N'gemini-3.7-flash|gemini-3.1-pro-preview|gemini-2.5-pro|gemini-2.5-flash', N'https://generativelanguage.googleapis.com/v1beta/models/{MODEL}:generateContent'),
  (N'Groq',        N'openai/gpt-oss-120b|openai/gpt-oss-20b', N'https://api.groq.com/openai/v1/chat/completions'),
  (N'HuggingFace', N'meta-llama/Llama-3.3-70B-Instruct|deepseek-ai/DeepSeek-R1|Qwen/Qwen3-32B', N'https://router.huggingface.co/v1/chat/completions'),
- (N'KIMI',        N'kimi-k3|kimi-k2.7-code|kimi-k2.6|moonshot-v1-32k-vision-preview|moonshot-v1-8k-vision-preview', N'https://api.moonshot.ai/v1'),
+ (N'KIMI',        N'kimi-k3|kimi-k2.7-code|kimi-k2.6|moonshot-v1-32k-vision-preview|moonshot-v1-8k-vision-preview', N'https://api.moonshot.ai/v1/chat/completions'),
  (N'Mistral',     N'mistral-medium-latest|mistral-large-latest|mistral-small-latest|codestral-latest', N'https://api.mistral.ai/v1/chat/completions'),
  (N'Ollama',      N'llama3.3|llama3.2|qwen3|mistral|deepseek-r1|gemma3', N'http://localhost:11434/api/chat'),
  (N'OpenAI',      N'gpt-5.6|gpt-5|gpt-4o|gpt-4o-mini', N'https://api.openai.com/v1/chat/completions'),

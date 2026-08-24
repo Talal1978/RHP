@@ -108,6 +108,7 @@ du navigateur) ; alignées sur `GlobalVar()` du desktop. Inconnue ⇒ `null`
 | Variable | Valeur |
 |---|---|
 | `GV_NOW` | Date et heure du moment |
+| `GV_TODAY` | Aujourd'hui à minuit (jour sans l'heure) |
 | `GV_YEAR` | Année en cours (ex. 2026) |
 | `GV_MONTH` | Mois en cours (1-12) |
 | `GV_DAY` | Jour du mois en cours (1-31) |
@@ -116,7 +117,7 @@ du navigateur) ; alignées sur `GlobalVar()` du desktop. Inconnue ⇒ `null`
 | `GV_DEBYEAR` | 1er janvier de l'année en cours |
 
 ⚠️ Ne pas confondre avec les variables de **valeur par défaut**
-(`Valeur_Defaut` : `GV_MATRICULE`, `GV_NOW`, `GV_LOGIN` — voir
+(`Valeur_Defaut` : `GV_MATRICULE`, `GV_NOW`, `GV_TODAY`, `GV_LOGIN` — voir
 `comportement-page.md` §7) qui ne sont PAS utilisables dans les formules
 (`GV_MATRICULE`/`GV_LOGIN` n'existent pas dans `variableGlobale()`).
 

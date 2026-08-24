@@ -27,6 +27,10 @@ failed item is blocking for acceptance.
       `Cod_Champ="Num_Doc"`, `Cod_Table="ENT"`, `Nom_Colonne=""`, `TEXT`,
       `Etat:"R"`, `Persiste:false` — with **no** `colonnes` entry (locked
       convention, like the `ENT` table; any other wiring is blocking).
+- [ ] Every `required` component carries its `REQUIRED` validation on the
+      same target (scope `CHAMP` for ENT / `LIGNE` for a grid child, moment
+      `SAVE`) — **validator-enforced (blocking)**: `Obligatoire` alone is a
+      display-only marker, enforced by no engine.
 - [ ] Dependencies listed in the final response (section, icon, zooms,
       rubriques, sources, profiles, print model, workflow proc) verified
       present in the target base, or listed as expected import warnings.
@@ -81,6 +85,10 @@ failed item is blocking for acceptance.
       `<doc><societe>-<yyyy><seq>`; blocking validations fire (level `B`);
       the mandatory `Num_Doc` display field shows the number after
       save/reload.
+- [ ] Every required field is really enforced: saving with it **empty** is
+      rejected (level `B`) — for a **grid column**, fill another line and
+      leave one line's column empty to prove the `LIGNE`-scoped `REQUIRED`
+      fires (an empty mandatory column must never reach the database).
 - [ ] Calculated fields compute; grid footer totals render; zoom/rubrique/
       source fields resolve; virtual grids load read-only lines.
 - [ ] If workflow: submit (`statut='SS'`) ⇒ signature circuit triggered.

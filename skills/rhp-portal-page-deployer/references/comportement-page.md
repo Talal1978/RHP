@@ -278,16 +278,18 @@ L.35-53) :
 | `Valeur_Defaut` | Valeur initiale |
 |---|---|
 | `GV_MATRICULE` | Matricule de l'agent connecté |
-| `GV_NOW` | Date/heure du navigateur |
+| `GV_NOW` | Date/heure du navigateur — **champ `DATE` : aujourd'hui à minuit** (jamais l'heure courante : sinon toute comparaison avec une date du calendrier — toujours à minuit — échoue le jour même, ex. `GE(Dat_Fin, Dat_Debut)` rejetée alors que les deux champs affichent la même date ; un `DATETIME` conserve l'heure) |
+| `GV_TODAY` | Aujourd'hui à minuit (équivalent explicite, quel que soit le type) |
 | `GV_LOGIN` | Login de l'agent connecté |
 | constante numérique (INT/DEC/MNT) | nombre (`,` acceptée ; invalide ⇒ 0) |
 | `true`/`1` (CHECK) | case cochée |
-| autre chaîne | chaîne telle quelle |
+| autre chaîne | chaîne telle quelle — **jamais de `GV_*` hors cette liste** : elle serait stockée littéralement (validateur : bloquant) |
 | vide | `false` (CHECK) ou `""` |
 
-Côté **DDL** (`Module_SP_DDL.DefautSQL`) : seul `GV_NOW` est reconnu ⇒
-`DEFAULT (getdate())` ; sinon littéral numérique / bit (`1`,`true`) / chaîne
-échappée ; `NOT NULL` sans défaut ⇒ `(0)` numériques/bit, `('')` sinon.
+Côté **DDL** (`Module_SP_DDL.DefautSQL`) : `GV_NOW` ⇒ `DEFAULT (getdate())`,
+`GV_TODAY` ⇒ `DEFAULT (convert(date, getdate()))` ; sinon littéral numérique /
+bit (`1`,`true`) / chaîne échappée ; `NOT NULL` sans défaut ⇒ `(0)`
+numériques/bit, `('')` sinon.
 
 ## 8. Liste des documents (`DynamicPage_Liste` + `sp_document_liste`)
 
@@ -321,8 +323,15 @@ Côté **DDL** (`Module_SP_DDL.DefautSQL`) : seul `GV_NOW` est reconnu ⇒
 ## 10. Checklist comportement pour le générateur
 
 1. `Obligatoire='true'` ⇒ **toujours** accompagner d'une validation
-   `REQUIRED` (même cible, moment `SAVE`) — sinon l'obligation n'est que
-   visuelle (le validateur du skill émet un avertissement si elle manque).
+   `REQUIRED` (même cible, portée `CHAMP` pour l'entête / `LIGNE` pour une
+   grille, moment `SAVE`) — sinon l'obligation n'est que visuelle (suffixe
+   « * » du libellé, `libelleChamp`) : **aucun moteur ne lit ce marqueur**
+   (`validerClient` et `executerValidations` n'exécutent que les règles
+   déclarées) et la colonne part en base vide (incident DEMANDE_DOC : colonne
+   `Document` obligatoire enregistrée `NULL`). Le validateur du skill
+   **bloque** si la règle manque ou si la portée est incohérente (une règle
+   `CHAMP` sur un champ de détail lit `ctx.entete` : inopérante — ou, pour
+   `REQUIRED`, toujours bloquante).
 2. **Passe validations obligatoire — pour CHAQUE composant, émettre les règles
    pertinentes** (ne jamais se limiter aux `REQUIRED`) :
 

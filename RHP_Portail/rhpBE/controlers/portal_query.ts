@@ -49,7 +49,8 @@ async function pageRequete(codQuery: string, codProfile: string) {
     [{ param: "qry", sqlType: sql.NVarChar, valeur: codQuery }]
   );
   if (!rsl.result || !rsl.data?.length) return { erreur: "Page introuvable", page: null as any };
-  // Droit : profil '1' bypass (convention RHP), sinon Controle_Droit actif
+  // Droit : profil '1' bypass (convention RHP), sinon droit Visible de
+  // Controle_Droit (seul "Visible" est pris en charge pour les requêtes)
   if (codProfile !== "1" && !(await hasQueryRight(codProfile, codQuery))) {
     return { erreur: "Vous n'êtes pas autorisé à accéder à cette page.", page: null as any };
   }

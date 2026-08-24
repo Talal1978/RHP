@@ -149,7 +149,12 @@ field), `recalc_save: false`, `attachments.categories`, `operation: disable`.
    against the target base and reports them as *avertissements*).
 4. **Design the validations — mandatory pass over EVERY component** (never
    skip it): emit the pertinent rules per `references/comportement-page.md`
-   §10 — a `REQUIRED` for every `required` field, format rules (`REGEX`/
+   §10 — a `REQUIRED` for **every** `required` field (scope `CHAMP` for an
+   ENT field, `LIGNE` for a grid child — **blocking**, see §6:
+   `Obligatoire='true'` only adds « * » to the label and is enforced by **no**
+   engine; client `validerClient` and server `executerValidations` run
+   declared rules only — incident DEMANDE_DOC: a mandatory grid column saved
+   `NULL` for lack of its `REQUIRED` rule), format rules (`REGEX`/
    `MINLEN`/`MAXLEN`/`MIN`/`MAX`/`BETWEEN`) where the data calls for them,
    `COMPARE` for date/amount coherence, `UNIQUE`/`NB_LIGNES` on detail grids —
    and choose each `Moment` deliberately: `CHANGE` for immediate field
@@ -159,8 +164,9 @@ field), `recalc_save: false`, `attachments.categories`, `operation: disable`.
 5. **Validate**: pipe the canonical input as json to
    `python scripts/validate_input.py -` (stdin; stdlib only — a file path
    also works). All errors are blocking; fix and re-run until clean, then
-   review every warning (it flags a missing `REQUIRED`, a suboptimal `Moment`,
-   an overlong value…).
+   review every warning (a suboptimal `Moment`, an overlong value…). A
+   `required` field without its `REQUIRED` rule, or a `CHAMP`/`LIGNE` scope
+   mismatch, is a **blocking error**, not a warning.
 6. Only then generate the JSON (§7).
 
 ## 6. Blocking validation rules (STOP — no JSON output)
@@ -202,6 +208,14 @@ Hard stops (full list enforced by `validate_input.py`):
   `VerifierTableVirtuelle`, re-run by the import).
 - Duplicate `component_code`, `(block,column)`, validation code, source code,
   role code.
+- **A `required: true` component without its `REQUIRED` validation** on the
+  same target — `Obligatoire='true'` is display-only (« * » on the label,
+  `libelleChamp`); no engine ever reads it, so without the rule the column is
+  saved empty without any block (incident DEMANDE_DOC: mandatory `Document`
+  column persisted `NULL`). Scope coherence is enforced too: `CHAMP` targets
+  **ENT fields only**, `LIGNE` targets **detail-grid fields only** (outside
+  `LIGNE` the engine reads `ctx.entete[field]` — a `CHAMP` rule on a detail
+  field is inoperative or, for `REQUIRED`, always blocking).
 - Data source failing the read-only guard (as re-run by the engine —
   `references/sources-metier.md` §2), declaring `@id_Societe`, or with
   write `allowed_operations`.

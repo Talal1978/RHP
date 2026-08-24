@@ -121,7 +121,7 @@ et de `SP_Page_Designer.vb` (`ImporterJson`, `AppliquerImport`, `Saving`).
 | `Rang` | 1 | |
 | `Ligne` / `Colonne` | null | Tri du flux (pas de position absolue) |
 | `Largeur` | null | 1..12 (grille 12 colonnes) |
-| `Valeur_Defaut` | `""` | Constante ou `GV_MATRICULE` / `GV_NOW` / `GV_LOGIN` |
+| `Valeur_Defaut` | `""` | Constante ou `GV_MATRICULE` / `GV_NOW` / `GV_TODAY` / `GV_LOGIN` (seules variables résolues — `GV_NOW` sur un champ `DATE` = aujourd'hui à minuit) |
 | `Obligatoire` | `false` | Marqueur d'affichage — toujours doubler d'une validation `REQUIRED` |
 | `Etat` | `"S"` | ∈ `S, R, A, I` — sinon **bloquant**. Miroir `Saving` : un `CALCULE` ni `A` ni `I` est forcé à `A` |
 | `Rubrique` | `""` | **Obligatoire** si `RUBRIQUE` (et `RADIO`) ; absente de la base = avertissement |

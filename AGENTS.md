@@ -205,10 +205,12 @@ projet (tests, scripts, outils en ligne de commande, chaînes de connexion).
   (critères saisis via `sp_query_meta`, boutons inline **Interroger** /
   **Nouveau** / **Exporter** — export Excel `.xlsx` des résultats affichés,
   entêtes = libellés de la grille, dates jj/mm/aaaa, valeurs typées —,
-  grille en lecture seule via `sp_query_exec`, plafond 500 lignes). Sécurité (mêmes règles que les widgets du tableau de bord, helpers
-  réexportés de `controlers/dashboard_query_widgets.ts`) : droit `Actif` de
-  `Controle_Droit` sur le `Cod_Query` (onglet **Portail** de l'écran des
-  profils `Admin_Profile` ; profil `1` bypass), garde-fou lecture seule
+   grille en lecture seule via `sp_query_exec`, plafond 500 lignes). Sécurité (mêmes règles que les widgets du tableau de bord, helpers
+   réexportés de `controlers/dashboard_query_widgets.ts`) : droit **`Visible`**
+   de `Controle_Droit` sur le `Cod_Query` — **pour les requêtes, seul
+   `Visible` est pris en charge** (jamais `Actif` ; géré dans l'onglet
+   **Sécurité** de `Param_Query` ou l'onglet **Portail** d'`Admin_Profile`,
+   sans case `Actif` pour les nœuds requêtes ; profil `1` bypass), garde-fou lecture seule
   mono-instruction, paramètres de contexte
   (`@idSoc`, `@Matricule`, `@Login`...) alimentés **uniquement** par le JWT —
   ces critères-là ne sont jamais demandés ; pour filtrer sur un **autre**
@@ -289,9 +291,11 @@ projet (tests, scripts, outils en ligne de commande, chaînes de connexion).
   **requêtes exposées au portail** (`Param_Query_Widget` : pages-requêtes sous
   leur section ou « Pages racines », widgets sous le dossier virtuel « Widgets
   du tableau de bord », dont les cases cochent/décochent tous les widgets
-  d'un coup, comme les sections) — enregistrées sous leur **`Cod_Query` SANS
-  préfixe** (`Typ_Ecran='QRY'` dans l'arbre), le backend exigeant `Actif` sur
-  `Name_Ecran = Cod_Query`   — et les **pages SP_ publiées du Designer**
+   d'un coup, comme les sections) — enregistrées sous leur **`Cod_Query` SANS
+   préfixe** (`Typ_Ecran='QRY'` dans l'arbre), le portail exigeant **`Visible`**
+   sur `Name_Ecran = Cod_Query` (pour les requêtes, seul `Visible` est pris en
+   charge — pas de case `Actif` sur les nœuds requêtes de l'arbre ; `Actif`
+   est recopié = `Visible` à l'enregistrement)   — et les **pages SP_ publiées du Designer**
   (`Controle_Designer`, `Typ_Ecran='SPP'`, suffixe « (Designer) ») : la case
   **Visible** porte `Consulter` (`Controle_Designer_Droit` — pour ces pages,
   affichage au menu et accès ne font qu'un ; pas de case `Actif`), et le
@@ -311,9 +315,11 @@ projet (tests, scripts, outils en ligne de commande, chaînes de connexion).
   `sql/Securite/002_Dedup_Controle_Droit.sql`). L'enregistrement d'un profil
   ne supprime de `Controle_Droit` que les lignes qu'il gère (arborescence
   desktop, `PRT_`, requêtes `Param_Query_Widget`) ; la purge
-  d'`Admin_TreeView` épargne `PRT_` et les requêtes existantes, et l'onglet
-  Sécurité de `Param_Query` ne met à jour que `Visible` (il préserve
-  `Actif`).
+   d'`Admin_TreeView` épargne `PRT_` et les requêtes existantes, et l'onglet
+   Sécurité de `Param_Query` ne met à jour que `Visible` — le droit d'accès
+   des requêtes, portail et menu desktop — par upsert sans DELETE, appelé
+   uniquement depuis `Saving()` (jamais au chargement/navigation, sinon les
+   droits des requêtes parcourues seraient écrasés).
   **Page d'accueil toujours accessible** : `Dashboard` (cible de la route par
   défaut `/myspace`) ne peut être retirée à aucun profil — sinon le portail
   serait inaccessible (aucune page d'atterrissage). Bypass dans

@@ -29,6 +29,23 @@ Public Class Ai_ModeleEnregistre
     End Function
 End Class
 
+''' <summary>Configuration LLM enregistrée (une ligne de la table Ai_Agent — écran
+''' AI_Modeles, multi-modèles) : fournisseur, modèle, url, clé d'API, mémoire et
+''' indicateur 'modèle par défaut' de sa portée (globale id_Societe=-1 ou société).</summary>
+Public Class Ai_ConfigEnregistree
+    Public Property Id As Integer = 0
+    Public Property IdSociete As Integer = -1
+    Public Property Provider As String = ""
+    Public Property Modele As String = ""
+    Public Property AiUrl As String = ""
+    Public Property ApiKey As String = ""
+    Public Property NbMsgMemory As Integer = 5
+    Public Property ParDefaut As Boolean = False
+    Public Overrides Function ToString() As String
+        Return Provider & " / " & Modele
+    End Function
+End Class
+
 ''' <summary>
 ''' Client de conversation LLM de l'assistant IA de RHP (modèle par défaut de la
 ''' table Ai_Agent — écran AI_Modeles, multi-modèles). Miroir exact de
@@ -73,6 +90,37 @@ Public Class Ai_ChatClient
             Debug.WriteLine("Erreur ChargerConfig (Ai_Agent) : " & ex.Message)
             Return Nothing
         End Try
+    End Function
+
+    ''' <summary>Liste des configurations enregistrées (table Ai_Agent, multi-modèles —
+    ''' écran AI_Modeles) de la portée courante (société + globale), triées par priorité :
+    ''' défaut de la société, défaut global, configurations de la société puis globales
+    ''' (même ordre que ChargerConfig). Retourne une liste vide si rien n'est configuré.</summary>
+    Public Shared Function ChargerConfigsEnregistrees() As List(Of Ai_ConfigEnregistree)
+        Dim rsl As New List(Of Ai_ConfigEnregistree)
+        Try
+            Dim Tbl As DataTable = DATA_READER_GRD($"SELECT Id, id_Societe, Provider, Modele, aiUrl, ApiKey, nb_Msg_Memory, ISNULL(Par_Defaut,'false') AS Par_Defaut
+                                                    FROM Ai_Agent
+                                                    WHERE ISNULL(NULLIF(id_Societe, -1), {Societe.id_Societe}) = {Societe.id_Societe}
+                                                    ORDER BY CASE WHEN ISNULL(Par_Defaut,'false')='true' THEN 0 ELSE 1 END,
+                                                             CASE WHEN id_Societe = {Societe.id_Societe} THEN 0 ELSE 1 END,
+                                                             Provider, Modele")
+            For Each Dr As DataRow In Tbl.Rows
+                rsl.Add(New Ai_ConfigEnregistree With {
+                    .Id = CInt(IsNull(Dr("Id"), 0)),
+                    .IdSociete = CInt(IsNull(Dr("id_Societe"), -1)),
+                    .Provider = IsNull(Dr("Provider"), "").Trim(),
+                    .Modele = IsNull(Dr("Modele"), "").Trim(),
+                    .AiUrl = IsNull(Dr("aiUrl"), "").Trim(),
+                    .ApiKey = IsNull(Dr("ApiKey"), "").Trim(),
+                    .NbMsgMemory = CInt(IsNull(Dr("nb_Msg_Memory"), "5")),
+                    .ParDefaut = (IsNull(Dr("Par_Defaut"), "false").ToString() = "true")
+                })
+            Next
+        Catch ex As Exception
+            Debug.WriteLine("Erreur ChargerConfigsEnregistrees (Ai_Agent) : " & ex.Message)
+        End Try
+        Return rsl
     End Function
 
     ''' <summary>Liste des modèles enregistrés du catalogue (table Ai_LLM_Modeles :

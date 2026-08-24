@@ -29,9 +29,11 @@ Imports System.Threading.Tasks
 ''' dans le Designer ('Enregistrer' puis 'Publier').
 ''' Le LLM est le modèle par défaut de l'assistant IA de RHP (table Ai_Agent,
 ''' multi-modèles — Ai_ChatClient, miroir de callAgentChat du backend portail) ;
-''' l'utilisateur peut basculer à tout moment sur un autre modèle enregistré du
-''' catalogue (table Ai_LLM_Modeles — liste déroulante 'Modèle' en haut ; clé d'API
-''' et mémoire de la configuration par défaut conservées, choix valable pour la session).
+''' l'utilisateur peut basculer à tout moment sur un autre FOURNISSEUR enregistré
+''' dans Ai_Agent (liste 'Fournisseur' en haut — url et clé d'API propres à chaque
+''' configuration enregistrée) puis choisir le MODÈLE supporté par ce fournisseur
+''' (liste 'Modèle' : modèles enregistrés pour lui dans Ai_Agent + catalogue
+''' Ai_LLM_Modeles — choix valable pour la session).
 ''' Interface : Zoom_SP_Assistant_IA.Designer.vb (convention permanente : tout
 ''' le code de design est dans le .Designer.vb ; ce fichier ne contient que la
 ''' logique — conversation, recherche dans l'aide, génération via le skill).
@@ -91,7 +93,7 @@ Public Class Zoom_SP_Assistant_IA
             _statutConfig = _config.Provider & " / " & _config.Modele
         End If
         lblStatut.Text = _statutConfig
-        ChargerModeles()
+        ChargerProviders()
         '---------------- Message d'accueil ----------------
         Dim accueil As New StringBuilder()
         accueil.Append("Bonjour ! Je suis l'assistant du Designer de pages portail, avec deux fonctions exclusives (choisissez en haut) :" & vbCrLf)
@@ -209,49 +211,160 @@ Public Class Zoom_SP_Assistant_IA
         End Try
     End Sub
 
-    '---------------- Choix du modèle (catalogue Ai_LLM_Modeles) ----------------
+    '---------------- Choix du fournisseur (Ai_Agent) et du modèle ----------------
 
-    ''' <summary>True pendant l'alimentation de la liste des modèles (empêche
-    ''' cboModele_SelectedIndexChanged de basculer le modèle sur la présélection).</summary>
+    ''' <summary>True pendant l'alimentation des listes fournisseur/modèle (empêche les
+    ''' SelectedIndexChanged de basculer la configuration sur la présélection).</summary>
     Private _chargementModeles As Boolean = False
 
-    ''' <summary>Alimente la liste des modèles enregistrés (catalogue Ai_LLM_Modeles,
-    ''' écran AI_Modeles) et présélectionne le modèle par défaut (Ai_Agent —
-    ''' ChargerConfig) — ajouté en tête de liste s'il ne figure pas au catalogue.</summary>
-    Private Sub ChargerModeles()
+    ''' <summary>Configurations enregistrées dans Ai_Agent (portée société + globale,
+    ''' triées par priorité : défaut société, défaut global, puis les autres).</summary>
+    Private _configs As New List(Of Ai_ConfigEnregistree)
+
+    ''' <summary>Catalogue des modèles supportés par fournisseur (Ai_LLM_Modeles).</summary>
+    Private _catalogue As New List(Of Ai_ModeleEnregistre)
+
+    ''' <summary>Alimente la liste des FOURNISSEURS enregistrés dans Ai_Agent (écran
+    ''' AI_Modeles : seuls les fournisseurs effectivement configurés — url et clé d'API
+    ''' connues) puis les modèles du fournisseur du modèle par défaut (ChargerConfig) ;
+    ''' fournisseur et modèle présélectionnés sur la configuration par défaut.</summary>
+    Private Sub ChargerProviders()
         _chargementModeles = True
         Try
+            cboProvider.Items.Clear()
             cboModele.Items.Clear()
+            cboProvider.Enabled = False
             cboModele.Enabled = False
             If _config Is Nothing Then Return
-            Dim modeles As List(Of Ai_ModeleEnregistre) = Ai_ChatClient.ChargerModeles()
-            Dim idx As Integer = modeles.FindIndex(
-                Function(m) String.Equals(m.Provider, _config.Provider, StringComparison.OrdinalIgnoreCase) AndAlso
-                            String.Equals(m.Modele, _config.Modele, StringComparison.OrdinalIgnoreCase))
-            If idx < 0 Then
-                modeles.Insert(0, New Ai_ModeleEnregistre With {.Provider = _config.Provider, .Modele = _config.Modele, .AiUrl = _config.AiUrl})
-                idx = 0
-            End If
-            For Each m As Ai_ModeleEnregistre In modeles
-                cboModele.Items.Add(m)
+            _configs = Ai_ChatClient.ChargerConfigsEnregistrees()
+            _catalogue = Ai_ChatClient.ChargerModeles()
+            ' Fournisseurs distincts, dans l'ordre de priorité des configurations enregistrées
+            Dim providers As New List(Of String)
+            For Each cfg As Ai_ConfigEnregistree In _configs
+                If cfg.Provider <> "" AndAlso Not providers.Contains(cfg.Provider, StringComparer.OrdinalIgnoreCase) Then
+                    providers.Add(cfg.Provider)
+                End If
             Next
-            cboModele.SelectedIndex = idx
-            cboModele.Enabled = True
+            If _config.Provider <> "" AndAlso Not providers.Contains(_config.Provider, StringComparer.OrdinalIgnoreCase) Then
+                providers.Insert(0, _config.Provider)
+            End If
+            For Each p As String In providers
+                cboProvider.Items.Add(p)
+            Next
+            Dim idx As Integer = providers.FindIndex(Function(p) String.Equals(p, _config.Provider, StringComparison.OrdinalIgnoreCase))
+            If idx < 0 AndAlso cboProvider.Items.Count > 0 Then idx = 0
+            cboProvider.SelectedIndex = idx
+            RemplirModeles(_config.Modele)
+            cboProvider.Enabled = cboProvider.Items.Count > 0
+            cboModele.Enabled = cboModele.Items.Count > 0
         Finally
             _chargementModeles = False
         End Try
     End Sub
 
-    ''' <summary>Changement de modèle : l'assistant utilise désormais le modèle choisi
-    ''' (fournisseur et gabarit d'URL du catalogue ; clé d'API et mémoire de la
-    ''' configuration par défaut Ai_Agent conservées). Choix valable pour cette conversation.</summary>
-    Private Sub cboModele_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cboModele.SelectedIndexChanged
+    ''' <summary>Fournisseur actuellement choisi dans la liste ("" si aucun).</summary>
+    Private Function ProviderCourant() As String
+        Return If(TryCast(cboProvider.SelectedItem, String), "").Trim()
+    End Function
+
+    ''' <summary>Alimente la liste des modèles supportés par le fournisseur choisi :
+    ''' d'abord ceux enregistrés pour lui dans Ai_Agent (ordre de priorité), puis ceux
+    ''' du catalogue Ai_LLM_Modeles ; le modèle demandé est présélectionné — à défaut
+    ''' le premier, c.-à-d. le modèle enregistré prioritaire du fournisseur.</summary>
+    Private Sub RemplirModeles(Optional modeleSel As String = "")
+        cboModele.Items.Clear()
+        Dim provider As String = ProviderCourant()
+        If provider = "" Then Return
+        Dim modeles As New List(Of String)
+        For Each cfg As Ai_ConfigEnregistree In _configs
+            If String.Equals(cfg.Provider, provider, StringComparison.OrdinalIgnoreCase) AndAlso
+               cfg.Modele <> "" AndAlso Not modeles.Contains(cfg.Modele, StringComparer.OrdinalIgnoreCase) Then
+                modeles.Add(cfg.Modele)
+            End If
+        Next
+        For Each m As Ai_ModeleEnregistre In _catalogue
+            If String.Equals(m.Provider, provider, StringComparison.OrdinalIgnoreCase) AndAlso
+               m.Modele <> "" AndAlso Not modeles.Contains(m.Modele, StringComparer.OrdinalIgnoreCase) Then
+                modeles.Add(m.Modele)
+            End If
+        Next
+        If modeleSel <> "" AndAlso Not modeles.Contains(modeleSel, StringComparer.OrdinalIgnoreCase) Then
+            modeles.Insert(0, modeleSel)
+        End If
+        For Each m As String In modeles
+            cboModele.Items.Add(m)
+        Next
+        Dim idx As Integer = -1
+        If modeleSel <> "" Then idx = modeles.FindIndex(Function(x) String.Equals(x, modeleSel, StringComparison.OrdinalIgnoreCase))
+        If idx < 0 AndAlso cboModele.Items.Count > 0 Then idx = 0
+        cboModele.SelectedIndex = idx
+    End Sub
+
+    ''' <summary>Changement de fournisseur : recharge les modèles qu'il supporte
+    ''' (présélection sur son modèle enregistré prioritaire) puis applique le choix.</summary>
+    Private Sub cboProvider_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cboProvider.SelectedIndexChanged
         If _chargementModeles OrElse _config Is Nothing Then Return
-        Dim m As Ai_ModeleEnregistre = TryCast(cboModele.SelectedItem, Ai_ModeleEnregistre)
-        If m Is Nothing Then Return
-        _config.Provider = m.Provider
-        _config.Modele = m.Modele
-        _config.AiUrl = m.AiUrl   ' gabarit {MODEL} : substitué à l'envoi (EnvoyerChatAsync)
+        _chargementModeles = True
+        Try
+            RemplirModeles()
+        Finally
+            _chargementModeles = False
+        End Try
+        AppliquerSelectionModele()
+    End Sub
+
+    ''' <summary>Changement de modèle : applique la configuration choisie.</summary>
+    Private Sub cboModele_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cboModele.SelectedIndexChanged
+        If _chargementModeles Then Return
+        AppliquerSelectionModele()
+    End Sub
+
+    ''' <summary>L'assistant utilise désormais le fournisseur et le modèle choisis :
+    ''' la configuration ENREGISTRÉE du couple (Ai_Agent — url, clé d'API et mémoire
+    ''' propres) si elle existe ; sinon la clé d'API et la mémoire de la configuration
+    ''' prioritaire du fournisseur avec le gabarit d'URL du catalogue ({MODEL} substitué
+    ''' à l'envoi — EnvoyerChatAsync). Choix valable pour cette conversation.</summary>
+    Private Sub AppliquerSelectionModele()
+        If _config Is Nothing Then Return
+        Dim provider As String = ProviderCourant()
+        Dim modele As String = If(TryCast(cboModele.SelectedItem, String), "").Trim()
+        If provider = "" OrElse modele = "" Then Return
+        ' Configuration enregistrée du couple fournisseur/modèle ?
+        Dim cfg As Ai_ConfigEnregistree = _configs.FirstOrDefault(
+            Function(c) String.Equals(c.Provider, provider, StringComparison.OrdinalIgnoreCase) AndAlso
+                        String.Equals(c.Modele, modele, StringComparison.OrdinalIgnoreCase))
+        If cfg IsNot Nothing Then
+            _config.Provider = cfg.Provider
+            _config.Modele = cfg.Modele
+            _config.AiUrl = cfg.AiUrl
+            _config.ApiKey = cfg.ApiKey
+            _config.NbMsgMemory = cfg.NbMsgMemory
+        Else
+            ' Modèle non enregistré pour ce fournisseur : clé et mémoire de sa
+            ' configuration prioritaire ; gabarit d'URL du catalogue uniquement s'il
+            ' porte réellement {MODEL} (modèle dans l'URL, ex. Gemini) — sinon l'URL
+            ' enregistrée du fournisseur (complète, ex. .../chat/completions : le
+            ' modèle est dans le corps de la requête), avec substitution du modèle.
+            Dim cfgP As Ai_ConfigEnregistree = _configs.FirstOrDefault(
+                Function(c) String.Equals(c.Provider, provider, StringComparison.OrdinalIgnoreCase))
+            Dim gabarit As Ai_ModeleEnregistre = _catalogue.FirstOrDefault(
+                Function(m) String.Equals(m.Provider, provider, StringComparison.OrdinalIgnoreCase))
+            _config.Provider = provider
+            _config.Modele = modele
+            If cfgP IsNot Nothing Then
+                _config.ApiKey = cfgP.ApiKey
+                _config.NbMsgMemory = cfgP.NbMsgMemory
+                If gabarit IsNot Nothing AndAlso gabarit.AiUrl.Contains("{MODEL}") Then
+                    _config.AiUrl = gabarit.AiUrl
+                ElseIf cfgP.Modele <> "" AndAlso cfgP.AiUrl.Contains(cfgP.Modele) Then
+                    _config.AiUrl = cfgP.AiUrl.Replace(cfgP.Modele, modele)
+                Else
+                    _config.AiUrl = cfgP.AiUrl
+                End If
+            ElseIf gabarit IsNot Nothing AndAlso gabarit.AiUrl <> "" Then
+                _config.AiUrl = gabarit.AiUrl
+            End If
+        End If
         _statutConfig = _config.Provider & " / " & _config.Modele
         lblStatut.Text = _statutConfig
     End Sub

@@ -318,6 +318,54 @@
       "Cod_Champ": "L_Nb",
       "Parametres": "{\"min\":0,\"max\":1}",
       "Rang": 4
+    },
+    {
+      "Cod_Validation": "V05_DAT_DEBUT",
+      "Portee": "CHAMP",
+      "Cod_Table": "ENT",
+      "Typ_Regle": "REQUIRED",
+      "Message": "La date de début est obligatoire.",
+      "Niveau": "B",
+      "Moment": "SAVE",
+      "Actif": true,
+      "Cod_Champ": "Dat_Debut",
+      "Rang": 5
+    },
+    {
+      "Cod_Validation": "V06_DAT_FIN",
+      "Portee": "CHAMP",
+      "Cod_Table": "ENT",
+      "Typ_Regle": "REQUIRED",
+      "Message": "La date de fin est obligatoire.",
+      "Niveau": "B",
+      "Moment": "SAVE",
+      "Actif": true,
+      "Cod_Champ": "Dat_Fin",
+      "Rang": 6
+    },
+    {
+      "Cod_Validation": "V07_JOUR_REQ",
+      "Portee": "LIGNE",
+      "Cod_Table": "JOURS",
+      "Typ_Regle": "REQUIRED",
+      "Message": "Le jour est obligatoire.",
+      "Niveau": "B",
+      "Moment": "SAVE",
+      "Actif": true,
+      "Cod_Champ": "L_Dat_Jour",
+      "Rang": 7
+    },
+    {
+      "Cod_Validation": "V08_QUOTITE_REQ",
+      "Portee": "LIGNE",
+      "Cod_Table": "JOURS",
+      "Typ_Regle": "REQUIRED",
+      "Message": "La quotité est obligatoire.",
+      "Niveau": "B",
+      "Moment": "SAVE",
+      "Actif": true,
+      "Cod_Champ": "L_Nb",
+      "Rang": 8
     }
   ],
   "metadata": {
@@ -326,6 +374,6 @@
     "nbColonnes": 8,
     "nbChamps": 11,
     "nbSources": 1,
-    "nbValidations": 4
+    "nbValidations": 8
   }
 }

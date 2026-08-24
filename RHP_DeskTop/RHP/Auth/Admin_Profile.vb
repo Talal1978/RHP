@@ -63,8 +63,9 @@ Public Class Admin_Profile
     '- pages SP_ publiées du Designer (Controle_Designer), Typ_Ecran = 'SPP'.
     'Droits Visible/Actif du profil (Controle_Droit) : Name_Ecran = 'PRT_' + page/section
     '(le préfixe isole les droits portail des écrans desktop de mêmes noms), sauf les
-    'requêtes, lues sous leur Cod_Query SANS préfixe (le backend portail contrôle leur
-    'droit Actif sur Name_Ecran = Cod_Query). Pages SP_ : la case VISIBLE porte le
+    'requêtes, lues sous leur Cod_Query SANS préfixe — pour les requêtes, seul le droit
+    'Visible est pris en charge (portail et desktop ; pas de case Actif dans l'arbre,
+    'Actif est recopié = Visible à l'enregistrement). Pages SP_ : la case VISIBLE porte le
     'droit Consulter de Controle_Designer_Droit (pour ces pages, affichage au menu et
     'accès ne font qu'un) ; les autres habilitations (Créer/Modifier/...) se gèrent via
     'le menu contextuel du nœud (Zoom_Profile_Droits_SP).
@@ -126,9 +127,11 @@ Public Class Admin_Profile
                         'au menu et accès ne font qu'un pour ces pages) ; pas de case Actif
                         '(pas de contrôle distinct) ; aucune case quand l'accès est ouvert
                         'à tous les profils (Acces_Personnalise='false').
+                        'Requêtes (Typ QRY) : seule la case VISIBLE est prise en charge
+                        '(portail comme desktop) — pas de case Actif.
                         'Menu contextuel : les autres habilitations (Créer, Modifier, GED...).
                         .Cells(1).CheckBoxVisible = (mRows(j)("Typ_Ecran") <> "SPP" OrElse mRows(j)("AccesPerso") <> "false")
-                        .Cells(2).CheckBoxVisible = (mRows(j)("Typ_Ecran") <> "SPP")
+                        .Cells(2).CheckBoxVisible = (mRows(j)("Typ_Ecran") <> "SPP" AndAlso mRows(j)("Typ_Ecran") <> "QRY")
                         .Cells(1).Checked = CBool(mRows(j)("Visible"))
                         .Cells(2).Checked = CBool(mRows(j)("Actif"))
                         .Tag = {mRows(j)("Typ_Ecran"), mRows(j)("AccesPerso"), Nothing}
@@ -181,8 +184,9 @@ Public Class Admin_Profile
                         'Pages SP_ : cf. bloc des sections (Visible = Consulter, pas de
                         'case Actif ; aucune case si accès ouvert à tous les profils ;
                         'menu contextuel pour les autres habilitations).
+                        'Requêtes (Typ QRY) : seule la case VISIBLE (pas de case Actif).
                         .Cells(1).CheckBoxVisible = (rw(j)("Typ_Ecran") <> "SPP" OrElse rw(j)("AccesPerso") <> "false")
-                        .Cells(2).CheckBoxVisible = (rw(j)("Typ_Ecran") <> "SPP")
+                        .Cells(2).CheckBoxVisible = (rw(j)("Typ_Ecran") <> "SPP" AndAlso rw(j)("Typ_Ecran") <> "QRY")
                         .Cells(1).Checked = CBool(rw(j)("Visible"))
                         .Cells(2).Checked = CBool(rw(j)("Actif"))
                         .Tag = {rw(j)("Typ_Ecran"), rw(j)("AccesPerso"), Nothing}
@@ -195,8 +199,9 @@ Public Class Admin_Profile
             End If
             'Widgets du tableau de bord (Param_Query_Widget.estWidget, hors pages-requêtes
             'déjà affichées ci-dessus) : dossier virtuel (Name = "" -> jamais enregistré) ;
-            'chaque widget est enregistré sous son Cod_Query, sans préfixe PRT_ (le backend
-            'portail contrôle le droit Actif sur Name_Ecran = Cod_Query). Les cases du
+            'chaque widget est enregistré sous son Cod_Query, sans préfixe PRT_ (le portail
+            'contrôle le droit Visible sur Name_Ecran = Cod_Query — seul "Visible" est pris
+            'en charge pour les requêtes, pas de case Actif). Les cases du
             'dossier cochent/décochent tous ses widgets d'un coup, comme les sections.
             Dim wg() As DataRow = pTable.Select("Typ_Ecran='QRY' and estPortail<>'true'", "Text_Ecran Asc")
             If wg.Length > 0 Then
@@ -209,7 +214,7 @@ Public Class Admin_Profile
                     .Cells(1).CheckBoxStyle = eCheckBoxStyle.CheckBox
                     .Cells(2).CheckBoxStyle = eCheckBoxStyle.CheckBox
                     .Cells(1).CheckBoxVisible = True
-                    .Cells(2).CheckBoxVisible = True
+                    .Cells(2).CheckBoxVisible = False
                     .Tag = {"FDR", Nothing, Nothing}
                     .Style = ElementStyle3
                 End With
@@ -223,7 +228,7 @@ Public Class Admin_Profile
                         .Cells(1).CheckBoxStyle = eCheckBoxStyle.CheckBox
                         .Cells(2).CheckBoxStyle = eCheckBoxStyle.CheckBox
                         .Cells(1).CheckBoxVisible = True
-                        .Cells(2).CheckBoxVisible = True
+                        .Cells(2).CheckBoxVisible = False
                         .Cells(1).Checked = CBool(wg(j)("Visible"))
                         .Cells(2).Checked = CBool(wg(j)("Actif"))
                         .Tag = {wg(j)("Typ_Ecran"), Nothing, Nothing}
@@ -709,8 +714,8 @@ Public Class Admin_Profile
         'Pages standards et sections : Controle_Droit, Name_Ecran = 'PRT_' + nom
         '(droits portail isolés des écrans desktop de mêmes noms). Exception : les
         'requêtes (Typ QRY — pages-requêtes et widgets du portail) sont enregistrées
-        'sous leur Cod_Query, SANS préfixe (le backend contrôle Actif sur
-        'Name_Ecran = Cod_Query).
+        'sous leur Cod_Query, SANS préfixe ; seul le droit Visible est pris en charge
+        'pour elles (Actif est recopié = Visible, sans case dédiée dans l'arbre).
         'Pages SP_ du Designer (Typ SPP) : Consulter (case VISIBLE de l'arbre — pour
         'ces pages, affichage au menu et accès ne font qu'un) et, si elles ont été
         'éditées via le menu contextuel (Zoom_Profile_Droits_SP, Tag(2)), les autres
@@ -770,7 +775,9 @@ Public Class Admin_Profile
                     Next
                 End If
                 rs("Visible").Value = If(forceVisible, True, oNode.Cells(1).Checked)
-                rs("Actif").Value = oNode.Cells(2).Checked
+                'Requêtes (Typ QRY) : seule Visible est prise en charge — Actif est
+                'recopié à l'identique (pas de case Actif dans l'arbre pour elles).
+                rs("Actif").Value = If(IsNull(oNode.Tag(0), "") = "QRY", oNode.Cells(1).Checked, oNode.Cells(2).Checked)
                 rs.Update()
                 rs.Close()
             End If

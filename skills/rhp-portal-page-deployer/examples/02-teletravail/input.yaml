@@ -205,6 +205,41 @@ page_validations:
     message: "Quotité inhabituelle (attendu : 0,5 ou 1)."
     level: W
     moment: SAVE
+  # Obligatoire = marqueur visuel seul : chaque champ 'required: true' DOIT
+  # avoir sa regle REQUIRED (validateur : bloquant) — portee CHAMP pour
+  # l'entete, LIGNE pour les champs de grille, moment SAVE.
+  - code: V05_DAT_DEBUT
+    scope: CHAMP
+    target_block: ENT
+    target_field: Dat_Debut
+    type: REQUIRED
+    message: "La date de début est obligatoire."
+    level: B
+    moment: SAVE
+  - code: V06_DAT_FIN
+    scope: CHAMP
+    target_block: ENT
+    target_field: Dat_Fin
+    type: REQUIRED
+    message: "La date de fin est obligatoire."
+    level: B
+    moment: SAVE
+  - code: V07_JOUR_REQ
+    scope: LIGNE
+    target_block: JOURS
+    target_field: L_Dat_Jour
+    type: REQUIRED
+    message: "Le jour est obligatoire."
+    level: B
+    moment: SAVE
+  - code: V08_QUOTITE_REQ
+    scope: LIGNE
+    target_block: JOURS
+    target_field: L_Nb
+    type: REQUIRED
+    message: "La quotité est obligatoire."
+    level: B
+    moment: SAVE
 
 data_sources:
   - data_source_code: solde_conge

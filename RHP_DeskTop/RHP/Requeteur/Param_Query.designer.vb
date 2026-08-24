@@ -64,8 +64,6 @@ Partial Class Param_Query
         Me.Label1 = New System.Windows.Forms.Label()
         Me.TabControl1 = New System.Windows.Forms.TabControl()
         Me.TabPage1 = New System.Windows.Forms.TabPage()
-        Me.Panel2 = New System.Windows.Forms.Panel()
-        Me.Label4 = New System.Windows.Forms.Label()
         Me.Pivot_chk = New RHP.ud_CheckBox()
         Me.Nature_Query = New RHP.ud_ComboBox()
         Me.HeaderVisible_Check = New RHP.ud_CheckBox()
@@ -83,8 +81,6 @@ Partial Class Param_Query
         Me.id_User = New System.Windows.Forms.DataGridViewTextBoxColumn()
         Me.Nom_User = New System.Windows.Forms.DataGridViewTextBoxColumn()
         Me.Visibl = New System.Windows.Forms.DataGridViewCheckBoxColumn()
-        Me.Panel1 = New System.Windows.Forms.Panel()
-        Me.Save_ud = New RHP.ud_button()
         Me.TabPage5 = New System.Windows.Forms.TabPage()
         Me.Grd_Totaux = New RHP.ud_Grd()
         Me.oColonne = New System.Windows.Forms.DataGridViewTextBoxColumn()
@@ -134,17 +130,16 @@ Partial Class Param_Query
         Me.Portail_LblRang = New System.Windows.Forms.Label()
         Me.Portail_Rang_Txt = New System.Windows.Forms.NumericUpDown()
         Me.Portail_LblInfo = New System.Windows.Forms.Label()
+        Me.Panel1 = New System.Windows.Forms.Panel()
         Me.Personnal_pnl.SuspendLayout()
         CType(Me.Criterias_GRD, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.TabControl1.SuspendLayout()
         Me.TabPage1.SuspendLayout()
-        Me.Panel2.SuspendLayout()
         Me.TabPage2.SuspendLayout()
         Me.TabPage3.SuspendLayout()
         CType(Me.Colonnes_GRD, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.TabPage4.SuspendLayout()
         CType(Me.Securite_Grd, System.ComponentModel.ISupportInitialize).BeginInit()
-        Me.Panel1.SuspendLayout()
         Me.TabPage5.SuspendLayout()
         CType(Me.Grd_Totaux, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.TabGraph.SuspendLayout()
@@ -159,6 +154,7 @@ Partial Class Param_Query
         Me.TabWidget.SuspendLayout()
         Me.Portail_Grp.SuspendLayout()
         CType(Me.Portail_Rang_Txt, System.ComponentModel.ISupportInitialize).BeginInit()
+        Me.Panel1.SuspendLayout()
         Me.SuspendLayout()
         '
         'Personnal_pnl
@@ -322,7 +318,7 @@ Partial Class Param_Query
         Me.LinkLabel4.DisabledLinkColor = System.Drawing.Color.FromArgb(CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer))
         Me.LinkLabel4.Font = New System.Drawing.Font("Century Gothic", 8.25!)
         Me.LinkLabel4.LinkColor = System.Drawing.Color.FromArgb(CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer))
-        Me.LinkLabel4.Location = New System.Drawing.Point(10, 20)
+        Me.LinkLabel4.Location = New System.Drawing.Point(34, 12)
         Me.LinkLabel4.Margin = New System.Windows.Forms.Padding(4, 0, 4, 0)
         Me.LinkLabel4.Name = "LinkLabel4"
         Me.LinkLabel4.Size = New System.Drawing.Size(69, 19)
@@ -337,7 +333,7 @@ Partial Class Param_Query
         Me.Nom_Query_Text.CharacterCasing = System.Windows.Forms.CharacterCasing.Normal
         Me.Nom_Query_Text.ContextMenuStrip = Nothing
         Me.Nom_Query_Text.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        Me.Nom_Query_Text.Location = New System.Drawing.Point(8, 45)
+        Me.Nom_Query_Text.Location = New System.Drawing.Point(32, 40)
         Me.Nom_Query_Text.Margin = New System.Windows.Forms.Padding(4, 5, 4, 5)
         Me.Nom_Query_Text.MaxLength = 100
         Me.Nom_Query_Text.Multiline = False
@@ -357,7 +353,7 @@ Partial Class Param_Query
         Me.Cod_Query_Text.CharacterCasing = System.Windows.Forms.CharacterCasing.Normal
         Me.Cod_Query_Text.ContextMenuStrip = Nothing
         Me.Cod_Query_Text.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        Me.Cod_Query_Text.Location = New System.Drawing.Point(86, 16)
+        Me.Cod_Query_Text.Location = New System.Drawing.Point(110, 8)
         Me.Cod_Query_Text.Margin = New System.Windows.Forms.Padding(4, 5, 4, 5)
         Me.Cod_Query_Text.MaxLength = 32767
         Me.Cod_Query_Text.Multiline = False
@@ -378,7 +374,7 @@ Partial Class Param_Query
         Me.Cod_Sql_Text.ContextMenuStrip = Nothing
         Me.Cod_Sql_Text.Dock = System.Windows.Forms.DockStyle.Fill
         Me.Cod_Sql_Text.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        Me.Cod_Sql_Text.Location = New System.Drawing.Point(4, 134)
+        Me.Cod_Sql_Text.Location = New System.Drawing.Point(4, 4)
         Me.Cod_Sql_Text.Margin = New System.Windows.Forms.Padding(4, 5, 4, 5)
         Me.Cod_Sql_Text.MaxLength = 8000
         Me.Cod_Sql_Text.Multiline = True
@@ -388,7 +384,7 @@ Partial Class Param_Query
         Me.Cod_Sql_Text.ReadOnly = False
         Me.Cod_Sql_Text.ScrollBars = System.Windows.Forms.ScrollBars.Both
         Me.Cod_Sql_Text.SelectionStart = 0
-        Me.Cod_Sql_Text.Size = New System.Drawing.Size(1180, 626)
+        Me.Cod_Sql_Text.Size = New System.Drawing.Size(1543, 674)
         Me.Cod_Sql_Text.TabIndex = 97
         Me.Cod_Sql_Text.TextAlign = System.Windows.Forms.HorizontalAlignment.Left
         Me.Cod_Sql_Text.UseSystemPasswordChar = False
@@ -417,61 +413,31 @@ Partial Class Param_Query
         Me.TabControl1.Dock = System.Windows.Forms.DockStyle.Fill
         Me.TabControl1.DrawMode = System.Windows.Forms.TabDrawMode.OwnerDrawFixed
         Me.TabControl1.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        Me.TabControl1.Location = New System.Drawing.Point(0, 0)
+        Me.TabControl1.Location = New System.Drawing.Point(0, 82)
         Me.TabControl1.Margin = New System.Windows.Forms.Padding(4)
         Me.TabControl1.Name = "TabControl1"
         Me.TabControl1.SelectedIndex = 0
-        Me.TabControl1.Size = New System.Drawing.Size(1196, 796)
+        Me.TabControl1.Size = New System.Drawing.Size(1559, 714)
         Me.TabControl1.TabIndex = 216
         '
         'TabPage1
         '
         Me.TabPage1.BackColor = System.Drawing.Color.FromArgb(CType(CType(250, Byte), Integer), CType(CType(250, Byte), Integer), CType(CType(250, Byte), Integer))
         Me.TabPage1.Controls.Add(Me.Cod_Sql_Text)
-        Me.TabPage1.Controls.Add(Me.Panel2)
         Me.TabPage1.Location = New System.Drawing.Point(4, 28)
         Me.TabPage1.Margin = New System.Windows.Forms.Padding(4)
         Me.TabPage1.Name = "TabPage1"
         Me.TabPage1.Padding = New System.Windows.Forms.Padding(4)
-        Me.TabPage1.Size = New System.Drawing.Size(1188, 764)
+        Me.TabPage1.Size = New System.Drawing.Size(1551, 682)
         Me.TabPage1.TabIndex = 0
         Me.TabPage1.Text = "Texte de la Requête"
-        '
-        'Panel2
-        '
-        Me.Panel2.Controls.Add(Me.Label4)
-        Me.Panel2.Controls.Add(Me.Pivot_chk)
-        Me.Panel2.Controls.Add(Me.Cod_Query_Text)
-        Me.Panel2.Controls.Add(Me.Nature_Query)
-        Me.Panel2.Controls.Add(Me.HeaderVisible_Check)
-        Me.Panel2.Controls.Add(Me.Resume_Check)
-        Me.Panel2.Controls.Add(Me.Nom_Query_Text)
-        Me.Panel2.Controls.Add(Me.Typ_Query_Text)
-        Me.Panel2.Controls.Add(Me.LinkLabel4)
-        Me.Panel2.Dock = System.Windows.Forms.DockStyle.Top
-        Me.Panel2.Location = New System.Drawing.Point(4, 4)
-        Me.Panel2.Margin = New System.Windows.Forms.Padding(4)
-        Me.Panel2.Name = "Panel2"
-        Me.Panel2.Size = New System.Drawing.Size(1180, 130)
-        Me.Panel2.TabIndex = 98
-        '
-        'Label4
-        '
-        Me.Label4.BackColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
-        Me.Label4.Dock = System.Windows.Forms.DockStyle.Bottom
-        Me.Label4.Location = New System.Drawing.Point(0, 128)
-        Me.Label4.Margin = New System.Windows.Forms.Padding(4, 0, 4, 0)
-        Me.Label4.Name = "Label4"
-        Me.Label4.Size = New System.Drawing.Size(1180, 2)
-        Me.Label4.TabIndex = 222
-        Me.Label4.Text = "Label4"
         '
         'Pivot_chk
         '
         Me.Pivot_chk.AutoSize = True
         Me.Pivot_chk.Checked = True
         Me.Pivot_chk.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        Me.Pivot_chk.Location = New System.Drawing.Point(521, 76)
+        Me.Pivot_chk.Location = New System.Drawing.Point(792, 35)
         Me.Pivot_chk.Margin = New System.Windows.Forms.Padding(4, 5, 4, 5)
         Me.Pivot_chk.MaximumSize = New System.Drawing.Size(0, 31)
         Me.Pivot_chk.MinimumSize = New System.Drawing.Size(146, 31)
@@ -485,9 +451,10 @@ Partial Class Param_Query
         '
         Me.Nature_Query.DataSource = Nothing
         Me.Nature_Query.DisplayMember = ""
+        Me.Nature_Query.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
         Me.Nature_Query.DroppedDown = False
         Me.Nature_Query.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        Me.Nature_Query.Location = New System.Drawing.Point(102, 79)
+        Me.Nature_Query.Location = New System.Drawing.Point(534, 38)
         Me.Nature_Query.Margin = New System.Windows.Forms.Padding(4, 5, 4, 5)
         Me.Nature_Query.Name = "Nature_Query"
         Me.Nature_Query.SelectedIndex = -1
@@ -502,7 +469,7 @@ Partial Class Param_Query
         Me.HeaderVisible_Check.AutoSize = True
         Me.HeaderVisible_Check.Checked = True
         Me.HeaderVisible_Check.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        Me.HeaderVisible_Check.Location = New System.Drawing.Point(521, 16)
+        Me.HeaderVisible_Check.Location = New System.Drawing.Point(534, 5)
         Me.HeaderVisible_Check.Margin = New System.Windows.Forms.Padding(4, 5, 4, 5)
         Me.HeaderVisible_Check.MaximumSize = New System.Drawing.Size(0, 31)
         Me.HeaderVisible_Check.MinimumSize = New System.Drawing.Size(146, 31)
@@ -517,7 +484,7 @@ Partial Class Param_Query
         Me.Resume_Check.AutoSize = True
         Me.Resume_Check.Checked = True
         Me.Resume_Check.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        Me.Resume_Check.Location = New System.Drawing.Point(521, 44)
+        Me.Resume_Check.Location = New System.Drawing.Point(792, 8)
         Me.Resume_Check.Margin = New System.Windows.Forms.Padding(4, 5, 4, 5)
         Me.Resume_Check.MaximumSize = New System.Drawing.Size(0, 31)
         Me.Resume_Check.MinimumSize = New System.Drawing.Size(146, 31)
@@ -532,7 +499,7 @@ Partial Class Param_Query
         Me.Typ_Query_Text.CharacterCasing = System.Windows.Forms.CharacterCasing.Normal
         Me.Typ_Query_Text.ContextMenuStrip = Nothing
         Me.Typ_Query_Text.Font = New System.Drawing.Font("Century Gothic", 8.25!)
-        Me.Typ_Query_Text.Location = New System.Drawing.Point(461, 15)
+        Me.Typ_Query_Text.Location = New System.Drawing.Point(485, 7)
         Me.Typ_Query_Text.Margin = New System.Windows.Forms.Padding(4, 5, 4, 5)
         Me.Typ_Query_Text.MaxLength = 32767
         Me.Typ_Query_Text.Multiline = False
@@ -652,7 +619,6 @@ Partial Class Param_Query
         '
         Me.TabPage4.BackColor = System.Drawing.Color.FromArgb(CType(CType(250, Byte), Integer), CType(CType(250, Byte), Integer), CType(CType(250, Byte), Integer))
         Me.TabPage4.Controls.Add(Me.Securite_Grd)
-        Me.TabPage4.Controls.Add(Me.Panel1)
         Me.TabPage4.Location = New System.Drawing.Point(4, 28)
         Me.TabPage4.Margin = New System.Windows.Forms.Padding(4)
         Me.TabPage4.Name = "TabPage4"
@@ -693,7 +659,7 @@ Partial Class Param_Query
         Me.Securite_Grd.EnableHeadersVisualStyles = False
         Me.Securite_Grd.GridColor = System.Drawing.Color.FromArgb(CType(CType(208, Byte), Integer), CType(CType(215, Byte), Integer), CType(CType(229, Byte), Integer))
         Me.Securite_Grd.ImeMode = System.Windows.Forms.ImeMode.[On]
-        Me.Securite_Grd.Location = New System.Drawing.Point(4, 53)
+        Me.Securite_Grd.Location = New System.Drawing.Point(4, 4)
         Me.Securite_Grd.Margin = New System.Windows.Forms.Padding(4)
         Me.Securite_Grd.Name = "Securite_Grd"
         Me.Securite_Grd.RowHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.[Single]
@@ -701,7 +667,7 @@ Partial Class Param_Query
         DataGridViewCellStyle9.Font = New System.Drawing.Font("Century Gothic", 8.25!)
         Me.Securite_Grd.RowHeadersDefaultCellStyle = DataGridViewCellStyle9
         Me.Securite_Grd.RowHeadersWidth = 51
-        Me.Securite_Grd.Size = New System.Drawing.Size(1180, 707)
+        Me.Securite_Grd.Size = New System.Drawing.Size(1180, 756)
         Me.Securite_Grd.TabIndex = 9
         Me.Securite_Grd.Tag = "NC"
         '
@@ -730,36 +696,6 @@ Partial Class Param_Query
         Me.Visibl.Name = "Visibl"
         Me.Visibl.Resizable = System.Windows.Forms.DataGridViewTriState.[True]
         Me.Visibl.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic
-        '
-        'Panel1
-        '
-        Me.Panel1.Controls.Add(Me.Save_ud)
-        Me.Panel1.Dock = System.Windows.Forms.DockStyle.Top
-        Me.Panel1.Location = New System.Drawing.Point(4, 4)
-        Me.Panel1.Margin = New System.Windows.Forms.Padding(4)
-        Me.Panel1.Name = "Panel1"
-        Me.Panel1.Size = New System.Drawing.Size(1180, 49)
-        Me.Panel1.TabIndex = 102
-        '
-        'Save_ud
-        '
-        Me.Save_ud.AutoSize = True
-        Me.Save_ud.BackColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
-        Me.Save_ud.bgColor = System.Drawing.Color.FromArgb(CType(CType(250, Byte), Integer), CType(CType(250, Byte), Integer), CType(CType(250, Byte), Integer))
-        Me.Save_ud.Border = RHP.ud_button.BorderStyle.All
-        Me.Save_ud.BorderColor = System.Drawing.Color.FromArgb(CType(CType(56, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(185, Byte), Integer))
-        Me.Save_ud.BorderSize = 2
-        Me.Save_ud.Cursor = System.Windows.Forms.Cursors.Hand
-        Me.Save_ud.Image = Global.RHP.My.Resources.Resources.btn_save
-        Me.Save_ud.isDefault = False
-        Me.Save_ud.Location = New System.Drawing.Point(6, 6)
-        Me.Save_ud.Margin = New System.Windows.Forms.Padding(4, 6, 4, 6)
-        Me.Save_ud.MinimumSize = New System.Drawing.Size(34, 39)
-        Me.Save_ud.Name = "Save_ud"
-        Me.Save_ud.Padding = New System.Windows.Forms.Padding(2)
-        Me.Save_ud.Size = New System.Drawing.Size(125, 39)
-        Me.Save_ud.TabIndex = 102
-        Me.Save_ud.Text = "Enregistrer"
         '
         'TabPage5
         '
@@ -912,6 +848,7 @@ Partial Class Param_Query
         '
         Me.Typ_Graphe.DataSource = Nothing
         Me.Typ_Graphe.DisplayMember = ""
+        Me.Typ_Graphe.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
         Me.Typ_Graphe.DroppedDown = False
         Me.Typ_Graphe.Location = New System.Drawing.Point(141, 11)
         Me.Typ_Graphe.Margin = New System.Windows.Forms.Padding(5)
@@ -1086,7 +1023,7 @@ Partial Class Param_Query
         'Label3
         '
         Me.Label3.AutoSize = True
-        Me.Label3.Location = New System.Drawing.Point(521, 39)
+        Me.Label3.Location = New System.Drawing.Point(521, 41)
         Me.Label3.Margin = New System.Windows.Forms.Padding(4, 0, 4, 0)
         Me.Label3.Name = "Label3"
         Me.Label3.Size = New System.Drawing.Size(86, 19)
@@ -1097,7 +1034,7 @@ Partial Class Param_Query
         '
         Me.Rd_1.AutoSize = True
         Me.Rd_1.Checked = True
-        Me.Rd_1.Location = New System.Drawing.Point(340, 33)
+        Me.Rd_1.Location = New System.Drawing.Point(340, 35)
         Me.Rd_1.Margin = New System.Windows.Forms.Padding(5)
         Me.Rd_1.MaximumSize = New System.Drawing.Size(0, 31)
         Me.Rd_1.MinimumSize = New System.Drawing.Size(0, 31)
@@ -1110,7 +1047,7 @@ Partial Class Param_Query
         '
         Me.Rd_0.AutoSize = True
         Me.Rd_0.Checked = False
-        Me.Rd_0.Location = New System.Drawing.Point(126, 30)
+        Me.Rd_0.Location = New System.Drawing.Point(126, 32)
         Me.Rd_0.Margin = New System.Windows.Forms.Padding(5)
         Me.Rd_0.MaximumSize = New System.Drawing.Size(0, 31)
         Me.Rd_0.MinimumSize = New System.Drawing.Size(0, 31)
@@ -1178,6 +1115,7 @@ Partial Class Param_Query
         '
         Me.Widget_Type_Cmb.DataSource = Nothing
         Me.Widget_Type_Cmb.DisplayMember = ""
+        Me.Widget_Type_Cmb.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
         Me.Widget_Type_Cmb.DroppedDown = False
         Me.Widget_Type_Cmb.Font = New System.Drawing.Font("Century Gothic", 8.25!)
         Me.Widget_Type_Cmb.Location = New System.Drawing.Point(15, 75)
@@ -1203,6 +1141,7 @@ Partial Class Param_Query
         '
         Me.Widget_ChartType_Cmb.DataSource = Nothing
         Me.Widget_ChartType_Cmb.DisplayMember = ""
+        Me.Widget_ChartType_Cmb.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
         Me.Widget_ChartType_Cmb.DroppedDown = False
         Me.Widget_ChartType_Cmb.Font = New System.Drawing.Font("Century Gothic", 8.25!)
         Me.Widget_ChartType_Cmb.Location = New System.Drawing.Point(185, 75)
@@ -1338,6 +1277,7 @@ Partial Class Param_Query
         '
         Me.Widget_Span_Cmb.DataSource = Nothing
         Me.Widget_Span_Cmb.DisplayMember = ""
+        Me.Widget_Span_Cmb.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
         Me.Widget_Span_Cmb.DroppedDown = False
         Me.Widget_Span_Cmb.Font = New System.Drawing.Font("Century Gothic", 8.25!)
         Me.Widget_Span_Cmb.Location = New System.Drawing.Point(15, 135)
@@ -1448,7 +1388,7 @@ Partial Class Param_Query
         Me.Portail_Chk.MinimumSize = New System.Drawing.Size(146, 31)
         Me.Portail_Chk.Name = "Portail_Chk"
         Me.Portail_Chk.RightToLeft = System.Windows.Forms.RightToLeft.Yes
-        Me.Portail_Chk.Size = New System.Drawing.Size(400, 31)
+        Me.Portail_Chk.Size = New System.Drawing.Size(461, 31)
         Me.Portail_Chk.TabIndex = 0
         Me.Portail_Chk.Text = "Exposer comme page de consultation dans le menu du portail"
         '
@@ -1457,7 +1397,7 @@ Partial Class Param_Query
         Me.Portail_LblMenu.AutoSize = True
         Me.Portail_LblMenu.Location = New System.Drawing.Point(14, 68)
         Me.Portail_LblMenu.Name = "Portail_LblMenu"
-        Me.Portail_LblMenu.Size = New System.Drawing.Size(157, 19)
+        Me.Portail_LblMenu.Size = New System.Drawing.Size(175, 19)
         Me.Portail_LblMenu.TabIndex = 1
         Me.Portail_LblMenu.Text = "Section du menu portail"
         '
@@ -1465,6 +1405,7 @@ Partial Class Param_Query
         '
         Me.Portail_Menu_cmb.DataSource = Nothing
         Me.Portail_Menu_cmb.DisplayMember = ""
+        Me.Portail_Menu_cmb.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
         Me.Portail_Menu_cmb.DroppedDown = False
         Me.Portail_Menu_cmb.Font = New System.Drawing.Font("Century Gothic", 8.25!)
         Me.Portail_Menu_cmb.Location = New System.Drawing.Point(14, 90)
@@ -1482,7 +1423,7 @@ Partial Class Param_Query
         Me.Portail_LblRang.AutoSize = True
         Me.Portail_LblRang.Location = New System.Drawing.Point(310, 68)
         Me.Portail_LblRang.Name = "Portail_LblRang"
-        Me.Portail_LblRang.Size = New System.Drawing.Size(41, 19)
+        Me.Portail_LblRang.Size = New System.Drawing.Size(46, 19)
         Me.Portail_LblRang.TabIndex = 3
         Me.Portail_LblRang.Text = "Rang"
         '
@@ -1503,12 +1444,29 @@ Partial Class Param_Query
         Me.Portail_LblInfo.Size = New System.Drawing.Size(450, 126)
         Me.Portail_LblInfo.TabIndex = 5
         '
+        'Panel1
+        '
+        Me.Panel1.Controls.Add(Me.Cod_Query_Text)
+        Me.Panel1.Controls.Add(Me.Pivot_chk)
+        Me.Panel1.Controls.Add(Me.LinkLabel4)
+        Me.Panel1.Controls.Add(Me.Resume_Check)
+        Me.Panel1.Controls.Add(Me.HeaderVisible_Check)
+        Me.Panel1.Controls.Add(Me.Nature_Query)
+        Me.Panel1.Controls.Add(Me.Typ_Query_Text)
+        Me.Panel1.Controls.Add(Me.Nom_Query_Text)
+        Me.Panel1.Dock = System.Windows.Forms.DockStyle.Top
+        Me.Panel1.Location = New System.Drawing.Point(0, 0)
+        Me.Panel1.Name = "Panel1"
+        Me.Panel1.Size = New System.Drawing.Size(1559, 82)
+        Me.Panel1.TabIndex = 223
+        '
         'Param_Query
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(120.0!, 120.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi
-        Me.ClientSize = New System.Drawing.Size(1196, 796)
+        Me.ClientSize = New System.Drawing.Size(1559, 796)
         Me.Controls.Add(Me.TabControl1)
+        Me.Controls.Add(Me.Panel1)
         Me.DoubleBuffered = True
         Me.Font = New System.Drawing.Font("Century Gothic", 8.25!)
         Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None
@@ -1520,16 +1478,12 @@ Partial Class Param_Query
         CType(Me.Criterias_GRD, System.ComponentModel.ISupportInitialize).EndInit()
         Me.TabControl1.ResumeLayout(False)
         Me.TabPage1.ResumeLayout(False)
-        Me.Panel2.ResumeLayout(False)
-        Me.Panel2.PerformLayout()
         Me.TabPage2.ResumeLayout(False)
         Me.TabPage2.PerformLayout()
         Me.TabPage3.ResumeLayout(False)
         CType(Me.Colonnes_GRD, System.ComponentModel.ISupportInitialize).EndInit()
         Me.TabPage4.ResumeLayout(False)
         CType(Me.Securite_Grd, System.ComponentModel.ISupportInitialize).EndInit()
-        Me.Panel1.ResumeLayout(False)
-        Me.Panel1.PerformLayout()
         Me.TabPage5.ResumeLayout(False)
         CType(Me.Grd_Totaux, System.ComponentModel.ISupportInitialize).EndInit()
         Me.TabGraph.ResumeLayout(False)
@@ -1548,6 +1502,8 @@ Partial Class Param_Query
         Me.Portail_Grp.ResumeLayout(False)
         Me.Portail_Grp.PerformLayout()
         CType(Me.Portail_Rang_Txt, System.ComponentModel.ISupportInitialize).EndInit()
+        Me.Panel1.ResumeLayout(False)
+        Me.Panel1.PerformLayout()
         Me.ResumeLayout(False)
 
     End Sub
@@ -1611,10 +1567,6 @@ Partial Class Param_Query
     Friend WithEvents DataGridViewTextBoxColumn6 As DataGridViewTextBoxColumn
     Friend WithEvents Largeur As DevComponents.DotNetBar.Controls.DataGridViewIntegerInputColumn
     Friend WithEvents Pivot_chk As ud_CheckBox
-    Friend WithEvents Save_ud As ud_button
-    Friend WithEvents Label4 As Label
-    Friend WithEvents Panel2 As Panel
-    Friend WithEvents Panel1 As Panel
     Friend WithEvents TabWidget As TabPage
     Friend WithEvents Widget_Chk As RHP.ud_CheckBox
     Friend WithEvents Widget_LblType As Label
@@ -1642,4 +1594,5 @@ Partial Class Param_Query
     Friend WithEvents Portail_LblRang As System.Windows.Forms.Label
     Friend WithEvents Portail_Rang_Txt As System.Windows.Forms.NumericUpDown
     Friend WithEvents Portail_LblInfo As System.Windows.Forms.Label
+    Friend WithEvents Panel1 As Panel
 End Class

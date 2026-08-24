@@ -124,6 +124,7 @@ Public Module Module_SP_DDL
         End If
         Select Case UCase(defaut.Trim)
             Case "GV_NOW" : Return "(getdate())"
+            Case "GV_TODAY" : Return "(convert(date, getdate()))"
             Case Else
                 Select Case LCase(typSql)
                     Case "int", "bigint", "float", "decimal"

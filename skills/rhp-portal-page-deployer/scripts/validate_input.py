@@ -17,6 +17,12 @@ the blocking rules of the skill, mirroring the verified RHP constraints:
     units, DATEPART parts, cycle detection (@result / GV_* excluded)
     (module_sp_engine.ts:307-312, 316-328, 581-677)
   - per-type validation Parametres shapes (Zoom_SP_Assistant_Validation.vb)
+  - scope/block coherence for CHAMP/LIGNE rules (module_sp_engine.ts:823-837 :
+    outside LIGNE the engine reads ctx.entete[field] — CHAMP on a detail field
+    is a no-op or, for REQUIRED, always blocking)
+  - every `required: true` component MUST carry a REQUIRED validation on the
+    same target (Obligatoire is a display-only marker — no engine enforces it;
+    incident DEMANDE_DOC : mandatory grid column saved NULL) — BLOCKING
   - SP4 virtual detail grids (VerifierTableVirtuelle mirror)
   - NO-JSON-TARGET keys (freeze_statuses, zoom_condition, zoom_return,
     visibility/activation rules, grid_total, recalc_save:false,
@@ -81,6 +87,13 @@ TECH_ENT_COLS = {"Num_Doc", "id_Societe", "Statut", "Dat_Crea", "Created_By",
 # Technical columns NEVER declared in an import file - auto-added by the DDL
 # (mirror of Module_SP_Page_Json.Valider : blocking if present in the file)
 TECH_COLS_ALL = TECH_ENT_COLS | {"RowId", "RV"}
+# GV_* utilisables comme valeur par défaut (properties.default) : uniquement
+# celles résolues par valeurInitiale (DynamicPage.tsx) — toute autre serait
+# stockée comme CHAINE LITTERALE dans le champ (et en DEFAULT SQL par le DDL,
+# Module_SP_DDL.DefautSQL). Distinct de GV_VARS (variables des formules).
+# GV_NOW sur un champ date = aujourd'hui a minuit (jamais l'heure courante,
+# sinon les comparaisons avec une date du calendrier echouent le jour meme).
+GV_DEFAUTS = {"GV_MATRICULE", "GV_NOW", "GV_LOGIN", "GV_TODAY"}
 NO_CRITERIA_TYPES = {"calculated", "source", "attachments", "checkbox", "radio"}
 # Types allowed to have NO physical column (explicitly empty column_name):
 # unstored calculated/source fields (e.g. grid footers) and GED attachments
@@ -335,6 +348,21 @@ def check_validation(v, path, blocks, fields_by_block, block_cols, grids,
             err(f"{path}.target_field", f"requis pour la portee {scope}")
         elif tf not in fields_by_block.get(tb, set()):
             err(f"{path}.target_field", f"champ {tf!r} absent du bloc {tb!r}")
+    # Coherence portee/bloc (verifiee dans module_sp_engine.ts:823-837 et
+    # dynamicEngine.ts:440-449) : hors portee LIGNE, le moteur lit
+    # ctx.entete[champ] — une regle CHAMP sur un champ de detail est donc
+    # inoperante (tests bornes : jamais declenchee) ou, pour REQUIRED,
+    # TOUJOURS bloquante (entete[champ] est undefined). A l'inverse, LIGNE sur
+    # ENT n'a aucune ligne a controler : la regle ne se declenche jamais.
+    if scope == "CHAMP" and tb != "ENT":
+        err(f"{path}.scope",
+            "portee CHAMP sur un bloc detail : le moteur lit ctx.entete — la "
+            "regle serait inoperante (ou, pour REQUIRED, toujours bloquante) ; "
+            "utiliser LIGNE")
+    if scope == "LIGNE" and tb == "ENT":
+        err(f"{path}.scope",
+            "portee LIGNE sur l'entete : aucune ligne a controler, la regle ne "
+            "se declenche jamais ; utiliser CHAMP")
     # refs resolvable from the rule context: its block + header
     ctx_cols = block_cols.get(tb, set()) | block_cols.get("ENT", set())
 
@@ -740,6 +768,16 @@ def validate(spec):
             if isinstance(val, str) and len(val.strip()) > mx:
                 err(f"{p}.properties.{key}",
                     f"longueur {len(val.strip())} > {mx} (taille de la colonne en base)")
+        # ----- valeur par défaut : seules les GV_* résolues par valeurInitiale
+        # sont admises (sinon la chaîne part telle quelle dans le champ ET en
+        # DEFAULT SQL — Module_SP_DDL.DefautSQL) -----
+        dft = props.get("default")
+        if isinstance(dft, str) and dft.strip().upper().startswith("GV_") \
+                and dft.strip().upper() not in GV_DEFAUTS:
+            err(f"{p}.properties.default",
+                f"variable inconnue : {dft.strip()!r} — valeurInitiale ne résout que "
+                f"{', '.join(sorted(GV_DEFAUTS))} ; GV_NOW sur un champ date = "
+                "aujourd'hui à minuit, GV_TODAY = équivalent explicite")
         if ct in ("radio", "reference_list") and not props.get("rubrique"):
             err(f"{p}.properties.rubrique", f"requis pour {ct}")
         if ct in ("zoom", "combo"):
@@ -859,13 +897,28 @@ def validate(spec):
 
     # ----- validations
     vcodes = []
-    required_targets = set()  # component_codes couverts par une regle REQUIRED
+    required_targets = set()  # (target_block, target_field) couverts par une REQUIRED
+
+    def couvre_required(scope, tb, tf):
+        """Couverture au sens du moteur (module_sp_engine.ts:825-837) : portee
+        LIGNE -> lit les lignes du detail (couvre un champ de grille) ; toute
+        autre portee -> lit ctx.entete (couvre un champ ENT). Une regle dont la
+        portee est incoherente avec le bloc ne couvre RIEN (signalee ailleurs)."""
+        if not tf:
+            return
+        if scope == "LIGNE":
+            if tb != "ENT":
+                required_targets.add((tb, tf))
+        elif tb == "ENT":
+            required_targets.add((tb, tf))
+
     for i, v in enumerate(spec.get("page_validations") or []):
         vcodes.append(check_validation(v, f"page_validations[{i}]", {"ENT", *grids},
                                        block_fields, block_cols, grids, src_index,
                                        header_cols))
-        if v.get("type") == "REQUIRED" and v.get("target_field"):
-            required_targets.add(v["target_field"])
+        if v.get("type") == "REQUIRED":
+            couvre_required(v.get("scope"), v.get("target_block", "ENT"),
+                            v.get("target_field"))
     for i, c in enumerate(comps):
         if c.get("component_type") == "detail_grid":
             continue
@@ -878,18 +931,27 @@ def validate(spec):
             vcodes.append(check_validation(vv, f"components[{i}].validations[{j}]",
                                            {"ENT", *grids}, block_fields, block_cols,
                                            grids, src_index, header_cols))
-            if vv.get("type") == "REQUIRED" and vv.get("target_field"):
-                required_targets.add(vv["target_field"])
+            if vv.get("type") == "REQUIRED":
+                couvre_required(vv.get("scope"), vv.get("target_block"),
+                                vv.get("target_field"))
     if len(set(vcodes)) != len([c for c in vcodes if c]):
         err("validations", "code de validation duplique")
-    # Obligatoire n'est qu'un marqueur visuel : la REQUIRED associee est exigible
+    # Obligatoire n'est qu'un marqueur visuel (suffixe ' * ' du libelle,
+    # DynamicField.libelleChamp) : AUCUN moteur ne le lit (validerClient et
+    # executerValidations n'executent que les regles declarees). Un champ
+    # required sans regle REQUIRED part donc en base vide sans aucun blocage
+    # (incident DEMANDE_DOC : colonne Document obligatoire enregistree NULL).
+    # => controle BLOQUANT, pas un simple avertissement.
     for i, c in enumerate(comps):
         if c.get("component_type") == "detail_grid":
             continue
-        if c.get("required") and c.get("component_code") not in required_targets:
-            warn(f"components[{i}].required",
-                 "Obligatoire = marqueur d'affichage seul : ajouter une validation "
-                 "REQUIRED ciblant ce champ (comportement-page.md section 10)")
+        tb = c.get("target_block", "ENT")
+        if c.get("required") and (tb, c.get("component_code")) not in required_targets:
+            err(f"components[{i}].required",
+                "Obligatoire = marqueur d'affichage seul (jamais controle par "
+                "les moteurs client/serveur) : ajouter une validation REQUIRED "
+                f"ciblant ce champ (portee {'CHAMP' if tb == 'ENT' else 'LIGNE'}, "
+                "moment SAVE - comportement-page.md section 10)")
 
     # ----- data sources
     seen_src = []

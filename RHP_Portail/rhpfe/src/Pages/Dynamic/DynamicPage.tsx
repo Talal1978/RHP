@@ -40,7 +40,22 @@ function valeurInitiale(champ: TSpChamp): any {
   }
   switch (def.toUpperCase()) {
     case "GV_MATRICULE": return Agent?.Matricule ?? "";
-    case "GV_NOW": return new Date();
+    case "GV_NOW": {
+      // Un champ DATE (sans heure) ne doit jamais porter l'heure courante :
+      // sinon toute comparaison avec une date du calendrier (minuit) échoue
+      // le jour même (GE/LE... — ex. GE(Dat_Recuperation, Dat_Demande) rejetée
+      // alors que les deux champs affichent la même date). Canon serveur :
+      // variableGlobale("GV_TODAY"). Un DATETIME conserve l'heure.
+      if (champ.Typ_Controle === "DATE") {
+        const d = new Date();
+        return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+      }
+      return new Date();
+    }
+    case "GV_TODAY": { // jour sans l'heure, miroir de variableGlobale (formules)
+      const d = new Date();
+      return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    }
     case "GV_LOGIN": return Agent?.Login ?? "";
     default:
       if (["INT", "DEC", "MNT"].includes(champ.Typ_Controle)) {

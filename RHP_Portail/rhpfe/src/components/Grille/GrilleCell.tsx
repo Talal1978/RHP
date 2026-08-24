@@ -130,7 +130,7 @@ const GrilleCell = ({
       if (editMode && !typ.readOnly) {
         return (
           <select
-            value={row[col]}
+            value={row[col] ?? ""}
             onChange={(e) => {
               onchange &&
                 onchange({
@@ -147,6 +147,12 @@ const GrilleCell = ({
               outline: "0px",
             }}
           >
+            {/* Option vide obligatoire : sans elle, une valeur non renseignée
+                ("") ne correspond à aucune option et le navigateur AFFICHE la
+                première option alors que la valeur réelle reste "" — la ligne
+                paraît remplie mais part vide à l'enregistrement (NULL en base,
+                ex. Document d'une ligne DEMANDE_DOC). */}
+            <option value=""></option>
             {typ.dataSource.map((op, i) => (
               <option value={op.valeur} key={op.valeur}>
                 {op.membre}
