@@ -1,0 +1,5 @@
+# Caches locaux de build (node.exe, staging) — ne pas versionner
+.cache/
+install-journal.txt
+# Packages portables générés (ZIP de déploiement client)
+dist/

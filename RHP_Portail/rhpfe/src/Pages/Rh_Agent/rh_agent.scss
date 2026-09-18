@@ -1,5 +1,7 @@
 @use "../../_variables.scss";
-.css-j204z7-MuiFormControlLabel-root .MuiFormControlLabel-label {
+// Classe stable MUI (les classes hachées Emotion css-xxx-... perdent leur
+// suffixe label en build prod et ne matchent plus — cf. mainmenu.scss).
+.rh_Agent .MuiFormControlLabel-root .MuiFormControlLabel-label {
   color: variables.$colorBase01;
 }
 

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { UserDashboardWidget, WidgetDefinition, WidgetSection } from "./types";
 import { MOCK_AVAILABLE_WIDGETS } from "./mocks";
 import useAxiosPost from "../../../hooks/useAxiosPost";
@@ -10,12 +10,30 @@ const SECTIONS_STORAGE_KEY = "MYSPACE_DASHBOARD_WIDGET_SECTIONS_V1";
 const STD_MIGRATION_KEY = "MYSPACE_DASHBOARD_STD_WIDGETS_V1";
 const STD_WIDGET_IDS = ["list-quickactions", "list-notifications", "list-blogs"];
 
+/**
+ * Configuration des widgets du tableau de bord.
+ *
+ * Persistance : la configuration (widgets + sections) est enregistrée en base
+ * (table Portail_Dashboard_Config via dashboard_config_get/save) — résolution
+ * côté serveur : configuration personnelle (U) > modèle du profil (P) >
+ * modèle global (G). Le localStorage reste utilisé comme cache immédiat et
+ * repli hors-ligne ; à la première connexion sans configuration serveur, la
+ * configuration locale existante est "adoptée" (poussée en base) pour ne
+ * rien perdre des personnalisations antérieures.
+ */
 export const useDashboardWidgets = () => {
   const myAxiosPost = useAxiosPost();
   const [queryWidgets, setQueryWidgets] = useState<WidgetDefinition[]>([]);
   const [userWidgets, setUserWidgets] = useState<UserDashboardWidget[]>([]);
   const [userSections, setUserSections] = useState<WidgetSection[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
+  // Refs synchronisées : accès aux valeurs courantes depuis les callbacks
+  // (persistance serveur) sans dépendre des closures.
+  const widgetsRef = useRef<UserDashboardWidget[]>([]);
+  const sectionsRef = useRef<WidgetSection[]>([]);
+  // Drapeau : l'utilisateur a modifié sa configuration — une réponse tardive
+  // du chargement serveur ne doit pas écraser sa saisie.
+  const dirtyRef = useRef(false);
 
   // Catalogue dynamique : requêtes Param_Query déclarées widgets,
   // filtrées par le backend selon le profil de l'utilisateur (Controle_Droit).
@@ -94,6 +112,46 @@ export const useDashboardWidgets = () => {
     setIsLoaded(true);
   }, []);
 
+  // Chargement de la configuration depuis la base (prioritaire sur le
+  // localStorage) : U (personnelle) > P (modèle du profil) > G (globale).
+  // Sans configuration serveur, la configuration locale est adoptée (poussée
+  // en base) pour conserver les personnalisations antérieures.
+  useEffect(() => {
+    let cancelled = false;
+    myAxiosPost("dashboard_config_get", {})
+      .then((resp) => {
+        if (cancelled || !resp?.data?.result) return;
+        const { source, config } = resp.data?.data || {};
+        const configValide =
+          config && Array.isArray(config.widgets) && Array.isArray(config.sections);
+        if (configValide) {
+          // L'utilisateur a déjà modifié sa configuration entre-temps :
+          // sa saisie prime sur la réponse tardive.
+          if (dirtyRef.current) return;
+          setUserWidgets(config.widgets as UserDashboardWidget[]);
+          setUserSections(config.sections as WidgetSection[]);
+        } else if (!source) {
+          // Aucune configuration en base : adoption de la configuration
+          // locale existante (première connexion après mise en place de la
+          // persistance SQL), sans rien écraser côté serveur sinon.
+          if (widgetsRef.current.length > 0 || sectionsRef.current.length > 0) {
+            myAxiosPost("dashboard_config_save", {
+              widgets: widgetsRef.current,
+              sections: sectionsRef.current,
+            }).catch(() => {
+              /* adoption différée : le prochain enregistrement persistera */
+            });
+          }
+        }
+      })
+      .catch(() => {
+        /* serveur indisponible : le localStorage (déjà chargé) fait foi */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [myAxiosPost]);
+
   useEffect(() => {
     if (isLoaded) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(userWidgets));
@@ -101,13 +159,44 @@ export const useDashboardWidgets = () => {
     }
   }, [userWidgets, userSections, isLoaded]);
 
-  const saveWidgets = useCallback((widgets: UserDashboardWidget[]) => {
-    setUserWidgets(widgets.map((w, index) => ({ ...w, position: index })));
-  }, []);
+  useEffect(() => {
+    widgetsRef.current = userWidgets;
+  }, [userWidgets]);
 
-  const saveSections = useCallback((sections: WidgetSection[]) => {
-    setUserSections(sections.map((s, index) => ({ ...s, position: index })));
-  }, []);
+  useEffect(() => {
+    sectionsRef.current = userSections;
+  }, [userSections]);
+
+  // Persistance serveur (fire-and-forget) : le localStorage conserve un
+  // repli immédiat si l'appel échoue.
+  const persistServer = useCallback(
+    (widgets: UserDashboardWidget[], sections: WidgetSection[]) => {
+      myAxiosPost("dashboard_config_save", { widgets, sections }).catch(() => {
+        /* persistance serveur indisponible : le localStorage conserve la config */
+      });
+    },
+    [myAxiosPost]
+  );
+
+  const saveWidgets = useCallback(
+    (widgets: UserDashboardWidget[]) => {
+      dirtyRef.current = true;
+      const next = widgets.map((w, index) => ({ ...w, position: index }));
+      setUserWidgets(next);
+      persistServer(next, sectionsRef.current);
+    },
+    [persistServer]
+  );
+
+  const saveSections = useCallback(
+    (sections: WidgetSection[]) => {
+      dirtyRef.current = true;
+      const next = sections.map((s, index) => ({ ...s, position: index }));
+      setUserSections(next);
+      persistServer(widgetsRef.current, next);
+    },
+    [persistServer]
+  );
 
   return {
     availableWidgets,

@@ -53,6 +53,8 @@
     }
   }
 }
-.css-rqv18g-MuiTableRow-root {
+// Classe stable MUI (les classes hachées Emotion css-xxx-... perdent leur
+// suffixe label en build prod et ne matchent plus — cf. mainmenu.scss).
+.grilleContainer .MuiTableRow-root {
   font-size: inherit !important;
 }

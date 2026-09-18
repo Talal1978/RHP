@@ -13,7 +13,7 @@ the blocking rules of the skill, mirroring the verified RHP constraints:
   - read-only source guard, EXACT mirror (literals neutralized before the
     multi-statement check; sp_* blacklist case-sensitive)
     (module_sp_engine.ts:760-787)
-  - full formula AST whitelist (43 ops), GV_* variables, DATEDIFF/DATEADD
+  - full formula AST whitelist (44 ops), GV_* variables, DATEDIFF/DATEADD
     units, DATEPART parts, cycle detection (@result / GV_* excluded)
     (module_sp_engine.ts:307-312, 316-328, 581-677)
   - per-type validation Parametres shapes (Zoom_SP_Assistant_Validation.vb)

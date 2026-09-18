@@ -1071,6 +1071,12 @@
     <Compile Include="Auth\Admin_Users.vb">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="Auth\Admin_Dashboard_Config.Designer.vb">
+      <DependentUpon>Admin_Dashboard_Config.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Auth\Admin_Dashboard_Config.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Auth\Admin_Profile.designer.vb">
       <DependentUpon>Admin_Profile.vb</DependentUpon>
     </Compile>

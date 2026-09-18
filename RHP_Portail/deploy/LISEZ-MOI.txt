@@ -1,0 +1,53 @@
+﻿============================================================
+ RHP_PORTAIL — PACKAGE PORTABLE D'INSTALLATION
+============================================================
+
+Ce package contient TOUT le nécessaire pour installer ou mettre
+à jour RHP_Portail sur ce serveur : aucune compilation, aucun
+prérequis logiciel (Node.js est embarqué dans app\runtime\).
+Seul SQL Server doit être présent (déjà installé pour RHP).
+
+INSTALLATION (première fois)
+----------------------------
+1. Extrayez ce dossier depuis le ZIP (clic droit sur le ZIP >
+   « Extraire tout... ») — ne lancez pas les scripts depuis
+   l'aperçu du ZIP.
+2. Clic droit sur Install-RHPPortail.ps1 > « Exécuter avec
+   PowerShell » (les droits administrateur sont demandés).
+3. Répondez aux questions : serveur SQL, base, utilisateur,
+   mot de passe, port HTTP, URL du portail.
+4. Vérifiez : http://<serveur>:<port>/health doit répondre
+   {"status":"ok","db":"connected"}.
+
+MISE À JOUR (installation existante)
+------------------------------------
+1. Extrayez ce dossier depuis le ZIP.
+2. Exécutez Update-RHPPortail.ps1.
+   Le programme est remplacé ; la configuration
+   (serverConfig.json, .env), les fichiers GED (Uploads\) et
+   les journaux (logs\) sont CONSERVÉS.
+
+CHANGER LA CONFIGURATION SQL (serveur, base, identifiants, port)
+----------------------------------------------------------------
+Si la configuration SQL Server change (nouveau serveur, instance,
+base, mot de passe...) ou pour changer le port HTTP :
+1. Exécutez Config-RHPPortail.ps1.
+2. Répondez aux questions : la valeur actuelle est proposée entre
+   crochets — appuyez sur Entrée pour la CONSERVER (y compris le
+   mot de passe, jamais affiché).
+3. La nouvelle connexion est testée avant d'être enregistrée, puis
+   le service est redémarré automatiquement.
+
+DÉSINSTALLATION
+---------------
+Exécutez Uninstall-RHPPortail.ps1 (Uploads\ et logs\ conservés).
+
+RAPPELS
+-------
+- Les migrations SQL du portail (dossier rhpBE\sql\ du projet)
+  doivent être appliquées à la base, comme pour toute mise à
+  jour RHP.
+- La documentation complète est dans README.md (dépannage,
+  HTTPS optionnel via IIS, sauvegardes...).
+- En cas de problème : install-journal.txt (créé à côté des
+  scripts pendant l'installation) et C:\RHP_Portail\logs\.

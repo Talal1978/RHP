@@ -56,7 +56,7 @@ module.
 | `references/json-import-format.md` | **Always first** — exact output contract (DTOs, import validation rules, import/save semantics, never-imported features) |
 | `references/schema-mapping.md` | Verified concept→object mapping + conventions |
 | `references/sp-metadata-model.md` | Metadata columns, DDL rules applied by `Saving`, publication preconditions |
-| `references/formules-calculees.md` | Any `calculated` field, `EXPR` validation or aggregate — AST, 43 whitelisted ops, GV_* variables, dependency cycles |
+| `references/formules-calculees.md` | Any `calculated` field, `EXPR` validation or aggregate — AST, 44 whitelisted ops, GV_* variables, dependency cycles |
 | `references/comportement-page.md` | Field states, the 13 validation types with exact `Parametres` json, scopes/levels/moments, document lifecycle, detail-grid flags, rights & FAB actions, list criteria |
 | `references/sources-metier.md` | Any `data_sources` entry, `source` field, virtual detail grid, `SOURCE` validation, **consultation page** (criteria + result grid, §6.1) — catalog, read-only guard, parameters, the 3 usages |
 | `references/environment-discovery.md` | Dependencies uncertain / new environment (section codes, zooms, rubriques, sources, profiles, print model) |

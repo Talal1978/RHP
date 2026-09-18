@@ -193,6 +193,28 @@ projet (tests, scripts, outils en ligne de commande, chaînes de connexion).
   4. contrôle visuel sur au moins une page document (ex. `Note_Frais`) : le
      bouton rond s'affiche et son menu s'ouvre au clic.
   Une tâche sur le portail n'est pas terminée si le FAB a disparu des pages.
+- **Configuration du tableau de bord persistée en base (instruction
+  permanente)** : la configuration des widgets du tableau de bord du portail
+  (widgets + sections, hook `Pages/Dashboard/widgets/useDashboardWidgets.ts`)
+  est persistée dans la table **`Portail_Dashboard_Config`** (migration
+  `RHP_Portail/rhpBE/sql/Dashboard/001_Portail_Dashboard_Config.sql`) :
+  `Typ_Config` `'U'` (personnelle : `Cle_Config` = Matricule, `id_Societe` =
+  société de l'agent), `'P'` (modèle d'un profil : `Cle_Config` = Cod_Profile,
+  `id_Societe` = -1), `'G'` (modèle global : `Cle_Config` = '*', -1).
+  Résolution au chargement (backend `controlers/dashboard_config.ts`,
+  endpoints `dashboard_config_get` / `dashboard_config_save` — identité
+  exclusivement du JWT, jamais du corps) : **U > P > G** ; une configuration
+  issue d'un modèle devient personnelle (ligne `'U'`) au premier
+  enregistrement de l'utilisateur. Le localStorage
+  (`MYSPACE_DASHBOARD_WIDGETS_V2`, `MYSPACE_DASHBOARD_WIDGET_SECTIONS_V1`)
+  reste le cache immédiat et le repli hors-ligne ; à la première connexion
+  sans configuration serveur, la configuration locale est **adoptée**
+  (poussée en base) pour ne rien perdre des personnalisations antérieures.
+  La **duplication** d'une configuration vers d'autres agents et la gestion
+  des modèles P/G se font dans l'écran desktop **`Admin_Dashboard_Config`**
+  (section « Gestion des utilisateurs et des accès » ; enregistrement :
+  `RHP_DeskTop/RHP/Auth/Admin_Dashboard_Config_Menu.sql`) qui attaque la
+  même table en SQL direct.
 - **Pages de consultation par requête (requêteur `Param_Query` → portail,
   instruction permanente)** : une requête du requêteur desktop devient une
   page de consultation du portail via l'onglet « Widget portail » de

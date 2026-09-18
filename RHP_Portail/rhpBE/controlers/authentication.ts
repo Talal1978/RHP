@@ -12,6 +12,12 @@ import { verifyRefreshToken } from "../modules/module_jwt";
 
 export const authentication = async (req: Request, res: Response) => {
   const { login, pwd } = req.query as { login: string, pwd: string };
+  // Garde anti-crash : sans cette vérification, encrypt(undefined) lève une
+  // exception synchrone non attrapée par Express 4 (handler async) et TUE le
+  // processus Node — une simple requête malformée arrêtait tout le portail.
+  if (!login || !pwd) {
+    return res.send({ result: false, message: "Paramètres login/pwd manquants", data: [] });
+  }
   if (controleInjection(login).result === false) return res.send({ result: false, message: "Injection détectée" });
   const sqlStr = `declare @lg nvarchar(50)
     set @lg=upper(@login)
@@ -79,11 +85,16 @@ export const authentication = async (req: Request, res: Response) => {
     );
 
     // Set Refresh Token as HttpOnly Cookie
-    const isProd = process.env.NODE_ENV === 'production';
+    // COOKIE_SECURE=true : déploiement HTTPS inter-origines (secure +
+    // sameSite none). Sinon (déploiement on-prem HTTP en intranet, même
+    // origine) : secure=false + sameSite lax — un cookie secure serait
+    // rejeté par le navigateur en HTTP et déconnecterait l'utilisateur à
+    // chaque expiration du jeton d'accès.
+    const cookieSecure = process.env.COOKIE_SECURE === 'true';
     res.cookie('jwt', myJwt.refreshToken, {
       httpOnly: true,
-      secure: isProd,
-      sameSite: isProd ? 'none' : 'lax',
+      secure: cookieSecure,
+      sameSite: cookieSecure ? 'none' : 'lax',
       maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
     });
 
@@ -159,12 +170,12 @@ export const refreshToken = async (req: Request, res: Response) => {
     decoded.processId
   );
 
-  // Update Cookie
-  const isProdRefresh = process.env.NODE_ENV === 'production';
+  // Update Cookie (même logique COOKIE_SECURE qu'au login)
+  const cookieSecureRefresh = process.env.COOKIE_SECURE === 'true';
   res.cookie('jwt', newTokens.refreshToken, {
     httpOnly: true,
-    secure: isProdRefresh,
-    sameSite: isProdRefresh ? 'none' : 'lax',
+    secure: cookieSecureRefresh,
+    sameSite: cookieSecureRefresh ? 'none' : 'lax',
     maxAge: 7 * 24 * 60 * 60 * 1000
   });
 

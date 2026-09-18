@@ -2,6 +2,11 @@ import { Worker } from "@react-pdf-viewer/core";
 // Import the main component
 import { Viewer } from "@react-pdf-viewer/core";
 import { defaultLayoutPlugin } from "@react-pdf-viewer/default-layout";
+// Worker PDF.js embarqué localement (asset Vite) : le portail doit être
+// autonome — un site client sans accès Internet ne peut pas charger le
+// worker depuis un CDN, et la CSP du backend (script-src 'self') bloque
+// les scripts externes.
+import pdfWorkerUrl from "pdfjs-dist/build/pdf.worker.min.js?url";
 import "@react-pdf-viewer/default-layout/lib/styles/index.css";
 import "@react-pdf-viewer/core/lib/styles/index.css";
 import "@react-pdf-viewer/zoom/lib/styles/index.css";
@@ -121,7 +126,7 @@ export const ReportViewer = () => {
         <div className="report-empty">Aucun état à afficher.</div>
       )}
       {rptUrl && (
-        <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.4.120/build/pdf.worker.min.js">
+        <Worker workerUrl={pdfWorkerUrl}>
           <Viewer
             key={rptUrl}
             fileUrl={rptUrl}

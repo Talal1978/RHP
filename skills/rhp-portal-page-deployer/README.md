@@ -24,7 +24,7 @@ rhp-portal-page-deployer/
 │   ├── schema-mapping.md                 # verified concept -> RHP object mapping
 │   ├── sp-metadata-model.md              # Controle_Designer* columns, DDL rules of Saving,
 │   │                                     # publication
-│   ├── formules-calculees.md             # formula logic: AST, 43 ops, GV_*, graph/cycles
+│   ├── formules-calculees.md             # formula logic: AST, 44 ops, GV_*, graph/cycles
 │   ├── comportement-page.md              # states, dynamic rules, 13 validation types,
 │   │                                     # lifecycle, rights, list behavior
 │   ├── sources-metier.md                 # source catalog, read-only guard, parameters,
@@ -37,14 +37,19 @@ rhp-portal-page-deployer/
 ├── scripts/
 │   └── validate_input.py                 # blocking-rule validator (stdlib only)
 └── examples/
+    ├── README.md                         # examples index (contract reminder + how-to)
     ├── 01-frais-km/                      # input oracle of the official FKM page
     │   ├── input.yaml                    #   (contract illustration - never a
     │   │                                 #   deliverable) + the expected JSON
     │   └── RHP_Page_FRAIS_KM.json
-    └── 02-teletravail/                   # complete worked example
-        ├── input.yaml                    #   (contract illustration - never a
-        │                                 #   deliverable)
-        └── RHP_Page_TELETRAVAIL.json
+    ├── 02-teletravail/                   # complete worked example
+    │   ├── input.yaml                    #   (contract illustration - never a
+    │   │                                 #   deliverable)
+    │   └── RHP_Page_TELETRAVAIL.json
+    └── 03-consultation-soldes/           # consultation page (ENT criteria + virtual
+        ├── input.yaml                    #   detail grid fed by a TABLE source,
+        │                                 #   Act_Enregistrer=false) + expected JSON
+        └── RHP_Page_Consult_Soldes.json
 ```
 
 ## Usage (with Claude)

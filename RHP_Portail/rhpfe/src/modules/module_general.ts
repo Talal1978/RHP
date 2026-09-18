@@ -1,7 +1,12 @@
 import { TAgent } from "../types";
 
-export const Num_Version = "2026.000.04";
-export const Connexion = "http://localhost:3500/api/";
+export const Num_Version = "2026.000.05";
+// En production, le backend sert le frontend : l'API est sur la MÊME origine
+// (chemin relatif "/api/"). En dev (Vite), on cible le backend local.
+// Surcharge possible via VITE_API_URL (fichier .env au build).
+export const Connexion =
+  import.meta.env.VITE_API_URL ??
+  (import.meta.env.DEV ? "http://localhost:3500/api/" : "/api/");
 
 const defaultAgent: TAgent = {
   codProfile: "",

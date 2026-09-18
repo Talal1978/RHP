@@ -135,7 +135,36 @@ export async function initialisationGlobale(theAgent?: TAgent) {
 export const initialisationSeveur = async (): Promise<boolean> => {
   try {
     const configPath = "serverConfig.json";
-    if (!fs.existsSync(configPath)) {
+    // Priorité aux variables d'environnement (déploiement service/conteneur) :
+    // si SQL_SERVER + SQL_DB + SQL_USER + SQL_PASSWORD sont fournis, le
+    // fichier serverConfig.json n'est pas exigé.
+    const envConfig = process.env.SQL_SERVER && process.env.SQL_DB &&
+      process.env.SQL_USER && process.env.SQL_PASSWORD
+      ? {
+          port: Number(process.env.PORT) || 3500,
+          odbc: process.env.ODBC_NAME || "RHP",
+          server: process.env.SQL_SERVER as string,
+          user: process.env.SQL_USER as string,
+          db: process.env.SQL_DB as string,
+          pwd: process.env.SQL_PASSWORD as string, // déjà en clair
+          _fromEnv: true,
+        }
+      : null;
+
+    let cnfJson: any = envConfig;
+
+    if (!cnfJson && !fs.existsSync(configPath)) {
+      // Sans console interactive (service Windows, NSSM, conteneur), le
+      // questionnement readline ne répondrait jamais : on arrête net avec
+      // un message exploitable dans les journaux.
+      if (!process.stdin.isTTY) {
+        throw new Error(
+          "serverConfig.json introuvable et aucune console interactive disponible. " +
+          "Fournir la configuration via les variables d'environnement " +
+          "SQL_SERVER, SQL_DB, SQL_USER, SQL_PASSWORD (et PORT en option), " +
+          "ou lancer une première fois le serveur en console pour générer le fichier."
+        );
+      }
       console.log("Configuration file not found. Starting interactive setup...");
 
       const rl = readline.createInterface({
@@ -174,32 +203,38 @@ export const initialisationSeveur = async (): Promise<boolean> => {
 
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
         console.log("Configuration saved successfully.");
+        cnfJson = { ...config, pwd: pwd };
       } catch (err) {
         rl.close();
         throw err;
       }
     }
 
-    const cnf = fs.readFileSync(configPath, { encoding: "utf-8" });
-    const cnfJson = JSON.parse(cnf);
-    if (!cnfJson.pwd) throw new Error("Password missing in config");
+    if (!cnfJson) {
+      cnfJson = JSON.parse(fs.readFileSync(configPath, { encoding: "utf-8" }));
+      if (!cnfJson.pwd) throw new Error("Password missing in config");
+      cnfJson.pwd = decrypt(cnfJson.pwd);
+    }
 
-    cnfJson.pwd = decrypt(cnfJson.pwd);
-    // const opath = "E:/Dev/Mobile/RayOneMobile/RayOneBE/tools/uploads"; //cnfJson.path;
+    // Les variables d'environnement peuvent surcharger ponctuellement le
+    // fichier (utile en déploiement : changer le port sans régénérer le JSON).
+    if (process.env.PORT) cnfJson.port = Number(process.env.PORT);
+
     VGLOBALES.PORT = cnfJson.port;
     VGLOBALES.ODBC_SERVEUR = cnfJson.odbc;
     VGLOBALES.SQL_SERVER = cnfJson.server;
     VGLOBALES.SQL_USER = cnfJson.user;
     VGLOBALES.SQL_DB = cnfJson.db;
     VGLOBALES.SQL_PASSWORD = cnfJson.pwd;
-    const opath = process.env.UPLOAD_PATH || "talal";
-    if (fs.existsSync(opath)) {
-      VGLOBALES.UPLOADS_PATH = path.resolve(opath);
-    } else {
-      VGLOBALES.UPLOADS_PATH = path.resolve(opath, process.cwd());
-      if (!fs.existsSync(VGLOBALES.UPLOADS_PATH)) {
-        fs.mkdirSync(VGLOBALES.UPLOADS_PATH, { recursive: true });
-      }
+    // Dossier des fichiers GED/uploadés : UPLOAD_PATH (absolu recommandé en
+    // production, ex. C:\RHP_Portail\Uploads), sinon "Uploads" sous le
+    // répertoire d'exécution du backend. Créé si absent.
+    const opath = process.env.UPLOAD_PATH || "Uploads";
+    VGLOBALES.UPLOADS_PATH = path.isAbsolute(opath)
+      ? opath
+      : path.resolve(process.cwd(), opath);
+    if (!fs.existsSync(VGLOBALES.UPLOADS_PATH)) {
+      fs.mkdirSync(VGLOBALES.UPLOADS_PATH, { recursive: true });
     }
     return true;
   } catch (err) {

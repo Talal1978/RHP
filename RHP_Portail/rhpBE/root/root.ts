@@ -87,6 +87,7 @@ import { declarationATListe, get_declaration_at } from "../controlers/declaratio
 import { getDashboardData } from "../controlers/dashboard";
 import { getDashboardWidgetData } from "../controlers/dashboard_widgets";
 import { execDashboardQueryWidget, getDashboardQueryWidgetCatalog } from "../controlers/dashboard_query_widgets";
+import { getDashboardConfig, saveDashboardConfig } from "../controlers/dashboard_config";
 import { get_communication_blog, get_communication_blogs_liste } from "../controlers/communication";
 import { ask_ai_assistant } from "../controlers/ai_assistant";
 import {
@@ -130,7 +131,7 @@ mainRooting.get("/get_signataires", validate, get_signataires);
 mainRooting.get("/has_signature_rule", validate, has_signature_rule);
 mainRooting.get("/get_parapheur", validate, get_parapheur);
 mainRooting.post("/getreport", validate, generateReport);
-mainRooting.post("/findlibelle", findLibelleApi);
+mainRooting.post("/findlibelle", validate, findLibelleApi);
 /* --------------------------------------------------------------------------
    Gardes d'accès par profil (gardePage) : chaque endpoint métier d'une page
    standard du portail est protégé par le droit Actif de Controle_Droit sur
@@ -225,6 +226,11 @@ mainRooting.post("/dashboard", validate, gardePage("Dashboard"), getDashboardDat
 mainRooting.post("/dashboard_widget", validate, gardePage("Dashboard"), getDashboardWidgetData);
 mainRooting.post("/dashboard_widget_catalog", validate, getDashboardQueryWidgetCatalog);
 mainRooting.post("/dashboard_widget_exec", validate, execDashboardQueryWidget);
+// Configuration personnelle du tableau de bord : endpoint transversal (ligne
+// strictement liée au matricule du JWT ; la page d'accueil est toujours
+// accessible) — pas de gardePage, comme dashboard_widget_catalog.
+mainRooting.post("/dashboard_config_get", validate, getDashboardConfig);
+mainRooting.post("/dashboard_config_save", validate, saveDashboardConfig);
 mainRooting.post("/communication_blogs_liste", validate, gardePage("Communication_Blogs_Liste"), get_communication_blogs_liste);
 mainRooting.post("/get_communication_blog", validate, gardePage("Communication_Blogs_Liste"), get_communication_blog);
 mainRooting.post("/ask_ai", validate, ask_ai_assistant);

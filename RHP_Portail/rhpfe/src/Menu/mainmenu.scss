@@ -84,11 +84,15 @@ $sidebar-breakpoint01: 1000px;
     }
   }
 
-  .css-hip9hq-MuiPaper-root-MuiAppBar-root {
+  // NB : ne jamais cibler les classes hachées générées par Emotion
+  // (css-xxx-MuiPaper-root-...) : leur suffixe "label" n'existe qu'en dev
+  // (NODE_ENV != production), la règle ne s'appliquerait plus en build prod.
+  // Toujours utiliser les classes utilitaires stables (MuiAppBar-root...).
+  .MuiAppBar-root {
     background-color: variables.$colorBase01 !important;
   }
 
-  .css-1nxmd3h-MuiListItem-root {
+  .sidebar .MuiListItem-root {
     height: 3em;
     &.selected {
       background-color: variables.$colorBase02;

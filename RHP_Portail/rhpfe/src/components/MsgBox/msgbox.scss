@@ -2,7 +2,9 @@
 .msgbox {
   z-index: 99999999999;
   user-select: none;
-  .css-1t1j96h-MuiPaper-root-MuiDialog-paper {
+  // Classe stable MUI (les classes hachées Emotion css-xxx-... perdent leur
+  // suffixe label en build prod et ne matchent plus — cf. mainmenu.scss).
+  .MuiDialog-paper {
     min-width: clamp(400px, 500px, 75vw) !important;
   }
   .msgboxMessage {

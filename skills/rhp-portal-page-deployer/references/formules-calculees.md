@@ -101,7 +101,7 @@ sont faux ; tout le reste est vrai (y compris une date).
 
 ## 4. Variables globales `GV_*` — `variableGlobale()` (L.316-328)
 
-Exactement **7 variables**, résolues à l'horloge du serveur (client : horloge
+Exactement **8 variables**, résolues à l'horloge du serveur (client : horloge
 du navigateur) ; alignées sur `GlobalVar()` du desktop. Inconnue ⇒ `null`
 (0 en numérique). Les `GV_*` ne créent **jamais** de dépendance de recalcul.
 
