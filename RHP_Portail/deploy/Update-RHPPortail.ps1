@@ -65,6 +65,27 @@ try {
     if (-not (Test-Path "$InstallDir\backend\serverConfig.json")) { Stop-SiErreur "Installation existante introuvable dans $InstallDir. Utilisez Install-RHPPortail.ps1 pour une première installation." }
     $svc = Get-Service -Name $ServiceName -ErrorAction SilentlyContinue
     if (-not $svc) { Stop-SiErreur "Service '$ServiceName' introuvable." }
+    # Impression des états Crystal : l'outil crexport.exe (embarqué dans le
+    # package) est compilé AnyCPU « 32 bits préféré » (32BITPREF) : il exige le
+    # runtime SAP Crystal Reports pour .NET Framework 32 bits sur le serveur —
+    # avertissement non bloquant.
+    $crRuntime = "C:\Program Files (x86)\SAP BusinessObjects\Crystal Reports for .NET Framework 4.0\Common\SAP BusinessObjects Enterprise XI 4.0\win32_x86\crpe32.dll"
+    if (-not (Test-Path $crRuntime)) {
+        Write-Host "`nATTENTION : le runtime SAP Crystal Reports pour .NET Framework (32 bits)" -ForegroundColor Yellow
+        Write-Host "ne semble pas installé sur ce serveur. L'impression des états Crystal" -ForegroundColor Yellow
+        Write-Host "(génération PDF) échouera tant qu'il n'aura pas été installé." -ForegroundColor Yellow
+    }
+    # Le DSN ODBC (Param_General.ODBC_RHP, par défaut « RHP ») doit exister en
+    # DSN SYSTÈME 32 bits (WOW6432Node) : un DSN utilisateur ou un DSN système
+    # 64 bits est invisible pour crexport.exe, processus 32 bits (échec
+    # « Impossible de démarrer la connexion ») — avertissement non bloquant.
+    $dsn32 = "HKLM:\SOFTWARE\WOW6432Node\ODBC\ODBC.INI\RHP"
+    if (-not (Test-Path $dsn32)) {
+        Write-Host "`nATTENTION : aucun DSN système 32 bits 'RHP' n'est défini sur ce serveur." -ForegroundColor Yellow
+        Write-Host "L'impression des états Crystal échouera (« Impossible de démarrer la connexion »)." -ForegroundColor Yellow
+        Write-Host "Créez un DSN SYSTÈME 32 bits (odbcad32.exe, %WINDIR%\SysWOW64) nommé comme" -ForegroundColor Yellow
+        Write-Host "Param_General.ODBC_RHP (pilote 'SQL Server') — voir deploy\README.md." -ForegroundColor Yellow
+    }
 
     # ---------------------------------------------------------------
     Write-Etape "2/6 - Préparation des fichiers du programme"
@@ -112,6 +133,8 @@ try {
     Copy-Item -Recurse "$stage\backend\node_modules" "$InstallDir\backend\node_modules"
     Copy-Item -Recurse "$stage\backend\tools"        "$InstallDir\backend\tools"
     Copy-Item "$stage\backend\package.json" "$InstallDir\backend\"
+    # Sortie temporaire des PDF Crystal (conservée si présente, recréée sinon)
+    New-Item -ItemType Directory -Path "$InstallDir\backend\tmp" -Force | Out-Null
     # Frontend : remplacement complet
     Remove-Item -Recurse -Force "$InstallDir\frontend" -ErrorAction SilentlyContinue
     Copy-Item -Recurse "$stage\frontend" "$InstallDir\frontend"

@@ -140,9 +140,10 @@ const Evaluation = () => {
   const SoumettreEnSignature = useCallback(async () => {
     // Sécurité : ne jamais soumettre/signer une évaluation sans réponses en base.
     // 1. Si le document est modifiable (brouillon), on enregistre d'abord les
-    //    réponses saisies (comme le fait l'application desktop : Saving("SS")).
+    //    réponses saisies avec le statut "SS" (comme le desktop : Saving("SS")) :
+    //    le serveur génère alors le circuit de signatures (Sys_Workflow_Signature).
     if (isValidForSave && myRef.current) {
-      const rsl = await myRef.current.save();
+      const rsl = await myRef.current.save("SS");
       if (!rsl.result) {
         await msgBox({
           titre: "Signer",
@@ -152,6 +153,9 @@ const Evaluation = () => {
         });
         return;
       }
+      // Le document vient d'être soumis : refléter le nouveau statut affiché
+      // (la page devient en lecture seule, comme après un rechargement).
+      navigate(location.pathname, { replace: true, state: { ...state, statut: "SS" } });
     }
     // 2. Bloquer si aucune réponse n'existe en base (évaluation vide).
     if (!myRef.current?.hasAnswers()) {
@@ -165,7 +169,7 @@ const Evaluation = () => {
     }
     setSignatureProps({ typ_document: "EV", valeur_index: evaluationKey });
     setShowSignature(true);
-  }, [setSignatureProps, setShowSignature, evaluationKey, isValidForSave, msgBox]);
+  }, [setSignatureProps, setShowSignature, evaluationKey, isValidForSave, msgBox, navigate, location.pathname, state]);
 
   useEffect(() => {
     settbnMenu([

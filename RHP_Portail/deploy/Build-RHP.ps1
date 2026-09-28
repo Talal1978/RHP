@@ -65,6 +65,14 @@ function Invoke-RHPBuild {
     Copy-Item "$rhpBE\package.json" "$stage\backend\"
     Copy-Item "$rhpBE\package-lock.json" "$stage\backend\"
     Copy-Item "$rhpBE\tools\init-config.js" "$stage\backend\tools\"
+    # Impression des états Crystal Reports : l'outil crexport.exe (+ ses DLL)
+    # est appelé par le backend (controlers/report.ts) — il DOIT être déployé.
+    if (-not (Test-Path "$rhpBE\tools\CRExport\crexport.exe")) { throw "Outil d'édition Crystal introuvable : $rhpBE\tools\CRExport\crexport.exe" }
+    Copy-Item -Recurse "$rhpBE\tools\CRExport" "$stage\backend\tools\CRExport"
+    # Dossier de sortie temporaire des PDF générés (report.ts le recrée aussi
+    # à l'exécution, mais on le déploie pour éviter toute surprise de droits).
+    New-Item -ItemType Directory -Path "$stage\backend\tmp" -Force | Out-Null
+    [System.IO.File]::WriteAllText("$stage\backend\tmp\.gitkeep", "", [System.Text.UTF8Encoding]::new($false))
     Push-Location "$stage\backend"
     npm ci --omit=dev | Out-Host
     if ($LASTEXITCODE -ne 0) { Pop-Location; throw "Echec de npm ci --omit=dev (dépendances de production)." }

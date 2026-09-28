@@ -7,7 +7,9 @@ export async function sousmettre_signature(
   id_Societe: string,
   Matricule: string
 ) {
-  await lireSql(
+  // Le résultat est retourné pour permettre à l'appelant de détecter un échec
+  // de génération du circuit (ex. raiserror "Aucun circuit configuré" du SP).
+  return await lireSql(
     `exec Sys_Workflow_Signature @typ_document,@id_Societe,@valeur_index, @matricule`,
     [
       { param: "typ_document", sqlType: NVarChar, valeur: Typ_Document },
@@ -63,8 +65,10 @@ export async function signer(req: Request, res: Response) {
 
   // Contrôle métier : une évaluation (Typ_Document 'EV') ne peut pas être signée
   // si aucune réponse n'est enregistrée en base (Survey_Reply_Detail vide ou
-  // en-tête inexistant). Valeur_Index est reconstruit comme côté front :
-  // Cod_Evaluation + '_' + Evalue + '_' + Evaluateur.
+  // en-tête inexistant). Valeur_Index est reconstruit comme côté front et
+  // desktop : évaluation salarié (Typ_Evalue 'E') = Cod_Evaluation + '_' +
+  // Evalue + '_' + Evaluateur ; évaluation de formation (Typ_Evalue 'F') =
+  // Cod_Reply.
   if (Decision === "SG") {
     const check = await lireSql(
       `declare @Indx nvarchar(200), @TypDoc nvarchar(10)
@@ -72,8 +76,9 @@ export async function signer(req: Request, res: Response) {
        select @TypDoc as Typ_Document,
          (select top 1 (select count(*) from Survey_Reply_Detail d where d.Cod_Reply = r.Cod_Reply)
           from Survey_Reply r
-          where r.id_Societe = @id_Societe and r.Typ_Evalue = 'E'
-            and @Indx = r.Ref_Evaluation + '_' + r.Evalue + '_' + r.Evaluateur) as NbReponses`,
+          where r.id_Societe = @id_Societe
+            and ((r.Typ_Evalue = 'E' and @Indx = r.Ref_Evaluation + '_' + r.Evalue + '_' + r.Evaluateur)
+              or (r.Typ_Evalue = 'F' and @Indx = convert(nvarchar(20), r.Cod_Reply)))) as NbReponses`,
       [
         { param: "RowId", sqlType: Int, valeur: RowId },
         { param: "id_Societe", sqlType: Int, valeur: id_Societe },

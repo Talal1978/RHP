@@ -149,10 +149,44 @@ const Formation_Evaluation = () => {
         window.print();
     }, []);
 
-    const SoumettreEnSignature = useCallback(() => {
-        setSignatureProps({ typ_document: "EV", valeur_index: evaluationKey });
+    const SoumettreEnSignature = useCallback(async () => {
+        let codReplyCircuit = currentCodReply;
+        // 1. Si le document est modifiable (brouillon), on enregistre d'abord les
+        //    réponses saisies avec le statut "SS" : le serveur génère alors le
+        //    circuit de signatures (Sys_Workflow_Signature) avec Cod_Reply comme
+        //    Valeur_Index (convention desktop Formation_Evaluation).
+        if (isValidForSave && myRef.current) {
+            const rsl = await myRef.current.save("SS");
+            if (!rsl.result) {
+                await msgBox({
+                    titre: "Signer",
+                    msg: "Enregistrement préalable impossible : " + (rsl.data && rsl.data.length > 0 ? (typeof rsl.data[0] === 'object' ? JSON.stringify(rsl.data[0]) : String(rsl.data[0])) : "erreur inconnue"),
+                    typMsg: "error",
+                    typReply: "OkOnly",
+                });
+                return;
+            }
+            if (rsl.data && rsl.data.length > 0 && rsl.data[0].Cod_Reply) {
+                codReplyCircuit = rsl.data[0].Cod_Reply;
+                setCurrentCodReply(codReplyCircuit);
+            }
+            // Le document vient d'être soumis : refléter le nouveau statut affiché.
+            navigate(location.pathname, { replace: true, state: { ...state, cod_reply: codReplyCircuit, statut: "SS" } });
+        }
+        // 2. Bloquer si aucune réponse n'existe en base (évaluation vide).
+        if (!myRef.current?.hasAnswers()) {
+            await msgBox({
+                titre: "Signer",
+                msg: "Aucune réponse n'est enregistrée pour cette évaluation. Signature impossible.",
+                typMsg: "error",
+                typReply: "OkOnly",
+            });
+            return;
+        }
+        if (!(codReplyCircuit > 0)) return;
+        setSignatureProps({ typ_document: "EV", valeur_index: String(codReplyCircuit) });
         setShowSignature(true);
-    }, [setSignatureProps, setShowSignature, evaluationKey]);
+    }, [setSignatureProps, setShowSignature, isValidForSave, msgBox, currentCodReply, navigate, location.pathname, state]);
 
     useEffect(() => {
         if (!state) return;

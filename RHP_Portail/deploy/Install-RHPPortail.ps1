@@ -106,6 +106,27 @@ try {
     Write-Etape "1/9 - Vérifications"
     $serviceExistant = Get-Service -Name $ServiceName -ErrorAction SilentlyContinue
     if ($serviceExistant) { Stop-SiErreur "Le service '$ServiceName' existe déjà. Pour mettre à jour, utilisez Update-RHPPortail.ps1 ; pour réinstaller, lancez d'abord Uninstall-RHPPortail.ps1." }
+    # Impression des états Crystal : l'outil crexport.exe (embarqué dans le
+    # package) est compilé AnyCPU « 32 bits préféré » (32BITPREF) : il exige le
+    # runtime SAP Crystal Reports pour .NET Framework 32 bits sur le serveur —
+    # avertissement non bloquant.
+    $crRuntime = "C:\Program Files (x86)\SAP BusinessObjects\Crystal Reports for .NET Framework 4.0\Common\SAP BusinessObjects Enterprise XI 4.0\win32_x86\crpe32.dll"
+    if (-not (Test-Path $crRuntime)) {
+        Write-Host "`nATTENTION : le runtime SAP Crystal Reports pour .NET Framework (32 bits)" -ForegroundColor Yellow
+        Write-Host "ne semble pas installé sur ce serveur. L'impression des états Crystal" -ForegroundColor Yellow
+        Write-Host "(génération PDF) échouera tant qu'il n'aura pas été installé." -ForegroundColor Yellow
+    }
+    # Le DSN ODBC (Param_General.ODBC_RHP, par défaut « RHP ») doit exister en
+    # DSN SYSTÈME 32 bits (WOW6432Node) : un DSN utilisateur ou un DSN système
+    # 64 bits est invisible pour crexport.exe, processus 32 bits (échec
+    # « Impossible de démarrer la connexion ») — avertissement non bloquant.
+    $dsn32 = "HKLM:\SOFTWARE\WOW6432Node\ODBC\ODBC.INI\RHP"
+    if (-not (Test-Path $dsn32)) {
+        Write-Host "`nATTENTION : aucun DSN système 32 bits 'RHP' n'est défini sur ce serveur." -ForegroundColor Yellow
+        Write-Host "L'impression des états Crystal échouera (« Impossible de démarrer la connexion »)." -ForegroundColor Yellow
+        Write-Host "Créez un DSN SYSTÈME 32 bits (odbcad32.exe, %WINDIR%\SysWOW64) nommé comme" -ForegroundColor Yellow
+        Write-Host "Param_General.ODBC_RHP (pilote 'SQL Server') — voir deploy\README.md." -ForegroundColor Yellow
+    }
 
     # ---------------------------------------------------------------
     Write-Etape "2/9 - Préparation des fichiers du programme"
@@ -175,6 +196,8 @@ try {
     }
     New-Item -ItemType Directory -Path "$InstallDir\Uploads" -Force | Out-Null
     New-Item -ItemType Directory -Path "$InstallDir\logs"   -Force | Out-Null
+    # Sortie temporaire des PDF Crystal (backend\tools\CRExport déployé par le package)
+    New-Item -ItemType Directory -Path "$InstallDir\backend\tmp" -Force | Out-Null
 
     # ---------------------------------------------------------------
     Write-Etape "5/9 - Configuration SQL Server (avec test de connexion)"

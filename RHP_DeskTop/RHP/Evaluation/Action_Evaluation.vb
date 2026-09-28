@@ -386,7 +386,7 @@ where id_Societe ='" & Societe.id_Societe & "'")
                             .Cells.Add(New Cell)
                             .Cells(1).Text = aRw(i)("Grade")
                             .Cells(2).Text = aRw(i)("Poste")
-                            .Cells(3).Text = aRw(i)("Anciennete")
+                            .Cells(3).Text = IsNull(aRw(i)("Anciennete"), 0)
                             .Cells(4).Text = aRw(i)("Titre")
                             .Cells(5).Checked = (TblEva.Select("Evalue='" & .Name & "'").Length > 0)
                             .Cells(5).CheckBoxStyle = DevComponents.DotNetBar.eCheckBoxStyle.CheckBox

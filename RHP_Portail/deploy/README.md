@@ -5,7 +5,9 @@ statiques du build Vite), l'API REST et les websockets — aucun IIS, aucun
 proxy à configurer. Le processus tourne comme **service Windows** (via NSSM)
 avec démarrage automatique et redémarrage en cas de plantage. **Node.js est
 embarqué** à l'installation : rien à installer sur le serveur cible, hormis
-SQL Server (déjà présent pour RHP_DeskTop).
+SQL Server (déjà présent pour RHP_DeskTop) et — uniquement pour l'**impression
+des états Crystal (PDF)** — le runtime SAP Crystal Reports pour .NET
+Framework 64 bits (voir [Prérequis pour l'impression des états Crystal](#prérequis-pour-limpression-des-états-crystal-pdf)).
 
 ## Utilisation — 5 scripts, un clic chacun
 
@@ -61,7 +63,9 @@ Serveur Windows
     ├── runtime\node.exe      <- Node.js embarqué (aucun prérequis)
     ├── backend\              <- rhpBE compilé + node_modules de prod
     │   ├── serverConfig.json <- connexion SQL (générée à l'install)
-    │   └── .env              <- secrets JWT, chemins, CORS (généré à l'install)
+    │   ├── .env              <- secrets JWT, chemins, CORS (généré à l'install)
+    │   ├── tools\CRExport\   <- crexport.exe : génération PDF des états Crystal
+    │   └── tmp\              <- PDF temporaires (supprimés après envoi)
     ├── frontend\             <- build Vite (servi par le backend)
     ├── Uploads\              <- fichiers GED (À SAUVEGARDER)
     ├── logs\                 <- journaux du service
@@ -125,6 +129,47 @@ base renommée, mot de passe modifié...) ou pour changer le port HTTP :
 - Les **migrations SQL** du portail (`rhpBE\sql\...`) doivent être appliquées
   à la base du client, comme pour toute mise à jour RHP.
 
+## Prérequis pour l'impression des états Crystal (PDF)
+
+L'impression des états (bulletins, attestations, notes de frais...) passe par
+l'outil **`crexport.exe`**, embarqué dans le package
+(`backend\tools\CRExport\`) et piloté par le backend : il charge le modèle
+`.rpt` (dossier désigné par `Param_General.Lecteur_Digital_Mod_Edition` —
+**ce chemin doit exister sur le serveur du portail**, lecteur local ou
+partage accessible au service) et produit un PDF temporaire
+(`backend\tmp\`, purgé après envoi).
+
+Pour fonctionner, `crexport.exe` exige sur le serveur :
+
+1. **.NET Framework 4.8** (présent d'office sur Windows Server 2016+ /
+   Windows 10-11 à jour) ;
+2. **le runtime SAP Crystal Reports pour .NET Framework, 32 bits** (version
+   13.0.x — redistribuable `CRforVS` SP ≥ 33, MSI **x86**). Attention :
+   `crexport.exe` est compilé **AnyCPU « 32 bits préféré »** (CorFlags
+   `32BITPREF=1`) : même sur Windows 64 bits, il s'exécute en processus
+   **32 bits** et charge le runtime Crystal 32 bits — le runtime 64 bits seul
+   est inutilisable. L'installateur et l'updater vérifient sa présence
+   (`...\SAP BusinessObjects Enterprise XI 4.0\win32_x86\crpe32.dll`) et
+   affichent un avertissement s'il est absent ;
+3. **un DSN système 32 bits** nommé comme `Param_General.ODBC_RHP` (par défaut
+   `RHP`), pointant sur l'instance SQL du client (pilote « SQL Server »,
+   `SQLSRV32.dll`). `crexport.exe` s'y connecte par
+   `DataSourceConnections(0).SetConnection(odbc, db, ...)`. Attention : un
+   **DSN utilisateur** (visible seulement dans la session qui l'a créé) ou un
+   DSN système **64 bits** ne sont **pas vus** par un processus 32 bits —
+   l'impression échoue alors avec « Impossible de démarrer la connexion » ou
+   « Echec de la connexion à la base de données » dans
+   `logs\service-err.log` alors que le Desktop fonctionne. Création par
+   script (registre, vue **WOW6432Node**) :
+   `HKLM\SOFTWARE\WOW6432Node\ODBC\ODBC.INI\<NomDSN>` (valeurs `Driver` =
+   `C:\WINDOWS\system32\SQLSRV32.dll`, `Server`, `Database`) + valeur
+   `<NomDSN>` = `SQL Server` sous
+   `HKLM\SOFTWARE\WOW6432Node\ODBC\ODBC.INI\ODBC Data Sources`.
+
+Sans ce runtime, la génération PDF échoue avec un message explicite (le
+portail affiche la cause, et le détail est journalisé dans
+`logs\service-err.log`).
+
 ## Accès depuis les autres postes du réseau
 
 Le backend écoute sur toutes les interfaces réseau et le CORS accepte
@@ -179,3 +224,4 @@ port 443), IIS peut servir de reverse proxy devant le service Node :
 | 429 « Trop de requêtes » | Augmenter `RATE_LIMIT_MAX` dans .env (utilisateurs derrière une même IP/NAT) |
 | Déconnexion toutes les 15 min | `COOKIE_SECURE=true` alors que le site est en HTTP → le cookie de rafraîchissement est rejeté ; passer à `false` ou mettre en place le HTTPS |
 | `serverConfig.json introuvable...` dans les logs | Ne peut arriver que si le fichier a été supprimé ; le régénérer avec `Config-RHPPortail.ps1` (ou `C:\RHP_Portail\backend\tools\init-config.js` avec le node embarqué) |
+| L'impression d'un état (PDF) échoue | Le message affiché indique la cause ; détails dans `logs\service-err.log` (`[REPORT]`). Vérifier dans l'ordre : 1) `C:\RHP_Portail\backend\tools\CRExport\crexport.exe` présent (sinon redéployer — les packages antérieurs ne l'embarquaient pas), 2) runtime SAP Crystal Reports pour .NET 64 bits installé (voir section prérequis ci-dessus), 3) le chemin `Param_General.Lecteur_Digital_Mod_Edition` existe **pour le service** et contient le `.rpt` — attention : un **lecteur réseau mappé** (ex. `R:\`) n'existe que dans la session utilisateur qui l'a monté, le service ne le voit pas ; renseigner le **chemin UNC** (`\\serveur\partage`, accessible en lecture par le compte du service — LocalSystem par défaut), 4) « Impossible de démarrer la connexion » / « Echec de la connexion à la base de données » dans le log = **DSN ODBC** (`Param_General.ODBC_RHP`, défaut `RHP`) absent en **DSN système 32 bits** sur le serveur (un DSN utilisateur ou un DSN système 64 bits est invisible pour `crexport.exe`, processus 32 bits — voir prérequis ci-dessus), 5) tester à la main : `cd C:\RHP_Portail\backend && tools\CRExport\crexport.exe -r "<chemin>\<etat>.rpt" -u <user> -pw <pwd> -o <odbc> -db <base> -f tmp\test.pdf -p "" -v ""` |

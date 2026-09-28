@@ -2,6 +2,7 @@
 import { Request, Response } from 'express';
 import { lireSql } from "../modules/module_sqlRW";
 import { Float, Int, NVarChar } from "mssql";
+import { sousmettre_signature } from "../modules/module_workflow";
 
 
 export const surveyQuestions = async (req: Request, res: Response) => {
@@ -49,6 +50,9 @@ export const surveyAnswersSave = async (req: Request, res: Response) => {
 
     const login = req.params.login || "System";
     const typEvalue = typ_survey || 'E'; // Default to 'E' if not provided
+    // Statut à écrire dans Survey_Reply : liste blanche ('' = brouillon,
+    // 'SS' = soumis en signature — déclenche la génération du circuit).
+    const statut = req.body.statut === "SS" ? "SS" : "";
 
     if (!cod_survey) return res.send({ result: false, data: ["Code évaluation vide."] });
 
@@ -180,7 +184,7 @@ export const surveyAnswersSave = async (req: Request, res: Response) => {
         // ... (INSERT block logs are already there) ...
         // INSERT
         headerSql = `insert into Survey_Reply(id_Societe, Cod_Survey, Dat_Crea, Created_By, Evaluateur, Typ_Evalue, Evalue, Ref_Evaluation, Statut, Note, Coef, Note_Totale, Dat_Survey, Dat_Modif, Modified_By, Flg_Maj)
-values(@idSoc, @cod_survey, getdate(), @login, @evaluateur, @typEvalue, @evalue, @ref_evaluation, '', 0, 1, 0, getdate(), getdate(), @login, @flg_maj);
+values(@idSoc, @cod_survey, getdate(), @login, @evaluateur, @typEvalue, @evalue, @ref_evaluation, @statut, 0, 1, 0, getdate(), getdate(), @login, @flg_maj);
         SELECT SCOPE_IDENTITY() as NewId; `;
 
         const rslHeader = await lireSql(headerSql, [
@@ -191,6 +195,7 @@ values(@idSoc, @cod_survey, getdate(), @login, @evaluateur, @typEvalue, @evalue,
             { param: "typEvalue", sqlType: NVarChar, valeur: typEvalue },
             { param: "evalue", sqlType: NVarChar, valeur: evalue },
             { param: "ref_evaluation", sqlType: NVarChar, valeur: ref_evaluation },
+            { param: "statut", sqlType: NVarChar, valeur: statut },
             { param: "flg_maj", sqlType: NVarChar, valeur: flg_maj.toString() }
         ]);
 
@@ -204,7 +209,7 @@ values(@idSoc, @cod_survey, getdate(), @login, @evaluateur, @typEvalue, @evalue,
     } else {
         // UPDATE
         headerSql = `update Survey_Reply set
-Evaluateur = @evaluateur, Typ_Evalue = @typEvalue, Evalue = @evalue, Ref_Evaluation = @ref_evaluation, Statut = '',
+Evaluateur = @evaluateur, Typ_Evalue = @typEvalue, Evalue = @evalue, Ref_Evaluation = @ref_evaluation, Statut = @statut,
     Dat_Modif = getdate(), Modified_By = @login, Flg_Maj = @flg_maj
             where Cod_Reply = @cod_reply`;
 
@@ -213,6 +218,7 @@ Evaluateur = @evaluateur, Typ_Evalue = @typEvalue, Evalue = @evalue, Ref_Evaluat
             { param: "typEvalue", sqlType: NVarChar, valeur: typEvalue },
             { param: "evalue", sqlType: NVarChar, valeur: evalue },
             { param: "ref_evaluation", sqlType: NVarChar, valeur: ref_evaluation },
+            { param: "statut", sqlType: NVarChar, valeur: statut },
             { param: "login", sqlType: NVarChar, valeur: login },
             { param: "flg_maj", sqlType: NVarChar, valeur: flg_maj.toString() },
             { param: "cod_reply", sqlType: Int, valeur: currentCodReply }
@@ -276,6 +282,23 @@ values(@cod_reply, @cod_question, @question, @obligatoire, @typ_reponse, @num_so
         { param: "cod_reply", sqlType: Int, valeur: currentCodReply },
         { param: "flg_maj", sqlType: NVarChar, valeur: flg_maj.toString() }
     ]);
+
+    // Soumission en signature : génère le circuit (Signatures_Ent/Signatures_Lig)
+    // via Sys_Workflow_Signature, comme le fait le desktop (Module_Workflow).
+    // Valeur_Index : évaluation salarié (Typ_Evalue 'E') = clé composite
+    // Ref_Evaluation_Evalue_Evaluateur (cf. Param_Workflow_Typ_Document) ;
+    // évaluation de formation ('F') = Cod_Reply (convention desktop).
+    if (statut === "SS") {
+        const valeurIndex = typEvalue === "E"
+            ? `${ref_evaluation}_${evalue}_${evaluateur}`
+            : String(currentCodReply);
+        const rslWkf = await sousmettre_signature("EV", valeurIndex, String(idSoc), String(req.params.Matricule || login));
+        if (!rslWkf.result) {
+            const msgWkf = (rslWkf.sort as any)?.message || String(rslWkf.sort || "Erreur lors de la génération du circuit de signatures.");
+            console.error("Sys_Workflow_Signature EV error:", rslWkf.sort);
+            return res.send({ result: false, data: [msgWkf] });
+        }
+    }
 
     return res.send({ result: true, data: [{ Cod_Reply: currentCodReply }] });
 };

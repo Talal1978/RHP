@@ -71,8 +71,8 @@ const Survey_Rendering = forwardRef<ChildHandle, TProps>(({ cod_survey, cod_repl
     // avec succès : utilisé pour interdire la signature d'une évaluation vide.
     const hasAnswersRef = useRef(false);
     useImperativeHandle(refChild, () => ({
-        save: async () => {
-            return await saveAnswers();
+        save: async (statut?: string) => {
+            return await saveAnswers(statut);
         },
         hasAnswers: () => hasAnswersRef.current,
     }));
@@ -620,7 +620,7 @@ const Survey_Rendering = forwardRef<ChildHandle, TProps>(({ cod_survey, cod_repl
         return { isValid, newAnswers };
     }, [answers, questionsRef]); // removed answers dependency to avoid loop if used in effect, but saveAnswers is manual.
 
-    const saveAnswers = useCallback(async (): Promise<{ result: boolean, data: any[] }> => {
+    const saveAnswers = useCallback(async (statut: string = ""): Promise<{ result: boolean, data: any[] }> => {
         // Sécurité : ne jamais enregistrer si le questionnaire n'est pas chargé,
         // sinon un lot vide serait envoyé et les réponses existantes seraient perdues.
         if (questionsRef.current.length === 0) {
@@ -652,7 +652,8 @@ const Survey_Rendering = forwardRef<ChildHandle, TProps>(({ cod_survey, cod_repl
                 evalue,
                 evaluateur,
                 typ_survey,
-                ref_evaluation
+                ref_evaluation,
+                statut
             });
 
             if (rsl.data) {

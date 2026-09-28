@@ -54,7 +54,9 @@ export interface TAnswers {
 }
 
 export type ChildHandle = {
-  save: () => Promise<{ result: boolean, data: any[] }>;
+  // statut : statut à écrire dans Survey_Reply ('' = brouillon, 'SS' = soumis
+  // en signature — déclenche côté serveur la génération du circuit de signatures).
+  save: (statut?: string) => Promise<{ result: boolean, data: any[] }>;
   // Indique si des réponses existent en base (chargées ou fraîchement enregistrées).
   // Sert à bloquer la signature d'une évaluation vide.
   hasAnswers: () => boolean;

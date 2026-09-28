@@ -84,7 +84,7 @@ import {
   delete_demande_doc_admin,
 } from "../controlers/demande_doc_admin";
 import { declarationATListe, get_declaration_at } from "../controlers/declaration_at";
-import { getDashboardData } from "../controlers/dashboard";
+import { getDashboardData, getDashboardWeather } from "../controlers/dashboard";
 import { getDashboardWidgetData } from "../controlers/dashboard_widgets";
 import { execDashboardQueryWidget, getDashboardQueryWidgetCatalog } from "../controlers/dashboard_query_widgets";
 import { getDashboardConfig, saveDashboardConfig } from "../controlers/dashboard_config";
@@ -223,6 +223,9 @@ mainRooting.post("/delete_demande_doc_admin", validate, gardePage("Demande_Doc_A
 mainRooting.post("/declarationATListe", validate, gardePage("RH_Declaration_AT_Liste"), declarationATListe);
 mainRooting.post("/get_declaration_at", validate, gardePage("RH_Declaration_AT_Liste"), get_declaration_at);
 mainRooting.post("/dashboard", validate, gardePage("Dashboard"), getDashboardData);
+// Météo : relais serveur de l'API externe (les postes clients n'ont pas
+// forcément accès à Internet en production) — même garde que le dashboard.
+mainRooting.post("/dashboard_weather", validate, gardePage("Dashboard"), getDashboardWeather);
 mainRooting.post("/dashboard_widget", validate, gardePage("Dashboard"), getDashboardWidgetData);
 mainRooting.post("/dashboard_widget_catalog", validate, getDashboardQueryWidgetCatalog);
 mainRooting.post("/dashboard_widget_exec", validate, execDashboardQueryWidget);

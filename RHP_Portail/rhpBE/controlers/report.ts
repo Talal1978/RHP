@@ -91,6 +91,17 @@ export const generateReport = async (req: Request, res: Response) => {
   criteres["idSoc"] = String(req.params.id_Societe || "-1");
   const params = criteres ? Object.keys(criteres) : [];
   const values = criteres ? Object.values(criteres) : [];
+
+  // Échec lisible : le client (ReportViewer) affiche ce message tel quel.
+  const echouer = (msg: string, detail?: unknown) => {
+    console.error(`[REPORT] ${report} : ${msg}`, detail ?? "");
+    if (!res.headersSent) {
+      res.setHeader("Autres", "");
+      res.setHeader("Access-Control-Expose-Headers", "Autres");
+    }
+    return res.status(500).send(`Génération de l'état '${report}' impossible : ${msg}`);
+  };
+
   const rpt = await lireSql(
     "select * from Param_Mod_Edition where Cod_Report=@Cod_Report",
     [{ param: "Cod_Report", sqlType: NVarChar, valeur: report }]
@@ -99,27 +110,78 @@ export const generateReport = async (req: Request, res: Response) => {
   if (rpt.result && rpt.data && rpt.data.length > 0) withPwd = rpt.data[0].withPassword;
   const rptPwd = Math.floor(Math.random() * 10000);
   const { SQL_USER, SQL_PASSWORD, SQL_DB } = VGLOBALES;
-  await getOdbcInfo();
+
+  const odbc = await getOdbcInfo();
+  if (!odbc.rsl || !PATH_REPORT || !ODBC_SERVEUR) {
+    return echouer(
+      "paramètres d'édition introuvables (Param_General : ODBC_RHP / Lecteur_Digital_Mod_Edition).",
+      odbc.data
+    );
+  }
+
+  const rptFile = path.join(PATH_REPORT, `${report}.rpt`);
+  if (!fs.existsSync(rptFile)) {
+    // Distinguer « dossier des états inaccessible » de « fichier absent » :
+    // un lecteur réseau mappé (R:\...) n'existe que dans la session
+    // utilisateur qui l'a monté — le service du portail ne le voit pas.
+    let piste = "";
+    if (!fs.existsSync(PATH_REPORT)) {
+      const racine = path.parse(PATH_REPORT).root; // ex. "R:\"
+      piste = /^[A-Za-z]:\\$/.test(racine)
+        ? ` Le dossier des états '${PATH_REPORT}' est inaccessible depuis le service du portail : si '${racine}' est un lecteur réseau mappé, il est invisible pour un service Windows. Renseignez le chemin UNC (\\\\serveur\\partage) dans Param_General (Lecteur_Digital_Mod_Edition).`
+        : ` Le dossier des états '${PATH_REPORT}' est inaccessible depuis le service du portail (chemin ou droits à vérifier).`;
+    }
+    return echouer(`modèle d'état introuvable : ${rptFile}.${piste}`);
+  }
+
+  const crystalExe = path.resolve(process.cwd(), "tools", "CRExport", "crexport.exe");
+  if (!fs.existsSync(crystalExe)) {
+    return echouer(
+      `outil d'édition Crystal Reports absent du serveur : ${crystalExe} (redéployer le portail — tools/CRExport).`
+    );
+  }
+
   const filename = `${report}_${makeid(6)}.pdf`;
   const fileFullName = path.resolve(process.cwd(), "tmp", filename);
-  const crystalExe = path.resolve(process.cwd(), "tools/CRExport/crexport.exe");
-  const cmdString: string = ` ${crystalExe} -r "${PATH_REPORT}/${report}.rpt" -u "${SQL_USER}" -pw "${SQL_PASSWORD}" -o "${ODBC_SERVEUR}" -db "${SQL_DB}"  -f "${fileFullName}" -p "${params}" -v "${values}" ${withPwd ? `-reportPwd ${rptPwd}` : ""
+  try {
+    fs.mkdirSync(path.dirname(fileFullName), { recursive: true });
+  } catch (err) {
+    return echouer(`création du dossier temporaire impossible (${path.dirname(fileFullName)}).`, err);
+  }
+
+  const cmdString: string = `"${crystalExe}" -r "${rptFile}" -u "${SQL_USER}" -pw "${SQL_PASSWORD}" -o "${ODBC_SERVEUR}" -db "${SQL_DB}"  -f "${fileFullName}" -p "${params}" -v "${values}" ${withPwd ? `-reportPwd ${rptPwd}` : ""
     }`;
   res.setHeader("Autres", withPwd ? rptPwd : "");
   res.setHeader("Access-Control-Expose-Headers", "Autres");
-  exec(cmdString, (err) => {
-    res.download(fileFullName, (err) => {
-      if (err) {
-        res.send(
-          "module : report.ts : " + "\n" + err.message + "\n" + cmdString
-        );
-      } else {
-        fs.unlink(fileFullName, (err0) => {
-          if (err0) {
-            console.error("suppression de fichier impossible:", err0.message);
-          }
-        });
+  exec(cmdString, { timeout: 300000, windowsHide: true }, (err, stdout, stderr) => {
+    if (err) {
+      // Erreur la plus fréquente sur un serveur frais : le runtime Crystal
+      // Reports (SAP CR pour .NET Framework, 64 bits) n'est pas installé.
+      const detail = `${stderr || ""}\n${stdout || ""}`.trim();
+      const pisteRuntime = /Crystal|Could not load file|0x800|crpe|load report/i.test(detail)
+        ? " Vérifier que le runtime SAP Crystal Reports pour .NET Framework (64 bits) est installé sur le serveur."
+        : "";
+      return echouer(
+        `l'outil d'édition a échoué (code ${(err as any).code ?? "inconnu"}).${pisteRuntime}${detail ? " Détail : " + detail : ""}`,
+        err
+      );
+    }
+    if (!fs.existsSync(fileFullName)) {
+      return echouer(
+        "l'outil d'édition s'est terminé sans produire le PDF (critères ou modèle d'état à vérifier).",
+        stderr || stdout
+      );
+    }
+    res.download(fileFullName, (errDl) => {
+      if (errDl) {
+        console.error(`[REPORT] ${report} : envoi du PDF impossible`, errDl);
+        if (!res.headersSent) res.status(500).send("Envoi du PDF impossible : " + errDl.message);
       }
+      fs.unlink(fileFullName, (err0) => {
+        if (err0) {
+          console.error("suppression de fichier impossible:", err0.message);
+        }
+      });
     });
   });
 };

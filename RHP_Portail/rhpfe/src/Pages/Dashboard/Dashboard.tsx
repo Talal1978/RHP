@@ -49,6 +49,7 @@ const Dashboard = () => {
     loadDashboardSectionPreferences
   );
   const [weather, setWeather] = useState<DashboardWeather | null>(null);
+  const [weatherError, setWeatherError] = useState(false);
   const [configOpen, setConfigOpen] = useState(false);
   const { availableWidgets, userWidgets, userSections, saveWidgets, saveSections, isLoaded } = useDashboardWidgets();
 
@@ -130,28 +131,22 @@ const Dashboard = () => {
     }
   };
 
+  // La météo est servie par le backend (relais de l'API externe open-meteo) :
+  // en production, les postes clients n'ont pas forcément accès à Internet.
   const fetchWeather = async () => {
     try {
-      const lat = 33.5731;
-      const lon = -7.5898;
-      const response = await fetch(
-        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=relativehumidity_2m`
-      );
-      const data = await response.json();
-
-      if (data.current_weather) {
-        const hourIndex = new Date().getHours();
-        const humidity = data.hourly?.relativehumidity_2m?.[hourIndex] || 45;
-
-        setWeather({
-          temp: data.current_weather.temperature,
-          code: data.current_weather.weathercode,
-          wind: data.current_weather.windspeed,
-          humidity,
-        });
+      const resp = await myAxiosPost("dashboard_weather", {});
+      if (resp && resp.data?.result && resp.data?.data) {
+        setWeather(resp.data.data);
+        setWeatherError(false);
+      } else {
+        setWeather(null);
+        setWeatherError(true);
       }
     } catch (error) {
       console.error("Weather fetch error:", error);
+      setWeather(null);
+      setWeatherError(true);
     }
   };
 
@@ -159,6 +154,7 @@ const Dashboard = () => {
     setNotifications([]);
     setBlogs([]);
     setWeather(null);
+    setWeatherError(false);
     fetchData();
     fetchWeather();
   };
@@ -246,6 +242,7 @@ const Dashboard = () => {
       weather: {
         weather,
         weatherDescription: weather ? getWeatherDesc(weather.code) : "",
+        weatherError,
       },
       quickActions: {
         shortcuts,
@@ -263,7 +260,7 @@ const Dashboard = () => {
         onNavigate: navigateToSection,
       },
     }),
-    [blogs, notifications, shortcuts, soldeConge, weather]
+    [blogs, notifications, shortcuts, soldeConge, weather, weatherError]
   );
 
   // Données exposées aux widgets "standard" (Accès Rapide, Notifications, Actualités,

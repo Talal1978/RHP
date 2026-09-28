@@ -1,6 +1,6 @@
 import { TAgent } from "../types";
 
-export const Num_Version = "2026.000.05";
+export const Num_Version = "2026.000.06";
 // En production, le backend sert le frontend : l'API est sur la MÊME origine
 // (chemin relatif "/api/"). En dev (Vite), on cible le backend local.
 // Surcharge possible via VITE_API_URL (fichier .env au build).

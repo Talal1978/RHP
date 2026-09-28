@@ -3,11 +3,11 @@ import { Box, Paper, Stack, Typography } from "@mui/material";
 import { colorBase } from "../../../modules/module_general";
 import type { WeatherSectionProps } from "./SectionTypes";
 
-const WeatherSection = ({ weather, weatherDescription }: WeatherSectionProps) => {
+const WeatherSection = ({ weather, weatherDescription, weatherError }: WeatherSectionProps) => {
   if (!weather) {
     return (
       <Paper sx={{ p: 3, borderRadius: 2, border: "1px solid", borderColor: "divider", boxShadow: "none", bgcolor: "background.paper" }}>
-        <Typography color="text.secondary">Chargement météo...</Typography>
+        <Typography color="text.secondary">{weatherError ? "Météo indisponible" : "Chargement météo..."}</Typography>
       </Paper>
     );
   }

@@ -80,6 +80,7 @@ try {
 
     # Contrôle d'intégrité : le package doit être autonome à 100 %
     foreach ($f in @("app\backend\dist", "app\backend\node_modules", "app\backend\tools\init-config.js",
+                     "app\backend\tools\CRExport\crexport.exe", "app\backend\tmp",
                      "app\frontend\index.html", "app\runtime\node.exe", "app\nssm.exe",
                      "Install-RHPPortail.ps1", "Update-RHPPortail.ps1", "Config-RHPPortail.ps1", "Uninstall-RHPPortail.ps1", "LISEZ-MOI.txt")) {
         if (-not (Test-Path (Join-Path $pkgDir $f))) { Stop-SiErreur "Package incomplet : $f manquant." }

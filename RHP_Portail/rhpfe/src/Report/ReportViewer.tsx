@@ -97,12 +97,26 @@ export const ReportViewer = () => {
             throw (response as any).error || "Erreur inconnue lors de la récupération du rapport";
           }
         })
-        .catch((err) => {
+        .catch(async (err) => {
           setShowLoading(false);
           setLoading(false);
+          // Le backend renvoie le détail de l'échec en texte (responseType
+          // "blob" : axios l'encapsule dans un Blob) — on le décode pour
+          // afficher la cause réelle (outil Crystal absent, modèle
+          // introuvable, runtime manquant...) plutôt qu'un « 500 » muet.
+          let message = String(err);
+          try {
+            const data = err?.response?.data;
+            if (data instanceof Blob) {
+              const txt = (await data.text()).trim();
+              if (txt) message = txt;
+            }
+          } catch {
+            /* garder le message générique */
+          }
           msgBox({
             titre: "Génération du rapport",
-            msg: "Erreur : " + err,
+            msg: "Erreur : " + message,
             typMsg: "error",
             typReply: "OkOnly",
           });

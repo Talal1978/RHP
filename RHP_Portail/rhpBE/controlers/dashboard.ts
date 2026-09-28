@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import axios from "axios";
 import { lireSql } from "../modules/module_sqlRW";
 import { Int, NVarChar, DateTime } from "mssql";
 
@@ -49,6 +50,53 @@ export const getDashboardData = async (req: Request, res: Response) => {
             }
         });
 
+    } catch (error: any) {
+        res.send({ result: false, message: error.message });
+    }
+};
+
+/* --------------------------------------------------------------------------
+   Météo du tableau de bord : relais serveur de l'API open-meteo.
+   En production, les postes clients n'ont pas nécessairement accès à
+   Internet (intranet) : l'appel direct du navigateur échoue. Le backend —
+   seul point de sortie à autoriser — fait l'appel et le met en cache
+   30 minutes (une seule requête externe pour tous les utilisateurs).
+   -------------------------------------------------------------------------- */
+const WEATHER_URL =
+    "https://api.open-meteo.com/v1/forecast?latitude=33.5731&longitude=-7.5898&current_weather=true&hourly=relativehumidity_2m&timezone=auto";
+const WEATHER_CACHE_MS = 30 * 60 * 1000;
+let weatherCache: { at: number; data: unknown } | null = null;
+
+export const getDashboardWeather = async (_req: Request, res: Response) => {
+    try {
+        if (weatherCache && Date.now() - weatherCache.at < WEATHER_CACHE_MS) {
+            return res.send({ result: true, data: weatherCache.data });
+        }
+        const response = await axios.get(WEATHER_URL, { timeout: 8000 });
+        const payload = response.data;
+        const current = payload?.current_weather;
+        if (!current) {
+            return res.send({ result: false, message: "Réponse météo inattendue" });
+        }
+        // Humidité de l'heure courante : current_weather.time est à la
+        // demi-heure près (ex. "19:30") alors que hourly.time est à l'heure
+        // pile — on rapproche donc sur le préfixe "AAAA-MM-JJTHH".
+        const hourPrefix = typeof current.time === "string" ? current.time.substring(0, 13) : "";
+        const hourIndex = hourPrefix && Array.isArray(payload?.hourly?.time)
+            ? payload.hourly.time.findIndex(
+                (t: unknown) => typeof t === "string" && t.startsWith(hourPrefix)
+            )
+            : -1;
+        const humidity =
+            hourIndex >= 0 ? payload.hourly.relativehumidity_2m?.[hourIndex] ?? 45 : 45;
+        const data = {
+            temp: current.temperature,
+            code: current.weathercode,
+            wind: current.windspeed,
+            humidity,
+        };
+        weatherCache = { at: Date.now(), data };
+        res.send({ result: true, data });
     } catch (error: any) {
         res.send({ result: false, message: error.message });
     }

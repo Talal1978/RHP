@@ -105,6 +105,12 @@ app.use(
     contentSecurityPolicy: {
       directives: {
         ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+        // Le portail est déployé en HTTP simple (LAN). La directive par
+        // défaut de helmet « upgrade-insecure-requests » forcerait le
+        // navigateur à charger TOUTES les ressources en HTTPS →
+        // ERR_SSL_PROTOCOL_ERROR sur un serveur HTTP (CSS/JS inaccessibles,
+        // page blanche). À retirer si le portail passe en HTTPS.
+        "upgrade-insecure-requests": null,
         "connect-src": ["'self'", "blob:"],
         "img-src": ["'self'", "data:", "blob:"],
         "worker-src": ["'self'", "blob:"],

@@ -169,6 +169,34 @@ projet (tests, scripts, outils en ligne de commande, chaînes de connexion).
 
 ## RHP_Portail (React/TypeScript)
 
+- **Impression des états Crystal (instruction permanente)** : la génération
+  PDF (`POST /getreport`, `rhpBE/controlers/report.ts`) exécute
+  **`tools/CRExport/crexport.exe`** (chemins relatifs à `process.cwd()` =
+  `backend\` du service) avec le modèle `.rpt` désigné par
+  `Param_General.Lecteur_Digital_Mod_Edition` et le DSN `ODBC_RHP`, sortie
+  dans `backend\tmp\` (purée après envoi). **Le packaging de déploiement doit
+  toujours embarquer `tools\CRExport\` et `backend\tmp\`** (`Build-RHP.ps1`,
+  contrôle d'intégrité d'`Export-RHPPortail.ps1`) — leur absence était la
+  cause historique de l'échec d'impression en version déployée. Prérequis
+  serveur : **runtime SAP Crystal Reports pour .NET Framework 32 bits**
+  (v13.0.x ; détecté via `...\SAP BusinessObjects Enterprise XI
+  4.0\win32_x86\crpe32.dll`, avertissement non bloquant dans
+  Install/Update) — `crexport.exe` est compilé **AnyCPU « 32 bits préféré »**
+  (CorFlags `32BITPREF=1`) : même sur Windows 64 bits il s'exécute en
+  processus **32 bits** (le runtime 64 bits seul est inutilisable) ; et **un
+  DSN système 32 bits** (`HKLM\SOFTWARE\WOW6432Node\ODBC\ODBC.INI`) nommé
+  comme `Param_General.ODBC_RHP` (défaut `RHP`, pilote « SQL Server »)
+  pointant sur l'instance SQL du client — `crexport.exe` fait
+  `DataSourceConnections(0).SetConnection(odbc, db, ...)` : un DSN
+  **utilisateur** ou un DSN système **64 bits** est invisible pour le
+  processus 32 bits et produit « Impossible de démarrer la connexion » /
+  « Echec de la connexion à la base de données » dans le log alors que le
+  Desktop fonctionne ; de même un **lecteur réseau mappé** (`R:\...`) dans
+  `Lecteur_Digital_Mod_Edition` est invisible pour le service — renseigner le
+  **chemin UNC**. Tout échec doit rester **diagnosticable** : message
+  explicite renvoyé au client (HTTP 500 lu par `ReportViewer.tsx`) et trace
+  `[REPORT]` dans `logs\service-err.log` — ne jamais retenter un
+  `res.download` d'un PDF non produit.
 - **Bouton d'actions flottant (FAB)** : les actions d'une page document du
   portail (Enregistrer, Nouveau, Supprimer, Imprimer, Soumettre pour
   signature, Pièces jointes...) s'affichent dans le FAB `FloatMenu`

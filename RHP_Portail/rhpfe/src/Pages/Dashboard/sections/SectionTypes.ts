@@ -54,6 +54,7 @@ export interface LeaveBalanceSectionProps {
 export interface WeatherSectionProps {
   weather: DashboardWeather | null;
   weatherDescription: string;
+  weatherError?: boolean;
 }
 
 export interface QuickActionsSectionProps {
