@@ -45,7 +45,12 @@ non-destructive DDL). Primary sources:
 | `Act_Enregistrer` | nvarchar(5) | NO | `'true'` | |
 | `Act_Soumettre` | nvarchar(5) | NO | `'true'` | Requires `Workflow_Actif='true'` to surface in UI |
 | `Act_Imprimer` | nvarchar(5) | NO | `'false'` | Requires `Cod_Modele_Edition` |
-| `Act_Exporter` | nvarchar(5) | NO | `'false'` | Not wired in current frontend (metadata only) |
+| `Act_Exporter` | nvarchar(5) | NO | `'false'` | List page `.xlsx` export button (opt-in) |
+| `Act_Dupliquer` | nvarchar(5) | NO | `'false'` | **009** — Duplicate button (list + FAB), opt-in, `Creer` right |
+| `Act_Supprimer` | nvarchar(5) | NO | `'true'` | **009** — Delete button (list + FAB), opt-out; drafts only (server rule) |
+| `Aff_Dat_Crea` | nvarchar(5) | NO | `'true'` | **010** — list page "Créé le" system column, opt-out |
+| `Aff_Cree_Par` | nvarchar(5) | NO | `'true'` | **010** — list page "Créé par" system column, opt-out |
+| `Tri_Liste` | nvarchar(200) | NO | `''` | **010** — list page ORDER BY, `Tri_Defaut` format (e.g. `'Dat_Depart desc'`; ENT declared columns + `Num_Doc/Statut/Dat_Crea/Created_By/Dat_Modif/Modified_By`; `''` = `Dat_Crea desc`) |
 | `Acces_Personnalise` | nvarchar(5) | NO | `'true'` | `'false'` = consultation open to every profile |
 | `Figer_Statuts` | nvarchar(50) | NO | `'SG,RJ,SP,VA'` | **SP4** (006) — CSV of statuses freezing the document (e.g. `'SS,SG,RJ,SP,VA'` freezes on submit). **Not editable in the Desktop Designer**; its targeted `UPDATE` preserves it on re-save |
 | `Version_Page` | int | NO | 1 | +1 at each publication |

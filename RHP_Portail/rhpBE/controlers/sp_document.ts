@@ -9,8 +9,8 @@ import sql from "mssql";
 import { lireSql } from "../modules/module_sqlRW";
 import {
   chargerMetaPage, verifierDroit, lireDocument, enregistrerDocument,
-  supprimerDocument, executerValidations, recalculer, executerSource,
-  qn, colonnesMetier, tableEnt, TSpContexte, TSpMeta,
+  supprimerDocument, dupliquerDocument, executerValidations, recalculer, executerSource,
+  qn, colonnesMetier, tableEnt, triListeDocuments, TSpContexte, TSpMeta,
 } from "../modules/module_sp_engine";
 import {
   pagesMenuAutorisees, pagesReferenciees,
@@ -211,12 +211,19 @@ export async function sp_document_liste(req: Request, res: Response) {
     const idx = visibles.findIndex((v) => v.startsWith("t.[Matricule]"));
     visibles.splice(idx >= 0 ? idx + 1 : 0, 0, `isnull(ag.Nom,'') as [Nom]`);
   }
+  // Colonnes système de fin de grille : options de page Aff_Dat_Crea / Aff_Cree_Par
+  // (opt-out, défaut 'true' — migration 010 ; 'false' retire la colonne de la liste).
+  const colsSysteme: string[] = [];
+  if (meta.page.Aff_Dat_Crea !== "false") colsSysteme.push("t.[Dat_Crea] as [Créé le]");
+  if (meta.page.Aff_Cree_Par !== "false") colsSysteme.push("t.[Created_By] as [Créé par]");
   const selectCols = [
     "t.[Num_Doc] as [N°]",
     "dbo.FindRubrique('Statut_Signature', isnull(t.[Statut],'')) as [Statut]",
     ...visibles,
-    "t.[Dat_Crea] as [Créé le]",
-    "t.[Created_By] as [Créé par]",
+    ...colsSysteme,
+    // Code brut du statut (colonne masquée) : pilote côté client l'activation
+    // des actions de ligne (ex. Supprimer grisé dès que le statut a évolué).
+    "isnull(t.[Statut],'') as [Cod_Statut]",
   ].join(", ");
   // Filtres : uniquement sur colonnes déclarées, valeurs paramétrées et typées.
   //   <col>__Du / <col>__Au : plage de dates sur une colonne date déclarée ;
@@ -276,16 +283,22 @@ export async function sp_document_liste(req: Request, res: Response) {
     wheres.push("t.[Matricule]=@p_mat");
     params.push({ param: "p_mat", sqlType: sql.NVarChar, valeur: agent.Matricule });
   }
+  // Mode EXPORT (Excel côté client) : résultat complet des critères, plafonné
+  // plus haut que la pagination d'affichage. Disponible sur TOUTES les pages
+  // (l'option Act_Exporter du Designer n'est plus consultée).
+  const exporter = req.body?.exporter === true;
   const page = Math.max(1, Number(req.body?.page ?? 1) || 1);
-  const pageSize = Math.min(200, Math.max(1, Number(req.body?.pageSize ?? 50) || 50));
+  const pageSize = Math.min(exporter ? 5000 : 200, Math.max(1, Number(req.body?.pageSize ?? 50) || 50));
   const jointureAgent = avecAgent
     ? ` outer apply (select Nom_Agent + ' ' + Prenom_Agent as Nom from dbo.RH_Agent a
        where a.id_Societe = t.id_Societe and a.Matricule = t.Matricule) ag`
     : "";
+  // Tri de la liste : expression Tri_Liste de la page (ex. 'Dat_Depart desc'),
+  // sécurisée par triListeDocuments (repli : plus récents d'abord).
   const rsl = await lireSql(
     `select ${selectCols} from ${qn(tEnt.Nom_Physique)} t${jointureAgent}
      where ${wheres.join(" and ")}
-     order by t.[Dat_Crea] desc
+     order by ${triListeDocuments(meta)}
      offset @p_off rows fetch next @p_ps rows only`,
     [
       ...params,
@@ -294,6 +307,8 @@ export async function sp_document_liste(req: Request, res: Response) {
     ]
   );
   if (!rsl.result) return refus(res, "Erreur de chargement de la liste");
+  // Le code brut du statut est une donnée technique de pilotage, jamais affichée
+  if ((rsl.fields as any)?.["Cod_Statut"]) (rsl.fields as any)["Cod_Statut"].visible = false;
   return res.send({ ...rsl, page, pageSize });
 }
 
@@ -359,15 +374,35 @@ export async function sp_save_document(req: Request, res: Response) {
 }
 
 /* -------------------------------------------------------------------------- */
-/* Suppression d'un document                                                  */
+/* Suppression d'un document (brouillons uniquement — voir supprimerDocument) */
 /* -------------------------------------------------------------------------- */
 export async function sp_delete_document(req: Request, res: Response) {
   const { erreur, agent, meta } = await metaPubliee(req, "Supprimer");
   if (erreur || !meta) return refus(res, erreur ?? "Page introuvable");
+  // Option de page (défaut 'true' : la suppression existait avant l'option)
+  if (meta.page.Act_Supprimer === "false") {
+    return refus(res, "La suppression est désactivée pour cette page.");
+  }
   const numDoc = String(req.body?.numDoc ?? "");
   if (!numDoc) return refus(res, "Numéro de document manquant");
   const r = await supprimerDocument(meta, numDoc, agent);
   return res.send({ ...r, data: [], fields: [], sort: r.result ? "succès" : r.message });
+}
+
+/* -------------------------------------------------------------------------- */
+/* Duplication d'un document en une nouvelle pièce brouillon                  */
+/* -------------------------------------------------------------------------- */
+export async function sp_duplicate_document(req: Request, res: Response) {
+  // Dupliquer = créer une nouvelle pièce : droit Creer exigé
+  const { erreur, agent, meta } = await metaPubliee(req, "Creer");
+  if (erreur || !meta) return refus(res, erreur ?? "Page introuvable");
+  if (meta.page.Act_Dupliquer !== "true") {
+    return refus(res, "La duplication est désactivée pour cette page.");
+  }
+  const numDoc = String(req.body?.numDoc ?? "");
+  if (!numDoc) return refus(res, "Numéro de document manquant");
+  const r = await dupliquerDocument(meta, numDoc, agent);
+  return res.send({ ...r, fields: [], sort: r.result ? "succès" : r.message });
 }
 
 /* -------------------------------------------------------------------------- */

@@ -74,6 +74,7 @@ function champCritere(c: TCritereMeta): TSpChamp {
     Num_Zoom: null,
     Zoom_Retour: null,
     Zoom_Condition: null,
+    Copier_Vers: null,
     Source_Metier: null,
     Formule: null,
     Persiste: "false",

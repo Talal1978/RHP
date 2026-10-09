@@ -1,6 +1,6 @@
 ﻿Module Module_Licence
     Public oKle As String = ""
-    Public UriStr0 As String = "https://ray1.ma/apps"
+    Public UriStr0 As String = "https://ray1.ma/apps/"
     Dim UriStr As String = ""
     Function GetLiceIdent() As String
         Dim ostr As String = CnExecuting("declare @str varchar(max),@str2 varchar(max),@i int, @month int,@day int

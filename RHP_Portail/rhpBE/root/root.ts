@@ -99,7 +99,7 @@ import {
 } from "../controlers/outillage_mouvement";
 import {
   sp_menu_portail, sp_page_meta, sp_document_liste, sp_get_document,
-  sp_save_document, sp_delete_document, sp_validate_document, sp_exec_source,
+  sp_save_document, sp_delete_document, sp_duplicate_document, sp_validate_document, sp_exec_source,
 } from "../controlers/sp_document";
 import { sp_query_meta, sp_query_exec, sp_query_zoom } from "../controlers/portal_query";
 import { gardePage } from "../modules/module_droits_portail";
@@ -252,6 +252,7 @@ mainRooting.post("/sp_document_liste", validate, sp_document_liste);
 mainRooting.post("/sp_get_document", validate, sp_get_document);
 mainRooting.post("/sp_save_document", validate, sp_save_document);
 mainRooting.post("/sp_delete_document", validate, sp_delete_document);
+mainRooting.post("/sp_duplicate_document", validate, sp_duplicate_document);
 mainRooting.post("/sp_validate_document", validate, sp_validate_document);
 mainRooting.post("/sp_exec_source", validate, sp_exec_source);
 

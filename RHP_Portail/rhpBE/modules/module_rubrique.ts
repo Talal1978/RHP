@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import { controleInjection, lireSql } from "./module_sqlRW";
 import { Int, NVarChar } from "mssql";
-import { getCache, setCache } from "./module_cache";
 
 export const getRubrique = async (req: Request, res: Response) => {
   let { rubrique, options } = req.query;
@@ -49,16 +48,16 @@ order by Rang`;
 };
 
 export const listRubriques = async (req: Request, res: Response) => {
-  const cached = getCache<any[]>("listRubriques");
-  if (cached) {
-    return res.send(cached);
-  }
+  // Volontairement SANS cache : les rubriques sont des données de référence
+  // modifiables à tout moment depuis l'écran desktop (ex. ajout d'une valeur
+  // Typ_Frais) — le cache serveur (10 min) rendait une valeur fraîchement
+  // ajoutée invisible sur le portail malgré les rechargements (F5), le front
+  // ne relisant les rubriques qu'au chargement de l'application. La requête
+  // (table Param_Rubriques, quelques centaines de lignes) est négligeable et
+  // n'est appelée qu'au login / au rechargement complet de la page.
   const sqlStr = `select Nom_Controle rubrique,isnull(Valeur,'') as valeur,isnull(Membre,'') as membre, row_number() over(partition by Nom_Controle order by Rang, Membre) as rang 
   from Param_Rubriques`;
   const rsl = await lireSql(sqlStr, []);
-  if (rsl.result && rsl.data) {
-    setCache("listRubriques", rsl.data, 600); // 10 minutes
-  }
   res.send(rsl.data);
   return;
 };

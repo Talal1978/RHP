@@ -10,29 +10,12 @@ const GrilleHeaderCell = ({
   headerText: string;
   colName: string;
 }) => {
-  const { filtre, setFiltre, setFiltredData, innerDataSource, setIsFiltred } =
+  const { filtre, setFiltre, rechercheZoom, colRecherche, setColRecherche } =
     useContext(cntx);
 
   const filtreRef = useRef<HTMLInputElement>(null);
-  useEffect(() => {
-    if (!filtre || !innerDataSource) {
-      setIsFiltred(false);
-      return;
-    }
-    let _filtred = [...innerDataSource];
-    let estfiltree = false;
-    Object.entries(filtre).forEach(([col, v]) => {
-      if (v.expression) {
-        _filtred = _filtred.filter((f) => {
-          if (!estfiltree && v.expression.trim() !== "") estfiltree = true;
-          return filterEngine(v.typeData, f[col], v.expression);
-        });
-      }
-    });
-    setIsFiltred(estfiltree);
-    _filtred = _filtred.slice(0, 20);
-    setFiltredData(_filtred);
-  }, [filtre, innerDataSource]);
+  // Le filtrage des lignes (filtres par colonne + recherche clavier du zoom)
+  // est centralisé dans Grille.tsx.
   const showFilterText = (show: boolean) => {
     setFiltre((prv: any) => {
       return {
@@ -82,6 +65,19 @@ const GrilleHeaderCell = ({
         }}
       />
       <span
+        className={
+          rechercheZoom
+            ? `libelleEntete ${
+                colRecherche === colName ? "colRechercheActive" : ""
+              }`
+            : undefined
+        }
+        title={rechercheZoom ? "Filtrer sur cette colonne" : undefined}
+        onClick={
+          rechercheZoom && setColRecherche
+            ? () => setColRecherche(colName)
+            : undefined
+        }
         style={{
           marginRight:
             filtre && Object.keys(filtre).includes(colName) ? "3.5em" : "inset",
@@ -103,7 +99,7 @@ const GrilleHeaderCell = ({
   );
 };
 
-function filterEngine(datatype: string, value1: any, value2: string): boolean {
+export function filterEngine(datatype: string, value1: any, value2: string): boolean {
   value2 = value2.trim().toLowerCase();
   if (value2 === "") return true;
   let operande: string = "";

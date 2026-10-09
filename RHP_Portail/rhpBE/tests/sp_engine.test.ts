@@ -10,7 +10,7 @@ import assert from "node:assert/strict";
 import {
   validerIdentifiant, validerNomTableMetier, qn, estRequeteLectureSeule,
   evaluer, validerExpression, construireGraphe, recalculer, executerValidations,
-  valeurPour, TSpMeta, TSpContexte,
+  valeurPour, triListeDocuments, TSpMeta, TSpContexte,
 } from "../modules/module_sp_engine";
 
 /* ------------------------- Fixtures ------------------------- */
@@ -22,7 +22,10 @@ function metaBase(): TSpMeta {
       Statut_Page: "PUBLIE", Table_Ent: "SP_TST_Ent", Typ_Document: "",
       Workflow_Actif: "false", Cod_Modele_Edition: "", GED_Actif: "false",
       GED_Categories: "", GED_Obligatoire: "false", Act_Enregistrer: "true",
-      Act_Soumettre: "true", Act_Imprimer: "false", Act_Exporter: "false", Version_Page: 1,
+      Act_Soumettre: "true", Act_Imprimer: "false", Act_Exporter: "false",
+      Act_Dupliquer: "false", Act_Supprimer: "true",
+      Aff_Dat_Crea: "true", Aff_Cree_Par: "true", Tri_Liste: "",
+      Version_Page: 1,
       Figer_Statuts: "SG,RJ,SP,VA",
     },
     tables: [
@@ -50,14 +53,14 @@ function metaBase(): TSpMeta {
       { Cod_Page: "TEST", Cod_Champ: "Matricule", Cod_Table: "ENT", Nom_Colonne: "Matricule", Libelle: "Matricule",
         Typ_Controle: "TEXT", Rang: 1, Ligne: null, Colonne: null, Largeur: 3, Valeur_Defaut: null, Aide: null,
         Obligatoire: "true", Etat: "S", Rubrique: null, Num_Zoom: null, Zoom_Retour: null, Source_Metier: null,
-        Zoom_Condition: null,
+        Zoom_Condition: null, Copier_Vers: null,
         Formule: null, Persiste: "false", Recalc_Save: "true", Format_Affichage: null, Decimales: null,
         Regle_Visibilite: null, Regle_Activation: null, Visible_Grille: "true", Rang_Grille: 1,
         Largeur_Colonne: null, estCritere: "false", Rang_Critere: null },
       { Cod_Page: "TEST", Cod_Champ: "Total", Cod_Table: "ENT", Nom_Colonne: "Total", Libelle: "Total",
         Typ_Controle: "CALCULE", Rang: 2, Ligne: null, Colonne: null, Largeur: 3, Valeur_Defaut: null, Aide: null,
         Obligatoire: "false", Etat: "A", Rubrique: null, Num_Zoom: null, Zoom_Retour: null, Source_Metier: null,
-        Zoom_Condition: null,
+        Zoom_Condition: null, Copier_Vers: null,
         Formule: JSON.stringify({ op: "SUM", table: "LIGNES", colonne: "Mnt" }),
         Persiste: "true", Recalc_Save: "true", Format_Affichage: "MNT", Decimales: 2,
         Regle_Visibilite: null, Regle_Activation: null, Visible_Grille: "true", Rang_Grille: 2,
@@ -336,6 +339,27 @@ test("construireGraphe : détection de référence circulaire", () => {
   );
   const g = construireGraphe(meta);
   assert.ok(g.cycle !== null && g.cycle.includes("X"));
+});
+
+/* ------------------------- Tri de la page liste (Tri_Liste) ------------------------- */
+test("triListeDocuments : expression déclarée, sécurisée, repli Dat_Crea desc", () => {
+  const meta = metaBase();
+  // Vide : comportement historique (plus récents d'abord), alias t de la liste
+  assert.equal(triListeDocuments(meta), "t.[Dat_Crea] desc");
+  // Colonne métier déclarée de l'entête, sens explicite
+  meta.page.Tri_Liste = "Total desc";
+  assert.equal(triListeDocuments(meta), "t.[Total] desc");
+  // Multi-colonnes, sens implicite = asc, colonne technique admise
+  meta.page.Tri_Liste = "Matricule, Dat_Crea desc";
+  assert.equal(triListeDocuments(meta), "t.[Matricule] asc, t.[Dat_Crea] desc");
+  // Colonne inconnue / injection : ignorée ; repli si tout est invalide
+  meta.page.Tri_Liste = "Total desc; drop table x";
+  assert.equal(triListeDocuments(meta), "t.[Dat_Crea] desc");
+  meta.page.Tri_Liste = "Inconnue desc, Matricule asc";
+  assert.equal(triListeDocuments(meta), "t.[Matricule] asc");
+  // id_Societe non admis (cloisonné) ; RV/RowId jamais affichés
+  meta.page.Tri_Liste = "id_Societe";
+  assert.equal(triListeDocuments(meta), "t.[Dat_Crea] desc");
 });
 
 /* ------------------------- Validations déclaratives ------------------------- */

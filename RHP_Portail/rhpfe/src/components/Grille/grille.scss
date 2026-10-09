@@ -1,5 +1,46 @@
 @use "../../variables";
 
+// Barre de recherche clavier des panneaux de zoom (prop rechercheZoom) :
+// rendue au-dessus de la grille, épinglée lors du défilement horizontal.
+.rechercheZoom {
+  position: sticky;
+  left: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+  width: 100%;
+  height: 2.2em;
+  padding: 2px 6px;
+  box-sizing: border-box;
+  background-color: variables.$colorBase04;
+  .iconeRecherche {
+    color: variables.$colorBase01;
+    font-size: 1.3em;
+    flex-shrink: 0;
+  }
+  input {
+    flex: 1;
+    min-width: 0;
+    height: 1.8em;
+    border: 1px solid variables.$colorBase01;
+    border-radius: 2px;
+    padding: 0 6px;
+    font-size: 0.95em;
+    color: variables.$foreColorBase01;
+    background-color: variables.$bgInput;
+    &:focus {
+      outline: none;
+      border-width: 2px;
+    }
+  }
+  .compteurResultats {
+    flex-shrink: 0;
+    white-space: nowrap;
+    font-size: 0.85em;
+    color: variables.$colorBase01;
+  }
+}
+
 .grilleContainer {
   max-height: 99%;
   width: 100%; /* Set the width of the table to fill its container */
@@ -36,6 +77,17 @@
             color: variables.$foreColorBase01;
             background-color: variables.$bgInput;
           }
+          // En-têtes cliquables en mode recherche zoom : le clic change la
+          // colonne ciblée par le filtrage clavier (soulignée si active).
+          .libelleEntete {
+            cursor: pointer;
+          }
+          .colRechercheActive {
+            text-decoration: underline;
+            text-underline-offset: 3px;
+            text-decoration-thickness: 2px;
+            font-weight: 700;
+          }
         }
       }
     }
@@ -49,6 +101,11 @@
         //font-size: medium !important;
         background-color: variables.$bgInput;
         color: variables.$foreColorBase01;
+      }
+      // Ligne active de la navigation clavier (↑/↓) dans les zooms
+      &.ligneActive td {
+        background-color: variables.$colorBase04 !important;
+        box-shadow: inset 0 0 0 1px variables.$colorBase01;
       }
     }
   }

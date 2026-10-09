@@ -110,6 +110,118 @@ projet (tests, scripts, outils en ligne de commande, chaînes de connexion).
   d'une colonne technique d'entête (Cod_Champ = nom technique exact) — tout
   autre champ non lié ne s'afficherait jamais (ex. bug `DemVisiteMed` :
   champ `'Num_Demande'` sans colonne, vide à vie).
+- **Pages SP_ — propagation au changement `Copier_Vers` (instruction
+  permanente)** : la métadonnée `Controle_Designer_Champ.Copier_Vers`
+  (migration `RHP_Portail/rhpBE/sql/SP_Designer/008_SP_Designer_Copier_Vers.sql`)
+  porte, sur un champ d'**entête**, le `Cod_Champ` du champ cible recevant sa
+  valeur à chaque changement **si la cible est vide ou inférieure à la
+  nouvelle valeur** (comparaison intelligente : nombres, puis dates, puis
+  texte — ex. `Dat_Deb_Conge.Copier_Vers='Dat_Fin_Conge'` : une date de fin
+  vide ou antérieure à la nouvelle date de début prend la date de début). La
+  cible **reste ensuite modifiable** (confort de saisie, jamais un verrou) ;
+  une valeur source vidée ne propage rien ; un seul niveau (pas de cascade) ;
+  la cible propagée déclenche le recalcul de ses dépendants (`CALCULE`).
+  Verrous (Saving `SP_Page_Designer.vb` + import JSON
+  `Module_SP_Page_Json.Valider`, format **1.1**) : source et cible sur `ENT`,
+  cible existante, distincte de la source, **saisissable** (`Etat='S'` ;
+  jamais `CALCULE`/`SOURCE`/`GED` ni liée à une colonne technique), pas de
+  référence mutuelle directe ; la casse exacte du code cible est normalisée à
+  l'enregistrement (le portail résout par `Cod_Champ`). Côté portail :
+  `propagerCopie` (`Pages/Dynamic/dynamicEngine.ts`), appelée dans
+  `stateChange` de `DynamicPage.tsx` — confort client uniquement, jamais
+  rejoué côté serveur au save.
+- **Pages SP_ — champs liés aux colonnes système (instruction permanente)** :
+  un champ peut être lié à toute colonne technique **affichable** de sa table
+  (`Dat_Crea`, `Created_By`, `Dat_Modif`, `Modified_By`, `Statut`,
+  `id_Societe`), sur l'entête comme sur les détails, pour décider de
+  l'afficher ou non (`Etat` / `Visible_Grille`) — exceptions : `Num_Doc`
+  (verrou conventionnel ci-dessus), `RV` (binaire rowversion) et `RowId`
+  (identifiant interne de ligne, toujours masqué dans les grilles du
+  portail) : liaisons bloquées (Saving + import JSON) et exclues des listes
+  proposées. La valeur étant gérée par le serveur (jamais persistée par
+  `enregistrerDocument`), le champ est **toujours en lecture seule** : état
+  `S` forcé à `R` (Saving + import), libellé convivial (« Créé le »...) et
+  type `DATETIME` proposés à la liaison, et garde-fou côté portail
+  (`COLONNES_TECHNIQUES` dans `dynamicEngine.ts` — `DynamicField` et
+  `colonnesGrille` forcent la lecture seule même pour les configurations
+  antérieures restées en `S` ; `Dat_Crea`/`Dat_Modif` gardent leur format
+  date dans les grilles via `TYP_SQL_TECHNIQUES` de `DynamicPage.tsx`).
+- **Pages SP_ — actions Dupliquer / Supprimer d'un document (instruction
+  permanente)** : les boutons **Dupliquer** et **Supprimer** d'une pièce SP_
+  sont paramétrables **par page** dans le Designer (onglet « Conception de la
+  page », cases `Act_Dupliquer_chk` / `Act_Supprimer_chk` → colonnes
+  `Controle_Designer.Act_Dupliquer` / `Act_Supprimer`, migration
+  `RHP_Portail/rhpBE/sql/SP_Designer/009_SP_Designer_Actions_Document.sql`,
+  chargement/sauvegarde comme toute option `Act_*` ; export JSON format
+  **1.2**). Sémantique des défauts : `Act_Dupliquer` est **opt-in**
+  (`'false'` par défaut — une action nouvelle n'apparaît sur aucune page
+  existante), `Act_Supprimer` est **opt-out** (`'true'` par défaut — la
+  suppression existait avant l'option, pilotée par la seule habilitation ;
+  la tester côté code = `!== 'false'`). Affichage portail : boutons
+  **Dupliquer** / **Supprimer** placés à côté d'Interroger/Nouveau sur la page
+  liste (`DynamicPage_Liste.tsx`) qui **activent un mode** — les icônes par
+  ligne (copie / poubelle) n'apparaissent que dans ce mode et disparaissent
+  après l'action, son annulation ou une ré-interrogation (même UX que les
+  grilles de détail et leur bouton « Supprimer ») — rendues via la prop
+  **`actionsLigne`** de `components/Grille/Grille.tsx` (actions génériques
+  par ligne, `desactivee`/`couleur`/`titreDesactive` par action ; le handler
+  reçoit la ligne et reste affiché sous filtrage, contrairement à l'ancienne
+  prop `action` pilotée par `rowIndex`) — **et** entrées du FAB de
+  `DynamicPage.tsx`, conditionnées à l'option **et** à l'habilitation du
+  profil (**Creer** pour Dupliquer, **Supprimer** pour Supprimer — pas de
+  nouvelle habilitation).
+  **Dupliquer** (`POST /sp_duplicate_document` → `dupliquerDocument`,
+  `module_sp_engine.ts`) crée en transaction une **nouvelle pièce brouillon** :
+  numérotation standard (`nouveauNumero`), colonnes métier de l'entête et
+  lignes des détails **physiques** copiées (`INSERT ... SELECT`, `RowId`
+  IDENTITY régénéré), `Statut=''`, audit neuf ; détails virtuels non copiés
+  (ré-exécutés sur la copie) ; tout statut est duplicable ; cloisonnement
+  `Matricule` identique à la liste pour un non-TeamLeader ; le client ouvre
+  la copie. **Supprimer** (`POST /sp_delete_document` → `supprimerDocument`)
+  obéit à la **règle métier absolue** : une pièce dont le statut a **évolué**
+  (`Statut` non vide et `<> 'NSS'` : soumise, signée, rejetée, validée...)
+  n'est **jamais supprimable** — seuls les brouillons le sont (cette règle
+  couvre `Figer_Statuts`, qui ne sert plus qu'au gel de la modification) ;
+  côté client la liste grise l'icône via la colonne masquée **`Cod_Statut`**
+  (statut brut ajouté au SELECT de `sp_document_liste`, `visible=false`) et le
+  FAB est désactivé (`statutEvolutif` dans `DynamicPage.tsx`).
+  **Exporter** : l'export Excel est **universel** — disponible sur TOUTES les
+  pages liste SP_ sans rien activer (bouton **Exporter** de
+  `DynamicPage_Liste.tsx` ; la colonne historique
+  `Controle_Designer.Act_Exporter` et sa case « Action : Exporter » du
+  Designer sont conservées pour compatibilité mais **ne sont plus
+  consultées**). Le bouton produit un `.xlsx` de la liste **filtrée
+  complète** — ré-interrogation serveur avec les mêmes critères en mode
+  `exporter:true` (plafond 5000 lignes dans `sp_document_liste`), génération
+  `xlsx` côté client (même pattern que `PortalQuery.tsx` : entêtes = libellés
+  visibles de la grille, valeurs typées, dates jj/mm/aaaa, colonnes masquées
+  exclues).
+- **Pages SP_ — options de la page liste : colonnes système et tri
+  (instruction permanente)** : la grille principale de la page liste
+  (`SPPL_<Cod_Page>`, `DynamicPage_Liste.tsx` ← `sp_document_liste`) est
+  paramétrable **par page** dans le Designer (onglet « Conception de la page »,
+  bloc « Page liste du portail (grille principale) » : cases `Aff_Dat_Crea_chk`
+  / `Aff_Cree_Par_chk` et champ `Tri_Liste_txt` → colonnes
+  `Controle_Designer.Aff_Dat_Crea` / `Aff_Cree_Par` / `Tri_Liste`, migration
+  `RHP_Portail/rhpBE/sql/SP_Designer/010_SP_Designer_Liste_Options.sql` ;
+  export JSON format **1.3**). Sémantique des défauts : `Aff_Dat_Crea` et
+  `Aff_Cree_Par` sont **opt-out** (`'true'` par défaut — les colonnes « Créé le »
+  et « Créé par » ont toujours été affichées ; les tester côté code =
+  `!== 'false'`, colonne simplement absente du SELECT de `sp_document_liste`).
+  `Tri_Liste` (nvarchar(200), `''` par défaut) porte les **colonnes de tri** de
+  la liste, expression déclarative **au même format que `Tri_Defaut`** des
+  grilles de détail : noms de colonnes séparés par des virgules, sens `asc`/
+  `desc` optionnel (ex. `'Dat_Depart desc'` ou `'Dat_Depart desc, Ref_OM asc'`) ;
+  vide = comportement historique (`t.[Dat_Crea] desc`, plus récents d'abord).
+  Colonnes admises : physiques déclarées de l'**entête** et techniques
+  `Num_Doc`, `Statut`, `Dat_Crea`, `Created_By`, `Dat_Modif`, `Modified_By`
+  (jamais `id_Societe` — cloisonnée — ni `RV`/`RowId`). Garde-fous à trois
+  niveaux : **Saving** du Designer (bloquant + normalisation casse exacte des
+  noms déclarés et sens en minuscules), **import JSON** (`Valider`, mêmes
+  règles), et côté serveur **`triListeDocuments`** (`module_sp_engine.ts`,
+  miroir de `verifierTri` avec alias `t.` : toute colonne inconnue est ignorée
+  silencieusement, repli `t.[Dat_Crea] desc`) — l'`ORDER BY` remplace le
+  `t.[Dat_Crea] desc` historique dans `sp_document_liste`.
 - **Écrans affichés exclusivement en modal : nommage et thème (instruction
   permanente)** : tout écran qui s'affiche exclusivement en modal porte un nom
   (classe et fichiers) commençant par `Zoom` (ex. `Zoom_SP_SqlSource`,
@@ -167,8 +279,89 @@ projet (tests, scripts, outils en ligne de commande, chaînes de connexion).
   (configuration d'embedding, `Zoom_Ai_EmbeddingConfig`) n'est **pas**
   concernée : elle reste mono-configuration.
 
+- **Kaspersky — faux positif PDM sur `RHP.exe`, déclencheur : l'appel
+  licence `ray1.ma` (instruction permanente)** : Kaspersky Endpoint Security
+  (poste géré par stratégie KSC — les exclusions définies en local sont
+  **inopérantes**, écrasées par la stratégie) mettait en quarantaine
+  `RHP.exe` (verdict comportemental `PDM:Trojan.Win32.Generic`) **~2 minutes
+  après le login**. Le déclencheur est l'appel `WebClient` de vérification
+  de licence (`Auth\Module_Licence.vb` → `VerificationLicenceEtVersion`,
+  lancé depuis `Module_Initialisation`) vers **`ray1.ma`**, domaine classé
+  « menace de perte de données » par la protection web de Kaspersky (les
+  lancements hors login ne déclenchent rien — le processus reste à
+  l'écran de connexion). Résolu le 04/10/2026 : URL remplacée par
+  `https://ghali3.genious.net` **+ suppression de `lic\cle.cle`** — ce
+  fichier (URL chiffrée) **prime sur `UriStr0`** dans le code : tant qu'il
+  contenait l'ancienne URL `ray1.ma`, le changement de code restait sans
+  effet. **À répercuter sur tout déploiement** : supprimer ou réécrire le
+  `lic\cle.cle` contenant `ray1.ma` (ex. postes clients) après changement
+  de l'URL de licence. RayOne appelle aussi `ray1.ma` (`raylic.php`) sans
+  être tué — le traitement par Kaspersky dépend du contexte d'exécution,
+  pas du seul domaine. **Ne jamais
+  mettre de commande PowerShell dans le `PostBuildEvent` du `.vbproj`** :
+  Kaspersky a mis le `RHP.vbproj` lui-même en quarantaine le 04/10/2026 pour
+  ce motif (projet restauré depuis git — fichier suivi, dernière
+  modification commitée : 18/09/2026). Mesures :
+  - **Signature Authenticode** : certificat dev « RHP Dev Code Signing
+    (Metafy.solutions) » dans `Cert:\CurrentUser\My` (à recréer si absent) —
+    un éditeur stable malgré le hash qui change à chaque compilation.
+    `RHP_DeskTop\Build\` contient le `.cer`,
+    `Install_RHP_DevCodeSigning_Admin.cmd` (approbation machine, à exécuter
+    **en administrateur** sur chaque poste de dev, sinon la signature reste
+    « racine non approuvée ») et `Sign-RHP.ps1` (signature manuelle de
+    `bin\Debug\RHP.exe` / `bin\Release\RHP.exe` — volontairement **hors**
+    du `.vbproj`).
+  - Contournement dev : **Ctrl+F5** (« Démarrer sans débogage »), puis si
+    besoin *Déboguer → Attacher au processus*.
+  - Correctif pérenne : exclusions de dossiers (`D:\Dev\RHP\`, `C:\RHP\`)
+    + `RHP.exe` en **application approuvée** (« ne pas surveiller
+    l'activité ») poussés **par la stratégie KSC**, et signalement du faux
+    positif à Kaspersky (préciser « détecté seulement sous le débogueur
+    Visual Studio »).
+  - **Incident du 09/10/2026 — F5 « ne lance rien » et signature
+    « désinfectée »** : symptôme visible = F5 compile, le processus RHP
+    est chargé (présent dans Alt+Tab) mais sa fenêtre **ne s'affiche
+    jamais**. Deux pièges de diagnostic : (1) l'action Kaspersky
+    « Désinfecter ; supprimer si la désinfection est impossible »
+    **retire la signature Authenticode** de `RHP.exe` en restaurant la
+    version non signée **avec son timestamp d'origine** — un exe peut
+    donc redevenir `NotSigned` sans recompilation (toujours revérifier
+    `Get-AuthenticodeSignature` au moment du test) ; (2) la signature est
+    ignorée tant que le `.cer` n'est pas dans Root + TrustedPublisher
+    **machine** (statut « racine non approuvée »). Résolution sur le
+    poste le 09/10/2026 : certificat installé au niveau machine +
+    reconfiguration locale Kaspersky (Prévention des intrusions /
+    Protection) — depuis, **F5 fonctionne même avec un build frais non
+    signé** ; la signature post-build (`Sign-RHP.ps1`) reste recommandée
+    mais n'est plus bloquante pour le debug sur ce poste.
+
 ## RHP_Portail (React/TypeScript)
 
+- **Identité utilisateur — jamais dans un état global du serveur (instruction
+  permanente)** : l'identité d'une session (`Matricule`, `id_Societe`,
+  `Cod_Entite`, `TeamLeader`, `codProfile`...) provient **exclusivement du
+  JWT**, décodé à chaque requête par le middleware `validate`
+  (`rhpBE/modules/module_jwt.ts`) qui la dépose dans `req.params`. **Aucune
+  variable de module du backend ne doit mémoriser l'identité d'un agent** :
+  un état global par utilisateur est nécessairement écrasé à chaque login —
+  toutes les sessions héritent alors de l'identité du dernier connecté (bug
+  de gestion des sessions corrigé le 07/10/2026 : `initialisationGlobale`
+  figeait `Matricule`/`id_Societe`/`Cod_Entite` du dernier connecté dans les
+  SQL des zooms de `Tbl_Controle_Def_Zoom`, servis à tous par
+  `getZoomApi`/`getZoomLibelleApi`). Désormais `Tbl_Controle_Def_Zoom`
+  (`module_initialisation.ts`) n'est que le **catalogue brut** de
+  `Controle_Def_Zoom` (numZoom, codExp, zoomLib, zoomTbl, where1, zoomOrder,
+  zoomSens — jamais de SQL avec identité interpolée) et le SQL d'un zoom est
+  **construit à la requête** (`construireSqlZoom` de `module_zoom.ts`) avec
+  l'identité du JWT de l'appelant. Tout nouveau besoin de données
+  utilisateur côté serveur suit la même règle : lecture dans `req.params`
+  (jamais dans une globale alimentée au login). Même règle pour
+  l'**assistant IA** (`controlers/ai_assistant.ts`) : configuration du
+  modèle, embedding et base de connaissances sont cloisonnés **par société**
+  dans la map `aiContexts` (`chargerContexteSociete`, chargement paresseux +
+  déduplication des chargements concurrents) — jamais dans des globales
+  rechargées au login (fuite de la base de connaissances entre sociétés,
+  corrigée le 07/10/2026).
 - **Impression des états Crystal (instruction permanente)** : la génération
   PDF (`POST /getreport`, `rhpBE/controlers/report.ts`) exécute
   **`tools/CRExport/crexport.exe`** (chemins relatifs à `process.cwd()` =
@@ -197,6 +390,29 @@ projet (tests, scripts, outils en ligne de commande, chaînes de connexion).
   explicite renvoyé au client (HTTP 500 lu par `ReportViewer.tsx`) et trace
   `[REPORT]` dans `logs\service-err.log` — ne jamais retenter un
   `res.download` d'un PDF non produit.
+- **Recherche clavier dans les zooms du portail (instruction permanente)** :
+  tout panneau de zoom du portail (`TextZoom` — pages standards et champs
+  `ZOOM` du SP Designer — et `ZoomCritere` des pages-requêtes) offre une
+  **barre de recherche auto-focalisée** dès l'ouverture : la frappe filtre en
+  direct, côté client, la colonne ciblée, sans aucun clic préalable. La
+  colonne filtrée par défaut est celle de
+  **`Controle_Def_Zoom.Search_By`** (int 1-based — même règle que le desktop
+  `Zoom.vb` : `>1` → index-1, sinon 0 ; absent/non numérique → 2e colonne =
+  libellé), lue au chargement dans le catalogue (`module_initialisation.ts`,
+  clé `searchBy`) et renvoyée par `POST /zoom` (`module_zoom.ts` — champ
+  `searchBy` de la réponse). **Cliquer sur un en-tête de colonne de la grille
+  change la colonne ciblée** (soulignée si active, focus rendu à la zone de
+  recherche) ; au clavier : **↑/↓** déplacent la ligne active (surlignée,
+  ramenée à l'écran), **Entrée** sélectionne la ligne active (la 1ère par
+  défaut), **Échap** ferme le panneau (remonte au `onKeyDown` du `.zoomMenu`).
+  Implémentation : prop **`rechercheZoom`** de `components/Grille/Grille.tsx`
+  (barre `.rechercheZoom`, compteur de résultats, état `colRecherche` exposé
+  aux en-têtes via le contexte `cntx` ; filtrage des lignes **centralisé dans
+  `Grille.tsx`** — filtres d'en-têtes + recherche zoom via le même
+  `filterEngine` exporté de `GrilleHeaderCell.tsx`, jokers `*` compris —
+  et non plus dupliqué dans chaque `GrilleHeaderCell`). Toute nouvelle
+  utilisation de `Grille` dans un panneau de zoom doit passer
+  `rechercheZoom={true}` ; ne jamais déplacer le filtrage hors de `Grille.tsx`.
 - **Bouton d'actions flottant (FAB)** : les actions d'une page document du
   portail (Enregistrer, Nouveau, Supprimer, Imprimer, Soumettre pour
   signature, Pièces jointes...) s'affichent dans le FAB `FloatMenu`
@@ -206,6 +422,17 @@ projet (tests, scripts, outils en ligne de commande, chaînes de connexion).
   rend le FAB par `{tbnMenu.length > 0 && <FloatMenu btnMenus={tbnMenu} />}` ;
   positionnement fixe bas-droite dans `floatMenu.scss`
   (`$positionFloating` de `_variables.scss`).
+- **Couleur danger — `--color-base-03` ≠ `colorBase03` (piège permanent)** :
+  la variable CSS `--color-base-03` (`_variables.scss`) est un **gris-bleu
+  pâle** `#dae7ec` (fond des chips / surlignages) alors que
+  `colorBase.colorBase03` (`modules/module_general.ts`) est l'**orange danger**
+  `#f05a0a` (icônes poubelle des grilles, accents destructifs). Un bouton
+  `color="error"` ne doit **jamais** utiliser la variable CSS (texte blanc sur
+  fond pâle = aspect « désactivé », bug du bouton Supprimer des grilles
+  corrigé le 08/10/2026) : le composant `components/Bouton/Bouton.tsx` passe
+  par la constante JS (`COULEUR_DANGER`). Pour tout accent destructif,
+  utiliser `colorBase.colorBase03` (côté JS) — la variable CSS reste réservée
+  aux fonds pâles.
 - **Vérification permanente — le FAB ne doit jamais disparaître** : après
   TOUTE modification du portail touchant `MenuMain.tsx`, `Ecran.tsx`,
   `components/FloatMenu/`, `floatMenu.scss`, `_variables.scss` ou les appels
@@ -370,9 +597,30 @@ projet (tests, scripts, outils en ligne de commande, chaînes de connexion).
    des requêtes, portail et menu desktop — par upsert sans DELETE, appelé
    uniquement depuis `Saving()` (jamais au chargement/navigation, sinon les
    droits des requêtes parcourues seraient écrasés).
-  **Page d'accueil toujours accessible** : `Dashboard` (cible de la route par
-  défaut `/myspace`) ne peut être retirée à aucun profil — sinon le portail
-  serait inaccessible (aucune page d'atterrissage). Bypass dans
-  `module_droits_portail.ts` (`PAGE_ACCUEIL_PORTAIL`, forcée dans
-  `droitsPage` et `pagesMenuAutorisees`) et ligne verrouillée cochée dans
-  l'onglet Portail d'`Admin_Profile` (`VerrouillerAccueil`).
+   **Page d'accueil toujours accessible** : `Dashboard` (cible de la route par
+   défaut `/myspace`) ne peut être retirée à aucun profil — sinon le portail
+   serait inaccessible (aucune page d'atterrissage). Bypass dans
+   `module_droits_portail.ts` (`PAGE_ACCUEIL_PORTAIL`, forcée dans
+   `droitsPage` et `pagesMenuAutorisees`) et ligne verrouillée cochée dans
+   l'onglet Portail d'`Admin_Profile` (`VerrouillerAccueil`).
+   **Pages self-service HORS sécurité (instruction permanente)** : les pages
+   standards où l'agent ne consulte que ses propres données —
+   `RH_Agent` (Fiche agent), `Org_Organigramme`, `Org_Poste` (Fiche de
+   poste), `RH_Avancement_Timeline` (Chronologie de carrière),
+   `RH_Bulletin_Liste` (bulletins de paie) — ne sont **jamais** soumises au
+   contrôle de profil : toujours visibles au menu et accessibles, quel que
+   soit le profil. Constante **`PAGES_HORS_SECURITE`** de
+   `module_droits_portail.ts` (inclut aussi `PAGE_ACCUEIL_PORTAIL`) :
+   `droitsPage` les court-circuite (`gardePage` les laisse toujours passer),
+   `pagesMenuAutorisees` les force dans `pagesStandards` **ainsi que leurs
+   sections parentes** (sinon une page forcée deviendrait orpheline dans le
+   menu si la section était masquée). Elles ne sont **même pas affichées**
+   dans l'onglet Portail d'`Admin_Profile` (constante `PagesHorsSecurite`,
+   filtre SQL de `RequestPortail` + garde-fou dans `SavingPortailNodes`) et
+   aucune ligne `Controle_Droit` `PRT_` ne doit les concerner — leurs
+   éventuelles lignes anciennes sont purgées à l'enregistrement d'un profil
+   (le `DELETE 'PRT_%'` précède la réinsertion des seuls nœuds de l'arbre).
+   Le référentiel `Controle_Menu_Portail` les conserve (elles y servent à la
+   visibilité du menu). Toute nouvelle page self-service du même type doit
+   être ajoutée aux DEUX constantes (backend `PAGES_HORS_SECURITE` et
+   desktop `PagesHorsSecurite`).

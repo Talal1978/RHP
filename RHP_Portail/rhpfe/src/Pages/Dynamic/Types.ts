@@ -22,6 +22,22 @@ export type TSpPage = {
   Act_Soumettre: string;
   Act_Imprimer: string;
   Act_Exporter: string;
+  /** Bouton Dupliquer (icône de la liste + FAB du document) : opt-in ('false'
+   *  par défaut — migration 009). Duplication = nouvelle pièce brouillon. */
+  Act_Dupliquer: string;
+  /** Bouton Supprimer (icône de la liste + FAB du document) : opt-out ('true'
+   *  par défaut — migration 009) ; 'false' retire la suppression de la page.
+   *  Une pièce dont le statut a évolué n'est jamais supprimable (règle serveur). */
+  Act_Supprimer: string;
+  /** Colonne système « Créé le » de la page liste : opt-out ('true' par défaut —
+   *  migration 010) ; 'false' retire la colonne (filtrage appliqué côté serveur). */
+  Aff_Dat_Crea: string;
+  /** Colonne système « Créé par » de la page liste : opt-out ('true' par défaut —
+   *  migration 010) ; 'false' retire la colonne (filtrage appliqué côté serveur). */
+  Aff_Cree_Par: string;
+  /** Tri de la page liste (migration 010) : expression déclarative, ex.
+   *  'Dat_Depart desc' — appliqué côté serveur (repli : Dat_Crea desc). */
+  Tri_Liste: string;
   /** Statuts figeant le document (CSV ; défaut moteur 'SG,RJ,SP,VA'). */
   Figer_Statuts: string;
   Version_Page: number;
@@ -79,6 +95,10 @@ export type TSpChamp = {
   /** Condition du zoom avec placeholders "{Champ}" évalués dans le contexte
    *  (ex. "Matricule='{Matricule}'") - COMBO et ZOOM. */
   Zoom_Condition: string | null;
+  /** Propagation au changement : Cod_Champ du champ d'entête cible recevant la
+   *  valeur quand il est vide ou inférieur à la nouvelle valeur (confort de
+   *  saisie — la cible reste modifiable, jamais un verrou). */
+  Copier_Vers: string | null;
   Source_Metier: string | null;
   Formule: string | null;
   Persiste: string;

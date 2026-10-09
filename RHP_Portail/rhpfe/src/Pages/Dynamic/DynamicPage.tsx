@@ -27,7 +27,7 @@ import { findRubrique, listRubriques } from "../../modules/module_rubriques";
 import { ObjetGenerique } from "../../types";
 import { TReport } from "../../Report/ReportViewer";
 import { TSpChamp, TSpContexte, TSpMeta, TSpTable } from "./Types";
-import { champVisible, cleChamp, construireGraphe, recalculer, validerClient } from "./dynamicEngine";
+import { champVisible, cleChamp, COLONNES_TECHNIQUES, construireGraphe, propagerCopie, recalculer, validerClient } from "./dynamicEngine";
 import DynamicField, { valeurAffichee } from "./DynamicField";
 import SpPrintDialog from "./SpPrintDialog";
 
@@ -93,6 +93,9 @@ function ligneInitiale(meta: TSpMeta, codTable: string): ObjetGenerique {
     .forEach((c) => { l[cleChamp(c)] = valeurInitiale(c); });
   return l;
 }
+/** Types SQL des colonnes techniques affichables (absentes de meta.colonnes :
+ *  ajoutées au DDL par le moteur — les dates doivent garder leur format). */
+const TYP_SQL_TECHNIQUES: { [k: string]: string } = { Dat_Crea: "datetime", Dat_Modif: "datetime" };
 /** Mapping Typ_Sql -> dataType de la Grille partagée.
  *  La distinction datetime (avec heure) / smalldatetime-date (sans heure) est préservée. */
 function dataTypeGrille(typSql: string): TColonne["dataType"] {
@@ -163,6 +166,13 @@ const DynamicPage = ({ codPage }: { codPage: string }) => {
     [meta]
   );
   const ctx: TSpContexte = useMemo(() => ({ entete, details }), [entete, details]);
+  // Miroir toujours à jour de l'état courant, lu par les rappels ASYNCHRONES
+  // (sources métier des champs SOURCE et des tables virtuelles) : une réponse
+  // reçue en retard recalcule sur l'état RÉEL et non sur une closure périmée —
+  // sinon elle réécrit l'entête d'avant la requête et efface les saisies faites
+  // entre-temps (modifications d'entête perdues au premier enregistrement).
+  const etatCourant = useRef<TSpContexte>({ entete: {}, details: {} });
+  etatCourant.current = { entete, details };
 
   /* ---- Chargement ---- */
   const resetDocument = useCallback(() => {
@@ -175,10 +185,14 @@ const DynamicPage = ({ codPage }: { codPage: string }) => {
     setDetails(r.details);
     enteteRef.current = r.entete;
     detailsRef.current = r.details;
+    setActionsGrille({});   // quitte le mode suppression des grilles
   }, [meta, tablesDet]);
 
   const loadData = useCallback(async () => {
     if (!meta) return;
+    // Tout rechargement / navigation quitte le mode suppression des grilles
+    // (couvre aussi l'après-enregistrement : loadData est rejoué ou l'URL change)
+    setActionsGrille({});
     setShowLoading(true);
     try {
       if (currentNum !== "" && currentNum !== "new" && currentNum !== undefined) {
@@ -279,8 +293,11 @@ const DynamicPage = ({ codPage }: { codPage: string }) => {
             // source sont recalculés dès sa résolution (graphe de dépendances).
             setEntete((prv) => {
               const nouvel = { ...prv, [cleChamp(c)]: val };
-              const r = recalculer(meta, nouvel, details, cleChamp(c), undefined);
-              if (r.details !== details) setDetails(r.details);
+              // Recalcul sur les détails COURANTS (jamais la closure de l'effet,
+              // qui effacerait les lignes saisies depuis le lancement de la source).
+              const detCourants = etatCourant.current.details;
+              const r = recalculer(meta, nouvel, detCourants, cleChamp(c), undefined);
+              if (r.details !== detCourants) setDetails(r.details);
               return r.entete;
             });
           }
@@ -325,8 +342,12 @@ const DynamicPage = ({ codPage }: { codPage: string }) => {
             const lignes = (dt.data.data ?? []).map((l: any, i: number) => ({ ...l, RowId: i + 1 }));
             setDetails((prv) => {
               const nouveaux = { ...prv, [t.Cod_Table]: lignes };
-              const r = recalculer(meta, entete, nouveaux, undefined, t.Cod_Table);
-              if (r.entete !== entete) setEntete(r.entete);
+              // Recalcul sur l'entête COURANTE (jamais la closure de l'effet) :
+              // une réponse tardive ne doit pas écraser les saisies d'entête
+              // faites depuis le lancement de la source (pertes au 1er enregistrement).
+              const entCourante = etatCourant.current.entete;
+              const r = recalculer(meta, entCourante, nouveaux, undefined, t.Cod_Table);
+              if (r.entete !== entCourante) setEntete(r.entete);
               return r.details;
             });
           }
@@ -340,7 +361,14 @@ const DynamicPage = ({ codPage }: { codPage: string }) => {
     if (!meta) return;
     setEntete((prv) => {
       const nouvel = { ...prv, [nomColonne]: valeur };
-      const r = recalculer(meta, nouvel, details, nomColonne, undefined);
+      // Propagation déclarée (Copier_Vers) : la valeur est recopiée dans le
+      // champ cible s'il est vide ou inférieur à la nouvelle valeur (ex. une
+      // date de retour vide ou antérieure prend la nouvelle date de départ).
+      // La cible reste ensuite modifiable (confort, jamais un verrou).
+      const clePropagee = propagerCopie(meta, nouvel, nomColonne);
+      let r = recalculer(meta, nouvel, details, nomColonne, undefined);
+      // La cible propagée déclenche à son tour le recalcul de ses dépendants
+      if (clePropagee) r = recalculer(meta, r.entete, r.details, clePropagee, undefined);
       if (r.details !== details) setDetails(r.details);
       return r.entete;
     });
@@ -391,6 +419,8 @@ const DynamicPage = ({ codPage }: { codPage: string }) => {
           if (r.entete !== entete) setEntete(r.entete);
           return r.details;
         });
+        // Ligne supprimée : quitte le mode suppression (les icônes disparaissent)
+        setActionsGrille((prv) => ({ ...prv, [t.Cod_Table]: "" }));
       },
       async handleCancel() { setActionsGrille((prv) => ({ ...prv, [t.Cod_Table]: "" })); },
     });
@@ -418,8 +448,12 @@ const DynamicPage = ({ codPage }: { codPage: string }) => {
     const colonnes: TColonneCollection = {};
     const colMeta = new Map((meta?.colonnes ?? []).map((c) => [`${c.Cod_Table}|${c.Nom_Colonne}`, c]));
     for (const c of champs) {
-      const typSql = colMeta.get(`${codTable}|${c.Nom_Colonne}`)?.Typ_Sql ?? "nvarchar";
-      const enLecture = lectureSeule || c.Etat !== "S" || c.Typ_Controle === "CALCULE" || c.Typ_Controle === "SOURCE";
+      const typSql = colMeta.get(`${codTable}|${c.Nom_Colonne}`)?.Typ_Sql
+        ?? TYP_SQL_TECHNIQUES[c.Nom_Colonne ?? ""] ?? "nvarchar";
+      // Une colonne technique (Dat_Crea, Created_By...) est gérée par le
+      // serveur : affichable mais jamais saisissable, quel que soit l'Etat.
+      const enLecture = lectureSeule || c.Etat !== "S" || c.Typ_Controle === "CALCULE" || c.Typ_Controle === "SOURCE"
+        || COLONNES_TECHNIQUES.has(c.Nom_Colonne ?? "");
       colonnes[cleChamp(c)] = {
         columnName: cleChamp(c),
         headerText: c.Libelle,
@@ -459,6 +493,10 @@ const DynamicPage = ({ codPage }: { codPage: string }) => {
     isAccessible.canModify &&
     !statutFiges.includes(entete?.Statut || "") &&
     (droitAction ?? false);
+  // Une pièce dont le statut a évolué (soumise, signée, rejetée, validée...)
+  // n'est JAMAIS supprimable : seuls les brouillons ('' ou 'NSS') le sont —
+  // règle absolue du serveur (supprimerDocument), reflétée ici sur le bouton.
+  const statutEvolutif = !["", "NSS"].includes(entete?.Statut ?? "");
 
   const Enregistrer = useCallback(
     async (Statut: "" | "SS" = "") => {
@@ -541,8 +579,8 @@ const DynamicPage = ({ codPage }: { codPage: string }) => {
   const Supprimer = useCallback(async () => {
     if (!meta) return;
     if (estNouveau) { resetDocument(); return; }
-    if (statutFiges.includes(entete?.Statut || "")) {
-      await msgBox({ titre: "Supprimer", msg: "Document traité. Suppression impossible", typMsg: "warning", typReply: "OkOnly" });
+    if (statutEvolutif) {
+      await msgBox({ titre: "Supprimer", msg: "Ce document a évolué (soumis en signature ou traité). Suppression impossible.", typMsg: "warning", typReply: "OkOnly" });
       return;
     }
     if ((await msgBox({
@@ -556,7 +594,27 @@ const DynamicPage = ({ codPage }: { codPage: string }) => {
     } else {
       alert({ titre: "Suppression", msg: rsl?.data?.message || "Suppression impossible.", typMsg: "error", timeOut: -10 });
     }
-  }, [meta, entete, currentNum]);
+  }, [meta, entete, currentNum, statutEvolutif]);
+  /** Duplique le document affiché en une nouvelle pièce brouillon (option de
+   *  page Act_Dupliquer + droit Creer), puis ouvre la copie. */
+  const Dupliquer = useCallback(async () => {
+    if (!meta || estNouveau || !currentNum) return;
+    if (!isEqual(entete, enteteRef.current) || !isEqual(details, detailsRef.current)) {
+      // La duplication porte sur l'état ENREGISTRÉ (copie faite par le serveur)
+      if ((await msgBox({
+        titre: "Dupliquer", typMsg: "warning", typReply: "OKCancel",
+        msg: "La duplication porte sur le dernier état enregistré du document (vos modifications en cours seront ignorées). Continuer?",
+      })) === "Cancel") return;
+    }
+    const rsl = await myAxios("sp_duplicate_document", { codPage, numDoc: currentNum });
+    if (rsl?.data?.result) {
+      const numN = rsl.data.numDoc ?? rsl.data.data?.[0]?.Num_Doc;
+      alert({ titre: "Dupliquer", msg: `Document dupliqué sous le n° ${numN}.`, typMsg: "success", timeOut: -1 });
+      if (numN) navigate(`/myspace/${nameEcran}/${meta.page.Nom_Page}/${numN}`);
+    } else {
+      alert({ titre: "Dupliquer", msg: rsl?.data?.message || "Duplication impossible.", typMsg: "error", timeOut: -10 });
+    }
+  }, [meta, entete, details, currentNum, estNouveau, codPage, nameEcran]);
   const SoumettreEnSignature = useCallback(async () => {
     if (!meta || !currentNum) return;
     if (entete.Statut === "" || entete.Statut === "NSS") {
@@ -585,8 +643,14 @@ const DynamicPage = ({ codPage }: { codPage: string }) => {
         ? [{ name: "Enregistrer", disabled: !canSave, libelle: "Enregistrer", action: () => Enregistrer(""), icon: <SaveAsOutlined /> }]
         : []),
       { name: "Nouveau", disabled: !(meta.droits?.Creer ?? false), libelle: "Nouveau", action: Nouveau, icon: <Add /> },
-      ...(meta.droits?.Supprimer
-        ? [{ name: "Supprimer", disabled: !canSave, libelle: "Supprimer", action: Supprimer, icon: <DeleteOutline />, color: "error.main" }]
+      // Dupliquer : option de page Act_Dupliquer (opt-in) + droit Creer
+      ...(p.Act_Dupliquer === "true" && (meta.droits?.Creer ?? false)
+        ? [{ name: "Dupliquer", disabled: estNouveau, libelle: "Dupliquer", action: Dupliquer, icon: <ContentCopyOutlined /> }]
+        : []),
+      // Supprimer : option de page Act_Supprimer (opt-out, défaut 'true') +
+      // droit Supprimer ; désactivé dès que le statut a évolué (règle serveur)
+      ...(p.Act_Supprimer !== "false" && meta.droits?.Supprimer
+        ? [{ name: "Supprimer", disabled: !canSave || statutEvolutif, libelle: "Supprimer", action: Supprimer, icon: <DeleteOutline />, color: "error.main" }]
         : []),
       ...(p.Act_Imprimer === "true" && meta.droits?.Imprimer
         ? [{
@@ -610,7 +674,7 @@ const DynamicPage = ({ codPage }: { codPage: string }) => {
         ? [{ name: "PJ", disabled: estNouveau, libelle: "Pièces jointes", action: ouvrirGED, icon: <AttachFileOutlined /> }]
         : []),
     ]);
-  }, [meta, canSave, isAccessible.canModify, entete?.Statut, Enregistrer, Nouveau, currentNum]);
+  }, [meta, canSave, isAccessible.canModify, entete?.Statut, statutEvolutif, Enregistrer, Nouveau, Dupliquer, currentNum]);
 
   /* ---- Rendu ---- */
   if (metaErreur) {

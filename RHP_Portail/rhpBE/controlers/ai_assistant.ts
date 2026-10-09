@@ -50,13 +50,19 @@ import { discipline_liste } from "./discipline";
 import { demandeDocAdminListe } from "./demande_doc_admin";
 import { declarationATListe } from "./declaration_at";
 import { get_agenda } from "./agenda";
-// Global Context
-let AgentConfig: IAiAgentConfig | null = null;
-let EmbeddingConfig: IAiEmbeddingConfig | null = null;
-let KnowledgeBase: IKnowledgeChunk[] = [];
-
-let isAiLoading = false;
-let isAiLoaded = false;
+// Contextes IA PAR SOCIÉTÉ — jamais de globale unique : une configuration
+// rechargée au login pour la société du dernier connecté s'imposerait à
+// toutes les sessions (fuite de la base de connaissances entre sociétés,
+// bug de gestion des sessions). Chargement paresseux à la 1ère requête de
+// la société + déduplication des chargements concurrents.
+type TAiContext = {
+    agentConfig: IAiAgentConfig | null;
+    embeddingConfig: IAiEmbeddingConfig | null;
+    knowledgeBase: IKnowledgeChunk[];
+    loaded: boolean;
+};
+const aiContexts = new Map<number, TAiContext>();
+const aiContextPromises = new Map<number, Promise<TAiContext>>();
 
 // --- AGENTIC TOOLS REGISTRY ---
 
@@ -242,85 +248,104 @@ const TOOLS: any = {
     }
 };
 
-// Initialize AI Context (Called at Server Start)
-export const initAiContext = async (idSociete: number = 101) => {
+/** Charge (ou recharge) le contexte IA d'UNE société dans aiContexts :
+ *  configuration du modèle (Ai_Agent), configuration d'embedding
+ *  (Ai_Embedding) et base de connaissances (Ai_KnowledgeBase). Les appels
+ *  concurrents pour la même société partagent le même chargement. */
+export const chargerContexteSociete = async (idSociete: number): Promise<TAiContext> => {
     const idSocNum = Number(idSociete);
     if (isNaN(idSocNum) || idSocNum <= 0) {
         console.error("[AI] Invalid idSociete:", idSociete);
-        return;
+        return { agentConfig: null, embeddingConfig: null, knowledgeBase: [], loaded: false };
     }
-    if (isAiLoading) return; // Prevent double init
-    isAiLoading = true;
-    isAiLoaded = false;
+    const enCours = aiContextPromises.get(idSocNum);
+    if (enCours) return enCours;
 
-    try {
+    const promesse = (async (): Promise<TAiContext> => {
+        const ctx: TAiContext = {
+            agentConfig: null,
+            embeddingConfig: null,
+            knowledgeBase: [],
+            loaded: false,
+        };
+        try {
 
-        // 1. Load Agent Config — multi-modèles (table Ai_Agent, écran desktop AI_KnowledgeBase) :
-        //    le modèle PAR DÉFAUT (Par_Defaut='true') de la société prime sur le défaut global ;
-        //    à défaut, une configuration de la société prime sur la globale.
-        const resAgent = await lireSql(
-            `SELECT TOP 1 * FROM Ai_Agent
-             WHERE ISNULL(NULLIF(id_Societe, -1), @p_idSociete) = @p_idSociete
-             ORDER BY CASE WHEN ISNULL(Par_Defaut, 'false') = 'true' THEN 0 ELSE 1 END,
-                      CASE WHEN id_Societe = @p_idSociete THEN 0 ELSE 1 END`,
-            [{ param: "p_idSociete", sqlType: Int, valeur: idSocNum }]
-        );
-        if (resAgent.result && resAgent.data.length > 0) {
-            AgentConfig = resAgent.data[0];
+            // 1. Load Agent Config — multi-modèles (table Ai_Agent, écran desktop AI_KnowledgeBase) :
+            //    le modèle PAR DÉFAUT (Par_Defaut='true') de la société prime sur le défaut global ;
+            //    à défaut, une configuration de la société prime sur la globale.
+            const resAgent = await lireSql(
+                `SELECT TOP 1 * FROM Ai_Agent
+                 WHERE ISNULL(NULLIF(id_Societe, -1), @p_idSociete) = @p_idSociete
+                 ORDER BY CASE WHEN ISNULL(Par_Defaut, 'false') = 'true' THEN 0 ELSE 1 END,
+                          CASE WHEN id_Societe = @p_idSociete THEN 0 ELSE 1 END`,
+                [{ param: "p_idSociete", sqlType: Int, valeur: idSocNum }]
+            );
+            if (resAgent.result && resAgent.data.length > 0) {
+                ctx.agentConfig = resAgent.data[0];
 
-        } else {
-            console.warn("[AI] No Agent Configuration found.");
-        }
+            } else {
+                console.warn("[AI] No Agent Configuration found.");
+            }
 
-        // 2. Load Embedding Config
-        const resEmbed = await lireSql(
-            `SELECT TOP 1 * FROM Ai_Embedding WHERE ISNULL(NULLIF(id_Societe, -1), @p_idSociete) = @p_idSociete`,
-            [{ param: "p_idSociete", sqlType: Int, valeur: idSocNum }]
-        );
-        if (resEmbed.result && resEmbed.data.length > 0) {
-            EmbeddingConfig = resEmbed.data[0];
+            // 2. Load Embedding Config
+            const resEmbed = await lireSql(
+                `SELECT TOP 1 * FROM Ai_Embedding WHERE ISNULL(NULLIF(id_Societe, -1), @p_idSociete) = @p_idSociete`,
+                [{ param: "p_idSociete", sqlType: Int, valeur: idSocNum }]
+            );
+            if (resEmbed.result && resEmbed.data.length > 0) {
+                ctx.embeddingConfig = resEmbed.data[0];
 
-        } else {
-            console.warn("[AI] No Embedding Configuration found.");
-        }
+            } else {
+                console.warn("[AI] No Embedding Configuration found.");
+            }
 
-        // 3. Load Knowledge Base
-        const resKB = await lireSql(
-            `SELECT Id, Source, TextChunk, Embedding FROM Ai_KnowledgeBase WHERE ISNULL(NULLIF(id_Societe, -1), @p_idSociete) = @p_idSociete`,
-            [{ param: "p_idSociete", sqlType: Int, valeur: idSocNum }]
-        );
+            // 3. Load Knowledge Base
+            const resKB = await lireSql(
+                `SELECT Id, Source, TextChunk, Embedding FROM Ai_KnowledgeBase WHERE ISNULL(NULLIF(id_Societe, -1), @p_idSociete) = @p_idSociete`,
+                [{ param: "p_idSociete", sqlType: Int, valeur: idSocNum }]
+            );
 
-        if (resKB.result && resKB.data.length > 0) {
-            KnowledgeBase = resKB.data.map((row: any) => {
-                let vec: number[] = [];
-                try {
-                    if (typeof row.Embedding === 'string') {
-                        vec = JSON.parse(row.Embedding);
+            if (resKB.result && resKB.data.length > 0) {
+                ctx.knowledgeBase = resKB.data.map((row: any) => {
+                    let vec: number[] = [];
+                    try {
+                        if (typeof row.Embedding === 'string') {
+                            vec = JSON.parse(row.Embedding);
+                        }
+                    } catch (e) {
+                        console.error(`[AI] Error parsing embedding for Chunk ${row.Id}`, e);
                     }
-                } catch (e) {
-                    console.error(`[AI] Error parsing embedding for Chunk ${row.Id}`, e);
-                }
-                return {
-                    Id: row.Id,
-                    Source: row.Source,
-                    TextChunk: row.TextChunk,
-                    Embedding: vec
-                };
-            }).filter((k: IKnowledgeChunk) => k.Embedding && k.Embedding.length > 0);
+                    return {
+                        Id: row.Id,
+                        Source: row.Source,
+                        TextChunk: row.TextChunk,
+                        Embedding: vec
+                    };
+                }).filter((k: IKnowledgeChunk) => k.Embedding && k.Embedding.length > 0);
 
 
-        } else {
+            } else {
 
-            KnowledgeBase = [];
+                ctx.knowledgeBase = [];
+            }
+
+            ctx.loaded = true;
+
+        } catch (error) {
+            console.error("[AI] Initialization Error:", error);
         }
+        aiContexts.set(idSocNum, ctx);
+        aiContextPromises.delete(idSocNum);
+        return ctx;
+    })();
+    aiContextPromises.set(idSocNum, promesse);
+    return promesse;
+};
 
-        isAiLoaded = true;
-
-    } catch (error) {
-        console.error("[AI] Initialization Error:", error);
-    } finally {
-        isAiLoading = false;
-    }
+/** Compatibilité (démarrage serveur / login) : recharge le contexte de la
+ *  société — SANS évincer celui des autres sociétés. */
+export const initAiContext = async (idSociete: number = 101) => {
+    await chargerContexteSociete(idSociete);
 };
 
 // Cosine Similarity
@@ -334,16 +359,16 @@ const cosineSimilarity = (vecA: number[], vecB: number[]) => {
 };
 
 // Generic Chat Provider Call (used for the main answer AND the Re-Act analysis)
-const callAgentChat = async (chatMessages: { role: string; content: string }[], timeoutMs: number = 90000): Promise<string> => {
-    if (!AgentConfig) return "";
+const callAgentChat = async (agentConfig: IAiAgentConfig, chatMessages: { role: string; content: string }[], timeoutMs: number = 90000): Promise<string> => {
+    if (!agentConfig) return "";
 
-    const provider = AgentConfig.Provider.toUpperCase();
-    let url = AgentConfig.aiUrl.replace("{MODEL}", AgentConfig.Modele);
+    const provider = agentConfig.Provider.toUpperCase();
+    let url = agentConfig.aiUrl.replace("{MODEL}", agentConfig.Modele);
     const headers: any = { "Content-Type": "application/json" };
     let payload: any = {};
 
     if (provider === "GEMINI") {
-        url += `?key=${AgentConfig.ApiKey}`;
+        url += `?key=${agentConfig.ApiKey}`;
         // Gemini only supports 'user' and 'model' roles -> map system/assistant accordingly
         // and merge consecutive same-role messages
         const contents: any[] = [];
@@ -359,7 +384,7 @@ const callAgentChat = async (chatMessages: { role: string; content: string }[], 
         payload = { contents };
     } else if (provider === "OLLAMA") {
         payload = {
-            model: AgentConfig.Modele,
+            model: agentConfig.Modele,
             prompt: chatMessages
                 .map(m => `${m.role === "user" ? "User" : (m.role === "system" ? "Instructions" : "Assistant")}: ${m.content}`)
                 .join("\n\n"),
@@ -367,9 +392,9 @@ const callAgentChat = async (chatMessages: { role: string; content: string }[], 
         };
     } else {
         // OpenAI Standard
-        headers["Authorization"] = `Bearer ${AgentConfig.ApiKey}`;
-        if (provider === "AZUREOPENAI") headers["api-key"] = AgentConfig.ApiKey;
-        payload = { model: AgentConfig.Modele, messages: chatMessages };
+        headers["Authorization"] = `Bearer ${agentConfig.ApiKey}`;
+        if (provider === "AZUREOPENAI") headers["api-key"] = agentConfig.ApiKey;
+        payload = { model: agentConfig.Modele, messages: chatMessages };
     }
 
     const chatRes = await axios.post(url, payload, { headers, timeout: timeoutMs });
@@ -380,8 +405,8 @@ const callAgentChat = async (chatMessages: { role: string; content: string }[], 
 };
 
 // Intent Classification Helper
-const classifyIntent = async (question: string, conversationHistory: any[]): Promise<'ACTION' | 'KNOWLEDGE'> => {
-    if (!AgentConfig) return 'KNOWLEDGE';
+const classifyIntent = async (agentConfig: IAiAgentConfig, question: string, conversationHistory: any[]): Promise<'ACTION' | 'KNOWLEDGE'> => {
+    if (!agentConfig) return 'KNOWLEDGE';
 
     // Build list of available actions
     const availableActions = Object.keys(TOOLS).map(toolName => {
@@ -410,32 +435,32 @@ Instructions:
 Réponds UNIQUEMENT par "ACTION" ou "KNOWLEDGE", sans explication.`;
 
     try {
-        let classificationUrl = AgentConfig.aiUrl.replace("{MODEL}", AgentConfig.Modele);
+        let classificationUrl = agentConfig.aiUrl.replace("{MODEL}", agentConfig.Modele);
         let classificationHeaders: any = { "Content-Type": "application/json" };
         let classificationPayload: any = {};
-        const provider = AgentConfig.Provider.toUpperCase();
+        const provider = agentConfig.Provider.toUpperCase();
 
         // Use a fast (non-reasoning) model for classification when possible.
         // Reasoning models (kimi-k2.x, kimi-k3, ...) waste ~7s "thinking" for a binary answer.
-        const isMoonshot = provider === "KIMI" || AgentConfig.aiUrl.includes("moonshot");
+        const isMoonshot = provider === "KIMI" || agentConfig.aiUrl.includes("moonshot");
         const classificationModel = (isMoonshot && provider !== "GEMINI" && provider !== "OLLAMA")
             ? "moonshot-v1-8k"
-            : AgentConfig.Modele;
+            : agentConfig.Modele;
 
         if (provider === "GEMINI") {
-            classificationUrl += `?key=${AgentConfig.ApiKey}`;
+            classificationUrl += `?key=${agentConfig.ApiKey}`;
             classificationPayload = {
                 contents: [{ parts: [{ text: classificationPrompt }] }]
             };
         } else if (provider === "OLLAMA") {
             classificationPayload = {
-                model: AgentConfig.Modele,
+                model: agentConfig.Modele,
                 prompt: classificationPrompt,
                 stream: false
             };
         } else {
-            classificationHeaders["Authorization"] = `Bearer ${AgentConfig.ApiKey}`;
-            if (provider === "AZUREOPENAI") classificationHeaders["api-key"] = AgentConfig.ApiKey;
+            classificationHeaders["Authorization"] = `Bearer ${agentConfig.ApiKey}`;
+            if (provider === "AZUREOPENAI") classificationHeaders["api-key"] = agentConfig.ApiKey;
             classificationPayload = {
                 model: classificationModel,
                 messages: [{ role: "user", content: classificationPrompt }]
@@ -447,8 +472,8 @@ Réponds UNIQUEMENT par "ACTION" ou "KNOWLEDGE", sans explication.`;
             classificationRes = await axios.post(classificationUrl, classificationPayload, { headers: classificationHeaders, timeout: 30000 });
         } catch (fastErr) {
             // Fallback to the configured model if the fast one is unavailable
-            if (classificationModel !== AgentConfig.Modele) {
-                classificationPayload.model = AgentConfig.Modele;
+            if (classificationModel !== agentConfig.Modele) {
+                classificationPayload.model = agentConfig.Modele;
                 classificationRes = await axios.post(classificationUrl, classificationPayload, { headers: classificationHeaders, timeout: 60000 });
             } else {
                 throw fastErr;
@@ -475,24 +500,24 @@ Réponds UNIQUEMENT par "ACTION" ou "KNOWLEDGE", sans explication.`;
 };
 
 // Get Embedding vector for a question
-const getQuestionEmbedding = async (question: string): Promise<number[]> => {
-    let embedUrl = EmbeddingConfig!.aiUrl.replace("{MODEL}", EmbeddingConfig!.Modele);
+const getQuestionEmbedding = async (embeddingConfig: IAiEmbeddingConfig, question: string): Promise<number[]> => {
+    let embedUrl = embeddingConfig.aiUrl.replace("{MODEL}", embeddingConfig.Modele);
     let embedHeaders: any = { "Content-Type": "application/json" };
     let embedPayload: any = {};
 
-    const providerEmb = EmbeddingConfig!.Provider.toUpperCase();
+    const providerEmb = embeddingConfig.Provider.toUpperCase();
 
     if (providerEmb === "GEMINI") {
-        embedUrl += `?key=${EmbeddingConfig!.ApiKey}`;
+        embedUrl += `?key=${embeddingConfig.ApiKey}`;
         // Gemini embedContent uses 'content' (singular)
         embedPayload = { content: { parts: [{ text: question }] } };
     } else if (providerEmb === "OLLAMA") {
-        embedPayload = { model: EmbeddingConfig!.Modele, prompt: question };
+        embedPayload = { model: embeddingConfig.Modele, prompt: question };
     } else {
         // OpenAI Standard
-        embedHeaders["Authorization"] = `Bearer ${EmbeddingConfig!.ApiKey}`;
-        if (providerEmb === "AZUREOPENAI") embedHeaders["api-key"] = EmbeddingConfig!.ApiKey;
-        embedPayload = { input: question, model: EmbeddingConfig!.Modele };
+        embedHeaders["Authorization"] = `Bearer ${embeddingConfig.ApiKey}`;
+        if (providerEmb === "AZUREOPENAI") embedHeaders["api-key"] = embeddingConfig.ApiKey;
+        embedPayload = { input: question, model: embeddingConfig.Modele };
     }
 
     try {
@@ -566,10 +591,14 @@ export const ask_ai_assistant = async (req: Request, res: Response) => {
         return;
     }
 
+    // Contexte IA DE LA SOCIÉTÉ DE L'APPELANT (jamais celui d'une autre
+    // société — aiContexts est cloisonné par id_Societe).
+    const ctxExistant = aiContexts.get(idSocNum);
+
     // Ping for status check
     if (question === "PING_STATUS") {
-        if (!isAiLoaded) {
-            if (!isAiLoading) initAiContext(); // Trigger init if not running
+        if (!ctxExistant?.loaded) {
+            chargerContexteSociete(idSocNum); // lance le chargement si pas déjà en cours
             res.send({ result: true, data: { isAiLoading: true } });
         } else {
             res.send({ result: true, data: { isAiLoading: false } });
@@ -578,52 +607,44 @@ export const ask_ai_assistant = async (req: Request, res: Response) => {
     }
 
     // Check Loading State
-    if (!isAiLoaded) {
-        if (isAiLoading) {
-            res.send({
-                result: true,
-                data: {
-                    answer: "Je suis en train de charger ma base de connaissances. Veuillez patienter quelques instants...",
-                    isAiLoading: true
-                }
-            });
-            return;
-        } else {
-            // Retry Init if failed or not started
-            initAiContext();
-            res.send({
-                result: true,
-                data: {
-                    answer: "Je démarre l'initialisation de ma mémoire. Réessayez dans quelques secondes...",
-                    isAiLoading: true
-                }
-            });
-            return;
-        }
+    if (!ctxExistant?.loaded) {
+        // Chargement en arrière-plan (ou rechargement après un échec)
+        chargerContexteSociete(idSocNum);
+        res.send({
+            result: true,
+            data: {
+                answer: "Je suis en train de charger ma base de connaissances. Veuillez patienter quelques instants...",
+                isAiLoading: true
+            }
+        });
+        return;
     }
 
     // Ensure Context is Loaded
-    if (!AgentConfig || !EmbeddingConfig) {
+    const ctx = ctxExistant;
+    if (!ctx.agentConfig || !ctx.embeddingConfig) {
         res.send({ result: false, message: "IA non configurée sur le serveur." });
         return;
     }
+    const agentConfig = ctx.agentConfig;
+    const embeddingConfig = ctx.embeddingConfig;
 
 
     try {
 
 
         // ===== STEP 0: CLASSIFY INTENT =====
-        const maxHistory = AgentConfig.nb_Msg_Memory || 10;
+        const maxHistory = agentConfig.nb_Msg_Memory || 10;
         const conversationHistory = Array.isArray(history) ? history.slice(-maxHistory) : [];
         const currentUser = req.params; // Validate middleware puts user info here
 
         // Run the 3 independent steps in PARALLEL to minimize latency:
         // intent classification (LLM), question embedding (LLM), user profile (SQL)
         const [intent, qVec, richUserData] = await Promise.all([
-            classifyIntent(question, conversationHistory),
+            classifyIntent(agentConfig, question, conversationHistory),
             // Tolérance aux pannes : si l'API d'embedding est indisponible,
             // on continue sans la base de connaissances au lieu de faire échouer toute la requête
-            getQuestionEmbedding(question).catch((embErr: any) => {
+            getQuestionEmbedding(embeddingConfig, question).catch((embErr: any) => {
                 console.error("[AI] Embedding failed, continuing without knowledge base:", embErr?.message || embErr);
                 return [] as number[];
             }),
@@ -634,7 +655,7 @@ export const ask_ai_assistant = async (req: Request, res: Response) => {
         // Seuil de pertinence : en dessous, le chunk est hors sujet (ex: question conversationnelle)
         // -> on ne l'injecte ni dans le contexte, ni dans les sources affichées.
         const MIN_SIMILARITY_SCORE = 0.5;
-        let docs = qVec.length > 0 ? KnowledgeBase
+        let docs = qVec.length > 0 ? ctx.knowledgeBase
             .map(chunk => ({ ...chunk, score: cosineSimilarity(qVec, chunk.Embedding) }))
             .filter(chunk => chunk.score >= MIN_SIMILARITY_SCORE)
             .sort((a, b) => b.score - a.score)
@@ -697,13 +718,13 @@ Rules:
 - IMPORTANT: The Context blocks are labeled [Source N: filename]. If (and ONLY if) your answer actually uses information from a Context block, append at the very end of your answer: '###USED_SOURCES###' followed by the number(s) of the source(s) used (ex: ###USED_SOURCES### 1, 3). If your answer does NOT use the Context (greetings, small talk, general knowledge), do NOT append anything.
 `;
 
-        const systemInstruction = AgentConfig.Instructions || "Tu es un assistant utile.";
+        const systemInstruction = agentConfig.Instructions || "Tu es un assistant utile.";
         const fullSystemPrompt = `${systemInstruction}\n${userContextPrompt}\n${toolPrompt}\n\nContexte:\n${contextText}`;
 
         // 4. Ask Agent (Chat)
         let answer = "";
         try {
-            answer = await callAgentChat([
+            answer = await callAgentChat(agentConfig, [
                 { role: "system", content: fullSystemPrompt },
                 ...conversationHistory,
                 { role: "user", content: question }
@@ -882,7 +903,7 @@ RÈGLES:
 - Format: Markdown (**gras**).
 `;
                                     try {
-                                        const reactAnswer = await callAgentChat([
+                                        const reactAnswer = await callAgentChat(agentConfig, [
                                             { role: "system", content: `${systemInstruction}\n${userContextPrompt}` },
                                             ...conversationHistory,
                                             { role: "user", content: question },

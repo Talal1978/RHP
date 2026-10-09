@@ -27,7 +27,12 @@
     "Act_Enregistrer": "{{page.actions.save | true}}",
     "Act_Soumettre": "{{page.actions.submit | true}}",
     "Act_Imprimer": "{{page.actions.print | false}}",
-    "Act_Exporter": "{{page.actions.export | false}}"
+    "Act_Exporter": "{{page.actions.export | false}}",
+    "Act_Dupliquer": "{{page.actions.duplicate | false}}",
+    "Act_Supprimer": "{{page.actions.delete | true}}",
+    "Aff_Dat_Crea": "{{page.list_page.show_created_at | true}}",
+    "Aff_Cree_Par": "{{page.list_page.show_created_by | true}}",
+    "Tri_Liste": "{{page.list_page.sort}}"
   },
   "sqlStructure": [
     {

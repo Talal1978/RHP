@@ -68,7 +68,12 @@ et de `SP_Page_Designer.vb` (`ImporterJson`, `AppliquerImport`, `Saving`).
 | `Act_Enregistrer` | bool | oui | Défaut `true` |
 | `Act_Soumettre` | bool | oui | Défaut `true` |
 | `Act_Imprimer` | bool | oui | Défaut `false` |
-| `Act_Exporter` | bool | oui | Défaut `false` (métadonnée seulement dans le frontend actuel) |
+| `Act_Exporter` | bool | oui | Défaut `false` (bouton Exporter `.xlsx` de la page liste) |
+| `Act_Dupliquer` | bool | oui | Défaut `false` — **opt-in** : bouton Dupliquer (liste + FAB), droit `Creer` exigé |
+| `Act_Supprimer` | bool | oui | Défaut `true` — **opt-out** : bouton Supprimer (liste + FAB) ; une pièce dont le statut a évolué n'est jamais supprimable (règle serveur) |
+| `Aff_Dat_Crea` | bool | oui | Défaut `true` — **opt-out** : colonne système « Créé le » de la page liste ; `false` la retire |
+| `Aff_Cree_Par` | bool | oui | Défaut `true` — **opt-out** : colonne système « Créé par » de la page liste ; `false` la retire |
+| `Tri_Liste` | string | oui | Défaut `""` (= `Dat_Crea desc`). Tri de la page liste, format de `Tri_Defaut` : colonnes de l'entête séparées par des virgules, sens `asc`/`desc` optionnel (ex. `'Dat_Depart desc'`). Colonnes admises : physiques déclarées de l'entête + techniques `Num_Doc, Statut, Dat_Crea, Created_By, Dat_Modif, Modified_By` — sinon **bloquant** (`Valider`, miroir du `Saving`) ; ≤ **200** caractères |
 
 **Jamais dans le DTO** (aucune cible à l'import) : `Libelle` / `Libelle_Court`
 (le Designer écrit `Libelle = Nom_Page`), `GED_Categories`, `Figer_Statuts`.

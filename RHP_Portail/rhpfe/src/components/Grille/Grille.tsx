@@ -8,8 +8,9 @@ import {
   Paper,
   SxProps,
 } from "@mui/material";
-import { createContext, useEffect, useState, useMemo } from "react";
-import GrilleHeaderCell from "./GrilleHeaderCell";
+import { Search } from "@mui/icons-material";
+import { createContext, useEffect, useRef, useState, useMemo, ReactNode } from "react";
+import GrilleHeaderCell, { filterEngine } from "./GrilleHeaderCell";
 import GrilleRow from "./GrilleRow";
 import useAxiosPost from "../../hooks/useAxiosPost";
 import { estDate } from "../../modules/module_formats";
@@ -26,6 +27,9 @@ export const cntx = createContext<{
   isFiltred?: boolean;
   setIsFiltred?: any;
   onchange?: (e: any) => void;
+  rechercheZoom?: boolean;
+  colRecherche?: string;
+  setColRecherche?: any;
 }>({ filtre: {} });
 export default function Grille({
   numZoom = "",
@@ -37,7 +41,9 @@ export default function Grille({
   readonly = false,
   className = "",
   action = "",
+  actionsLigne = [],
   showBorder = true,
+  rechercheZoom = false,
   onclick = () => {},
   onchange = () => {},
   ondelete = () => {},
@@ -53,6 +59,16 @@ export default function Grille({
     useState<{ [key: string]: any }[]>(dataSource);
   const [Fields, setFields] = useState<TColonneCollection>(Colonnes);
   const [filtredData, setFiltredData] = useState<{ [key: string]: any }[]>([]);
+  // --- Recherche clavier du zoom (rechercheZoom) -------------------------
+  // searchBy : position 1-based de la colonne de recherche par défaut, lue de
+  // Controle_Def_Zoom.Search_By (renvoyée par l'API zoom) ; colRecherche :
+  // colonne actuellement ciblée (Search_By par défaut, colonne cliquée sinon).
+  const [searchBy, setSearchBy] = useState("");
+  const [colRecherche, setColRecherche] = useState("");
+  const [recherche, setRecherche] = useState("");
+  const [ligneActive, setLigneActive] = useState(0);
+  const [nbResultats, setNbResultats] = useState(0);
+  const rechercheRef = useRef<HTMLInputElement>(null);
   useDeepCompareEffect(() => {
     if (dataSource.length === 0 && numZoom !== "") {
       myAxios("zoom", { numZoom, conditionZoom })
@@ -63,6 +79,7 @@ export default function Grille({
               setFiltredData(obj.slice(0, 20));
               setInnerDataSource(obj);
               setFields(dt.data.fields);
+              setSearchBy(String(dt.data.searchBy ?? ""));
             }
           }
         })
@@ -140,11 +157,122 @@ export default function Grille({
       isFiltred,
       setIsFiltred,
       onchange,
+      rechercheZoom,
+      colRecherche,
+      setColRecherche,
     }),
-    [filtre, innerDataSource, isFiltred]
+    [filtre, innerDataSource, isFiltred, rechercheZoom, colRecherche]
   );
+  /* Colonne ciblée par la recherche clavier : Search_By (1-based) par défaut,
+   * même règle que le desktop (Zoom.vb : >1 → index-1, sinon 0 ; absent ou
+   * non numérique → 2e colonne = libellé), bornée aux colonnes visibles. Un
+   * choix manuel (clic sur un en-tête) est conservé tant qu'il est valide. */
+  useEffect(() => {
+    if (!rechercheZoom) return;
+    const visibles = Object.keys(Fields).filter((c) => Fields[c]?.visible);
+    if (visibles.length === 0) return;
+    setColRecherche((prv) => {
+      if (prv && visibles.includes(prv)) return prv;
+      const n = parseInt(searchBy, 10);
+      if (!isNaN(n)) {
+        return visibles[n > 1 ? Math.min(n - 1, visibles.length - 1) : 0];
+      }
+      return visibles[Math.min(1, visibles.length - 1)];
+    });
+  }, [Fields, searchBy, rechercheZoom]);
+  /* Filtrage des lignes, centralisé ici (et non dans chaque cellule d'en-tête)
+   * : filtres par colonne (icônes des en-têtes) puis recherche clavier du
+   * zoom sur la colonne ciblée. */
+  useEffect(() => {
+    if (!filtre || !innerDataSource) {
+      setIsFiltred(false);
+      return;
+    }
+    let _filtred = [...innerDataSource];
+    let estFiltree = false;
+    Object.entries(filtre).forEach(([col, v]) => {
+      if (v.expression && v.expression.trim() !== "") {
+        estFiltree = true;
+        _filtred = _filtred.filter((f) =>
+          filterEngine(v.typeData, f[col], v.expression)
+        );
+      }
+    });
+    const exprRecherche = recherche.trim();
+    if (rechercheZoom && exprRecherche !== "" && colRecherche) {
+      estFiltree = true;
+      const typCol =
+        filtre[colRecherche]?.typeData ??
+        Fields[colRecherche]?.dataType ??
+        "nvarchar";
+      _filtred = _filtred.filter((f) =>
+        filterEngine(typCol, f[colRecherche], exprRecherche)
+      );
+    }
+    setIsFiltred(estFiltree);
+    setNbResultats(_filtred.length);
+    setFiltredData(_filtred.slice(0, 20));
+  }, [filtre, innerDataSource, recherche, colRecherche, rechercheZoom, Fields]);
+  // La ligne active (navigation ↑/↓) repart sur la 1ère ligne à chaque
+  // nouveau résultat de recherche/filtrage.
+  useEffect(() => {
+    setLigneActive(0);
+  }, [filtredData]);
+  // Après un changement de colonne (clic sur un en-tête), le focus revient à
+  // la zone de recherche pour enchaîner la frappe sans repasser à la souris.
+  useEffect(() => {
+    if (rechercheZoom && colRecherche) rechercheRef.current?.focus();
+  }, [colRecherche, rechercheZoom]);
+  const libelleColRecherche = (() => {
+    if (!colRecherche) return "";
+    const h = Fields[colRecherche]?.headerText;
+    return h && h !== colRecherche ? h : libelleColonne(colRecherche);
+  })();
+  const onKeyDownRecherche = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setLigneActive((i) => Math.min(i + 1, filtredData.length - 1));
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setLigneActive((i) => Math.max(i - 1, 0));
+    } else if (e.key === "Enter") {
+      // Entrée = sélection de la ligne active (la 1ère ligne par défaut)
+      e.preventDefault();
+      const ind = ligneActive < filtredData.length ? ligneActive : 0;
+      const row = filtredData[ind];
+      if (row) onclick({ colListe: Object.keys(Fields), rowIndex: ind, row });
+    }
+    // Échap n'est pas consommé : il remonte au panneau zoom qui ferme.
+  };
+  // Cellule d'actions de ligne (1ère colonne, sans en-tête) : présente dès
+  // qu'une action est déclarée (action historique OU actionsLigne génériques).
+  const nbActions = (action !== "" ? 1 : 0) + (actionsLigne?.length ?? 0);
+  const largeurCelluleAction =
+    nbActions > 1 ? `${nbActions * 1.5}em !important` : "1em !important";
   return (
     <cntx.Provider value={contextValue}>
+      {rechercheZoom && (
+        <div className="rechercheZoom">
+          <Search className="iconeRecherche" />
+          <input
+            ref={rechercheRef}
+            type="text"
+            autoFocus
+            value={recherche}
+            placeholder={`Filtrer par ${libelleColRecherche}...`}
+            title="Tapez pour filtrer — clic sur un en-tête pour changer de colonne — ↑/↓ : naviguer — Entrée : sélectionner — Échap : fermer"
+            onChange={(e) => setRecherche(e.target.value)}
+            onKeyDown={onKeyDownRecherche}
+          />
+          {recherche.trim() !== "" && (
+            <span className="compteurResultats">
+              {nbResultats === 0
+                ? "Aucune ligne"
+                : `${nbResultats} ligne${nbResultats > 1 ? "s" : ""}`}
+            </span>
+          )}
+        </div>
+      )}
       <TableContainer
         component={Paper}
         className={`${className} grilleContainer`}
@@ -153,13 +281,14 @@ export default function Grille({
         <Table stickyHeader aria-label="sticky table" className="grille">
           <TableHead className="th">
             <TableRow className="tr">
-              {action && (
+              {nbActions > 0 && (
                 <TableCell
                   className={`td cl_1 rw_1`}
                   key="cl_1"
                   sx={{
-                    maxWidth: "1em !important",
-                    width: "1em !important",
+                    maxWidth: largeurCelluleAction,
+                    width: largeurCelluleAction,
+                    whiteSpace: "nowrap",
                   }}
                 />
               )}
@@ -197,11 +326,13 @@ export default function Grille({
                   row={row}
                   indRow={indRow}
                   action={action}
+                  actionsLigne={actionsLigne}
                   Fields={Fields}
                   onclick={onclick}
                   ondelete={ondelete}
                   key={indRow}
                   readOnly={readOnlyRows.includes(indRow) || readonly}
+                  active={rechercheZoom && indRow === ligneActive}
                 />
               );
             })}
@@ -250,7 +381,17 @@ type TGrille = {
   readonly?: boolean;
   className?: string;
   action?: TGrilleAction;
+  /** Actions génériques par ligne (icônes de la 1ère colonne) : plusieurs
+   *  actions par ligne possibles, chacune désactivable selon la ligne
+   *  (ex. suppression grisée dès que le statut du document a évolué).
+   *  Contrairement à `action` (pilotée par rowIndex, masquée sous filtrage),
+   *  le handler reçoit la LIGNE et reste affiché même si la grille est filtrée. */
+  actionsLigne?: TGrilleActionLigne[];
   showBorder?: boolean;
+  /** Active la barre de recherche clavier du zoom (filtrage sur la colonne
+   *  Search_By par défaut, colonne cliquée sinon ; ↑/↓ + Entrée pour
+   *  sélectionner sans souris). À réserver aux panneaux de zoom. */
+  rechercheZoom?: boolean;
   onclick?: (e: TGrilleEventClick) => void;
   onchange?: (e: any) => void;
   ondelete?: (e: { rowIndex: number; row: ObjetGenerique }) => void;
@@ -265,6 +406,22 @@ export type TGrilleEventClick = {
   row?: ObjetGenerique;
 };
 export type TGrilleAction = "inserer" | "modifier" | "supprimer" | "";
+/** Action générique affichée en icône dans la cellule d'action de chaque ligne. */
+export type TGrilleActionLigne = {
+  /** Identifiant de l'action (clé de rendu). */
+  name: string;
+  /** Icône rendue (sa couleur suit `couleur`, currentColor). */
+  icone: ReactNode;
+  /** Infobulle au survol. */
+  titre?: string;
+  /** Infobulle quand l'action est désactivée pour la ligne (défaut : titre). */
+  titreDesactive?: string;
+  /** Couleur de l'icône (défaut : colorBase.colorBase02 ; danger = colorBase03). */
+  couleur?: string;
+  /** Désactive l'action pour la ligne (icône estompée, clic ignoré). */
+  desactivee?: (row: ObjetGenerique) => boolean;
+  onClick: (e: { rowIndex: number; row: ObjetGenerique }) => void;
+};
 export type TGrilleCell = {
   row: ObjetGenerique;
   col: string;
@@ -279,7 +436,10 @@ export type TGrilleRow = {
   readOnly: boolean;
   onclick: (e: TGrilleEventClick) => void;
   action: TGrilleAction;
+  actionsLigne?: TGrilleActionLigne[];
   row: ObjetGenerique;
   showBorder: boolean;
   ondelete?: (e: { rowIndex: number; row: ObjetGenerique }) => void;
+  /** Ligne active de la navigation clavier du zoom (mise en surbrillance). */
+  active?: boolean;
 };

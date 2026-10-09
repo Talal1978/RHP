@@ -13,7 +13,7 @@ import { AttachFileOutlined } from "@mui/icons-material";
 import { listRubriques } from "../../modules/module_rubriques";
 import { Monetaire } from "../../modules/module_general_formulas";
 import { TSpChamp, TSpContexte } from "./Types";
-import { champActif, cleChamp } from "./dynamicEngine";
+import { champActif, cleChamp, COLONNES_TECHNIQUES } from "./dynamicEngine";
 
 const stylePlein = { width: "100%" };
 
@@ -68,7 +68,10 @@ const DynamicField = ({
   onchange: (nomColonne: string, valeur: any) => void;
   onOpenGed?: () => void;
 }) => {
-  const readonly = readonlyGlobal || !champActif(champ, ctx) || champ.Typ_Controle === "CALCULE" || champ.Typ_Controle === "SOURCE";
+  // Une colonne technique (Dat_Crea, Created_By...) est gérée par le serveur :
+  // affichable mais jamais saisissable, même si l'Etat est resté 'S'.
+  const readonly = readonlyGlobal || !champActif(champ, ctx) || champ.Typ_Controle === "CALCULE" || champ.Typ_Controle === "SOURCE"
+    || COLONNES_TECHNIQUES.has(champ.Nom_Colonne ?? "");
   const label = libelleChamp(champ);
   const nom = cleChamp(champ);
   // Condition de zoom déclarative : "Matricule='{Matricule}'" -> les placeholders

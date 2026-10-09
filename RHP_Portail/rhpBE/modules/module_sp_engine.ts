@@ -37,6 +37,21 @@ export type TSpPage = {
   Act_Soumettre: string;
   Act_Imprimer: string;
   Act_Exporter: string;
+  /** Bouton Dupliquer (liste + document) : opt-in, défaut 'false' (migration 009). */
+  Act_Dupliquer: string;
+  /** Bouton Supprimer (liste + document) : opt-out, défaut 'true' (migration 009)
+   *  — la suppression existait avant l'option ; 'false' la retire de la page. */
+  Act_Supprimer: string;
+  /** Colonne système « Créé le » (Dat_Crea) de la page liste : opt-out, défaut
+   *  'true' (migration 010) — la colonne a toujours été affichée ; 'false' la retire. */
+  Aff_Dat_Crea: string;
+  /** Colonne système « Créé par » (Created_By) de la page liste : opt-out,
+   *  défaut 'true' (migration 010) ; 'false' la retire. */
+  Aff_Cree_Par: string;
+  /** Tri de la page liste (migration 010) : expression déclarative au format de
+   *  Tri_Defaut des détails (ex. 'Dat_Depart desc, Ref_OM asc') — noms de colonnes
+   *  de l'entête uniquement (vérifiés par triListeDocuments). Vide = Dat_Crea desc. */
+  Tri_Liste: string;
   Figer_Statuts: string; // statuts figeant le document (CSV, defaut 'SG,RJ,SP,VA')
   Version_Page: number;
 };
@@ -96,6 +111,7 @@ export type TSpChamp = {
   Num_Zoom: string | null;
   Zoom_Retour: string | null;
   Zoom_Condition: string | null; // condition du zoom avec placeholders "{Champ}" evalues dans le contexte
+  Copier_Vers: string | null; // Cod_Champ cible de la propagation au changement (confort client, jamais rejoue au save)
   Source_Metier: string | null;
   Formule: string | null;
   Persiste: string;
@@ -1086,6 +1102,29 @@ function verifierTri(tri: string, meta: TSpMeta, codTable: string): string {
   }
   return sur.length > 0 ? sur.join(", ") : "[RowId] asc";
 }
+/** Colonnes techniques d'entête admises dans le tri de la liste (id_Societe est
+ *  exclu : cloisonné, identique sur toutes les lignes ; RV/RowId jamais affichés). */
+const COLS_TECHNIQUES_TRI_LISTE = ["Num_Doc", "Statut", "Dat_Crea", "Created_By", "Dat_Modif", "Modified_By"];
+/** ORDER BY de la page liste des documents (sp_document_liste) : expression
+ *  Tri_Liste de la page (même format que Tri_Defaut des détails, ex.
+ *  'Dat_Depart desc'), sécurisée comme verifierTri — noms de colonnes
+ *  déclarées de l'entête ou techniques admises uniquement, alias 't' (la
+ *  requête de liste jointe l'agent). Repli : t.[Dat_Crea] desc. */
+export function triListeDocuments(meta: TSpMeta): string {
+  const colonnesOk = new Set([
+    ...COLS_TECHNIQUES_TRI_LISTE,
+    ...colonnesMetier(meta, "ENT").map((c) => c.Nom_Colonne),
+  ]);
+  const parts = String(meta.page.Tri_Liste ?? "").split(",").map((s) => s.trim()).filter(Boolean);
+  const sur: string[] = [];
+  for (const p of parts) {
+    const m = /^([A-Za-z_][A-Za-z0-9_]*)(\s+(asc|desc))?$/i.exec(p);
+    if (m && colonnesOk.has(m[1])) {
+      sur.push(`t.${qn(m[1])} ${m[3]?.toLowerCase() === "desc" ? "desc" : "asc"}`);
+    }
+  }
+  return sur.length > 0 ? sur.join(", ") : "t.[Dat_Crea] desc";
+}
 
 /** Enregistrement transactionnel entête + détails + soumission workflow. */
 export async function enregistrerDocument(
@@ -1336,15 +1375,17 @@ export async function enregistrerDocument(
   }
 }
 
-/** Suppression transactionnelle d'un document et de ses lignes. */
+/** Suppression transactionnelle d'un document et de ses lignes.
+ *  Règle métier absolue : une pièce dont le statut a ÉVOLUÉ (Statut non vide
+ *  et différent de 'NSS' : soumise en signature, signée, rejetée, validée...)
+ *  n'est JAMAIS supprimable — seuls les brouillons le sont. Cette règle couvre
+ *  intégralement Figer_Statuts (tous les statuts figés sont non vides). */
 export async function supprimerDocument(
   meta: TSpMeta, numDoc: string, agent: TAgentCtx
 ): Promise<{ result: boolean; message?: string }> {
   const idSoc = Number(agent.id_Societe);
   const pool = await getPool();
   const transaction = new sql.Transaction(pool);
-  const statutFiges = String(meta.page.Figer_Statuts ?? "SG,RJ,SP,VA")
-    .split(",").map((s) => s.trim()).filter(Boolean);
   try {
     await transaction.begin();
     const rChk = new sql.Request(transaction);
@@ -1357,9 +1398,10 @@ export async function supprimerDocument(
       await transaction.rollback();
       return { result: false, message: "Document introuvable" };
     }
-    if (statutFiges.includes(String(chk.recordset[0].Statut))) {
+    const statutDoc = String(chk.recordset[0].Statut ?? "");
+    if (statutDoc !== "" && statutDoc !== "NSS") {
       await transaction.rollback();
-      return { result: false, message: "Document traité. Suppression impossible." };
+      return { result: false, message: "Ce document a évolué (soumis en signature ou traité). Suppression impossible." };
     }
     for (const t of tablesDet(meta).filter((x) => !x.Source_Metier)) {
       if (t.Regle_Suppression === "RESTRICT") {
@@ -1391,5 +1433,82 @@ export async function supprimerDocument(
     try { await transaction.rollback(); } catch { /* déjà annulée */ }
     console.error("[SP] supprimerDocument:", e);
     return { result: false, message: `Erreur de suppression : ${e?.message ?? e}` };
+  }
+}
+
+/** Duplication transactionnelle d'un document en une NOUVELLE pièce brouillon :
+ *  nouveau numéro (numérotation standard), colonnes métier de l'entête et
+ *  lignes des détails PHYSIQUES copiées (RowId IDENTITY régénéré), statut
+ *  réinitialisé (''), audit neuf (Dat_Crea/Created_By...). Les détails
+ *  virtuels (source métier) ne sont pas copiés : ils se ré-exécuteront sur
+ *  l'entête de la copie. Tout statut est duplicable (dupliquer un signé est
+ *  licite : la copie est un brouillon indépendant, sans circuit de signature). */
+export async function dupliquerDocument(
+  meta: TSpMeta, numDoc: string, agent: TAgentCtx
+): Promise<{ result: boolean; message?: string; numDoc?: string; data?: any[] }> {
+  const idSoc = Number(agent.id_Societe);
+  const tEnt = tableEnt(meta);
+  const colsEnt = colonnesMetier(meta, "ENT").map((c) => c.Nom_Colonne);
+  const pool = await getPool();
+  const transaction = new sql.Transaction(pool);
+  try {
+    await transaction.begin();
+    // 1. Le document source doit exister (dans la société de l'agent)
+    const rChk = new sql.Request(transaction);
+    const chk = await rChk
+      .input("p_num", sql.NVarChar, numDoc)
+      .input("p_idSoc", sql.Int, idSoc)
+      .query(`select count(*) as nb from ${qn(tEnt.Nom_Physique)}
+              where [Num_Doc]=@p_num and [id_Societe]=@p_idSoc`);
+    if ((chk.recordset?.[0]?.nb ?? 0) === 0) {
+      await transaction.rollback();
+      return { result: false, message: "Document introuvable" };
+    }
+    // 2. Numérotation standard (verrouillée, même transaction)
+    const nouveau = await nouveauNumero(new sql.Request(transaction), meta, idSoc);
+    // 3. Copie de l'entête : colonnes métier reprises, statut + audit neufs.
+    //    Un non-TeamLeader ne peut dupliquer que ses propres documents
+    //    (même cloisonnement que la liste, si la colonne Matricule existe).
+    const cloisonner = meta.colonnes.some(
+      (c) => c.Cod_Table === "ENT" && c.Nom_Colonne === "Matricule"
+    ) && agent.TeamLeader !== "true" && String(agent.codProfile) !== "1";
+    const colsSql = colsEnt.map(qn).join(", ");
+    const rIns = new sql.Request(transaction);
+    rIns
+      .input("p_num", sql.NVarChar, numDoc)
+      .input("p_new", sql.NVarChar, nouveau)
+      .input("p_idSoc", sql.Int, idSoc)
+      .input("p_login", sql.NVarChar, agent.Login ?? agent.Matricule);
+    if (cloisonner) rIns.input("p_mat", sql.NVarChar, agent.Matricule);
+    await rIns.query(
+      `insert into ${qn(tEnt.Nom_Physique)}
+         ([Num_Doc], [id_Societe], [Statut], ${colsSql ? colsSql + ", " : ""}[Dat_Crea], [Created_By], [Dat_Modif], [Modified_By])
+       select @p_new, @p_idSoc, '', ${colsSql ? colsSql + ", " : ""}getdate(), @p_login, getdate(), @p_login
+       from ${qn(tEnt.Nom_Physique)}
+       where [Num_Doc]=@p_num and [id_Societe]=@p_idSoc${cloisonner ? " and [Matricule]=@p_mat" : ""}`
+    );
+    // 4. Copie des lignes des détails physiques
+    for (const t of tablesDet(meta).filter((x) => !x.Source_Metier)) {
+      const cols = colonnesMetier(meta, t.Cod_Table).map((c) => qn(c.Nom_Colonne)).join(", ");
+      const rDet = new sql.Request(transaction);
+      await rDet
+        .input("p_num", sql.NVarChar, numDoc)
+        .input("p_new", sql.NVarChar, nouveau)
+        .input("p_idSoc", sql.Int, idSoc)
+        .input("p_login", sql.NVarChar, agent.Login ?? agent.Matricule)
+        .query(
+          `insert into ${qn(t.Nom_Physique)}
+             ([Num_Doc], [id_Societe], ${cols ? cols + ", " : ""}[Dat_Crea], [Created_By], [Dat_Modif], [Modified_By])
+           select @p_new, @p_idSoc, ${cols ? cols + ", " : ""}getdate(), @p_login, getdate(), @p_login
+           from ${qn(t.Nom_Physique)}
+           where [Num_Doc]=@p_num and [id_Societe]=@p_idSoc`
+        );
+    }
+    await transaction.commit();
+    return { result: true, numDoc: nouveau, data: [{ Num_Doc: nouveau }] };
+  } catch (e: any) {
+    try { await transaction.rollback(); } catch { /* déjà annulée */ }
+    console.error("[SP] dupliquerDocument:", e);
+    return { result: false, message: `Erreur de duplication : ${e?.message ?? e}` };
   }
 }

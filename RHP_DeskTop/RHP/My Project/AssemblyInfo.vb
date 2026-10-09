@@ -10,7 +10,7 @@ Imports System.Runtime.InteropServices
 
 <Assembly: AssemblyTitle("RHP")>
 <Assembly: AssemblyDescription("")>
-<Assembly: AssemblyCompany("Metafay.solutions")>
+<Assembly: AssemblyCompany("Metafy.solutions")>
 <Assembly: AssemblyProduct("RHP")>
 <Assembly: AssemblyCopyright("Copyright © Metafy.solutions")>
 <Assembly: AssemblyTrademark("RHP")>

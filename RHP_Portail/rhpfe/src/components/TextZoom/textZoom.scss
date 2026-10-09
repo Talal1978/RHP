@@ -60,6 +60,11 @@
       height: 0;
       border: 0px solid;
     }
+    // barZoom (2.5em) + barre de recherche (2.2em) restent visibles : la
+    // grille occupe le reste du panneau et défile en interne.
+    .grilleContainer {
+      max-height: calc(99% - 4.7em);
+    }
     .barZoom {
       width: 100%;
       height: 2.5em;

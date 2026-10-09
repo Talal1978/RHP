@@ -3,11 +3,7 @@ import { decrypt, encrypt } from "./module_encrypt";
 import readline from "readline";
 import path from "node:path";
 import { lireSql } from "./module_sqlRW";
-import {
-  IsNull,
-  TablesSQLWithIdSocOuMatricule,
-  handleIdSoc,
-} from "./module_general";
+import { IsNull } from "./module_general";
 import { setSocietes, Societes, TAgent } from "../src/types";
 import { initAiContext } from "../controlers/ai_assistant";
 
@@ -50,7 +46,12 @@ export const VGLOBALES: {
 };
 export let TablesAvecMatricule: string[] = [];
 export let TablesAvecIdSoc: string[] = [];
-export let Tbl_Controle_Def_Zoom: { [key: string]: string }[];
+// Catalogue BRUT des zooms (Controle_Def_Zoom), SANS identité utilisateur :
+// le SQL final est construit à la requête par module_zoom avec l'identité du
+// JWT de l'appelant. Ne jamais y interpoler Matricule / id_Societe / Cod_Entite
+// d'un agent — un état global par utilisateur ferait hériter toutes les
+// sessions de l'identité du dernier connecté (bug de gestion des sessions).
+export let Tbl_Controle_Def_Zoom: { [key: string]: string }[] = [];
 export async function loadSmtpConfig() {
   const smtpConfig = await lireSql(
     "select top 1 * from Controle_Messagerie"
@@ -81,47 +82,29 @@ export async function initialisationGlobale(theAgent?: TAgent) {
     []
   );
   if (rsl && rsl.result) TablesAvecMatricule = rsl.data[0]["tbl"].split(";");
-  //Définition des menus zoom
-  if (theAgent) {
-    Tbl_Controle_Def_Zoom = [];
-    rsl = await lireSql("select * from Controle_Def_Zoom", []);
-    if (rsl && rsl.result) {
-      await rsl.data.forEach(async (z: any) => {
-        let Zoom_Cod = IsNull(z["Index_Table"], "");
-        let Zoom_Lib = IsNull(z["Description"], "");
-        let Zoom_Tbl = IsNull(z["Table_Ref"], "");
-        let Zoom_Where1 = IsNull(z["Condition"], "");
-        let Zoom_Order = IsNull(z["Order_By"], "");
-        let ZoomSens = IsNull(z["Order_By_Sens"], "Asc");
-        Zoom_Where1 = Zoom_Where1 + " @@@condition ";
-
-        let olistMat = await TablesSQLWithIdSocOuMatricule(
-          TablesAvecMatricule,
-          Zoom_Tbl,
-          z["Num_Zoom"] === "MS067"
-        );
-        let MatriculeWhere = "";
-        if (olistMat.length > 0) {
-          if (theAgent.TeamLeader) {
-            MatriculeWhere = ` ${olistMat[0].alias}.Matricule in (select Matricule from Rh_Agent _agt where id_Societe=${theAgent.id_Societe} and _agt.Cod_Entite in (
-              select  Cod_Entite from Sys_Org_Entite s where 
-                          ';'+isnull(Racine+';'+s.Cod_Entite,'')+';' like '%;'+isnull(nullif('${theAgent.Cod_Entite}',''),'8787uhuhunjj')+';%' and id_Societe=_agt.id_Societe))`;
-          } else {
-            MatriculeWhere = `(${olistMat[0].alias}.id_Societe=${theAgent.id_Societe} and ${olistMat[0].alias}.Matricule='${theAgent.Matricule}')`;
-          }
-        }
-
-        Zoom_Where1 =
-          Zoom_Where1 + (MatriculeWhere ? `and (${MatriculeWhere})` : "");
-        let sqlStr = `select distinct ${Zoom_Cod} as Code,${Zoom_Lib} FROM ${Zoom_Tbl} where ${Zoom_Where1}  ${Zoom_Order != "" ? `Order by ${Zoom_Order} ${ZoomSens}` : ""
-          }`;
-        sqlStr = await handleIdSoc(sqlStr, theAgent.id_Societe);
-        // codExp : expression SQL de la 1ère colonne (Code) — nécessaire pour
-        // retrouver le libellé (2e colonne) d'une valeur, l'alias Code n'étant
-        // pas utilisable dans le WHERE.
-        Tbl_Controle_Def_Zoom.push({ numZoom: z["Num_Zoom"], codExp: Zoom_Cod, sqlStr });
+  // Définition des menus zoom : catalogue brut (jamais de SQL figé avec
+  // l'identité d'un agent — voir la remarque sur Tbl_Controle_Def_Zoom).
+  // codExp : expression SQL de la 1ère colonne (Code) — nécessaire pour
+  // retrouver le libellé (2e colonne) d'une valeur, l'alias Code n'étant
+  // pas utilisable dans le WHERE.
+  Tbl_Controle_Def_Zoom = [];
+  rsl = await lireSql("select * from Controle_Def_Zoom", []);
+  if (rsl && rsl.result) {
+    rsl.data.forEach((z: any) => {
+      Tbl_Controle_Def_Zoom.push({
+        numZoom: IsNull(z["Num_Zoom"], ""),
+        codExp: IsNull(z["Index_Table"], ""),
+        zoomLib: IsNull(z["Description"], ""),
+        zoomTbl: IsNull(z["Table_Ref"], ""),
+        where1: IsNull(z["Condition"], ""),
+        zoomOrder: IsNull(z["Order_By"], ""),
+        zoomSens: IsNull(z["Order_By_Sens"], "Asc"),
+        // Position 1-based de la colonne de recherche par défaut du zoom
+        // (même source que le desktop — Zoom.vb), servie au portail pour
+        // cibler le filtrage clavier du panneau zoom.
+        searchBy: String(IsNull(z["Search_By"], "") ?? ""),
       });
-    }
+    });
   }
   const soc = await lireSql(
     "select   id_Societe, Den as Denomination,  FJ,  Regime,  Activite,  IdentFisc,  RC,  TP,  CNSS,  Adresse,  Cp,  Ville,  Cod_Pays,  Tel,  Fax,  Email,  Cod_TFP,  Cod_Commune, Moyen_Paiement,  CNSS_Agence,  Racine,  Compteur_Auto,  [Sequence],  isnull(JourOuvrables,'1;1;1;1;1;1;0') JourOuvrables,  Masquer_Element_Paie_Agent,  Obliger_Demande_Pret from Param_societe"

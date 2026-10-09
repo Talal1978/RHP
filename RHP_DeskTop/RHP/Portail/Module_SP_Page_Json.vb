@@ -17,10 +17,14 @@ Imports Newtonsoft.Json.Linq
 '''   standard du Designer (Saving) — aucun INSERT/UPDATE/DELETE de
 '''   configuration n'est exécuté au chargement du fichier.
 '''
-''' FORMAT (version 1.0) — exemple d'enveloppe :
+''' FORMAT (version 1.3 — 1.2 + Page.Aff_Dat_Crea / Aff_Cree_Par / Tri_Liste,
+''' options de la page liste : colonnes système « Créé le » / « Créé par » et
+''' tri de la grille principale ; 1.1 + Page.Act_Dupliquer / Act_Supprimer,
+''' actions Dupliquer / Supprimer du document ; 1.0 + Champ.Copier_Vers,
+''' propagation au changement) :
 ''' {
 '''   "format": "RHP_PAGE_DESIGNER",
-'''   "version": "1.0",
+'''   "version": "1.1",
 '''   "exportedAt": "2026-08-15T14:30:00",
 '''   "exportedBy": "LOGIN",
 '''   "rhpVersion": "1.0.0.0",
@@ -85,6 +89,22 @@ Public Class SP_Page_EnteteDto
     Public Property Act_Soumettre As Boolean = True
     Public Property Act_Imprimer As Boolean = False
     Public Property Act_Exporter As Boolean = False
+    ''' <summary>Bouton Dupliquer du document (liste + page) : opt-in (défaut False).</summary>
+    Public Property Act_Dupliquer As Boolean = False
+    ''' <summary>Bouton Supprimer du document (liste + page) : opt-out (défaut True) ;
+    ''' une pièce dont le statut a évolué n'est jamais supprimable (règle serveur).</summary>
+    Public Property Act_Supprimer As Boolean = True
+    ''' <summary>Colonne système « Créé le » (Dat_Crea) de la page liste : opt-out
+    ''' (défaut True — la colonne a toujours été affichée) ; False la retire.</summary>
+    Public Property Aff_Dat_Crea As Boolean = True
+    ''' <summary>Colonne système « Créé par » (Created_By) de la page liste : opt-out
+    ''' (défaut True) ; False la retire.</summary>
+    Public Property Aff_Cree_Par As Boolean = True
+    ''' <summary>Tri de la page liste : expression déclarative au format du Tri_Defaut
+    ''' des détails (ex. 'Dat_Depart desc') — colonnes physiques de l'entête ou
+    ''' techniques Num_Doc, Statut, Dat_Crea, Created_By, Dat_Modif, Modified_By ;
+    ''' vide = plus récents d'abord (Dat_Crea desc).</summary>
+    Public Property Tri_Liste As String = ""
 End Class
 
 ''' <summary>Table de la page (ENT ou détail = grille). Une détail avec
@@ -135,6 +155,7 @@ Public Class SP_Page_ChampDto
     Public Property Valeur_Defaut As String = ""
     Public Property Obligatoire As Boolean = False
     Public Property Etat As String = "S"
+    Public Property Copier_Vers As String = ""   ' Cod_Champ cible de la propagation au changement ('' = aucune)
     Public Property Rubrique As String = ""
     Public Property Num_Zoom As String = ""
     Public Property Source_Metier As String = ""
@@ -261,6 +282,7 @@ Public Class SP_Page_Json_Export
                 .Valeur_Defaut = IsNull(rc("Valeur_Defaut"), ""),
                 .Obligatoire = LireBool(rc, "Obligatoire", False),
                 .Etat = IsNull(rc("Etat"), "S").Trim,
+                .Copier_Vers = IsNull(rc("Copier_Vers"), "").Trim,
                 .Rubrique = IsNull(rc("Rubrique"), "").Trim,
                 .Num_Zoom = IsNull(rc("Num_Zoom"), "").Trim,
                 .Source_Metier = IsNull(rc("Source_Metier"), "").Trim,
@@ -351,11 +373,16 @@ Public Class SP_Page_Json_Export
             .Act_Enregistrer = (IsNull(rp("Act_Enregistrer"), "true") = "true"),
             .Act_Soumettre = (IsNull(rp("Act_Soumettre"), "true") = "true"),
             .Act_Imprimer = (IsNull(rp("Act_Imprimer"), "false") = "true"),
-            .Act_Exporter = (IsNull(rp("Act_Exporter"), "false") = "true")
+            .Act_Exporter = (IsNull(rp("Act_Exporter"), "false") = "true"),
+            .Act_Dupliquer = (IsNull(rp("Act_Dupliquer"), "false") = "true"),
+            .Act_Supprimer = (IsNull(rp("Act_Supprimer"), "true") = "true"),
+            .Aff_Dat_Crea = (IsNull(rp("Aff_Dat_Crea"), "true") = "true"),
+            .Aff_Cree_Par = (IsNull(rp("Aff_Cree_Par"), "true") = "true"),
+            .Tri_Liste = IsNull(rp("Tri_Liste"), "")
         }
         Dim tblTables As DataTable = DATA_READER_GRD("select Cod_Table, Nom_Physique, Role_Table, Libelle, Rang, Allow_Add, Allow_Edit, Allow_Delete, Allow_Duplicate, Tri_Defaut, Regle_Suppression, Source_Metier, Source_Mapping from Controle_Designer_Table" & f)
         Dim tblColonnes As DataTable = DATA_READER_GRD("select Cod_Table, Nom_Colonne, Libelle, Typ_Sql, Longueur, Precision_Sql, Echelle_Sql, Nullable, Valeur_Defaut, estUnique, estIndexe, Rang from Controle_Designer_Colonne" & f & " and isnull(Technique,'false')='false'")
-        Dim tblChamps As DataTable = DATA_READER_GRD("select Cod_Champ, Cod_Table, Nom_Colonne, Libelle, Typ_Controle, Rang, Ligne, Colonne, Largeur, Valeur_Defaut, Obligatoire, Etat, Rubrique, Num_Zoom, Source_Metier, Formule, Persiste, Format_Affichage, Decimales, Visible_Grille, Rang_Grille, Largeur_Colonne, estCritere, Rang_Critere, Aide from Controle_Designer_Champ" & f)
+        Dim tblChamps As DataTable = DATA_READER_GRD("select Cod_Champ, Cod_Table, Nom_Colonne, Libelle, Typ_Controle, Rang, Ligne, Colonne, Largeur, Valeur_Defaut, Obligatoire, Etat, Copier_Vers, Rubrique, Num_Zoom, Source_Metier, Formule, Persiste, Format_Affichage, Decimales, Visible_Grille, Rang_Grille, Largeur_Colonne, estCritere, Rang_Critere, Aide from Controle_Designer_Champ" & f)
         Dim tblValidations As DataTable = DATA_READER_GRD("select Cod_Validation, Portee, Cod_Table, Cod_Champ, Typ_Regle, Parametres, Condition_Regle, Message, Niveau, Rang, Moment, Actif from Controle_Designer_Validation" & f)
         ' Sources utilisées : résolues depuis la base (la grille est vide ici)
         Dim tblSources As DataTable = DATA_READER_GRD("select Cod_Source, Libelle, Typ_Source, Code_Sql, Parametres, Typ_Retour, Cod_Profile, Actif from Controle_Designer_Source where 1=0")
@@ -457,7 +484,11 @@ End Class
 Public Class SP_Page_Json_Import
 
     Public Const FORMAT_ATTENDU As String = "RHP_PAGE_DESIGNER"
-    Public Const VERSION_COURANTE As String = "1.0"
+    ''' Version 1.3 : ajout de Page.Aff_Dat_Crea / Aff_Cree_Par / Tri_Liste
+    ''' (options de la page liste) — propriétés additives : les importeurs 1.2
+    ''' les ignorent (avertissement de version mineure), la lecture d'un fichier
+    ''' 1.2 laisse les valeurs par défaut. Version 1.1 : Champ.Copier_Vers (idem).
+    Public Const VERSION_COURANTE As String = "1.3"
     ''' <summary>Version MAJEURE supportée par cet importeur (une majeure
     ''' supérieure est bloquante ; une mineure supérieure est lue en mode
     ''' tolérant : les propriétés inconnues sont ignorées).</summary>
@@ -677,6 +708,29 @@ Public Class SP_Page_Json_Import
                 E.Add("La table '" & ct & "' n'a aucune colonne déclarée.")
             End If
         Next
+        '---------------- Tri de la page liste (miroir du verrou de Saving) ----------------
+        ' Expression déclarative : noms de colonnes de l'ENTÊTE séparés par des
+        ' virgules, sens asc/desc optionnel (ex. 'Dat_Depart desc'). Colonnes
+        ' admises : physiques déclarées de l'entête (dans le fichier) et
+        ' techniques Num_Doc, Statut, Dat_Crea, Created_By, Dat_Modif, Modified_By.
+        VerifierLongueur(E, "Tri de la liste (Tri_Liste)", p.Tri_Liste, 200)
+        If p.Tri_Liste.Trim <> "" Then
+            Dim colsEnt As List(Of String) = Nothing
+            If Not colonnesParTable.TryGetValue("ENT", colsEnt) OrElse colsEnt Is Nothing Then
+                colsEnt = New List(Of String)
+            End If
+            Dim colonnesTriOk As New List(Of String)({"Num_Doc", "Statut", "Dat_Crea", "Created_By", "Dat_Modif", "Modified_By"})
+            colonnesTriOk.AddRange(colsEnt)
+            For Each part As String In p.Tri_Liste.Split(","c)
+                Dim pTrim As String = part.Trim
+                If pTrim = "" Then Continue For
+                Dim m As Match = Regex.Match(pTrim, "^([A-Za-z_][A-Za-z0-9_]*)(\s+(asc|desc))?$", RegexOptions.IgnoreCase)
+                If Not m.Success OrElse Not colonnesTriOk.Contains(m.Groups(1).Value, StringComparer.OrdinalIgnoreCase) Then
+                    E.Add("Tri de la liste (Tri_Liste) invalide : '" & pTrim & "' — colonnes admises : colonnes physiques de l'entête " &
+                          "et techniques Num_Doc, Statut, Dat_Crea, Created_By, Dat_Modif, Modified_By ; sens optionnel asc/desc (ex. 'Dat_Depart desc').")
+                End If
+            Next
+        End If
         '---------------- Champs ----------------
         Dim champsVus As New HashSet(Of String)(StringComparer.OrdinalIgnoreCase)
         Dim colonnesAffectees As New HashSet(Of String)(StringComparer.OrdinalIgnoreCase)
@@ -694,6 +748,7 @@ Public Class SP_Page_Json_Import
             VerifierLongueur(E, "Aide du champ '" & cc & "'", c.Aide, 300)
             VerifierLongueur(E, "Rubrique du champ '" & cc & "'", c.Rubrique, 60)
             VerifierLongueur(E, "N° de zoom du champ '" & cc & "'", c.Num_Zoom, 10)
+            VerifierLongueur(E, "'Copier vers' du champ '" & cc & "'", c.Copier_Vers, 50)
             VerifierLongueur(E, "Source métier du champ '" & cc & "'", c.Source_Metier, 50)
             VerifierLongueur(E, "Format d'affichage du champ '" & cc & "'", c.Format_Affichage, 50)
             If Not SP_Page_Designer.TYPES_CONTROLE.Contains(c.Typ_Controle.Trim) Then
@@ -751,6 +806,11 @@ Public Class SP_Page_Json_Import
             If ncCh.Equals("Num_Doc", StringComparison.OrdinalIgnoreCase) AndAlso Not cc.Equals("Num_Doc", StringComparison.Ordinal) Then
                 E.Add("La colonne technique Num_Doc ne peut porter que le champ 'Num_Doc' (convention « N° de document ») : renommez le champ '" & cc & "'.")
             End If
+            ' Miroir de Saving : RV (binaire rowversion) et RowId (identifiant interne
+            ' de ligne, masqué au portail) ne sont pas affichables via un champ.
+            If ncCh.Equals("RV", StringComparison.OrdinalIgnoreCase) OrElse ncCh.Equals("RowId", StringComparison.OrdinalIgnoreCase) Then
+                E.Add("Le champ '" & cc & "' ne peut être lié à la colonne technique '" & ncCh & "' (identifiant interne du moteur, non affichable).")
+            End If
             If c.Typ_Controle.Trim = "ZOOM" Then
                 If c.Num_Zoom.Trim = "" Then
                     E.Add("Le champ '" & cc & "' est un Zoom : le numéro de zoom est obligatoire.")
@@ -780,6 +840,47 @@ Public Class SP_Page_Json_Import
                                               (c.Cod_Table.Trim = "" OrElse c.Cod_Table.Trim = "ENT")) Then
             E.Add("Le champ 'Num_Doc' est obligatoire (convention des pages SP_, au même titre que la table ENT) : champ d'entête TEXT en lecture seule, sans colonne physique, pour l'affichage du N° de document attribué par le serveur.")
         End If
+        '---------------- Propagation au changement (Copier_Vers) ----------------
+        ' Miroir du verrou de Saving : confort de saisie entre champs de l'ENTÊTE —
+        ' la cible existe, est distincte de la source, reste saisissable (Etat 'S',
+        ' jamais calculée, source, GED ou liée à une colonne technique) ; pas de
+        ' référence mutuelle directe (A->B et B->A).
+        For Each c As SP_Page_ChampDto In pkg.Components
+            Dim cc As String = c.Cod_Champ.Trim
+            Dim cpVers As String = c.Copier_Vers.Trim
+            If cc = "" OrElse cpVers = "" Then Continue For
+            Dim ctSrc As String = If(c.Cod_Table.Trim = "", "ENT", c.Cod_Table.Trim)
+            If ctSrc <> "ENT" Then
+                E.Add("Le champ '" & cc & "' a une propagation ('Copier_Vers') : seuls les champs de l'entête (ENT) propagent leur valeur.")
+                Continue For
+            End If
+            If cpVers.Equals(cc, StringComparison.OrdinalIgnoreCase) Then
+                E.Add("Le champ '" & cc & "' se désigne lui-même comme cible de propagation ('Copier_Vers').")
+                Continue For
+            End If
+            Dim cible As SP_Page_ChampDto = pkg.Components.FirstOrDefault(
+                Function(x) x.Cod_Champ.Trim.Equals(cpVers, StringComparison.OrdinalIgnoreCase))
+            If cible Is Nothing Then
+                E.Add("La cible de propagation ('Copier_Vers') du champ '" & cc & "' est introuvable : '" & cpVers & "' n'est pas un champ de la page.")
+                Continue For
+            End If
+            Dim ctCible As String = If(cible.Cod_Table.Trim = "", "ENT", cible.Cod_Table.Trim)
+            If ctCible <> "ENT" Then
+                E.Add("La cible de propagation du champ '" & cc & "' ('" & cpVers & "') doit être un champ de l'entête (ENT).")
+                Continue For
+            End If
+            Dim etatCible As String = If(cible.Etat.Trim = "", "S", cible.Etat.Trim)
+            Dim typCible As String = cible.Typ_Controle.Trim
+            Dim ncCible As String = cible.Nom_Colonne.Trim
+            If etatCible <> "S" OrElse typCible = "CALCULE" OrElse typCible = "SOURCE" OrElse typCible = "GED" OrElse
+               (ncCible <> "" AndAlso SP_Page_Designer.ColonnesTechniquesTable(ctCible).Contains(ncCible, StringComparer.OrdinalIgnoreCase)) Then
+                E.Add("La cible de propagation du champ '" & cc & "' ('" & cpVers & "') doit rester saisissable (Etat 'S' ; jamais calculée, source, GED ou liée à une colonne technique) : la valeur propagée doit pouvoir être modifiée ensuite.")
+                Continue For
+            End If
+            If cible.Copier_Vers.Trim.Equals(cc, StringComparison.OrdinalIgnoreCase) Then
+                E.Add("Propagation mutuelle interdite : '" & cc & "' et '" & cpVers & "' se désignent l'un l'autre comme cible ('Copier_Vers').")
+            End If
+        Next
         '---------------- Validations ----------------
         Dim validationsVues As New HashSet(Of String)(StringComparer.OrdinalIgnoreCase)
         For Each v As SP_Page_ValidationDto In pkg.Validations
@@ -1047,7 +1148,14 @@ Public Class SP_Page_Json_Import
             ' Miroir de Saving : un champ calculé n'est jamais saisissable (A ou I)
             Dim etat As String = If(c.Etat.Trim = "", "S", c.Etat.Trim)
             If c.Typ_Controle.Trim = "CALCULE" AndAlso etat <> "A" AndAlso etat <> "I" Then etat = "A"
+            ' Miroir de Saving : un champ lié à une colonne technique (Dat_Crea,
+            ' Created_By...) n'est jamais saisissable — valeur gérée par le serveur
+            Dim ctEff As String = If(c.Cod_Table.Trim = "", "ENT", c.Cod_Table.Trim)
+            Dim ncEff As String = c.Nom_Colonne.Trim
+            If etat = "S" AndAlso ncEff <> "" AndAlso
+               SP_Page_Designer.ColonnesTechniquesTable(ctEff).Contains(ncEff, StringComparer.OrdinalIgnoreCase) Then etat = "R"
             EcrireStr(r, "Etat", etat)
+            EcrireStr(r, "Copier_Vers", c.Copier_Vers.Trim)
             EcrireStr(r, "Rubrique", c.Rubrique.Trim)
             EcrireStr(r, "Num_Zoom", c.Num_Zoom.Trim)
             EcrireStr(r, "Source_Metier", c.Source_Metier.Trim)
@@ -1177,7 +1285,9 @@ Public Class SP_Page_Json_Diff
                                  p.Rang.ToString(), CanonStr(p.Icone), CanonBool(p.Workflow_Actif),
                                  CanonStr(p.Cod_Modele_Edition), CanonBool(p.GED_Actif), CanonBool(p.GED_Obligatoire),
                                  CanonBool(p.Act_Enregistrer), CanonBool(p.Act_Soumettre),
-                                 CanonBool(p.Act_Imprimer), CanonBool(p.Act_Exporter)})
+                                 CanonBool(p.Act_Imprimer), CanonBool(p.Act_Exporter),
+                                 CanonBool(p.Act_Dupliquer), CanonBool(p.Act_Supprimer),
+                                 CanonBool(p.Aff_Dat_Crea), CanonBool(p.Aff_Cree_Par), CanonStr(p.Tri_Liste)})
     End Function
 
     Private Shared Function EmpreinteTable(t As SP_Page_TableDto) As String
@@ -1197,7 +1307,7 @@ Public Class SP_Page_Json_Diff
         Return String.Join("|", {CanonStr(c.Cod_Table), CanonStr(c.Nom_Colonne), CanonStr(c.Libelle),
                                  CanonStr(c.Typ_Controle), c.Rang.ToString(), CanonEntNul(c.Ligne), CanonEntNul(c.Colonne),
                                  CanonEntNul(c.Largeur), CanonStr(c.Valeur_Defaut), CanonBool(c.Obligatoire),
-                                 CanonStr(c.Etat), CanonStr(c.Rubrique), CanonStr(c.Num_Zoom), CanonStr(c.Source_Metier),
+                                 CanonStr(c.Etat), CanonStr(c.Copier_Vers), CanonStr(c.Rubrique), CanonStr(c.Num_Zoom), CanonStr(c.Source_Metier),
                                  CanonStr(c.Formule), CanonBool(c.Persiste), CanonStr(c.Format_Affichage),
                                  CanonEntNul(c.Decimales), CanonBool(c.Visible_Grille), c.Rang_Grille.ToString(),
                                  CanonEntNul(c.Largeur_Colonne), CanonBool(c.estCritere), CanonEntNul(c.Rang_Critere),

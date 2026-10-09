@@ -93,7 +93,13 @@ const ZoomCritere = ({
         <DragIndicatorOutlined style={{ color: colorBase.colorBase01 }} />
       </div>
       <div hidden={!showZoom} className="overlay"></div>
-      <div className={`zoomMenu ${showZoom ? "afficherZoom" : "masquerZoom"}`}>
+      <div
+        className={`zoomMenu ${showZoom ? "afficherZoom" : "masquerZoom"}`}
+        onKeyDown={(e) => {
+          // Échap (remonté de la zone de recherche ou de la grille) : fermer
+          if (e.key === "Escape") setShowZoom(false);
+        }}
+      >
         {showZoom && (
           <>
             <div className="barZoom">
@@ -111,6 +117,7 @@ const ZoomCritere = ({
               readonly={true}
               dataSource={liste}
               Colonnes={COLONNES_ZOOM}
+              rechercheZoom={true}
               sx={{ "& .cl0": { cursor: "pointer !important" } }}
               onclick={({ row }) => {
                 onchange(nomControle, row ? String(row["Code"] ?? "") : "");

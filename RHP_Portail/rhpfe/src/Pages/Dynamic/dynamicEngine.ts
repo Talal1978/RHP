@@ -398,6 +398,48 @@ export function recalculer(
 }
 
 /* -------------------------------------------------------------------------- */
+/* Propagation au changement (Copier_Vers)                                    */
+/* -------------------------------------------------------------------------- */
+/** Colonnes techniques gérées par le serveur (jamais saisissables côté client :
+ *  l'enregistrement ne persiste que les colonnes déclarées — miroir de
+ *  colonnesMetier() du moteur serveur). */
+export const COLONNES_TECHNIQUES = new Set([
+  "Num_Doc", "id_Societe", "Statut", "Dat_Crea", "Created_By",
+  "Dat_Modif", "Modified_By", "RV", "RowId",
+]);
+
+/**
+ * Propagation déclarée (Copier_Vers) : au changement du champ source dont la
+ * clé est passée, sa valeur est recopiée dans le champ d'entête cible quand
+ * celui-ci est vide OU inférieur à la nouvelle valeur (comparaison
+ * intelligente : nombres, puis dates, puis texte — ex. une date de retour
+ * vide ou antérieure à la nouvelle date de départ prend la date de départ).
+ * Une valeur source vidée ne propage rien. La cible reste modifiable :
+ * confort de saisie, jamais un verrou. Applique la copie dans l'entête passé
+ * et retourne la clé de la cible modifiée (null si aucune propagation).
+ */
+export function propagerCopie(
+  meta: TSpMeta,
+  entete: { [k: string]: any },
+  cleSource: string
+): string | null {
+  const src = meta.champs.find((c) => c.Cod_Table === "ENT" && cleChamp(c) === cleSource);
+  const cible = src?.Copier_Vers
+    ? meta.champs.find((c) => c.Cod_Table === "ENT" && c.Cod_Champ === src.Copier_Vers)
+    : undefined;
+  if (!cible) return null;
+  const v = entete[cleSource];
+  if (v === null || v === undefined || String(v) === "") return null;
+  const cleCible = cleChamp(cible);
+  const actuelle = entete[cleCible];
+  if (actuelle === null || actuelle === undefined || String(actuelle) === "" || cmp(actuelle, v) < 0) {
+    entete[cleCible] = v;
+    return cleCible;
+  }
+  return null;
+}
+
+/* -------------------------------------------------------------------------- */
 /* Validations client (par moment)                                            */
 /* -------------------------------------------------------------------------- */
 function paramsJson(txt: string | null): any {

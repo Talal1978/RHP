@@ -73,7 +73,15 @@ page:
     save: true                 #   => page.Act_Enregistrer
     submit: false              #   => page.Act_Soumettre (requires workflow.enabled=true)
     print: false               #   => page.Act_Imprimer (requires print_model)
-    export: false              #   => page.Act_Exporter (metadata only in current frontend)
+    export: false              #   => page.Act_Exporter (list page .xlsx export button)
+    duplicate: false           #   => page.Act_Dupliquer (opt-in; requires Creer right)
+    delete: true               #   => page.Act_Supprimer (opt-out; drafts only, server rule)
+  list_page:                   # (o)(x) main list grid options (SPPL_<page>)
+    show_created_at: true      #   => page.Aff_Dat_Crea ("Créé le" column; opt-out)
+    show_created_by: true      #   => page.Aff_Cree_Par ("Créé par" column; opt-out)
+    sort: ""                   #   => page.Tri_Liste (<=200 ; e.g. 'Dat_Depart desc' —
+                               #     ENT declared columns + Num_Doc/Statut/Dat_Crea/
+                               #     Created_By/Dat_Modif/Modified_By; "" = Dat_Crea desc)
   print_model: ""              # (o)(x) => page.Cod_Modele_Edition = Param_Mod_Edition.Cod_Report (<=20)
   attachments:                 # (o)(x) GED (pieces jointes)
     enabled: false             #   => page.GED_Actif (PJ at publication)

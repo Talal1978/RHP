@@ -116,7 +116,13 @@ const TextZoom = ({
         </div>
       )}
       <div hidden={!showZoom} className="overlay"></div>
-      <div className={`zoomMenu ${showZoom ? "afficherZoom" : "masquerZoom"}`}>
+      <div
+        className={`zoomMenu ${showZoom ? "afficherZoom" : "masquerZoom"}`}
+        onKeyDown={(e) => {
+          // Échap (remonté de la zone de recherche ou de la grille) : fermer
+          if (e.key === "Escape") setShowZoom(false);
+        }}
+      >
         {showZoom && (
           <>
             <div className="barZoom">
@@ -141,6 +147,7 @@ const TextZoom = ({
               numZoom={numZoom}
               conditionZoom={conditionZoom}
               readonly={true}
+              rechercheZoom={true}
               sx={{ "& .cl0": { cursor: "pointer !important" } }}
               onclick={({ row, colListe }) => {
                 onchange(

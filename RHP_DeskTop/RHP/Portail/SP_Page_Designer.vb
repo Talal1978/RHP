@@ -46,7 +46,7 @@ Public Class SP_Page_Designer
 
     Private Const SQL_TABLES = "select Cod_Table, Nom_Physique, Role_Table, Libelle, Rang, Allow_Add, Allow_Edit, Allow_Delete, Allow_Duplicate, Tri_Defaut, Regle_Suppression, Source_Metier, Source_Mapping from Controle_Designer_Table"
     Private Const SQL_COLONNES = "select Cod_Table, Nom_Colonne, Libelle, Typ_Sql, Longueur, Precision_Sql, Echelle_Sql, Nullable, Valeur_Defaut, estUnique, estIndexe, Rang from Controle_Designer_Colonne where isnull(Technique,'false')='false'"
-    Private Const SQL_CHAMPS = "select Cod_Champ, Cod_Table, Nom_Colonne, Libelle, Typ_Controle, Rang, Ligne, Colonne, Largeur, Valeur_Defaut, Obligatoire, Etat, Rubrique, Num_Zoom, Source_Metier, Formule, Persiste, Format_Affichage, Decimales, Visible_Grille, Rang_Grille, Largeur_Colonne, estCritere, Rang_Critere, Aide from Controle_Designer_Champ"
+    Private Const SQL_CHAMPS = "select Cod_Champ, Cod_Table, Nom_Colonne, Libelle, Typ_Controle, Rang, Ligne, Colonne, Largeur, Valeur_Defaut, Obligatoire, Etat, Copier_Vers, Rubrique, Num_Zoom, Source_Metier, Formule, Persiste, Format_Affichage, Decimales, Visible_Grille, Rang_Grille, Largeur_Colonne, estCritere, Rang_Critere, Aide from Controle_Designer_Champ"
     Private Const SQL_VALIDATIONS = "select Cod_Validation, Portee, Cod_Table, Cod_Champ, Typ_Regle, Parametres, Condition_Regle, Message, Niveau, Rang, Moment, Actif from Controle_Designer_Validation"
     Private Const SQL_SOURCES = "select Cod_Source, Libelle, Typ_Source, Code_Sql, Parametres, Typ_Retour, Cod_Profile, Actif from Controle_Designer_Source"
 
@@ -259,6 +259,34 @@ Public Class SP_Page_Designer
                            "Chargement", MessageBoxButtons.OK, msgIcon.Stop)
             Return
         End If
+        ' La propagation au changement repose sur Controle_Designer_Champ.Copier_Vers
+        ' (migration 008_SP_Designer_Copier_Vers.sql)
+        If ScalarInt("select isnull(col_length('dbo.Controle_Designer_Champ','Copier_Vers'),-1)") < 0 Then
+            ShowMessageBox("La base n'est pas à jour pour le Designer de pages :" & vbCrLf &
+                           "la colonne Controle_Designer_Champ.Copier_Vers est absente." & vbCrLf &
+                           "Appliquez la migration 008_SP_Designer_Copier_Vers.sql (propagation au changement).",
+                           "Chargement", MessageBoxButtons.OK, msgIcon.Stop)
+            Return
+        End If
+        ' Les actions Dupliquer / Supprimer d'un document reposent sur
+        ' Controle_Designer.Act_Dupliquer / Act_Supprimer (migration 009_SP_Designer_Actions_Document.sql)
+        If ScalarInt("select isnull(col_length('dbo.Controle_Designer','Act_Dupliquer'),-1)") < 0 Then
+            ShowMessageBox("La base n'est pas à jour pour le Designer de pages :" & vbCrLf &
+                           "les colonnes Controle_Designer.Act_Dupliquer / Act_Supprimer sont absentes." & vbCrLf &
+                           "Appliquez la migration 009_SP_Designer_Actions_Document.sql (actions Dupliquer / Supprimer).",
+                           "Chargement", MessageBoxButtons.OK, msgIcon.Stop)
+            Return
+        End If
+        ' Les options de la page liste (colonnes système « Créé le » / « Créé par »,
+        ' tri de la grille principale) reposent sur Controle_Designer.Aff_Dat_Crea /
+        ' Aff_Cree_Par / Tri_Liste (migration 010_SP_Designer_Liste_Options.sql)
+        If ScalarInt("select isnull(col_length('dbo.Controle_Designer','Tri_Liste'),-1)") < 0 Then
+            ShowMessageBox("La base n'est pas à jour pour le Designer de pages :" & vbCrLf &
+                           "les colonnes Controle_Designer.Aff_Dat_Crea / Aff_Cree_Par / Tri_Liste sont absentes." & vbCrLf &
+                           "Appliquez la migration 010_SP_Designer_Liste_Options.sql (options de la page liste).",
+                           "Chargement", MessageBoxButtons.OK, msgIcon.Stop)
+            Return
+        End If
         CreerSchemas()
         ChargerListesColonnes()
         StyliserGrilles()
@@ -416,6 +444,11 @@ Public Class SP_Page_Designer
             Act_Soumettre_chk.Checked = (IsNull(r("Act_Soumettre"), "true") = "true")
             Act_Imprimer_chk.Checked = (IsNull(r("Act_Imprimer"), "false") = "true")
             Act_Exporter_chk.Checked = (IsNull(r("Act_Exporter"), "false") = "true")
+            Act_Dupliquer_chk.Checked = (IsNull(r("Act_Dupliquer"), "false") = "true")
+            Act_Supprimer_chk.Checked = (IsNull(r("Act_Supprimer"), "true") = "true")
+            Aff_Dat_Crea_chk.Checked = (IsNull(r("Aff_Dat_Crea"), "true") = "true")
+            Aff_Cree_Par_chk.Checked = (IsNull(r("Aff_Cree_Par"), "true") = "true")
+            Tri_Liste_txt.Text = IsNull(r("Tri_Liste"), "")
             MajEtatWorkflowSignature()
             Dim f As String = " where Cod_Page='" & codPage.Replace("'", "''") & "'"
             Tbl_Tables = DATA_READER_GRD(SQL_TABLES & f & " order by Rang")
@@ -470,6 +503,11 @@ Public Class SP_Page_Designer
         Act_Soumettre_chk.Checked = True
         Act_Imprimer_chk.Checked = False
         Act_Exporter_chk.Checked = False
+        Act_Dupliquer_chk.Checked = False   ' opt-in : la duplication s'active page par page
+        Act_Supprimer_chk.Checked = True    ' la suppression (brouillons) est le comportement standard
+        Aff_Dat_Crea_chk.Checked = True     ' les colonnes système de la liste sont affichées par défaut (comportement historique)
+        Aff_Cree_Par_chk.Checked = True
+        Tri_Liste_txt.Text = ""             ' vide = plus récents d'abord (Dat_Crea desc)
         CreerSchemas()
         ' La table d'entête est toujours présente
         Dim r = Tbl_Tables.NewRow()
@@ -638,7 +676,7 @@ Public Class SP_Page_Designer
     ' jamais exportées). L'import recharge les contrôles et les grilles de
     ' l'écran (jamais la base) : la sauvegarde reste assurée par 'Enregistrer'
     ' (Saving), avec tous ses contrôles et la génération/migration DDL.
-    ' Services et DTO : Module_SP_Page_Json (format RHP_PAGE_DESIGNER 1.0).
+    ' Services et DTO : Module_SP_Page_Json (format RHP_PAGE_DESIGNER 1.2).
 
     ''' <summary>Entête de la page lu depuis les contrôles de l'écran (export).</summary>
     Private Function ConstruireEnteteEcran() As SP_Page_EnteteDto
@@ -660,7 +698,12 @@ Public Class SP_Page_Designer
             .Act_Enregistrer = Act_Enregistrer_chk.Checked,
             .Act_Soumettre = Act_Soumettre_chk.Checked,
             .Act_Imprimer = Act_Imprimer_chk.Checked,
-            .Act_Exporter = Act_Exporter_chk.Checked
+            .Act_Exporter = Act_Exporter_chk.Checked,
+            .Act_Dupliquer = Act_Dupliquer_chk.Checked,
+            .Act_Supprimer = Act_Supprimer_chk.Checked,
+            .Aff_Dat_Crea = Aff_Dat_Crea_chk.Checked,
+            .Aff_Cree_Par = Aff_Cree_Par_chk.Checked,
+            .Tri_Liste = Tri_Liste_txt.Text.Trim
         }
     End Function
 
@@ -901,6 +944,11 @@ Public Class SP_Page_Designer
         Act_Soumettre_chk.Checked = pkg.Page.Act_Soumettre
         Act_Imprimer_chk.Checked = pkg.Page.Act_Imprimer
         Act_Exporter_chk.Checked = pkg.Page.Act_Exporter
+        Act_Dupliquer_chk.Checked = pkg.Page.Act_Dupliquer
+        Act_Supprimer_chk.Checked = pkg.Page.Act_Supprimer
+        Aff_Dat_Crea_chk.Checked = pkg.Page.Aff_Dat_Crea
+        Aff_Cree_Par_chk.Checked = pkg.Page.Aff_Cree_Par
+        Tri_Liste_txt.Text = pkg.Page.Tri_Liste
         If pageExiste Then
             ' Mise à jour : statut et habilitations STRICTEMENT préservés — l'option
             ' 'Accès personnalisé' (onglet Habilitations) n'est pas réimportée.
@@ -975,6 +1023,7 @@ Public Class SP_Page_Designer
             .Item("Rang") = ProchainRang(Tbl_Champs, "Rang")
             .Item("Obligatoire") = "false"
             .Item("Etat") = "S"
+            .Item("Copier_Vers") = ""   ' '' = pas de propagation au changement
             .Item("Persiste") = "false"
             .Item("Visible_Grille") = "true"
             .Item("Rang_Grille") = ProchainRang(Tbl_Champs, "Rang_Grille")
@@ -1074,6 +1123,25 @@ Public Class SP_Page_Designer
         avecVide.AddRange(dispo)
         MajItemsCombo(TryCast(Grd_Validations.Columns("Grd_Validations_Cod_Table"), DataGridViewComboBoxColumn), avecVide)
         MajComboColonnesChamps()
+        MajComboCopierVers()
+    End Sub
+
+    ''' <summary>Alimente la liste déroulante 'Copier vers' des champs avec les codes
+    ''' des champs de la page (propagation au changement : la cible reçoit la valeur du
+    ''' champ source quand elle est vide ou inférieure — ex. une date de retour vide ou
+    ''' antérieure prend la nouvelle date de départ ; elle reste ensuite modifiable).
+    ''' '' = pas de propagation. Le filtrage fin (champs de l'entête, hors le champ
+    ''' lui-même) est fait à l'édition, ligne par ligne (Grd_Champs_EditingControlShowing).</summary>
+    Private Sub MajComboCopierVers()
+        Dim dispo As New List(Of String) From {""}
+        If Tbl_Champs IsNot Nothing Then
+            For Each r As DataRow In Tbl_Champs.Rows
+                If r.RowState = DataRowState.Deleted Then Continue For
+                Dim cc As String = IsNull(r("Cod_Champ"), "").Trim
+                If cc <> "" AndAlso Not dispo.Contains(cc) Then dispo.Add(cc)
+            Next
+        End If
+        MajItemsCombo(TryCast(Grd_Champs.Columns("Grd_Champs_Copier_Vers"), DataGridViewComboBoxColumn), dispo)
     End Sub
 
     ''' <summary>Alimente la liste déroulante 'Colonne' des champs avec les colonnes
@@ -1128,7 +1196,35 @@ Public Class SP_Page_Designer
     ''' à un autre champ (une colonne physique ne peut porter qu'un seul champ).</summary>
     Private Sub Grd_Champs_EditingControlShowing(sender As Object, e As DataGridViewEditingControlShowingEventArgs) Handles Grd_Champs.EditingControlShowing
         If Grd_Champs.CurrentCell Is Nothing Then Return
-        If Grd_Champs.Columns(Grd_Champs.CurrentCell.ColumnIndex).DataPropertyName <> "Nom_Colonne" Then Return
+        Dim propEd As String = Grd_Champs.Columns(Grd_Champs.CurrentCell.ColumnIndex).DataPropertyName
+        '---------------- 'Copier vers' : cibles proposées = champs de l'ENTÊTE ----------------
+        ' (hors le champ lui-même ; la propagation n'est gérée qu'entre champs d'entête)
+        If propEd = "Copier_Vers" Then
+            Dim comboCible = TryCast(e.Control, ComboBox)
+            If comboCible Is Nothing Then Return
+            Dim ligC As DataGridViewRow = Grd_Champs.Rows(Grd_Champs.CurrentCell.RowIndex)
+            Dim ccCourant As String = IsNull(ligC.Cells("Grd_Champs_Cod_Champ").Value, "").Trim
+            Dim actuelCible As String = IsNull(ligC.Cells("Grd_Champs_Copier_Vers").Value, "").Trim
+            comboCible.DropDownStyle = ComboBoxStyle.DropDownList
+            comboCible.Items.Clear()
+            comboCible.Items.Add("")   ' '' = pas de propagation
+            If Tbl_Champs IsNot Nothing Then
+                For Each r As DataRow In Tbl_Champs.Rows
+                    If r.RowState = DataRowState.Deleted Then Continue For
+                    Dim ctR As String = IsNull(r("Cod_Table"), "ENT").Trim
+                    If ctR = "" Then ctR = "ENT"
+                    If ctR <> "ENT" Then Continue For
+                    Dim cc As String = IsNull(r("Cod_Champ"), "").Trim
+                    If cc = "" OrElse cc.Equals(ccCourant, StringComparison.OrdinalIgnoreCase) Then Continue For
+                    If Not comboCible.Items.Contains(cc) Then comboCible.Items.Add(cc)
+                Next
+            End If
+            ' La valeur actuelle reste proposée (sinon la cellule ne pourrait pas être quittée sans changement)
+            If actuelCible <> "" AndAlso Not comboCible.Items.Contains(actuelCible) Then comboCible.Items.Add(actuelCible)
+            If actuelCible <> "" Then comboCible.SelectedItem = actuelCible
+            Return
+        End If
+        If propEd <> "Nom_Colonne" Then Return
         Dim combo = TryCast(e.Control, ComboBox)
         If combo Is Nothing Then Return
         Dim lig As DataGridViewRow = Grd_Champs.Rows(Grd_Champs.CurrentCell.RowIndex)
@@ -1159,8 +1255,11 @@ Public Class SP_Page_Designer
                 If nc <> "" AndAlso Not affectees.Contains(nc) AndAlso Not dispo.Contains(nc) Then dispo.Add(nc)
             Next
         End If
-        ' Colonnes techniques de la table (ajoutées automatiquement au DDL : Num_Doc, Statut...)
+        ' Colonnes techniques de la table (ajoutées automatiquement au DDL : Num_Doc, Statut...),
+        ' affichables via un champ — sauf RV (binaire rowversion) et RowId (identifiant
+        ' interne de ligne, toujours masqué dans les grilles du portail) : non affichables.
         For Each nc In ColonnesTechniquesTable(ct)
+            If nc.Equals("RV", StringComparison.OrdinalIgnoreCase) OrElse nc.Equals("RowId", StringComparison.OrdinalIgnoreCase) Then Continue For
             If Not affectees.Contains(nc) AndAlso Not dispo.Contains(nc) Then dispo.Add(nc)
         Next
         ' La valeur actuelle reste proposée (sinon la cellule ne pourrait pas être quittée sans changement)
@@ -1180,9 +1279,11 @@ Public Class SP_Page_Designer
         Dim prop As String = Grd_Champs.Columns(e.ColumnIndex).DataPropertyName
         If prop = "Nom_Colonne" Then
             MajComboColonnesChamps()
+            AppliquerColonneTechnique(e.RowIndex)
             ProposerLibelleDepuisColonne(e.RowIndex)
         ElseIf prop = "Cod_Champ" Then
             ProposerDepuisNomChamp(e.RowIndex)
+            MajComboCopierVers()   ' la liste 'Copier vers' suit les codes de champs saisis
         ElseIf prop = "Typ_Controle" Then
             ' Un champ qui devient calculé n'est plus saisissable : affiché par défaut
             Dim lig As DataGridViewRow = Grd_Champs.Rows(e.RowIndex)
@@ -1226,6 +1327,50 @@ Public Class SP_Page_Designer
             Case Else : Return "TEXT"
         End Select
     End Function
+
+    ''' <summary>Libellé convivial d'une colonne technique affichable (miroir des
+    ''' intitulés de la liste portail : 'Créé le', 'Créé par'...).</summary>
+    Private Shared Function LibelleColonneTechnique(nc As String) As String
+        Select Case nc
+            Case "Dat_Crea" : Return "Créé le"
+            Case "Created_By" : Return "Créé par"
+            Case "Dat_Modif" : Return "Modifié le"
+            Case "Modified_By" : Return "Modifié par"
+            Case "Statut" : Return "Statut"
+            Case "id_Societe" : Return "Société"
+            Case Else : Return nc
+        End Select
+    End Function
+
+    ''' <summary>À la liaison d'un champ à une colonne technique (Dat_Crea, Created_By,
+    ''' Dat_Modif, Modified_By, Statut, id_Societe — hors Num_Doc, verrouillé par
+    ''' convention, et hors RV / RowId, identifiants internes non affichables) :
+    ''' propositions déduites sans écraser les saisies (libellé convivial, type
+    ''' DATETIME pour les dates) et lecture seule forcée — la valeur est gérée par
+    ''' le serveur, jamais saisissable. La visibilité reste pilotée par Etat /
+    ''' 'Visible grille' (afficher ou non la colonne, y compris dans les détails).</summary>
+    Private Sub AppliquerColonneTechnique(rowIndex As Integer)
+        Dim lig As DataGridViewRow = Grd_Champs.Rows(rowIndex)
+        Dim nc As String = IsNull(lig.Cells("Grd_Champs_Nom_Colonne").Value, "").Trim
+        If nc = "" OrElse nc.Equals("Num_Doc", StringComparison.OrdinalIgnoreCase) Then Return
+        Dim ct As String = IsNull(lig.Cells("Grd_Champs_Cod_Table").Value, "ENT").Trim
+        If ct = "" Then ct = "ENT"
+        If Not ColonnesTechniquesTable(ct).Contains(nc, StringComparer.OrdinalIgnoreCase) Then Return
+        ' Libellé convivial si non renseigné
+        If IsNull(lig.Cells("Grd_Champs_Libelle").Value, "").Trim = "" Then
+            lig.Cells("Grd_Champs_Libelle").Value = LibelleColonneTechnique(nc)
+        End If
+        ' Type de contrôle déduit (tant que le défaut TEXT est en place) : dates au
+        ' format calendrier, les autres restent au choix (ex. Statut en RUBRIQUE)
+        If IsNull(lig.Cells("Grd_Champs_Typ_Controle").Value, "TEXT") = "TEXT" Then
+            If nc.Equals("Dat_Crea", StringComparison.OrdinalIgnoreCase) OrElse
+               nc.Equals("Dat_Modif", StringComparison.OrdinalIgnoreCase) Then
+                lig.Cells("Grd_Champs_Typ_Controle").Value = "DATETIME"
+            End If
+        End If
+        ' Gérée par le serveur : jamais saisissable (miroir du verrou Num_Doc)
+        If IsNull(lig.Cells("Grd_Champs_Etat").Value, "S") = "S" Then lig.Cells("Grd_Champs_Etat").Value = "R"
+    End Sub
 
     ''' <summary>Après le choix d'une colonne : si le libellé du champ n'est pas renseigné,
     ''' il reprend le libellé déclaré de la colonne physique (ou son nom à défaut).</summary>
@@ -2205,6 +2350,43 @@ Public Class SP_Page_Designer
                 Return New savingResult With {.result = False, .message = "La table '" & ctSansCol & "' n'a aucune colonne déclarée (onglet 'Colonnes physiques')."}
             End If
         Next
+        '---------------- Tri de la page liste (Tri_Liste) ----------------
+        ' Expression déclarative au format du 'Tri par défaut' des détails : noms de
+        ' colonnes de l'ENTÊTE séparés par des virgules, sens asc/desc optionnel
+        ' (ex. 'Dat_Depart desc'). Colonnes admises : physiques déclarées de
+        ' l'entête et techniques Num_Doc, Statut, Dat_Crea, Created_By, Dat_Modif,
+        ' Modified_By (miroir du garde-fou serveur triListeDocuments — le portail
+        ' ignore silencieusement toute colonne inconnue, avec repli Dat_Crea desc ;
+        ' ici la configuration est bloquée tant que l'expression est fausse).
+        ' Normalisation enregistrée : casse exacte des noms déclarés, sens en minuscules.
+        Dim triListe As String = Tri_Liste_txt.Text.Trim
+        If triListe <> "" Then
+            Dim colonnesTriOk As New Dictionary(Of String, String)(StringComparer.OrdinalIgnoreCase)
+            For Each tc As String In {"Num_Doc", "Statut", "Dat_Crea", "Created_By", "Dat_Modif", "Modified_By"}
+                colonnesTriOk(tc) = tc
+            Next
+            For Each r As DataRow In Tbl_Colonnes.Rows
+                If r.RowState = DataRowState.Deleted Then Continue For
+                If IsNull(r("Cod_Table"), "").Trim.Equals("ENT", StringComparison.OrdinalIgnoreCase) Then
+                    Dim nc As String = IsNull(r("Nom_Colonne"), "").Trim
+                    If nc <> "" Then colonnesTriOk(nc) = nc
+                End If
+            Next
+            Dim partsOk As New List(Of String)
+            For Each p As String In triListe.Split(","c)
+                Dim pTrim As String = p.Trim
+                If pTrim = "" Then Continue For
+                Dim m As Match = Regex.Match(pTrim, "^([A-Za-z_][A-Za-z0-9_]*)(\s+(asc|desc))?$", RegexOptions.IgnoreCase)
+                If Not m.Success OrElse Not colonnesTriOk.ContainsKey(m.Groups(1).Value) Then
+                    Return New savingResult With {.result = False, .message = "Tri de la liste invalide : '" & pTrim & "'." & vbCrLf &
+                                                                              "Colonnes admises : colonnes physiques de l'entête (onglet 'Colonnes physiques') " &
+                                                                              "et colonnes techniques Num_Doc, Statut, Dat_Crea, Created_By, Dat_Modif, Modified_By — " &
+                                                                              "sens optionnel asc/desc (ex. 'Dat_Depart desc')."}
+                End If
+                partsOk.Add(colonnesTriOk(m.Groups(1).Value) & If(m.Groups(3).Success, " " & m.Groups(3).Value.ToLower(), ""))
+            Next
+            Tri_Liste_txt.Text = String.Join(", ", partsOk)
+        End If
         Dim champsVus As New HashSet(Of String)(StringComparer.OrdinalIgnoreCase)
         Dim colonnesAffectees As New HashSet(Of String)(StringComparer.OrdinalIgnoreCase)
         Dim aChampNumDoc As Boolean = False
@@ -2267,6 +2449,20 @@ Public Class SP_Page_Designer
             If ncCh.Equals("Num_Doc", StringComparison.OrdinalIgnoreCase) AndAlso Not cc.Equals("Num_Doc", StringComparison.Ordinal) Then
                 Return New savingResult With {.result = False, .message = "La colonne technique Num_Doc ne peut porter que le champ 'Num_Doc' (convention « N° de document ») : renommez le champ '" & cc & "' en 'Num_Doc'."}
             End If
+            ' Colonnes techniques RV (binaire rowversion) et RowId (identifiant interne
+            ' de ligne, toujours masqué dans les grilles du portail) : non affichables.
+            If ncCh.Equals("RV", StringComparison.OrdinalIgnoreCase) OrElse ncCh.Equals("RowId", StringComparison.OrdinalIgnoreCase) Then
+                Return New savingResult With {.result = False, .message = "Le champ '" & cc & "' ne peut être lié à la colonne technique '" & ncCh & "' (identifiant interne du moteur, non affichable)."}
+            End If
+            ' Autre colonne technique liée (Dat_Crea, Created_By, Dat_Modif, Modified_By,
+            ' Statut, id_Societe) : la valeur est gérée par le serveur — le champ est
+            ' affichable (visibilité par Etat / 'Visible grille', y compris en grille
+            ' de détail) mais jamais saisissable : un état 'S' est forcé à 'R'
+            ' (miroir du verrou Num_Doc ; les configurations antérieures sont assainies).
+            If ncCh <> "" AndAlso Not ncCh.Equals("Num_Doc", StringComparison.OrdinalIgnoreCase) AndAlso
+               ColonnesTechniquesTable(ctCh).Contains(ncCh, StringComparer.OrdinalIgnoreCase) Then
+                If IsNull(r("Etat"), "S") = "S" Then r("Etat") = "R"
+            End If
             If sansColonne Then
                 If IsNull(r("Persiste"), "false") = "true" Then
                     Return New savingResult With {.result = False, .message = "Le champ '" & cc & "' est persisté : affectez-lui une colonne physique (onglet 'Colonnes physiques') ou décochez 'Persisté'."}
@@ -2298,6 +2494,47 @@ Public Class SP_Page_Designer
             End If
             If Not ETATS.Contains(IsNull(r("Etat"), "S")) Then
                 Return New savingResult With {.result = False, .message = "Etat invalide (S/R/A/I) pour le champ " & cc}
+            End If
+            '---------------- Propagation au changement ('Copier vers') ----------------
+            ' Confort de saisie entre champs de l'ENTÊTE uniquement : au changement du
+            ' champ source, sa valeur est recopiée dans la cible quand celle-ci est
+            ' vide ou inférieure (ex. une date de retour vide ou antérieure prend la
+            ' nouvelle date de départ). La cible doit exister, être distincte de la
+            ' source et RESTER saisissable (la valeur propagée est ensuite modifiable) ;
+            ' pas de référence mutuelle directe (A->B et B->A).
+            Dim cpVers As String = IsNull(r("Copier_Vers"), "").Trim
+            If cpVers <> "" Then
+                If ctCh <> "ENT" Then
+                    Return New savingResult With {.result = False, .message = "Le champ '" & cc & "' a une propagation ('Copier vers') : seuls les champs de l'entête (ENT) propagent leur valeur."}
+                End If
+                If cpVers.Equals(cc, StringComparison.OrdinalIgnoreCase) Then
+                    Return New savingResult With {.result = False, .message = "Le champ '" & cc & "' se désigne lui-même comme cible de propagation ('Copier vers')."}
+                End If
+                Dim ligCible As DataRow = Nothing
+                For Each rc2 As DataRow In Tbl_Champs.Rows
+                    If rc2.RowState = DataRowState.Deleted Then Continue For
+                    If IsNull(rc2("Cod_Champ"), "").Trim.Equals(cpVers, StringComparison.OrdinalIgnoreCase) Then ligCible = rc2 : Exit For
+                Next
+                If ligCible Is Nothing Then
+                    Return New savingResult With {.result = False, .message = "La cible de propagation ('Copier vers') du champ '" & cc & "' est introuvable : '" & cpVers & "' n'est pas un champ de la page."}
+                End If
+                ' Normalisation : la référence porte la casse exacte du code cible
+                ' (le portail résout la cible par Cod_Champ, sensible à la casse)
+                r("Copier_Vers") = IsNull(ligCible("Cod_Champ"), "").Trim
+                Dim ctCible As String = IsNull(ligCible("Cod_Table"), "").Trim
+                If ctCible = "" Then ctCible = "ENT"
+                If ctCible <> "ENT" Then
+                    Return New savingResult With {.result = False, .message = "La cible de propagation du champ '" & cc & "' ('" & cpVers & "') doit être un champ de l'entête (ENT)."}
+                End If
+                Dim typCible As String = IsNull(ligCible("Typ_Controle"), "")
+                Dim ncCible As String = IsNull(ligCible("Nom_Colonne"), "").Trim
+                If IsNull(ligCible("Etat"), "S") <> "S" OrElse typCible = "CALCULE" OrElse typCible = "SOURCE" OrElse typCible = "GED" OrElse
+                   (ncCible <> "" AndAlso ColonnesTechniquesTable(ctCible).Contains(ncCible, StringComparer.OrdinalIgnoreCase)) Then
+                    Return New savingResult With {.result = False, .message = "La cible de propagation du champ '" & cc & "' ('" & cpVers & "') doit rester saisissable (Etat 'S' ; jamais calculée, source, GED ou liée à une colonne technique) : la valeur propagée doit pouvoir être modifiée ensuite."}
+                End If
+                If IsNull(ligCible("Copier_Vers"), "").Trim.Equals(cc, StringComparison.OrdinalIgnoreCase) Then
+                    Return New savingResult With {.result = False, .message = "Propagation mutuelle interdite : '" & cc & "' et '" & cpVers & "' se désignent l'un l'autre comme cible ('Copier vers')."}
+                End If
             End If
         Next
         ' Le champ d'affichage du N° de document est obligatoire par convention,
@@ -2367,19 +2604,24 @@ Public Class SP_Page_Designer
                             " Cod_Modele_Edition=" & SqlV(Cod_Modele_Edition_txt.Text.Trim) & ", GED_Actif=" & SqlV(B(GED_Actif_chk.Checked)) & ", GED_Obligatoire=" & SqlV(B(GED_Obligatoire_chk.Checked)) & "," &
                             " Act_Enregistrer=" & SqlV(B(Act_Enregistrer_chk.Checked)) & ", Act_Soumettre=" & SqlV(B(Act_Soumettre_chk.Checked)) & "," &
                             " Act_Imprimer=" & SqlV(B(Act_Imprimer_chk.Checked)) & ", Act_Exporter=" & SqlV(B(Act_Exporter_chk.Checked)) & "," &
+                            " Act_Dupliquer=" & SqlV(B(Act_Dupliquer_chk.Checked)) & ", Act_Supprimer=" & SqlV(B(Act_Supprimer_chk.Checked)) & "," &
+                            " Aff_Dat_Crea=" & SqlV(B(Aff_Dat_Crea_chk.Checked)) & ", Aff_Cree_Par=" & SqlV(B(Aff_Cree_Par_chk.Checked)) & ", Tri_Liste=" & SqlV(Tri_Liste_txt.Text.Trim) & "," &
                             " Acces_Personnalise=" & SqlV(B(Acces_Personnalise_chk.Checked)) & "," &
                             " DDL_Genere='true', Dat_Modif=getdate(), Modified_By=" & SqlV(theUser.Login) & " where Cod_Page=" & SqlV(codPage))
             Else
                 cnTx.Execute("insert into Controle_Designer (Cod_Page, Cod_Document, Libelle, Nom_Page, Menu_Parent, Rang, Icone, Statut_Page, Table_Ent, " &
                             "Typ_Document, Workflow_Actif, Cod_Modele_Edition, GED_Actif, GED_Obligatoire, " &
-                            "Act_Enregistrer, Act_Soumettre, Act_Imprimer, Act_Exporter, Acces_Personnalise, DDL_Genere, Dat_Crea, Created_By, Dat_Modif, Modified_By) values (" &
+                            "Act_Enregistrer, Act_Soumettre, Act_Imprimer, Act_Exporter, Act_Dupliquer, Act_Supprimer, Aff_Dat_Crea, Aff_Cree_Par, Tri_Liste, Acces_Personnalise, DDL_Genere, Dat_Crea, Created_By, Dat_Modif, Modified_By) values (" &
                             SqlV(codPage) & "," & SqlV(codDoc) & "," & SqlV(Nom_Page_txt.Text.Trim) & "," &
                             SqlV(Nom_Page_txt.Text.Trim) & "," & SqlV(Menu_Parent_cmb.SelectedValue) & "," & CInt(Rang_txt.Value) & "," & SqlV(IconeChoisie()) & "," &
                             "'BROUILLON'," & SqlV(NomTableEnt(codDoc)) & "," &
                             SqlV(codDoc) & "," & SqlV(B(Workflow_Actif_chk.Checked)) & "," & SqlV(Cod_Modele_Edition_txt.Text.Trim) & "," &
                             SqlV(B(GED_Actif_chk.Checked)) & "," & SqlV(B(GED_Obligatoire_chk.Checked)) & "," &
                             SqlV(B(Act_Enregistrer_chk.Checked)) & "," & SqlV(B(Act_Soumettre_chk.Checked)) & "," &
-                            SqlV(B(Act_Imprimer_chk.Checked)) & "," & SqlV(B(Act_Exporter_chk.Checked)) & "," & SqlV(B(Acces_Personnalise_chk.Checked)) & ",'true', getdate(), " & SqlV(theUser.Login) & ", getdate(), " & SqlV(theUser.Login) & ")")
+                            SqlV(B(Act_Imprimer_chk.Checked)) & "," & SqlV(B(Act_Exporter_chk.Checked)) & "," &
+                            SqlV(B(Act_Dupliquer_chk.Checked)) & "," & SqlV(B(Act_Supprimer_chk.Checked)) & "," &
+                            SqlV(B(Aff_Dat_Crea_chk.Checked)) & "," & SqlV(B(Aff_Cree_Par_chk.Checked)) & "," & SqlV(Tri_Liste_txt.Text.Trim) & "," &
+                            SqlV(B(Acces_Personnalise_chk.Checked)) & ",'true', getdate(), " & SqlV(theUser.Login) & ", getdate(), " & SqlV(theUser.Login) & ")")
             End If
             ' 2. Purge des lignes filles (ordre imposé par les FK : Controle_Designer_Colonne
             '    référence Controle_Designer_Table, donc colonnes AVANT tables)
@@ -2409,11 +2651,11 @@ Public Class SP_Page_Designer
             ' 5. Champs
             For Each r As DataRow In Tbl_Champs.Rows
                 If r.RowState = DataRowState.Deleted Then Continue For
-                cnTx.Execute("insert into Controle_Designer_Champ (Cod_Page, Cod_Champ, Cod_Table, Nom_Colonne, Libelle, Typ_Controle, Rang, Ligne, Colonne, Largeur, Valeur_Defaut, Obligatoire, Etat, " &
+                cnTx.Execute("insert into Controle_Designer_Champ (Cod_Page, Cod_Champ, Cod_Table, Nom_Colonne, Libelle, Typ_Controle, Rang, Ligne, Colonne, Largeur, Valeur_Defaut, Obligatoire, Etat, Copier_Vers, " &
                             "Rubrique, Num_Zoom, Source_Metier, Formule, Persiste, Format_Affichage, Decimales, Visible_Grille, Rang_Grille, Largeur_Colonne, estCritere, Rang_Critere, Aide, Dat_Crea, Created_By) values (" &
                             SqlV(codPage) & "," & SqlV(r("Cod_Champ")) & "," & SqlV(IsNull(r("Cod_Table"), "")) & "," & SqlV(r("Nom_Colonne")) & "," & SqlV(r("Libelle")) & "," &
                             SqlV(r("Typ_Controle")) & "," & Val(IsNull(r("Rang"), "1") & "") & "," & SqlN(r("Ligne")) & "," & SqlN(r("Colonne")) & "," & SqlN(r("Largeur")) & "," &
-                            SqlV(r("Valeur_Defaut")) & "," & SqlV(IsNull(r("Obligatoire"), "false")) & "," & SqlV(IsNull(r("Etat"), "S")) & "," &
+                            SqlV(r("Valeur_Defaut")) & "," & SqlV(IsNull(r("Obligatoire"), "false")) & "," & SqlV(IsNull(r("Etat"), "S")) & "," & SqlV(IsNull(r("Copier_Vers"), "")) & "," &
                             SqlV(r("Rubrique")) & "," & SqlV(r("Num_Zoom")) & "," & SqlV(r("Source_Metier")) & "," & SqlV(r("Formule")) & "," & SqlV(IsNull(r("Persiste"), "false")) & "," &
                             SqlV(r("Format_Affichage")) & "," & SqlN(r("Decimales")) & "," & SqlV(IsNull(r("Visible_Grille"), "true")) & "," & Val(IsNull(r("Rang_Grille"), "1") & "") & "," &
                             SqlN(r("Largeur_Colonne")) & "," & SqlV(IsNull(r("estCritere"), "false")) & "," & SqlN(r("Rang_Critere")) & "," & SqlV(r("Aide")) & ", getdate(), " & SqlV(theUser.Login) & ")")

@@ -3110,9 +3110,17 @@
     <None Include="Resources\hired.png" />
     <None Include="Resources\btn_execute_w.png" />
     <None Include="Resources\coller_presspapier.png" />
+    <None Include="Resources\btn_logout.png" />
+    <None Include="Resources\EXP0.png" />
     <Content Include="ILLink\ILLink.Descriptors.LibraryBuild.xml" />
     <Content Include="Outillage\Script_SQL_Outillage.sql" />
     <Content Include="Portail\Script_SQL_SP_Page_Designer.sql" />
+    <Content Include="Auth\Admin_Dashboard_Config_Menu.sql" />
+    <Content Include="Auth\Admin_Profil_Agent_Menu.sql" />
+    <Content Include="Avancement\Get_Timeline_Data.sql" />
+    <Content Include="Documents\Demande_Congés\RH_Conge_Planning_Menu.sql" />
+    <Content Include="Param_Python\Scripts\Install_SCAN_PIECE_ID.sql" />
+    <Content Include="Param_Python\Scripts\Scan_Piece_Identite.py" />
     <Content Include="rsc\fonts\MaterialIcons-Regular.ttf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

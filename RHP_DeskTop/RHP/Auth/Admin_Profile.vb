@@ -13,6 +13,15 @@ Public Class Admin_Profile
     Dim First_D As ud_btn
     Dim New_D As ud_btn
     Dim Duplik_D As ud_btn
+    'Pages standards du portail structurellement HORS contrôle de profil (pages
+    'self-service : l'agent n'y consulte que ses propres données — fiche agent,
+    'organigramme, fiche de poste, chronologie de carrière, bulletins de paie) :
+    'toujours visibles et accessibles, quel que soit le profil (bypass backend
+    'PAGES_HORS_SECURITE de module_droits_portail). Elles ne sont donc pas
+    'affichées dans l'onglet Portail et aucune ligne Controle_Droit 'PRT_' ne
+    'doit les concerner (purge automatique à l'enregistrement d'un profil, le
+    'DELETE 'PRT_%' précédant la réinsertion des seuls nœuds de l'arbre).
+    Private Shared ReadOnly PagesHorsSecurite As String() = {"RH_Agent", "Org_Organigramme", "Org_Poste", "RH_Avancement_Timeline", "RH_Bulletin_Liste"}
     Private Sub Cod_Profile_Label_LinkClicked(ByVal sender As System.Object, ByVal e As System.Windows.Forms.LinkLabelLinkClickedEventArgs) Handles Cod_Profile_Label.LinkClicked
         Appel_Zoom1("MS060", Cod_Profile_Text, Me)
         If Cod_Profile_Text.Text = "1" Then
@@ -55,7 +64,9 @@ Public Class Admin_Profile
     End Sub
 
     'Arborescence portail du profil :
-    '- pages standards et sections de menus.json (référentiel Controle_Menu_Portail) ;
+    '- pages standards et sections de menus.json (référentiel Controle_Menu_Portail),
+    '  SAUF les pages hors sécurité (PagesHorsSecurite : self-service, toujours
+    '  accessibles à tous les profils — non gérées ici, donc non affichées) ;
     '- sections créées en base (rubrique SP_Menu_Portail, Zoom_SP_Nouvelle_Section)
     '  absentes du référentiel ;
     '- requêtes exposées au portail (Param_Query_Widget : pages-requêtes estPortail
@@ -77,6 +88,7 @@ Public Class Admin_Profile
             Dim CodSql As String = "select m.Name_Ecran,isnull(m.Text_Ecran,'') as Text_Ecran,isnull(m.Typ_Ecran,'ECR') as Typ_Ecran,isnull(m.Menu_Parent,'') as Menu_Parent,isnull(m.Rang,99) as Rang,isnull(o.Visible,'False') as Visible,isnull(o.Actif,'False') as Actif,cast('' as varchar(5)) as estPortail,cast('' as varchar(5)) as AccesPerso " &
                                    "from Controle_Menu_Portail m " &
                                    "outer apply (select top 1 Visible,Actif from Controle_Droit where Name_Ecran='PRT_' + m.Name_Ecran and Cod_Profile='" & Cod_Profile_Text.Text & "') o " &
+                                   "where m.Name_Ecran not in ('" & String.Join("','", PagesHorsSecurite) & "') " &
                                    "union all " &
                                    "select r.Valeur,isnull(r.Membre,''),'MNU','',isnull(try_cast(r.Rang as int),99),isnull(o.Visible,'False'),isnull(o.Actif,'False'),cast('' as varchar(5)),cast('' as varchar(5)) " &
                                    "from Param_Rubriques r " &
@@ -726,7 +738,9 @@ Public Class Admin_Profile
         '(Acces_Personnalise='false', Tag(1) — sans case dans l'arbre) ne sont
         'enregistrées que si leurs habilitations ont été éditées (Consulter est
         'sans effet pour elles : consultation ouverte à tous les profils).
-        If IsNull(oNode.Name, "") <> "" Then
+        'Pages hors sécurité (PagesHorsSecurite) : jamais de ligne Controle_Droit
+        '(garde-fou — elles sont normalement exclues de l'arbre par RequestPortail).
+        If IsNull(oNode.Name, "") <> "" AndAlso Not PagesHorsSecurite.Contains(IsNull(oNode.Name, "")) Then
             If IsNull(oNode.Tag(0), "") = "SPP" Then
                 Dim oDroits As DataTable = Nothing
                 If Not oNode.Tag(2) Is Nothing Then oDroits = oNode.Tag(2)

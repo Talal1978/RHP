@@ -268,7 +268,24 @@ Le FAB `FloatMenu` est alimenté par `settbnMenu` (`DynamicPage.tsx` L.536-570) 
 | Soumettre pour signature | `Act_Soumettre='true'` **et** `Workflow_Actif='true'` **et** droit `Valider` | Statut `''`/`NSS` ⇒ confirmation puis save `'SS'` ; sinon ouvre le suivi des signatures. Libellé = rubrique `Statut_Signature` du statut courant |
 | Pièces jointes | `GED_Actif='true'` **et** droit `GED` | GED sur `SPP_<Cod_Page>` / Num_Doc ; `disabled` sur nouveau |
 
-`Act_Exporter` n'est câblé nulle part dans le frontend (métadonnée seule).
+`Act_Exporter` est câblé sur la page liste : bouton **Exporter**
+(`DynamicPage_Liste.tsx`) produisant un `.xlsx` de la liste filtrée complète
+(ré-interrogation serveur, plafond 5000 lignes).
+
+### 6.3 Options de la page liste (grille principale `SPPL_<Cod_Page>`)
+
+- `Aff_Dat_Crea` / `Aff_Cree_Par` (migration 010, **opt-out** `'true'`) :
+  colonnes système « Créé le » / « Créé par » de la liste ; `'false'` = colonne
+  absente du `SELECT` de `sp_document_liste`.
+- `Tri_Liste` (migration 010, `''` = `Dat_Crea desc`) : `ORDER BY` déclaratif
+  de la liste, **format `Tri_Defaut`** (ex. `'Dat_Depart desc'`) — colonnes
+  physiques de l'entête + `Num_Doc/Statut/Dat_Crea/Created_By/Dat_Modif/Modified_By`,
+  sécurisé côté serveur par `triListeDocuments` (colonnes inconnues ignorées,
+  repli `Dat_Crea desc`), verrouillé au `Saving` et à l'import JSON (format 1.3).
+- `Act_Dupliquer` (migration 009, **opt-in** `'false'`) / `Act_Supprimer`
+  (009, **opt-out** `'true'`) : boutons Dupliquer / Supprimer de la liste
+  (mode à icônes par ligne) et du FAB — la suppression est réservée aux
+  brouillons (règle serveur absolue, statut évolué = jamais supprimable).
 
 ## 7. Valeurs par défaut (`Valeur_Defaut`)
 

@@ -612,7 +612,7 @@ Public Class Zoom_SP_Assistant_IA
         Next
         Return "Tu es le générateur de pages portail RHP intégré au Designer de pages (SP_Page_Designer, RHP_DeskTop)." & vbCrLf &
                "Tu appliques STRICTEMENT le skill ci-dessous pour transformer la description fonctionnelle de l'utilisateur" & vbCrLf &
-               " en UN fichier JSON d'import (format RHP_PAGE_DESIGNER 1.0), importable via le bouton 'Importer JSON' du Designer." & vbCrLf &
+               " en UN fichier JSON d'import (format RHP_PAGE_DESIGNER 1.1), importable via le bouton 'Importer JSON' du Designer." & vbCrLf &
                "La date du jour est " & DateTime.Now.ToString("yyyy-MM-dd") & " (pour exportedAt). L'utilisateur est '" & theUser.Login & "' (pour exportedBy)." & vbCrLf & vbCrLf &
                "==================== DÉBUT DU SKILL ====================" & vbCrLf &
                skillMd & vbCrLf &

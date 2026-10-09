@@ -70,6 +70,14 @@ Partial Class SP_Page_Designer
         Me.Act_Exporter_chk = New RHP.ud_CheckBox()
         Me.LabelIcone = New System.Windows.Forms.Label()
         Me.Act_Imprimer_chk = New RHP.ud_CheckBox()
+        Me.Act_Dupliquer_chk = New RHP.ud_CheckBox()
+        Me.Act_Supprimer_chk = New RHP.ud_CheckBox()
+        Me.LabelListeTitre = New System.Windows.Forms.Label()
+        Me.Aff_Dat_Crea_chk = New RHP.ud_CheckBox()
+        Me.Aff_Cree_Par_chk = New RHP.ud_CheckBox()
+        Me.LabelTriListe = New System.Windows.Forms.Label()
+        Me.Tri_Liste_txt = New RHP.ud_TextBox()
+        Me.LabelTriListeAide = New System.Windows.Forms.Label()
         Me.Rang_txt = New System.Windows.Forms.NumericUpDown()
         Me.Act_Soumettre_chk = New RHP.ud_CheckBox()
         Me.LabelRang = New System.Windows.Forms.Label()
@@ -148,6 +156,7 @@ Partial Class SP_Page_Designer
         Me.Grd_Champs_Valeur_Defaut = New System.Windows.Forms.DataGridViewTextBoxColumn()
         Me.Grd_Champs_Obligatoire = New System.Windows.Forms.DataGridViewCheckBoxColumn()
         Me.Grd_Champs_Etat = New System.Windows.Forms.DataGridViewComboBoxColumn()
+        Me.Grd_Champs_Copier_Vers = New System.Windows.Forms.DataGridViewComboBoxColumn()
         Me.Grd_Champs_Rubrique = New System.Windows.Forms.DataGridViewTextBoxColumn()
         Me.Grd_Champs_Num_Zoom = New System.Windows.Forms.DataGridViewTextBoxColumn()
         Me.Grd_Champs_Source_Metier = New System.Windows.Forms.DataGridViewComboBoxColumn()
@@ -563,7 +572,7 @@ Partial Class SP_Page_Designer
         DataGridViewCellStyle10.WrapMode = System.Windows.Forms.DataGridViewTriState.[True]
         Me.Grd_Champs.ColumnHeadersDefaultCellStyle = DataGridViewCellStyle10
         Me.Grd_Champs.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize
-        Me.Grd_Champs.Columns.AddRange(New System.Windows.Forms.DataGridViewColumn() {Me.Grd_Champs_Cod_Champ, Me.Grd_Champs_Cod_Table, Me.Grd_Champs_Nom_Colonne, Me.Grd_Champs_Libelle, Me.Grd_Champs_Typ_Controle, Me.Grd_Champs_Rang, Me.Grd_Champs_Ligne, Me.Grd_Champs_Colonne, Me.Grd_Champs_Largeur, Me.Grd_Champs_Valeur_Defaut, Me.Grd_Champs_Obligatoire, Me.Grd_Champs_Etat, Me.Grd_Champs_Rubrique, Me.Grd_Champs_Num_Zoom, Me.Grd_Champs_Source_Metier, Me.Grd_Champs_Formule, Me.Grd_Champs_Persiste, Me.Grd_Champs_Format_Affichage, Me.Grd_Champs_Decimales, Me.Grd_Champs_Visible_Grille, Me.Grd_Champs_Rang_Grille, Me.Grd_Champs_Largeur_Colonne, Me.Grd_Champs_estCritere, Me.Grd_Champs_Rang_Critere, Me.Grd_Champs_Aide})
+        Me.Grd_Champs.Columns.AddRange(New System.Windows.Forms.DataGridViewColumn() {Me.Grd_Champs_Cod_Champ, Me.Grd_Champs_Cod_Table, Me.Grd_Champs_Nom_Colonne, Me.Grd_Champs_Libelle, Me.Grd_Champs_Typ_Controle, Me.Grd_Champs_Rang, Me.Grd_Champs_Ligne, Me.Grd_Champs_Colonne, Me.Grd_Champs_Largeur, Me.Grd_Champs_Valeur_Defaut, Me.Grd_Champs_Obligatoire, Me.Grd_Champs_Etat, Me.Grd_Champs_Copier_Vers, Me.Grd_Champs_Rubrique, Me.Grd_Champs_Num_Zoom, Me.Grd_Champs_Source_Metier, Me.Grd_Champs_Formule, Me.Grd_Champs_Persiste, Me.Grd_Champs_Format_Affichage, Me.Grd_Champs_Decimales, Me.Grd_Champs_Visible_Grille, Me.Grd_Champs_Rang_Grille, Me.Grd_Champs_Largeur_Colonne, Me.Grd_Champs_estCritere, Me.Grd_Champs_Rang_Critere, Me.Grd_Champs_Aide})
         DataGridViewCellStyle11.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft
         DataGridViewCellStyle11.BackColor = System.Drawing.SystemColors.Window
         DataGridViewCellStyle11.Font = New System.Drawing.Font("Century Gothic", 8.25!)
@@ -658,6 +667,13 @@ Partial Class SP_Page_Designer
         Me.Grd_Champs_Etat.DataPropertyName = "Etat"
         Me.Grd_Champs_Etat.HeaderText = "État"
         Me.Grd_Champs_Etat.Name = "Grd_Champs_Etat"
+        '
+        'Grd_Champs_Copier_Vers
+        '
+        Me.Grd_Champs_Copier_Vers.DataPropertyName = "Copier_Vers"
+        Me.Grd_Champs_Copier_Vers.HeaderText = "Copier vers"
+        Me.Grd_Champs_Copier_Vers.Name = "Grd_Champs_Copier_Vers"
+        Me.Grd_Champs_Copier_Vers.ToolTipText = "Champ d'entête recevant la valeur au changement s'il est vide ou inférieur (ex. date de retour) — il reste ensuite modifiable"
         '
         'Grd_Champs_Rubrique
         '
@@ -908,6 +924,14 @@ Partial Class SP_Page_Designer
         Me.GroupBox_Int.Controls.Add(Me.Act_Exporter_chk)
         Me.GroupBox_Int.Controls.Add(Me.LabelIcone)
         Me.GroupBox_Int.Controls.Add(Me.Act_Imprimer_chk)
+        Me.GroupBox_Int.Controls.Add(Me.Act_Dupliquer_chk)
+        Me.GroupBox_Int.Controls.Add(Me.Act_Supprimer_chk)
+        Me.GroupBox_Int.Controls.Add(Me.LabelListeTitre)
+        Me.GroupBox_Int.Controls.Add(Me.Aff_Dat_Crea_chk)
+        Me.GroupBox_Int.Controls.Add(Me.Aff_Cree_Par_chk)
+        Me.GroupBox_Int.Controls.Add(Me.LabelTriListe)
+        Me.GroupBox_Int.Controls.Add(Me.Tri_Liste_txt)
+        Me.GroupBox_Int.Controls.Add(Me.LabelTriListeAide)
         Me.GroupBox_Int.Controls.Add(Me.Rang_txt)
         Me.GroupBox_Int.Controls.Add(Me.Act_Soumettre_chk)
         Me.GroupBox_Int.Controls.Add(Me.LabelRang)
@@ -1020,6 +1044,108 @@ Partial Class SP_Page_Designer
         Me.Act_Imprimer_chk.Size = New System.Drawing.Size(144, 25)
         Me.Act_Imprimer_chk.TabIndex = 9
         Me.Act_Imprimer_chk.Text = "Action : Imprimer"
+        '
+        'Act_Dupliquer_chk
+        '
+        Me.Act_Dupliquer_chk.AutoSize = True
+        Me.Act_Dupliquer_chk.Checked = False
+        Me.Act_Dupliquer_chk.Location = New System.Drawing.Point(18, 330)
+        Me.Act_Dupliquer_chk.Margin = New System.Windows.Forms.Padding(4)
+        Me.Act_Dupliquer_chk.MaximumSize = New System.Drawing.Size(0, 25)
+        Me.Act_Dupliquer_chk.MinimumSize = New System.Drawing.Size(133, 25)
+        Me.Act_Dupliquer_chk.Name = "Act_Dupliquer_chk"
+        Me.Act_Dupliquer_chk.Size = New System.Drawing.Size(197, 25)
+        Me.Act_Dupliquer_chk.TabIndex = 11
+        Me.Act_Dupliquer_chk.Text = "Action : Dupliquer le document"
+        '
+        'Act_Supprimer_chk
+        '
+        Me.Act_Supprimer_chk.AutoSize = True
+        Me.Act_Supprimer_chk.Checked = True
+        Me.Act_Supprimer_chk.Location = New System.Drawing.Point(18, 359)
+        Me.Act_Supprimer_chk.Margin = New System.Windows.Forms.Padding(4)
+        Me.Act_Supprimer_chk.MaximumSize = New System.Drawing.Size(0, 25)
+        Me.Act_Supprimer_chk.MinimumSize = New System.Drawing.Size(133, 25)
+        Me.Act_Supprimer_chk.Name = "Act_Supprimer_chk"
+        Me.Act_Supprimer_chk.Size = New System.Drawing.Size(314, 25)
+        Me.Act_Supprimer_chk.TabIndex = 12
+        Me.Act_Supprimer_chk.Text = "Action : Supprimer le document (brouillon uniquement)"
+        '
+        'LabelListeTitre
+        '
+        Me.LabelListeTitre.AutoSize = True
+        Me.LabelListeTitre.Font = New System.Drawing.Font("Century Gothic", 9.75!, System.Drawing.FontStyle.Bold)
+        Me.LabelListeTitre.Location = New System.Drawing.Point(18, 398)
+        Me.LabelListeTitre.Name = "LabelListeTitre"
+        Me.LabelListeTitre.Size = New System.Drawing.Size(266, 19)
+        Me.LabelListeTitre.TabIndex = 16
+        Me.LabelListeTitre.Text = "Page liste du portail (grille principale)"
+        '
+        'Aff_Dat_Crea_chk
+        '
+        Me.Aff_Dat_Crea_chk.AutoSize = True
+        Me.Aff_Dat_Crea_chk.Checked = True
+        Me.Aff_Dat_Crea_chk.Location = New System.Drawing.Point(18, 427)
+        Me.Aff_Dat_Crea_chk.Margin = New System.Windows.Forms.Padding(4)
+        Me.Aff_Dat_Crea_chk.MaximumSize = New System.Drawing.Size(0, 25)
+        Me.Aff_Dat_Crea_chk.MinimumSize = New System.Drawing.Size(133, 25)
+        Me.Aff_Dat_Crea_chk.Name = "Aff_Dat_Crea_chk"
+        Me.Aff_Dat_Crea_chk.Size = New System.Drawing.Size(285, 25)
+        Me.Aff_Dat_Crea_chk.TabIndex = 17
+        Me.Aff_Dat_Crea_chk.Text = "Liste : afficher « Créé le » (date de création)"
+        '
+        'Aff_Cree_Par_chk
+        '
+        Me.Aff_Cree_Par_chk.AutoSize = True
+        Me.Aff_Cree_Par_chk.Checked = True
+        Me.Aff_Cree_Par_chk.Location = New System.Drawing.Point(18, 456)
+        Me.Aff_Cree_Par_chk.Margin = New System.Windows.Forms.Padding(4)
+        Me.Aff_Cree_Par_chk.MaximumSize = New System.Drawing.Size(0, 25)
+        Me.Aff_Cree_Par_chk.MinimumSize = New System.Drawing.Size(133, 25)
+        Me.Aff_Cree_Par_chk.Name = "Aff_Cree_Par_chk"
+        Me.Aff_Cree_Par_chk.Size = New System.Drawing.Size(197, 25)
+        Me.Aff_Cree_Par_chk.TabIndex = 18
+        Me.Aff_Cree_Par_chk.Text = "Liste : afficher « Créé par »"
+        '
+        'LabelTriListe
+        '
+        Me.LabelTriListe.AutoSize = True
+        Me.LabelTriListe.Location = New System.Drawing.Point(18, 495)
+        Me.LabelTriListe.Name = "LabelTriListe"
+        Me.LabelTriListe.Size = New System.Drawing.Size(101, 19)
+        Me.LabelTriListe.TabIndex = 19
+        Me.LabelTriListe.Text = "Tri de la liste"
+        '
+        'Tri_Liste_txt
+        '
+        Me.Tri_Liste_txt.CharacterCasing = System.Windows.Forms.CharacterCasing.Normal
+        Me.Tri_Liste_txt.ContextMenuStrip = Nothing
+        Me.Tri_Liste_txt.Location = New System.Drawing.Point(18, 518)
+        Me.Tri_Liste_txt.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
+        Me.Tri_Liste_txt.MaxLength = 200
+        Me.Tri_Liste_txt.Multiline = False
+        Me.Tri_Liste_txt.Name = "Tri_Liste_txt"
+        Me.Tri_Liste_txt.Padding = New System.Windows.Forms.Padding(1, 0, 1, 0)
+        Me.Tri_Liste_txt.PasswordChar = "" & Global.Microsoft.VisualBasic.ChrW(0)
+        Me.Tri_Liste_txt.ReadOnly = False
+        Me.Tri_Liste_txt.ScrollBars = System.Windows.Forms.ScrollBars.None
+        Me.Tri_Liste_txt.SelectionStart = 0
+        Me.Tri_Liste_txt.Size = New System.Drawing.Size(320, 24)
+        Me.Tri_Liste_txt.TabIndex = 20
+        Me.Tri_Liste_txt.TextAlign = System.Windows.Forms.HorizontalAlignment.Left
+        Me.Tri_Liste_txt.UseSystemPasswordChar = False
+        '
+        'LabelTriListeAide
+        '
+        Me.LabelTriListeAide.AutoSize = True
+        Me.LabelTriListeAide.Font = New System.Drawing.Font("Century Gothic", 8.25!)
+        Me.LabelTriListeAide.ForeColor = System.Drawing.Color.Gray
+        Me.LabelTriListeAide.Location = New System.Drawing.Point(348, 521)
+        Me.LabelTriListeAide.Name = "LabelTriListeAide"
+        Me.LabelTriListeAide.Size = New System.Drawing.Size(681, 19)
+        Me.LabelTriListeAide.TabIndex = 21
+        Me.LabelTriListeAide.Text = "Colonnes de l'entête séparées par des virgules, sens asc/desc (ex. Dat_Depart des" &
+    "c). Vide = plus récents d'abord."
         '
         'Rang_txt
         '
@@ -1709,6 +1835,14 @@ Partial Class SP_Page_Designer
     Friend WithEvents Act_Enregistrer_chk As ud_CheckBox
     Friend WithEvents Act_Soumettre_chk As ud_CheckBox
     Friend WithEvents Act_Imprimer_chk As ud_CheckBox
+    Friend WithEvents Act_Dupliquer_chk As ud_CheckBox
+    Friend WithEvents Act_Supprimer_chk As ud_CheckBox
+    Friend WithEvents LabelListeTitre As Label
+    Friend WithEvents Aff_Dat_Crea_chk As ud_CheckBox
+    Friend WithEvents Aff_Cree_Par_chk As ud_CheckBox
+    Friend WithEvents LabelTriListe As Label
+    Friend WithEvents Tri_Liste_txt As ud_TextBox
+    Friend WithEvents LabelTriListeAide As Label
     Friend WithEvents Act_Exporter_chk As ud_CheckBox
     Friend WithEvents Grd_Validations As ud_Grd
     Friend WithEvents LabelValidations As Label
@@ -1766,6 +1900,7 @@ Partial Class SP_Page_Designer
     Friend WithEvents Grd_Champs_Valeur_Defaut As DataGridViewTextBoxColumn
     Friend WithEvents Grd_Champs_Obligatoire As DataGridViewCheckBoxColumn
     Friend WithEvents Grd_Champs_Etat As DataGridViewComboBoxColumn
+    Friend WithEvents Grd_Champs_Copier_Vers As DataGridViewComboBoxColumn
     Friend WithEvents Grd_Champs_Rubrique As DataGridViewTextBoxColumn
     Friend WithEvents Grd_Champs_Num_Zoom As DataGridViewTextBoxColumn
     Friend WithEvents Grd_Champs_Source_Metier As DataGridViewComboBoxColumn
