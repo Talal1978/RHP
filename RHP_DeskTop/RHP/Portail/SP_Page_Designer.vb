@@ -2658,7 +2658,7 @@ Public Class SP_Page_Designer
                             SqlV(r("Valeur_Defaut")) & "," & SqlV(IsNull(r("Obligatoire"), "false")) & "," & SqlV(IsNull(r("Etat"), "S")) & "," & SqlV(IsNull(r("Copier_Vers"), "")) & "," &
                             SqlV(r("Rubrique")) & "," & SqlV(r("Num_Zoom")) & "," & SqlV(r("Source_Metier")) & "," & SqlV(r("Formule")) & "," & SqlV(IsNull(r("Persiste"), "false")) & "," &
                             SqlV(r("Format_Affichage")) & "," & SqlN(r("Decimales")) & "," & SqlV(IsNull(r("Visible_Grille"), "true")) & "," & Val(IsNull(r("Rang_Grille"), "1") & "") & "," &
-                            SqlN(r("Largeur_Colonne")) & "," & SqlV(IsNull(r("estCritere"), "false")) & "," & SqlN(r("Rang_Critere")) & "," & SqlV(r("Aide")) & ", getdate(), " & SqlV(theUser.Login) & ")")
+                            SqlN(r("Largeur_Colonne")) & "," & SqlV(LCase(IsNull(r("estCritere"), "false"))) & "," & SqlN(r("Rang_Critere")) & "," & SqlV(r("Aide")) & ", getdate(), " & SqlV(theUser.Login) & ")")
             Next
             ' 6. Validations
             For Each r As DataRow In Tbl_Validations.Rows

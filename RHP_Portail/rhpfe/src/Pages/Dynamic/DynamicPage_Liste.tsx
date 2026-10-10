@@ -5,9 +5,9 @@
    + persistance de l'état via useEtatListe.
    URL : /myspace/SPPL_<Cod_Page>/<titre>
    ============================================================================ */
-import { useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Box } from "@mui/material";
+import { Box, MenuItem, Select } from "@mui/material";
 import Grid from "@mui/material/Unstable_Grid2";
 import { CloudSyncOutlined, ContentCopyOutlined, DeleteOutline, FileDownloadOutlined, NavigateBefore, NavigateNext, NoteAddOutlined } from "@mui/icons-material";
 import * as XLSX from "xlsx";
@@ -26,7 +26,12 @@ import { TSpChamp, TSpMeta } from "./Types";
 import { cleChamp } from "./dynamicEngine";
 import DynamicField from "./DynamicField";
 
-const PAGE_SIZE = 20; // aligné sur la limitation d'affichage de la Grille partagée
+// Tailles de page proposées dans la barre de pagination ; TOUT = valeur
+// sentinelle du sélecteur « Tout » (la requête est alors plafonnée côté
+// serveur à EXPORT_MAX lignes, comme l'export Excel).
+const TAILLES_PAGE = [10, 25, 50, 100];
+const TOUT = -1;
+const EXPORT_MAX = 5000;
 
 const DynamicPage_Liste = ({ codPage }: { codPage: string }) => {
   const navigate = useNavigate();
@@ -40,6 +45,13 @@ const DynamicPage_Liste = ({ codPage }: { codPage: string }) => {
   const { criteres, stateChange, ds, setDs, dsFields, setDsFields } =
     useEtatListe<ObjetGenerique>(`SPPL_${codPage}`, {});
   const [page, setPage] = useState(1);
+  // Pagination : taille de page (défaut 25 ; TOUT = toutes les lignes des
+  // critères, plafond EXPORT_MAX côté serveur) et total renvoyé par le
+  // serveur pour l'affichage « Page N/M ».
+  const [taillePage, setTaillePage] = useState(25);
+  const [total, setTotal] = useState(0);
+  const tailleEffective = taillePage === TOUT ? EXPORT_MAX : taillePage;
+  const totalPages = Math.max(1, Math.ceil(total / tailleEffective));
   // Mode d'action activé par les boutons Dupliquer / Supprimer (icônes par
   // ligne affichées uniquement dans ce mode — UX des grilles de détail)
   const [actionMode, setActionMode] = useState<"" | "dupliquer" | "supprimer">("");
@@ -60,7 +72,9 @@ const DynamicPage_Liste = ({ codPage }: { codPage: string }) => {
       (meta?.champs ?? [])
         .filter((c) =>
           c.Cod_Table === "ENT" &&
-          c.estCritere === "true" &&
+          // nvarchar 'true'/'false' : insensible à la casse (une écriture hors
+          // Designer — SQL direct — a déjà produit 'True', critère invisible)
+          String(c.estCritere ?? "").toLowerCase() === "true" &&
           c.Etat !== "I" &&
           !["CALCULE", "SOURCE", "GED", "CHECK", "RADIO"].includes(c.Typ_Controle)
         )
@@ -88,32 +102,45 @@ const DynamicPage_Liste = ({ codPage }: { codPage: string }) => {
           codPage,
           filtres: criteres ?? {},
           page: pageDemandee,
-          pageSize: PAGE_SIZE,
+          pageSize: tailleEffective,
         })
           .then((dt) => {
             if (dt?.data?.result) {
               setDs(dt.data.data ?? []);
               setDsFields(dt.data.fields ?? {});
               setPage(dt.data.page ?? pageDemandee);
+              setTotal(Number(dt.data.total ?? 0) || 0);
             } else {
               setDs([]);
               setDsFields({});
+              setTotal(0);
               if (dt?.data?.message) alert({ titre: "Liste", msg: dt.data.message, typMsg: "error" });
             }
           })
           .catch(() => {
             setDs([]);
             setDsFields({});
+            setTotal(0);
           });
       } finally {
         setShowLoading(false);
       }
     },
-    [codPage, criteres]
+    [codPage, criteres, tailleEffective]
   );
   useEffect(() => {
     if (meta) interroger(1);
   }, [meta]);
+  // Changement de taille de page : ré-interrogation en page 1 (sauf au
+  // montage — l'effet ci-dessus sur meta a déjà lancé la 1ère requête).
+  const premierRenduTaille = useRef(true);
+  useEffect(() => {
+    if (premierRenduTaille.current) {
+      premierRenduTaille.current = false;
+      return;
+    }
+    if (meta) interroger(1);
+  }, [taillePage]);
 
   /* ---- Actions Dupliquer / Supprimer (options de page du Designer, onglet
      « Conception » : Act_Dupliquer / Act_Supprimer + habilitations du profil :
@@ -200,9 +227,8 @@ const DynamicPage_Liste = ({ codPage }: { codPage: string }) => {
   /* ---- Export Excel (.xlsx) de la liste FILTRÉE COMPLÈTE : disponible sur
      TOUTES les pages liste (aucune option à activer au Designer). Le serveur
      ré-interroge avec les mêmes critères, plafond 5000 lignes. Même pattern
-     que PortalQuery (entêtes = libellés de la grille, valeurs typées, dates
-     jj/mm/aaaa). ---- */
-  const EXPORT_MAX = 5000;
+      que PortalQuery (entêtes = libellés de la grille, valeurs typées, dates
+      jj/mm/aaaa). ---- */
   const exporterExcel = useCallback(async () => {
     setShowLoading(true);
     try {
@@ -284,6 +310,7 @@ const DynamicPage_Liste = ({ codPage }: { codPage: string }) => {
                   valeur={criteres?.[cleChamp(champ)]}
                   ctx={ctx}
                   onchange={stateChange}
+                  saisissable
                 />
               </Grid>
             ))}
@@ -372,6 +399,7 @@ const DynamicPage_Liste = ({ codPage }: { codPage: string }) => {
           Colonnes={dsFields}
           className="laGrille"
           actionsLigne={actionsLigne}
+          nbLignesMax={tailleEffective}
           onclick={({ colIndex, value }) => {
             if (colIndex === 0 && value) {
               navigate(`../myspace/SPP_${codPage}/${titre}/${value}`);
@@ -394,15 +422,29 @@ const DynamicPage_Liste = ({ codPage }: { codPage: string }) => {
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
+            flexWrap: "wrap",
             gap: "0.5em",
             mt: "0.5em",
             color: "text.secondary",
             fontSize: "0.9em",
           }}
         >
+          {/* Nombre de lignes par page : ré-interroge en page 1 au changement */}
+          <span>Lignes/page</span>
+          <Select
+            variant="standard"
+            value={taillePage}
+            onChange={(e) => setTaillePage(Number(e.target.value))}
+            sx={{ fontSize: "inherit", color: "inherit", minWidth: "3.5em" }}
+          >
+            {TAILLES_PAGE.map((t) => (
+              <MenuItem key={t} value={t}>{t}</MenuItem>
+            ))}
+            <MenuItem value={TOUT}>Tout</MenuItem>
+          </Select>
           <Bouton label="" iconOnly startIcon={<NavigateBefore />} disabled={page <= 1} onClick={() => interroger(page - 1)} />
-          <span>Page {page}</span>
-          <Bouton label="" iconOnly startIcon={<NavigateNext />} disabled={ds.length < PAGE_SIZE} onClick={() => interroger(page + 1)} />
+          <span>Page {page}/{totalPages}</span>
+          <Bouton label="" iconOnly startIcon={<NavigateNext />} disabled={page >= totalPages} onClick={() => interroger(page + 1)} />
         </Box>
       </Box>
     </>

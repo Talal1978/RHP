@@ -38,6 +38,37 @@ projet (tests, scripts, outils en ligne de commande, chaînes de connexion).
   français et rendre le fichier uniforme (UTF-8 de bout en bout), puis
   recompiler et vérifier les libellés dans le binaire produit.
 
+## Circuit de signature (workflow) — parapheur et signataire par défaut (instruction permanente)
+
+- **Le parapheur est la même fonction pour le desktop et le portail** :
+  `dbo.Sys_Parapheur_Signature(@Signataire, @idSoc)` (desktop
+  `Workflow\Agent_Parapheur.vb`, portail `get_parapheur` de
+  `rhpBE/modules/module_workflow.ts`, badge de notification dans
+  `rhpBE/src/index.ts`, widget tableau de bord). Elle ne liste que les lignes
+  `Signatures_Lig` avec **`Decision = ''`**, dont l'en-tête `Signatures_Ent`
+  n'est pas `RJ`/`SG`, en respectant l'opérande `ET`/`OU` et l'ordre
+  (`Dans_Ordre`). Un signataire est le **matricule** agent (ou le login pour un
+  non-agent) — jamais un code entité : une formule de signataires
+  (`Workflow_Signatures_Detail.Typ_Liste = 'F'`, ex. `getDirection('DG',...)`)
+  qui retourne un code entité produit des lignes invisibles pour tout le monde.
+- **`Sys_Workflow_Signature` — branche de repli « aucune règle ne correspond »**
+  (condition `Traitement` des lignes `Workflow_Signatures_Detail` non vérifiée,
+  ex. `Dat_Depart > getdate()` sur un départ passé) : depuis le 10/10/2026
+  (migration `RHP_Portail/rhpBE/sql/SP_Designer/011_Workflow_Signature_Signataire_Defaut.sql`),
+  la ligne du **signataire par défaut** (`Workflow_Signatures.Signataire_Defaut`,
+  obligatoire dans l'écran) est insérée **signable** (`Decision=''`,
+  `Dat_Signature=NULL`, `Num_Ligne=-1`) et apparaît donc dans son parapheur.
+  **Avant ce correctif**, elle était insérée déjà décidée
+  (`Decision='Signataire par défaut'`) : invisible dans tous les parapheurs et
+  document bloqué en `SS` à vie — les documents figés par l'ancien comportement
+  se débloquent par `update Signatures_Lig set Decision='', Dat_Signature=null
+  where Decision='Signataire par défaut'` (au cas par cas).
+- `Sys_Workflow_Suppleant` ne remplace un signataire par son suppléant que sur
+  les lignes `Decision=''` (elle couvre donc désormais aussi le signataire par
+  défaut) ; la signature (`signer` portail, `Zoom_Signataires` desktop) appelle
+  `Sys_Workflow_Maj_Statut_Signature` qui clôt l'en-tête en `SG`/`RJ` et
+  répercute le statut sur le document.
+
 ## RHP_DeskTop (WinForms VB.NET)
 
 - **Code de design des formulaires (instruction permanente)** : tout le code de
@@ -109,7 +140,15 @@ projet (tests, scripts, outils en ligne de commande, chaînes de connexion).
   légal que s'il est `CALCULE`/`SOURCE` non persisté, `GED`, ou l'affichage
   d'une colonne technique d'entête (Cod_Champ = nom technique exact) — tout
   autre champ non lié ne s'afficherait jamais (ex. bug `DemVisiteMed` :
-  champ `'Num_Demande'` sans colonne, vide à vie).
+  champ `'Num_Demande'` sans colonne, vide à vie). Le champ `Num_Doc` peut être
+  déclaré **critère de la page liste** (`estCritere='true'` dans le Designer) :
+  `sp_document_liste` le traite alors en cas spécial technique (recherche
+  préfixe `t.[Num_Doc] like @p + '%'`, miroir du critère `Statut` — les colonnes
+  techniques ne font pas partie de `colonnesMetier` et seraient sinon
+  silencieusement ignorées), et les critères sont rendus via la prop
+  **`saisissable`** de `DynamicField` (un critère est par nature un champ de
+  saisie : elle neutralise les verrous lecture seule du document — Etat R/A,
+  colonne technique liée — qui n'ont de sens que sur la pièce).
 - **Pages SP_ — propagation au changement `Copier_Vers` (instruction
   permanente)** : la métadonnée `Controle_Designer_Champ.Copier_Vers`
   (migration `RHP_Portail/rhpBE/sql/SP_Designer/008_SP_Designer_Copier_Vers.sql`)
@@ -222,6 +261,21 @@ projet (tests, scripts, outils en ligne de commande, chaînes de connexion).
   miroir de `verifierTri` avec alias `t.` : toute colonne inconnue est ignorée
   silencieusement, repli `t.[Dat_Crea] desc`) — l'`ORDER BY` remplace le
   `t.[Dat_Crea] desc` historique dans `sp_document_liste`.
+- **Pages SP_ — pagination de la grille principale de la liste (instruction
+  permanente)** : la page liste (`DynamicPage_Liste.tsx`) pagine côté
+  **serveur** via `sp_document_liste` (`page` / `pageSize`, `OFFSET/FETCH`)
+  avec une barre sous la grille : sélecteur **« Lignes/page »**
+  (10 / 25 / 50 / 100 / **Tout**, défaut **25** — « Tout » = sentinelle `-1`
+  côté client, requête plafonnée à `EXPORT_MAX` = 5000 comme l'export) et
+  **« Page N/M »** calculé sur le `total` renvoyé par le serveur (`COUNT(*)`
+  des mêmes filtres WHERE, non calculé en mode `exporter` ; le bouton
+  « page suivante » est piloté par `totalPages`, jamais par `ds.length`).
+  Changer de taille de page ré-interroge en page 1. La `Grille` partagée ne
+  rend que les N premières lignes reçues : prop **`nbLignesMax`** (défaut
+  **20** — comportement historique des zooms et grilles de détail), la page
+  liste lui passe sa `tailleEffective`. L'**export Excel reste indépendant de
+  la pagination affichée** (`page:1`, `pageSize:5000`, `exporter:true`) : il
+  exporte toujours la liste filtrée complète, pas la seule page affichée.
 - **Écrans affichés exclusivement en modal : nommage et thème (instruction
   permanente)** : tout écran qui s'affiche exclusivement en modal porte un nom
   (classe et fichiers) commençant par `Zoom` (ex. `Zoom_SP_SqlSource`,
@@ -238,6 +292,44 @@ projet (tests, scripts, outils en ligne de commande, chaînes de connexion).
   `Cursors.Hand`, `SizeMode.CenterImage`), et un panel de contenu clair
   docké `Fill` (fond 250,250,250) portant les contrôles `ud_TextBox` /
   `ud_ComboBox` / `ud_button`.
+
+- **Import de CV dans la cvthèque (instruction permanente)** : le bouton
+  **« Importer un CV »** de l'écran `CVTheque` (paramétré dans
+  `Controle_Def_Ecran_Button`, `Cod_Button='ImportCV_D'`, `ProcName='Importer_CV'`,
+  enregistrement : `RHP/Recrutement/Install_CV_IMPORT.sql` — re-login requis)
+  analyse un fichier CV (PDF, Word, TXT, image) et remplit la fiche candidat
+  **sans enregistrer** (l'utilisateur vérifie puis Enregistre). Chaîne de
+  lecture, la plus précise possible (`Recrutement/Module_CV_Import.vb`) :
+  **PDF natif / DOCX / TXT** = extraction de texte directe (iTextSharp /
+  `RichEditDocumentServer`) puis structuration JSON par le LLM texte ;
+  **PDF scanné / image** = rasterisation des pages par le **Python embarqué
+  RHP + PyMuPDF** (installé à la volée, pattern `Scan_Piece_Identite`) puis
+  **OCR par le LLM multimodal** (`Ai_ChatClient.EnvoyerVisionAsync` — miroir
+  des appels vision de `Scan_Piece_Identite.py` : GEMINI inline_data,
+  ANTHROPIC base64, OLLAMA images, OpenAI-compatibles image_url data:), bien
+  plus précis qu'un OCR classique sur les mises en page de CV. La **photo**
+  suit la même logique que la fiche agent (`Scan_Piece_Identite`) : zone
+  `photo_box` lue par l'IA, puis **détection de visage OpenCV** sur la page
+  rendue (`ExtrairePhotoVisage` — cascades haar/lbp, CLAHE, marges portrait
+  0.40w/0.55h/0.50h — indispensable avec un modèle non multimodal), puis 1re
+  image « portrait » embarquée du PDF/DOCX ; cadrage proportionnel 333×252
+  (miroir `adapt_photo_frame`). Les correspondances référentiels (ville,
+  pays, nationalité, civilité, situation, niveau) passent par `Normaliser`
+  (majuscules sans accents) + scoring — miroir `find_cod_ville`/`find_cod_pays`.
+  Les **compétences** sont rapprochées du référentiel GPEC
+  (`MatcherCompetencesGPEC` : exact normalisé puis préfixe ≥ 4 car.) : les
+  reconnues sont ajoutées directement ; pour les non reconnues, l'utilisateur
+  est consulté et le zoom **`Zoom_CV_Competences`** permet, par compétence,
+  la **sélection multiple d'équivalents** via `Zoom_GPEC_Domaines_Competence`
+  (exclusif avec la création) **ou la création sous un domaine choisi**
+  (`CreerCompetenceGPEC` : code aléatoire comme l'écran
+  `GPEC_Domaines_Competence`, `Parent` = domaine, racine si vide). Le
+  **fichier CV est joint automatiquement à la GED** du candidat au moment de
+  l'`Enregistrer` (`cvAAttacherPath` + `AttacherCVaGED` : copie dans
+  `Lecteur_Digital_Upload` + ligne `Param_GED` racine `Index_Ecran=
+  'Matricule_Text'`, écrasement si un fichier du même nom est déjà joint ;
+  le champ est vidé au `Nouveau` et au changement de candidat pour ne jamais
+  attacher un CV à la mauvaise fiche).
 
 - **Assistant IA — multi-modèles et modèle par défaut (instruction permanente)** :
   la configuration de l'assistant IA (table `Ai_Agent`) est gérée dans l'écran

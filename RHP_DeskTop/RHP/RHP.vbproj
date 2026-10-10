@@ -1184,6 +1184,13 @@
     <Compile Include="Recrutement\CVTheque.vb">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="Recrutement\Module_CV_Import.vb" />
+    <Compile Include="Recrutement\Zoom_CV_Competences.Designer.vb">
+      <DependentUpon>Zoom_CV_Competences.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Recrutement\Zoom_CV_Competences.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="GPEC\GPEC_RegistreCompetences.designer.vb">
       <DependentUpon>GPEC_RegistreCompetences.vb</DependentUpon>
     </Compile>
@@ -3120,6 +3127,7 @@
     <Content Include="Avancement\Get_Timeline_Data.sql" />
     <Content Include="Documents\Demande_Congés\RH_Conge_Planning_Menu.sql" />
     <Content Include="Param_Python\Scripts\Install_SCAN_PIECE_ID.sql" />
+    <Content Include="Recrutement\Install_CV_IMPORT.sql" />
     <Content Include="Param_Python\Scripts\Scan_Piece_Identite.py" />
     <Content Include="rsc\fonts\MaterialIcons-Regular.ttf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

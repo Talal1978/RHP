@@ -228,9 +228,19 @@ export async function sp_document_liste(req: Request, res: Response) {
   // Filtres : uniquement sur colonnes déclarées, valeurs paramétrées et typées.
   //   <col>__Du / <col>__Au : plage de dates sur une colonne date déclarée ;
   //   Statut               : critère technique (prefix match) si un champ
-  //                          d'entête lié à Statut est déclaré critère.
+  //                          d'entête lié à Statut est déclaré critère ;
+  //   Num_Doc              : idem pour le champ conventionnel Cod_Champ='Num_Doc'
+  //                          (lié à la colonne technique ou sans colonne — les
+  //                          deux formes de la convention sont légales).
+  // estCritere est nvarchar 'true'/'false' : comparaison insensible à la casse
+  // (une écriture hors Designer — SQL direct — a déjà produit 'True').
+  const estVrai = (v: any) => String(v ?? "").toLowerCase() === "true";
   const statutCritere = meta.champs.some(
-    (c) => c.Cod_Table === "ENT" && c.Nom_Colonne === "Statut" && c.estCritere === "true"
+    (c) => c.Cod_Table === "ENT" && c.Nom_Colonne === "Statut" && estVrai(c.estCritere)
+  );
+  const numDocCritere = meta.champs.some(
+    (c) => c.Cod_Table === "ENT" && estVrai(c.estCritere) &&
+      (c.Nom_Colonne === "Num_Doc" || (!c.Nom_Colonne && c.Cod_Champ === "Num_Doc"))
   );
   const filtres: { [k: string]: any } = req.body?.filtres ?? {};
   const wheres: string[] = ["t.[id_Societe]=@p_idSoc"];
@@ -256,6 +266,14 @@ export async function sp_document_liste(req: Request, res: Response) {
     if (nom === "Statut" && statutCritere) {
       i++;
       wheres.push(`isnull(t.[Statut],'') like @p_f${i} + '%'`);
+      params.push({ param: `p_f${i}`, sqlType: sql.NVarChar, valeur: String(val) });
+      continue;
+    }
+    // Critère technique Num_Doc (champ conventionnel déclaré critère) :
+    // recherche préfixe sur le N° de document, comme le critère Statut.
+    if (nom === "Num_Doc" && numDocCritere) {
+      i++;
+      wheres.push(`t.[Num_Doc] like @p_f${i} + '%'`);
       params.push({ param: `p_f${i}`, sqlType: sql.NVarChar, valeur: String(val) });
       continue;
     }
@@ -288,7 +306,19 @@ export async function sp_document_liste(req: Request, res: Response) {
   // (l'option Act_Exporter du Designer n'est plus consultée).
   const exporter = req.body?.exporter === true;
   const page = Math.max(1, Number(req.body?.page ?? 1) || 1);
-  const pageSize = Math.min(exporter ? 5000 : 200, Math.max(1, Number(req.body?.pageSize ?? 50) || 50));
+  // Plafond unique 5000 (affichage « Tout » compris) ; la taille demandée
+  // reste petite par défaut (25 côté client).
+  const pageSize = Math.min(5000, Math.max(1, Number(req.body?.pageSize ?? 50) || 50));
+  // Nombre total de lignes des critères (pagination « Page N/M » du client) :
+  // inutile en export (une seule page plafonnée), calculé sinon.
+  let total = 0;
+  if (!exporter) {
+    const rslCount = await lireSql(
+      `select count(*) as [total] from ${qn(tEnt.Nom_Physique)} t where ${wheres.join(" and ")}`,
+      params
+    );
+    if (rslCount.result) total = Number(rslCount.data?.[0]?.total ?? 0) || 0;
+  }
   const jointureAgent = avecAgent
     ? ` outer apply (select Nom_Agent + ' ' + Prenom_Agent as Nom from dbo.RH_Agent a
        where a.id_Societe = t.id_Societe and a.Matricule = t.Matricule) ag`
@@ -309,7 +339,7 @@ export async function sp_document_liste(req: Request, res: Response) {
   if (!rsl.result) return refus(res, "Erreur de chargement de la liste");
   // Le code brut du statut est une donnée technique de pilotage, jamais affichée
   if ((rsl.fields as any)?.["Cod_Statut"]) (rsl.fields as any)["Cod_Statut"].visible = false;
-  return res.send({ ...rsl, page, pageSize });
+  return res.send({ ...rsl, page, pageSize, total: exporter ? rsl.data.length : total });
 }
 
 /* -------------------------------------------------------------------------- */

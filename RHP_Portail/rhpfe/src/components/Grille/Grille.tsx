@@ -44,6 +44,7 @@ export default function Grille({
   actionsLigne = [],
   showBorder = true,
   rechercheZoom = false,
+  nbLignesMax = 20,
   onclick = () => {},
   onchange = () => {},
   ondelete = () => {},
@@ -76,7 +77,7 @@ export default function Grille({
           if (dt.data) {
             if (dt.data.result) {
               const obj: { [key: string]: any }[] = [...dt.data.data];
-              setFiltredData(obj.slice(0, 20));
+              setFiltredData(obj.slice(0, nbLignesMax));
               setInnerDataSource(obj);
               setFields(dt.data.fields);
               setSearchBy(String(dt.data.searchBy ?? ""));
@@ -85,7 +86,7 @@ export default function Grille({
         })
         .catch((err) => console.error(err));
     } else {
-      setFiltredData(dataSource.slice(0, 20));
+      setFiltredData(dataSource.slice(0, nbLignesMax));
       setInnerDataSource(dataSource);
       if (Object.keys(Colonnes).length === 0 && dataSource.length > 0) {
         let lesChamps = Object.keys(dataSource[0]);
@@ -133,7 +134,7 @@ export default function Grille({
         setFields(typesDeDonnees);
       } else setFields(Colonnes);
     }
-  }, [numZoom, dataSource, Colonnes, conditionZoom]);
+  }, [numZoom, dataSource, Colonnes, conditionZoom, nbLignesMax]);
   useDeepCompareEffect(() => {
     setFiltre(() => {
       const obj: filtreF = {};
@@ -211,8 +212,8 @@ export default function Grille({
     }
     setIsFiltred(estFiltree);
     setNbResultats(_filtred.length);
-    setFiltredData(_filtred.slice(0, 20));
-  }, [filtre, innerDataSource, recherche, colRecherche, rechercheZoom, Fields]);
+    setFiltredData(_filtred.slice(0, nbLignesMax));
+  }, [filtre, innerDataSource, recherche, colRecherche, rechercheZoom, Fields, nbLignesMax]);
   // La ligne active (navigation ↑/↓) repart sur la 1ère ligne à chaque
   // nouveau résultat de recherche/filtrage.
   useEffect(() => {
@@ -392,6 +393,10 @@ type TGrille = {
    *  Search_By par défaut, colonne cliquée sinon ; ↑/↓ + Entrée pour
    *  sélectionner sans souris). À réserver aux panneaux de zoom. */
   rechercheZoom?: boolean;
+  /** Nombre maximal de lignes rendues (défaut 20 — comportement historique).
+   *  Les pages liste paginées côté serveur (ex. DynamicPage_Liste) passent
+   *  leur taille de page pour afficher toutes les lignes reçues. */
+  nbLignesMax?: number;
   onclick?: (e: TGrilleEventClick) => void;
   onchange?: (e: any) => void;
   ondelete?: (e: { rowIndex: number; row: ObjetGenerique }) => void;

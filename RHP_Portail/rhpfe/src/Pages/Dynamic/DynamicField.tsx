@@ -58,6 +58,7 @@ const DynamicField = ({
   valeur,
   ctx,
   readonlyGlobal = false,
+  saisissable = false,
   onchange,
   onOpenGed,
 }: {
@@ -65,13 +66,18 @@ const DynamicField = ({
   valeur: any;
   ctx: TSpContexte;
   readonlyGlobal?: boolean;
+  /** Critère de la page liste : par nature un champ de saisie — neutralise les
+   *  verrous lecture seule du document (Etat 'R'/'A', colonne technique liée
+   *  Num_Doc / Dat_Crea..., CALCULE / SOURCE) qui n'ont de sens que sur la pièce. */
+  saisissable?: boolean;
   onchange: (nomColonne: string, valeur: any) => void;
   onOpenGed?: () => void;
 }) => {
   // Une colonne technique (Dat_Crea, Created_By...) est gérée par le serveur :
   // affichable mais jamais saisissable, même si l'Etat est resté 'S'.
-  const readonly = readonlyGlobal || !champActif(champ, ctx) || champ.Typ_Controle === "CALCULE" || champ.Typ_Controle === "SOURCE"
-    || COLONNES_TECHNIQUES.has(champ.Nom_Colonne ?? "");
+  const readonly = readonlyGlobal || (!saisissable &&
+    (!champActif(champ, ctx) || champ.Typ_Controle === "CALCULE" || champ.Typ_Controle === "SOURCE"
+      || COLONNES_TECHNIQUES.has(champ.Nom_Colonne ?? "")));
   const label = libelleChamp(champ);
   const nom = cleChamp(champ);
   // Condition de zoom déclarative : "Matricule='{Matricule}'" -> les placeholders

@@ -12,6 +12,9 @@
     Dim First_D As ud_btn
     Dim New_D As ud_btn
     Dim canRate As Boolean = False
+    ''' <summary>Chemin du fichier CV importé en attente d'enregistrement : il est joint
+    ''' automatiquement à la GED du candidat (Param_GED) au prochain Enregistrer.</summary>
+    Friend cvAAttacherPath As String = ""
     Sub Chargement()
         If Save_D Is Nothing Then
             Save_D = dictButtons("Save_D")
@@ -231,6 +234,8 @@ where a.Matricule='" & Matricule_Text.Text & "' and a.id_Societe=" & Societe.id_
                 CnExecuting("Delete from Controle_Access where Name_Ecran='" & Me.Name & "' and Value='" & Code & "'  and isnull(Nullif(id_Societe,-1)," & Societe.id_Societe & ")=" & Societe.id_Societe)
             End If
             If Nom_Text.Text = "************" Then Exit Sub
+            ' Changement de candidat affiché : un CV importé en attente n'est plus d'actualité
+            If Matricule_Text.Text <> "" Then cvAAttacherPath = ""
             request()
             DroitAcces(Me, IIf(theUser.Typ_Role = "Agent", False, DroitModify_Fiche(Matricule_Text.Text, Me)))
         Catch ex As Exception
@@ -420,6 +425,18 @@ where a.Matricule='" & Matricule_Text.Text & "' and a.id_Societe=" & Societe.id_
             End With
             rs.Close()
 
+            ' Joindre le CV importé à la GED du candidat (import de CV)
+            If cvAAttacherPath <> "" Then
+                Try
+                    If AttacherCVaGED(Code, cvAAttacherPath) Then
+                        ErrStr = IIf(ErrStr <> "", ErrStr & vbCrLf, "") & "Le fichier CV a été joint aux pièces jointes (GED) du candidat."
+                    End If
+                Catch exGED As Exception
+                    ErrStr = IIf(ErrStr <> "", ErrStr & vbCrLf, "") & "Le fichier CV n'a pas pu être joint à la GED : " & exGED.Message
+                End Try
+                cvAAttacherPath = ""
+            End If
+
             Matricule_Text.Text = Code
             If ErrStr <> "" Then
                 Return New savingResult With {.message = ErrStr, .result = True}
@@ -435,6 +452,7 @@ where a.Matricule='" & Matricule_Text.Text & "' and a.id_Societe=" & Societe.id_
         PictureBox1.Image = Nothing
         Domaines_Competence_Pnl.Controls.Clear()
         Domaines_Competence_Pnl.ResetText()
+        cvAAttacherPath = ""
         Cod_Pays_Text.Text = Societe.Cod_Pays
         Cod_Ville_Text.Text = Societe.Ville
         Dat_Naissance_Text.Text = Now.AddYears(-20).Date
@@ -609,6 +627,252 @@ where a.Matricule='" & Matricule_Text.Text & "' and a.id_Societe=" & Societe.id_
         Domaines_Competence_Pnl.Controls.Remove(ud)
         RearrangeControls()
     End Sub
+
+#Region "Import de CV (analyse IA)"
+    ''' <summary>Import d'un fichier CV (PDF, Word, texte ou image) déclenché par le bouton
+    ''' « Importer un CV » (Controle_Def_Ecran_Button, ProcName Importer_CV) : lecture du
+    ''' document par extraction de texte directe (PDF natif/Word) ou par OCR IA multimodale
+    ''' (scan/image), structuration par le LLM par défaut (AI_Modeles), remplissage des
+    ''' champs de l'écran (identité, coordonnées, photo, formations, expériences) SANS
+    ''' enregistrer — l'utilisateur vérifie puis Enregistre —, puis correspondance des
+    ''' compétences avec le référentiel GPEC (zoom de correspondance pour les non reconnues).</summary>
+    Async Sub Importer_CV()
+        Try
+            ' 0) Prérequis : assistant IA configuré (modèle par défaut de Ai_Agent)
+            Dim cfg As Ai_ChatClient = Ai_ChatClient.ChargerConfig()
+            If cfg Is Nothing Then
+                ShowMessageBox("L'import de CV repose sur l'assistant IA, qui n'est pas configuré." & vbCrLf &
+                               "Paramétrez un modèle (de préférence multimodal pour lire les CV scannés et la photo) dans l'écran « Assistant AI » (AI_Modeles).",
+                               "Import de CV", MessageBoxButtons.OK, msgIcon.Stop)
+                Return
+            End If
+            Chargement()
+
+            ' 1) Choix du fichier
+            Dim ofd As New OpenFileDialog With {
+                .Title = "Sélectionnez le CV à importer",
+                .Filter = "CV (PDF, Word, texte, image)|*.pdf;*.docx;*.doc;*.rtf;*.txt;*.jpg;*.jpeg;*.png;*.bmp|Fichiers PDF (*.pdf)|*.pdf|Fichiers Word (*.docx;*.doc)|*.docx;*.doc|Images (*.jpg;*.jpeg;*.png;*.bmp)|*.jpg;*.jpeg;*.png;*.bmp|Tous les fichiers (*.*)|*.*",
+                .FilterIndex = 1,
+                .AutoUpgradeEnabled = False
+            }
+            If ofd.ShowDialog(Me) <> DialogResult.OK Then Return
+
+            ' 2) Fiche en cours : proposer la réinitialisation avant import
+            If Matricule_Text.Text.Trim() <> "" OrElse Nom_Text.Text.Trim() <> "" Then
+                If ShowMessageBox("La fiche en cours sera réinitialisée pour accueillir le candidat importé (elle ne sera pas enregistrée)." & vbCrLf &
+                                  "Voulez-vous continuer ?", "Import de CV", MessageBoxButtons.OKCancel, msgIcon.Warning) = DialogResult.Cancel Then
+                    Return
+                End If
+            End If
+            Nouveau()
+
+            ' 3) Analyse du CV par l'IA
+            Dim importLog As New System.Text.StringBuilder
+            importLog.AppendLine("Fichier : " & IO.Path.GetFileName(ofd.FileName))
+            Me.Cursor = Cursors.WaitCursor
+            Me.Refresh()
+            Dim data As CvImportData = Nothing
+            Try
+                data = Await Module_CV_Import.AnalyserCVAsync(cfg, ofd.FileName, importLog)
+            Finally
+                Me.Cursor = Cursors.Default
+            End Try
+            importLog.AppendLine("Mode d'extraction : " & data.ModeExtraction)
+
+            ' 4) Remplissage de l'écran
+            RemplirDepuisCV(data, importLog)
+
+            ' 5) Compétences : correspondance GPEC puis zoom pour les non reconnues
+            TraiterCompetencesCV(data.Competences, importLog)
+
+            ' 6) Le fichier CV sera joint à la GED du candidat à l'enregistrement
+            cvAAttacherPath = ofd.FileName
+            importLog.AppendLine("Le fichier CV sera joint automatiquement aux pièces jointes (GED) du candidat lors de l'enregistrement.")
+
+            ' 7) Résumé
+            importLog.AppendLine(vbCrLf & "Vérifiez et complétez la fiche, puis cliquez sur Enregistrer pour créer le candidat.")
+            ShowMessageBox(importLog.ToString(), "Import de CV — terminé", MessageBoxButtons.OK, msgIcon.Information)
+        Catch ex As Exception
+            Me.Cursor = Cursors.Default
+            ShowMessageBox("Echec de l'import du CV : " & ex.Message, "Import de CV", MessageBoxButtons.OK, msgIcon.Stop)
+        End Try
+    End Sub
+
+    ''' <summary>Remplit les champs de la fiche candidat avec les données extraites du CV
+    ''' (avec correspondances villes / pays / nationalité / civilité / situation).</summary>
+    Private Sub RemplirDepuisCV(data As CvImportData, importLog As System.Text.StringBuilder)
+        With data
+            If .Nom = "" AndAlso .Prenom = "" Then
+                importLog.AppendLine("Attention : le nom du candidat n'a pas été identifié.")
+            End If
+            Nom_Text.Text = .Nom
+            Prenom_Text.Text = .Prenom
+            ' Pays / nationalité / ville : résolus en amont car la ville dépend du pays
+            Dim codPays As String = TrouverCodPays(If(.Pays <> "", .Pays, .Nationalite))
+            Dim nationalite As String = TrouverValeurRubrique("Nationalite", .Nationalite)
+            If nationalite = "" Then nationalite = codPays
+            If codPays <> "" Then Cod_Pays_Text.Text = codPays
+            If nationalite <> "" Then Nationalite_Text.Text = nationalite
+            Dim civ As String = TrouverCivilite(.Civilite, .Sexe)
+            If civ <> "" Then Civilite_Combo.SelectedValue = civ
+            If .Dat_Naissance <> "" Then Dat_Naissance_Text.Text = .Dat_Naissance
+            If .Lieu_Naissance <> "" Then
+                Dim codLieu As String = TrouverCodVille(.Lieu_Naissance, Cod_Pays_Text.Text)
+                Lieu_Naissance_Text.Text = If(codLieu <> "", codLieu, .Lieu_Naissance)
+            End If
+            CIN_Agent_Text.Text = .CIN
+            Adresse_Text.Text = .Adresse
+            If .Ville <> "" Then
+                Dim codVille As String = TrouverCodVille(.Ville, Cod_Pays_Text.Text)
+                If codVille <> "" Then
+                    Cod_Ville_Text.Text = codVille
+                Else
+                    importLog.AppendLine("Ville '" & .Ville & "' non trouvée dans le paramétrage (Param_Ville).")
+                End If
+            End If
+            Cod_Pst_Text.Text = .CodePostal
+            Gsm_Text.Text = .Gsm
+            Fixe_Text.Text = .Fixe
+            Mail_Text.Text = .Mail
+            Titre_txt.Text = If(.Titre <> "", .Titre, .Poste_Recherche)
+            Dim situ As String = TrouverSituation(.Situation)
+            If situ <> "" Then Situation.SelectedValue = situ
+            If .Profil_Resume <> "" Then Commentaire_Text.Text = .Profil_Resume
+            ' Photo d'identité
+            If .Photo IsNot Nothing Then PictureBox1.Image = .Photo
+            ' Formations (ordre des colonnes = ordre d'enregistrement : Année, Diplôme, Etablissement, Niveau, Commentaire)
+            For Each f As CvFormation In .Formations
+                Dim an As String = If(f.Annee <> "" AndAlso Annee.Items.Contains(f.Annee), f.Annee, Nothing)
+                Dim niv As String = TrouverNiveau(f.Niveau)
+                If niv = "" Then niv = TrouverNiveau(f.Diplome)
+                Formations_GRD.Rows.Add(an, f.Diplome, f.Etablissement, If(ValeurComboExiste(Niveau, niv), niv, Nothing), f.Commentaire)
+            Next
+            ' Expériences (Du, Au, Etablissement, Poste, Commentaire)
+            For Each e As CvExperience In .Experiences
+                Experiences_Grd.Rows.Add(e.Dat_Deb, e.Dat_Fin, e.Etablissement, e.Poste, e.Commentaire)
+            Next
+            If .Formations.Count > 0 Then importLog.AppendLine(.Formations.Count & " formation(s) importée(s).")
+            If .Experiences.Count > 0 Then importLog.AppendLine(.Experiences.Count & " expérience(s) importée(s).")
+        End With
+    End Sub
+
+    ''' <summary>Joint le fichier CV importé à la GED du candidat (table Param_GED, racine
+    ''' de l'écran) : même logique que Zoom_GED.AjouterFicher — copie du fichier dans
+    ''' Lecteur_Digital_Upload sous '<FD_id>_<nom>' ; si un fichier du même nom est déjà
+    ''' joint à ce candidat, il est écrasé. Retourne True si le fichier a été joint.</summary>
+    Private Function AttacherCVaGED(matricule As String, filePath As String) As Boolean
+        If matricule.Trim() = "" OrElse Not IO.File.Exists(filePath) Then Return False
+        Dim lecteur As String = FindParam("Lecteur_Digital_Upload")
+        If lecteur.Trim() = "" Then
+            ShowMessageBox("Le paramètre 'Lecteur_Digital_Upload' n'est pas renseigné : le CV ne peut pas être joint à la GED.",
+                           "Import de CV", MessageBoxButtons.OK, msgIcon.Warning)
+            Return False
+        End If
+        If Not IO.Directory.Exists(lecteur) Then IO.Directory.CreateDirectory(lecteur)
+        Dim Info As New IO.FileInfo(filePath)
+        ' Fichier déjà joint à ce candidat (même nom, racine) : on l'écrase
+        Dim Tbl As DataTable = DATA_READER_GRD("SELECT FD_id, File_Path FROM Param_GED WHERE id_Societe=" & Societe.id_Societe &
+                                               " AND Name_Ecran='" & Me.Name & "' AND Index_Ecran='Matricule_Text'" &
+                                               " AND Value_Index='" & matricule.Replace("'", "''") & "' AND ISNULL(Parent_Dir,0)=0" &
+                                               " AND FD_Alias='" & Info.Name.Replace("'", "''") & "'")
+        Dim rnd As Long = 0
+        Dim opath As String = ""
+        If Tbl.Rows.Count > 0 Then
+            rnd = CLng(Tbl.Rows(0)("FD_id"))
+            opath = IsNull(Tbl.Rows(0)("File_Path"), "")
+        Else
+            rnd = CLng(theUser.id_User & Now.Year & Now.Month & Now.Day & Now.Hour & Now.Minute & Now.Millisecond)
+            opath = lecteur.TrimEnd("\"c) & "\" & rnd & "_" & Info.Name
+        End If
+        IO.File.Copy(Info.FullName, opath, True)
+        Dim rs As New ADODB.Recordset
+        rs.Open("select * from Param_GED where FD_id='" & rnd & "' and id_Societe=" & Societe.id_Societe, cn, 2, 2)
+        If rs.EOF Then
+            rs.AddNew()
+            rs("Created_By").Value = theUser.id_User
+            rs("Dat_Crea").Value = Now
+            rs("FD_id").Value = rnd
+            rs("id_Societe").Value = Societe.id_Societe
+        Else
+            rs.Update()
+        End If
+        rs("Typ").Value = "F"
+        rs("Name_Ecran").Value = Me.Name
+        rs("File_Path").Value = opath
+        rs("FD_Alias").Value = Info.Name
+        rs("Parent_Dir").Value = 0
+        rs("Index_Ecran").Value = "Matricule_Text"
+        rs("Value_Index").Value = matricule
+        rs("Modified_By").Value = theUser.id_User
+        rs("Dat_Modif").Value = Now
+        rs.Update()
+        rs.Close()
+        Return True
+    End Function
+
+    ''' <summary>True si la valeur existe dans la liste de la colonne combo (évite les
+    ''' DataError des DataGridViewComboBoxColumn à l'affectation).</summary>
+    Private Function ValeurComboExiste(col As DataGridViewComboBoxColumn, valeur As String) As Boolean
+        If valeur = "" Then Return False
+        Dim tbl As DataTable = TryCast(col.DataSource, DataTable)
+        If tbl IsNot Nothing Then
+            Return tbl.Select("[" & col.ValueMember & "]='" & valeur.Replace("'", "''") & "'").Length > 0
+        End If
+        Return col.Items.Contains(valeur)
+    End Function
+
+    ''' <summary>Compétences du CV : ajout direct de celles reconnues dans le référentiel
+    ''' GPEC ; pour les non reconnues, propose à l'utilisateur de les traiter (zoom de
+    ''' correspondance : équivalent GPEC en sélection multiple, ou création sous un domaine).</summary>
+    Private Sub TraiterCompetencesCV(competences As List(Of String), importLog As System.Text.StringBuilder)
+        If competences Is Nothing OrElse competences.Count = 0 Then Return
+        Dim gpec As DataTable = ChargerReferentielGPEC()
+        If gpec.Rows.Count = 0 Then
+            importLog.AppendLine("Le référentiel GPEC de la société est vide : aucune compétence n'a pu être rapprochée.")
+            Return
+        End If
+        Dim nonMatchees As List(Of String) = Nothing
+        Dim matches As List(Of String) = MatcherCompetencesGPEC(competences, gpec, nonMatchees)
+        ' Compétences reconnues : ajout immédiat au panneau (sans doublon)
+        Dim nbAjout As Integer = 0
+        For Each code In matches
+            If Domaines_Competence_Pnl.Controls.Find(code, True).Length = 0 Then
+                AddCompetence(code & "$1")
+                nbAjout += 1
+            End If
+        Next
+        If nbAjout > 0 Then
+            RearrangeControls()
+            importLog.AppendLine(nbAjout & " compétence(s) reconnue(s) dans la GPEC ajoutée(s).")
+        End If
+        If nonMatchees.Count = 0 Then Return
+        ' Compétences non reconnues : demander à l'utilisateur s'il veut les traiter
+        Dim liste As String = String.Join(", ", nonMatchees.Take(15)) & If(nonMatchees.Count > 15, "...", "")
+        If ShowMessageBox(nonMatchees.Count & " compétence(s) détectée(s) dans le CV n'existe(nt) pas dans le référentiel GPEC de la société :" & vbCrLf & vbCrLf & liste & vbCrLf & vbCrLf &
+                          "Voulez-vous les traiter maintenant (associer chacune à des compétences existantes de la GPEC, ou l'ajouter à un domaine de compétence) ?",
+                          "Compétences non reconnues", MessageBoxButtons.YesNo, msgIcon.Question) = DialogResult.No Then
+            importLog.AppendLine(nonMatchees.Count & " compétence(s) non reconnue(s) ignorée(s) : " & liste)
+            Return
+        End If
+        Dim f As New Zoom_CV_Competences
+        f.Charger(nonMatchees, gpec)
+        f.ShowDialog(Me)
+        For Each d As CvCompetenceDecision In f.Decisions
+            For Each code In d.Equivalents
+                If Domaines_Competence_Pnl.Controls.Find(code, True).Length = 0 Then
+                    AddCompetence(code & "$1")
+                End If
+            Next
+            If d.Creer Then
+                Dim newCode As String = CreerCompetenceGPEC(d.CompetenceCV, d.DomaineParent)
+                AddCompetence(newCode & "$1")
+                importLog.AppendLine("Compétence '" & d.CompetenceCV & "' ajoutée au référentiel GPEC.")
+            End If
+        Next
+        RearrangeControls()
+        If f.Decisions.Count > 0 Then importLog.AppendLine(f.Decisions.Count & " compétence(s) non reconnue(s) traitée(s).")
+    End Sub
+#End Region
 
     Private Sub LinkLabel1_LinkClicked(sender As Object, e As LinkLabelLinkClickedEventArgs) Handles LinkLabel1.LinkClicked
         Appel_Calender(Dat_Candidature_txt, Me, Now)

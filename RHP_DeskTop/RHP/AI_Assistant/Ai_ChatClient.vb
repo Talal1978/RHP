@@ -1,4 +1,6 @@
-﻿Imports System.IO
+﻿Imports System.Drawing
+Imports System.Drawing.Imaging
+Imports System.IO
 Imports System.Net
 Imports System.Text
 Imports System.Threading.Tasks
@@ -231,6 +233,158 @@ Public Class Ai_ChatClient
             Return IsNull(jobj.SelectToken("candidates[0].content.parts[0].text"), "")
         ElseIf prov = "OLLAMA" Then
             Return IsNull(jobj("response"), "")
+        Else
+            Return IsNull(jobj.SelectToken("choices[0].message.content"), "")
+        End If
+    End Function
+
+    ''' <summary>Encode une image en JPEG base64 (qualité 85, dimension max 2000 px —
+    ''' mêmes réglages que Scan_Piece_Identite.py : le LLM lit mieux les images agrandies
+    ''' que les images trop petites, et au-delà de 2000 px le gain est nul).</summary>
+    Private Shared Function EncoderImageJpegBase64(img As Image, Optional maxDim As Integer = 2000) As String
+        Dim bmp As New Bitmap(img)
+        Try
+            Dim w As Integer = bmp.Width, h As Integer = bmp.Height
+            Dim maxWH As Integer = Math.Max(w, h)
+            Dim ratio As Double = 1.0
+            If maxWH < 1400 Then
+                ratio = 1400.0 / maxWH
+            ElseIf maxWH > maxDim Then
+                ratio = maxDim / maxWH
+            End If
+            If Math.Abs(ratio - 1.0) > 0.01 Then
+                Dim resized As New Bitmap(CInt(w * ratio), CInt(h * ratio))
+                Using g As Graphics = Graphics.FromImage(resized)
+                    g.InterpolationMode = Drawing2D.InterpolationMode.HighQualityBicubic
+                    g.DrawImage(bmp, 0, 0, resized.Width, resized.Height)
+                End Using
+                bmp.Dispose()
+                bmp = resized
+            End If
+            Using ms As New MemoryStream()
+                Dim codec As ImageCodecInfo = ImageCodecInfo.GetImageEncoders().FirstOrDefault(Function(c) c.FormatID = ImageFormat.Jpeg.Guid)
+                If codec IsNot Nothing Then
+                    Using prms As New Imaging.EncoderParameters(1)
+                        prms.Param(0) = New Imaging.EncoderParameter(Imaging.Encoder.Quality, 85L)
+                        bmp.Save(ms, codec, prms)
+                    End Using
+                Else
+                    bmp.Save(ms, ImageFormat.Jpeg)
+                End If
+                Return Convert.ToBase64String(ms.ToArray())
+            End Using
+        Finally
+            bmp.Dispose()
+        End Try
+    End Function
+
+    ''' <summary>Envoie un prompt accompagné d'images au LLM configuré (modèle MULTIMODAL
+    ''' requis) et retourne le texte de la réponse ("" si vide). Miroir des appels vision de
+    ''' Scan_Piece_Identite.py :
+    '''   - GEMINI       : parts texte + inline_data (clé d'API dans l'url) ;
+    '''   - ANTHROPIC    : content images base64 + texte (en-têtes x-api-key) ;
+    '''   - OLLAMA       : message unique avec tableau 'images' (stream:false) ;
+    '''   - autres       : standard OpenAI (content texte + image_url data: ; AZUREOPENAI :
+    '''                    en-tête api-key).
+    ''' Utilisé par l'import de CV (CVTheque) pour la lecture OCR des scans et l'extraction
+    ''' de la photo d'identité. Lève une exception en cas d'erreur réseau / API.</summary>
+    Public Async Function EnvoyerVisionAsync(prompt As String, images As List(Of Image), Optional timeoutMs As Integer = 120000) As Task(Of String)
+        If images Is Nothing OrElse images.Count = 0 Then
+            Return Await EnvoyerChatAsync(New List(Of AiChatMessage) From {New AiChatMessage("user", prompt)}, timeoutMs)
+        End If
+        Dim prov As String = Provider.ToUpperInvariant()
+        Dim url As String = AiUrl.Replace("{MODEL}", Modele)
+        Dim b64Images As List(Of String) = images.Select(Function(img) EncoderImageJpegBase64(img)).ToList()
+        Dim payload As JObject
+
+        If prov = "GEMINI" Then
+            If Not url.Contains("key=") Then url &= "?key=" & ApiKey
+            Dim parts As New JArray(New JObject(New JProperty("text", prompt)))
+            For Each b64 As String In b64Images
+                parts.Add(New JObject(New JProperty("inline_data",
+                    New JObject(New JProperty("mime_type", "image/jpeg"), New JProperty("data", b64)))))
+            Next
+            payload = New JObject(New JProperty("contents", New JArray(New JObject(New JProperty("parts", parts)))))
+        ElseIf prov = "ANTHROPIC" Then
+            Dim content As New JArray()
+            For Each b64 As String In b64Images
+                content.Add(New JObject(New JProperty("type", "image"),
+                    New JProperty("source", New JObject(New JProperty("type", "base64"),
+                                                        New JProperty("media_type", "image/jpeg"),
+                                                        New JProperty("data", b64)))))
+            Next
+            content.Add(New JObject(New JProperty("type", "text"), New JProperty("text", prompt)))
+            payload = New JObject(New JProperty("model", Modele),
+                                  New JProperty("max_tokens", 4096),
+                                  New JProperty("messages", New JArray(New JObject(New JProperty("role", "user"),
+                                                                                   New JProperty("content", content)))))
+        ElseIf prov = "OLLAMA" Then
+            payload = New JObject(New JProperty("model", Modele),
+                                  New JProperty("stream", False),
+                                  New JProperty("messages", New JArray(
+                                      New JObject(New JProperty("role", "user"),
+                                                  New JProperty("content", prompt),
+                                                  New JProperty("images", New JArray(b64Images.Cast(Of Object)()))))))
+        Else
+            ' Standard OpenAI (Mistral, Groq, Kimi, AzureOpenAI...)
+            Dim content As New JArray(New JObject(New JProperty("type", "text"), New JProperty("text", prompt)))
+            For Each b64 As String In b64Images
+                content.Add(New JObject(New JProperty("type", "image_url"),
+                    New JProperty("image_url", New JObject(New JProperty("url", "data:image/jpeg;base64," & b64)))))
+            Next
+            payload = New JObject(New JProperty("model", Modele),
+                                  New JProperty("messages", New JArray(New JObject(New JProperty("role", "user"),
+                                                                                   New JProperty("content", content)))),
+                                  New JProperty("temperature", 0))
+        End If
+
+        Dim request As HttpWebRequest = CType(WebRequest.Create(url), HttpWebRequest)
+        request.Method = "POST"
+        request.ContentType = "application/json"
+        request.Timeout = timeoutMs
+        request.ReadWriteTimeout = timeoutMs
+        If prov = "AZUREOPENAI" Then
+            request.Headers.Add("api-key", ApiKey)
+        ElseIf prov = "ANTHROPIC" Then
+            request.Headers.Add("x-api-key", ApiKey)
+            request.Headers.Add("anthropic-version", "2023-06-01")
+        ElseIf prov <> "GEMINI" AndAlso prov <> "OLLAMA" AndAlso ApiKey <> "" Then
+            request.Headers.Add("Authorization", "Bearer " & ApiKey)
+        End If
+
+        Dim data As Byte() = Encoding.UTF8.GetBytes(payload.ToString(Formatting.None))
+        request.ContentLength = data.Length
+        Using stream = Await request.GetRequestStreamAsync()
+            Await stream.WriteAsync(data, 0, data.Length)
+        End Using
+
+        Dim json As String = ""
+        Try
+            Using response = Await request.GetResponseAsync()
+                Using reader As New StreamReader(response.GetResponseStream(), Encoding.UTF8)
+                    json = Await reader.ReadToEndAsync()
+                End Using
+            End Using
+        Catch wex As WebException
+            Dim detail As String = ""
+            If wex.Response IsNot Nothing Then
+                Try
+                    Using reader As New StreamReader(wex.Response.GetResponseStream(), Encoding.UTF8)
+                        detail = reader.ReadToEnd()
+                    End Using
+                Catch
+                End Try
+            End If
+            Throw New Exception("Appel du modèle IA (vision) en échec : " & wex.Message & If(detail <> "", vbCrLf & detail, ""))
+        End Try
+
+        Dim jobj As JObject = JObject.Parse(json)
+        If prov = "GEMINI" Then
+            Return IsNull(jobj.SelectToken("candidates[0].content.parts[0].text"), "")
+        ElseIf prov = "ANTHROPIC" Then
+            Return IsNull(jobj.SelectToken("content[0].text"), "")
+        ElseIf prov = "OLLAMA" Then
+            Return IsNull(jobj.SelectToken("message.content"), "")
         Else
             Return IsNull(jobj.SelectToken("choices[0].message.content"), "")
         End If

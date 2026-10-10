@@ -15,7 +15,6 @@ tmp/
 *.tmp
 
 # Archives
-*.7z
 *.zip
 *.rar
 *.bak
